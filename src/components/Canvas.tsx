@@ -54,9 +54,11 @@ interface CanvasProps {
   onObjectUpdate: (id: string, updates: Partial<CanvasObject>) => void;
   selectedIds: string[];
   onSelect: (id: string | null, isMulti?: boolean) => void;
+  onSelectMany: (ids: string[]) => void;
   mode: CanvasMode;
   appMode: AppMode;
   onAddGenerator: (generatorType: 'image' | 'video' | 'text', state?: any) => void;
+  onAddWorkflowPreset: (preset: 'prompt' | 'image-to-video' | 'fusion' | 'explore') => void;
   onCreateLinkedGenerator: (sourceId: string, side: 'left' | 'right', generatorType: 'image' | 'video' | 'text') => void;
   onReEdit: (prompt: string) => void;
   isLayerPanelOpen: boolean;
@@ -294,6 +296,27 @@ const getScreenSelectionBounds = (
 };
 
 const getGeneratorType = (obj: CanvasObject) => obj.generatorState?.generatorType || 'image';
+
+const isMultiSelectEvent = (event?: any) => {
+  const nativeEvent = event?.evt ?? event;
+  return Boolean(
+    nativeEvent &&
+      (nativeEvent.shiftKey || nativeEvent.metaKey || nativeEvent.ctrlKey)
+  );
+};
+
+const getCanvasPointer = (
+  stage: any,
+  scale: number,
+  position: { x: number; y: number }
+) => {
+  const pointer = stage?.getPointerPosition?.();
+  if (!pointer) return null;
+  return {
+    x: (pointer.x - position.x) / scale,
+    y: (pointer.y - position.y) / scale,
+  };
+};
 
 const GENERATOR_CONFIG = {
   image: {
@@ -557,7 +580,7 @@ const URLImage = ({ src, x, y, width, height, id, onSelect, isSelected, onUpdate
         height={height || 200}
         id={id}
         draggable={(mode === 'select' || mode === 'point') && !locked}
-        onClick={() => !locked && onSelect(id)}
+        onClick={(e) => !locked && onSelect(id, isMultiSelectEvent(e))}
         onTap={() => !locked && onSelect(id)}
         onDblClick={() => !locked && onCenterInView?.(id)}
         onDblTap={() => !locked && onCenterInView?.(id)}
@@ -643,7 +666,7 @@ const Shape = ({ x, y, width, height, id, onSelect, isSelected, onUpdate, shapeT
     stroke: isSelected ? '#9333ea' : (stroke || '#e2e8f0'),
     strokeWidth: isSelected ? 2 : 1,
     draggable: (mode === 'select' || mode === 'point') && !locked,
-    onClick: () => !locked && onSelect(id),
+    onClick: (e: any) => !locked && onSelect(id, isMultiSelectEvent(e)),
     onTap: () => !locked && onSelect(id),
     onDblClick: () => !locked && onCenterInView?.(id),
     onDblTap: () => !locked && onCenterInView?.(id),
@@ -740,7 +763,7 @@ const Frame = ({ x, y, width, height, id, onSelect, isSelected, onUpdate, label,
         shadowBlur={10}
         shadowColor="rgba(0,0,0,0.05)"
         draggable={(mode === 'select' || mode === 'point') && !locked}
-        onClick={() => !locked && onSelect(id)}
+        onClick={(e) => !locked && onSelect(id, isMultiSelectEvent(e))}
         onTap={() => !locked && onSelect(id)}
         onDblClick={() => !locked && onCenterInView?.(id)}
         onDblTap={() => !locked && onCenterInView?.(id)}
@@ -826,7 +849,7 @@ const Video = ({ src, x, y, width, height, id, onSelect, isSelected, onUpdate, m
         height={height}
         id={id}
         draggable={(mode === 'select' || mode === 'point') && !locked}
-        onClick={() => !locked && onSelect(id)}
+        onClick={(e) => !locked && onSelect(id, isMultiSelectEvent(e))}
         onTap={() => !locked && onSelect(id)}
         onDblClick={() => !locked && onCenterInView?.(id)}
         onDblTap={() => !locked && onCenterInView?.(id)}
@@ -966,7 +989,7 @@ const TextObject = ({
           align={textAlign}
           verticalAlign="middle"
           draggable={(mode === 'select' || mode === 'point') && !locked}
-          onClick={() => !locked && onSelect(id)}
+          onClick={(e) => !locked && onSelect(id, isMultiSelectEvent(e))}
           onTap={() => !locked && onSelect(id)}
           onDblClick={handleDblClick}
           onDblTap={handleDblClick}
@@ -1381,7 +1404,7 @@ const GeneratorObject = ({ obj, onSelect, isSelected, onUpdate, scale, position,
           if (appMode !== 'workflow') return nextPos;
           return canPlaceAt(nextPos.x, nextPos.y) ? nextPos : { x: obj.x, y: obj.y };
         }}
-        onClick={() => !locked && onSelect(obj.id)}
+        onClick={(e) => !locked && onSelect(obj.id, isMultiSelectEvent(e))}
         onTap={() => !locked && onSelect(obj.id)}
         onDblClick={() => !locked && onCenterInView?.(obj.id)}
         onDblTap={() => !locked && onCenterInView?.(obj.id)}
@@ -2112,46 +2135,43 @@ const ImageFusionPromptPanel = ({
 
 const WorkflowEmptyState = ({
   onAddGenerator,
+  onAddWorkflowPreset,
 }: {
   onAddGenerator: (generatorType: 'image' | 'video' | 'text', state?: any) => void;
+  onAddWorkflowPreset: (preset: 'prompt' | 'image-to-video' | 'fusion' | 'explore') => void;
 }) => {
   const cards: Array<{
     title: string;
     subtitle: string;
-    generatorType: 'image' | 'video' | 'text';
-    prompt: string;
+    preset: 'prompt' | 'image-to-video' | 'fusion' | 'explore';
     gradient: string;
     accent: string;
   }> = [
     {
       title: '图转提示词',
       subtitle: '拆解图片风格与描述结构',
-      generatorType: 'text',
-      prompt: '请基于上传图片生成一段可复用的高质量提示词。',
+      preset: 'prompt',
       gradient: 'linear-gradient(135deg, #0f172a 0%, #164e63 55%, #334155 100%)',
       accent: 'from-[#67e8f9]/35 to-transparent',
     },
     {
       title: '图生视频',
       subtitle: '让静态画面延展为动态镜头',
-      generatorType: 'video',
-      prompt: '基于当前图片延展生成一段具有镜头运动感的视频。',
+      preset: 'image-to-video',
       gradient: 'linear-gradient(135deg, #1e3a8a 0%, #475569 45%, #020617 100%)',
       accent: 'from-[#93c5fd]/35 to-transparent',
     },
     {
       title: '多图融合',
       subtitle: '组合多素材生成统一画面',
-      generatorType: 'image',
-      prompt: '将多张参考图的主体、风格与构图融合为一张完整新图。',
+      preset: 'fusion',
       gradient: 'linear-gradient(135deg, #4c1d95 0%, #7c2d12 48%, #111827 100%)',
       accent: 'from-[#fdba74]/35 to-transparent',
     },
     {
       title: '探索工作流',
       subtitle: '从示例节点开始搭建流程',
-      generatorType: 'image',
-      prompt: '从这里开始搭建一个新的多步骤创作工作流。',
+      preset: 'explore',
       gradient: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #7c3aed 100%)',
       accent: 'from-[#c4b5fd]/35 to-transparent',
     },
@@ -2178,11 +2198,7 @@ const WorkflowEmptyState = ({
             <button
               key={card.title}
               type="button"
-              onClick={() =>
-                onAddGenerator(card.generatorType, {
-                  prompt: card.prompt,
-                })
-              }
+              onClick={() => onAddWorkflowPreset(card.preset)}
               className="group relative h-[82px] overflow-hidden rounded-[18px] p-0 text-left shadow-[0_10px_40px_rgba(15,23,42,0.12)] transition-all hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(15,23,42,0.18)]"
               style={{ background: card.gradient }}
             >
@@ -2215,9 +2231,11 @@ export const Canvas: React.FC<CanvasProps> = ({
   onObjectUpdate, 
   selectedIds, 
   onSelect, 
+  onSelectMany,
   mode,
   appMode,
   onAddGenerator,
+  onAddWorkflowPreset,
   onCreateLinkedGenerator,
   onReEdit,
   isLayerPanelOpen,
@@ -2251,6 +2269,15 @@ export const Canvas: React.FC<CanvasProps> = ({
     objectIds: string[];
     prompt: string;
   } | null>(null);
+  const [selectionBox, setSelectionBox] = useState<{
+    startX: number;
+    startY: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const [selectionStartIds, setSelectionStartIds] = useState<string[]>([]);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isStageDragging, setIsStageDragging] = useState(false);
   const hasAutoCenteredRef = useRef(false);
@@ -2353,6 +2380,13 @@ export const Canvas: React.FC<CanvasProps> = ({
       if (event.code === 'Space') {
         event.preventDefault();
         setIsSpacePressed(true);
+        return;
+      }
+
+      if (event.code === 'Escape') {
+        onSelect(null);
+        setSelectionBox(null);
+        setImageFusionState(null);
       }
     };
 
@@ -2376,7 +2410,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, []);
+  }, [onSelect]);
 
   useEffect(() => {
     if (hasAutoCenteredRef.current) return;
@@ -2619,6 +2653,32 @@ export const Canvas: React.FC<CanvasProps> = ({
     setImageFusionState(null);
   };
 
+  const handleCanvasObjectUpdate = (id: string, updates: Partial<CanvasObject>) => {
+    const movedX = typeof updates.x === 'number';
+    const movedY = typeof updates.y === 'number';
+    const isMoveOnly =
+      (movedX || movedY) &&
+      Object.keys(updates).every((key) => key === 'x' || key === 'y');
+
+    if (isMoveOnly && selectedIds.length > 1 && selectedIds.includes(id)) {
+      const source = objects.find((obj) => obj.id === id);
+      if (!source) return;
+      const dx = (updates.x ?? source.x) - source.x;
+      const dy = (updates.y ?? source.y) - source.y;
+      selectedIds.forEach((selectedId) => {
+        const obj = objects.find((item) => item.id === selectedId);
+        if (!obj) return;
+        onObjectUpdate(selectedId, {
+          x: obj.x + dx,
+          y: obj.y + dy,
+        });
+      });
+      return;
+    }
+
+    onObjectUpdate(id, updates);
+  };
+
   const multiSelectionActions = multiSelectionBounds
     ? [
         ...(selectedFusionImages.length >= 2
@@ -2696,6 +2756,38 @@ export const Canvas: React.FC<CanvasProps> = ({
       setImageFusionState((prev) => (prev ? { ...prev, objectIds: validIds } : prev));
     }
   }, [imageFusionState, objects]);
+
+  const finishSelectionBox = (appendMode: boolean) => {
+    if (!selectionBox) return;
+
+    const boxLeft = Math.min(selectionBox.startX, selectionBox.x);
+    const boxTop = Math.min(selectionBox.startY, selectionBox.y);
+    const boxRight = Math.max(selectionBox.startX, selectionBox.x);
+    const boxBottom = Math.max(selectionBox.startY, selectionBox.y);
+
+    const hitIds = objects
+      .filter((obj) => !obj.hidden)
+      .filter((obj) => {
+        const objLeft = obj.x;
+        const objTop = obj.y;
+        const objRight = obj.x + obj.width;
+        const objBottom = obj.y + obj.height;
+        return !(
+          objRight < boxLeft ||
+          objLeft > boxRight ||
+          objBottom < boxTop ||
+          objTop > boxBottom
+        );
+      })
+      .map((obj) => obj.id);
+
+    const nextIds = appendMode
+      ? Array.from(new Set([...selectionStartIds, ...hitIds]))
+      : hitIds;
+
+    onSelectMany(nextIds);
+    setSelectionBox(null);
+  };
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -2987,8 +3079,51 @@ export const Canvas: React.FC<CanvasProps> = ({
           }
           const clickedOnEmpty = e.target === e.target.getStage() || e.target.hasName('background');
           if (clickedOnEmpty) {
-            onSelect(null);
+            const stage = e.target.getStage();
+            const pointer = getCanvasPointer(stage, scale, position);
+            if (!pointer || mode !== 'select') {
+              onSelect(null);
+              return;
+            }
+            const appendMode = isMultiSelectEvent(e);
+            setSelectionStartIds(appendMode ? selectedIds : []);
+            setSelectionBox({
+              startX: pointer.x,
+              startY: pointer.y,
+              x: pointer.x,
+              y: pointer.y,
+              width: 0,
+              height: 0,
+            });
+            if (!appendMode) {
+              onSelect(null);
+            }
           }
+        }}
+        onMouseMove={(e) => {
+          if (!selectionBox) return;
+          const stage = e.target.getStage();
+          const pointer = getCanvasPointer(stage, scale, position);
+          if (!pointer) return;
+          setSelectionBox((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  x: pointer.x,
+                  y: pointer.y,
+                  width: Math.abs(pointer.x - prev.startX),
+                  height: Math.abs(pointer.y - prev.startY),
+                }
+              : prev
+          );
+        }}
+        onMouseUp={(e) => {
+          if (!selectionBox) return;
+          finishSelectionBox(isMultiSelectEvent(e));
+        }}
+        onMouseLeave={(e) => {
+          if (!selectionBox) return;
+          finishSelectionBox(isMultiSelectEvent(e));
         }}
       >
         <Layer>
@@ -3014,6 +3149,19 @@ export const Canvas: React.FC<CanvasProps> = ({
               cornerRadius={1}
             />
           ))}
+
+          {selectionBox && (
+            <Rect
+              x={Math.min(selectionBox.startX, selectionBox.x)}
+              y={Math.min(selectionBox.startY, selectionBox.y)}
+              width={Math.abs(selectionBox.x - selectionBox.startX)}
+              height={Math.abs(selectionBox.y - selectionBox.startY)}
+              fill="rgba(92,92,252,0.12)"
+              stroke="#5c5cfc"
+              strokeWidth={1}
+              dash={[6, 4]}
+            />
+          )}
 
           {appMode === 'workflow' &&
             workflowLinks.map((link) => {
@@ -3054,7 +3202,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               height={obj.height}
               isSelected={selectedIds.includes(obj.id)}
               onSelect={onSelect}
-              onUpdate={onObjectUpdate}
+              onUpdate={handleCanvasObjectUpdate}
               mode={interactionMode}
               locked={obj.locked}
               onCenterInView={centerObjectInView}
@@ -3076,7 +3224,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               stroke={obj.stroke}
               isSelected={selectedIds.includes(obj.id)}
               onSelect={onSelect}
-              onUpdate={onObjectUpdate}
+              onUpdate={handleCanvasObjectUpdate}
               mode={interactionMode}
               locked={obj.locked}
               onCenterInView={centerObjectInView}
@@ -3095,7 +3243,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                 height={obj.height}
                 isSelected={selectedIds.includes(obj.id)}
                 onSelect={onSelect}
-                onUpdate={onObjectUpdate}
+                onUpdate={handleCanvasObjectUpdate}
                 mode={interactionMode}
                 onContextMenu={(x: number, y: number, type: string, id: string) => setContextMenu({ x, y, type: type as any, id })}
                 isProcessing={obj.isProcessing}
@@ -3133,7 +3281,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               height={obj.height}
               isSelected={selectedIds.includes(obj.id)}
               onSelect={onSelect}
-              onUpdate={onObjectUpdate}
+              onUpdate={handleCanvasObjectUpdate}
               mode={interactionMode}
               onContextMenu={(x: number, y: number, type: string, id: string) => setContextMenu({ x, y, type: type as any, id })}
               isProcessing={obj.isProcessing}
@@ -3155,7 +3303,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               height={obj.height}
               isSelected={selectedIds.includes(obj.id)}
               onSelect={onSelect}
-              onUpdate={onObjectUpdate}
+              onUpdate={handleCanvasObjectUpdate}
               mode={interactionMode}
               locked={obj.locked}
               onCenterInView={centerObjectInView}
@@ -3175,7 +3323,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               obj={obj}
               onSelect={onSelect}
               isSelected={selectedIds.includes(obj.id)}
-              onUpdate={onObjectUpdate}
+              onUpdate={handleCanvasObjectUpdate}
               scale={scale}
               position={position}
               mode={interactionMode}
@@ -3191,7 +3339,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       {selectedGeneratorObject && (
         <GeneratorUI
           obj={selectedGeneratorObject}
-          onUpdate={onObjectUpdate}
+          onUpdate={handleCanvasObjectUpdate}
           scale={scale}
           position={position}
           dimensions={dimensions}
@@ -3243,7 +3391,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
       {objects.length === 0 &&
         (appMode === 'workflow' ? (
-          <WorkflowEmptyState onAddGenerator={onAddGenerator} />
+          <WorkflowEmptyState onAddGenerator={onAddGenerator} onAddWorkflowPreset={onAddWorkflowPreset} />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="max-w-md w-full p-8 text-center space-y-6 animate-in fade-in zoom-in-95 duration-1000">
@@ -3302,7 +3450,7 @@ export const Canvas: React.FC<CanvasProps> = ({
           y={textToolbarPos.y}
           width={textToolbarPos.width}
           obj={selectedTextObject}
-          onUpdate={onObjectUpdate}
+          onUpdate={handleCanvasObjectUpdate}
           onDownload={() => onExportObject(selectedTextObject.id)}
         />
       )}
@@ -3392,7 +3540,7 @@ export const Canvas: React.FC<CanvasProps> = ({
             objects={objects}
             selectedIds={selectedIds}
             onSelect={onSelect}
-            onUpdate={onObjectUpdate}
+            onUpdate={handleCanvasObjectUpdate}
             onDelete={onDeleteObject}
             onDuplicate={onDuplicateObject}
             onExport={onExportObject}

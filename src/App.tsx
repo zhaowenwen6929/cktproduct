@@ -36,6 +36,11 @@ const createObjectId = (prefix = 'obj') => {
 const DEFAULT_CANVAS_ORIGIN = { x: 120, y: 120 };
 const DEFAULT_ITEM_GAP = 32;
 const DEFAULT_PLACEMENT_GAP = 32;
+const DEMO_IMAGE_BAG = 'https://picsum.photos/seed/workflow-bag/520/520';
+const DEMO_IMAGE_MODEL = 'https://picsum.photos/seed/workflow-model/640/820';
+const DEMO_IMAGE_EDITORIAL = 'https://picsum.photos/seed/workflow-editorial/700/860';
+const DEMO_IMAGE_MOON = 'https://picsum.photos/seed/workflow-moon/880/620';
+const DEMO_VIDEO_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
 
 export default function App() {
   const [objects, setObjects] = useState<CanvasObject[]>([]);
@@ -567,6 +572,402 @@ export default function App() {
     setSelectedIds([built.object.id]);
   };
 
+  const handleAddWorkflowPreset = (preset: 'prompt' | 'image-to-video' | 'fusion' | 'explore') => {
+    const baseX = 48;
+    const baseY = 92;
+
+    const makeText = (overrides: Partial<CanvasObject>): CanvasObject => ({
+      id: createObjectId('text'),
+      type: 'text',
+      name: '文字',
+      x: 0,
+      y: 0,
+      width: 220,
+      height: 60,
+      content: '',
+      fontSize: 16,
+      fontFamily: 'Source Han Sans SC, PingFang SC, Microsoft YaHei, sans-serif',
+      fontWeight: 'normal',
+      textAlign: 'left',
+      fill: '#111827',
+      ...overrides,
+    });
+
+    const makeFrame = (overrides: Partial<CanvasObject>): CanvasObject => ({
+      id: createObjectId('frame'),
+      type: 'frame',
+      name: '说明面板',
+      x: 0,
+      y: 0,
+      width: 360,
+      height: 640,
+      content: '说明面板',
+      fill: '#ffffff',
+      ...overrides,
+    });
+
+    const makeImage = (overrides: Partial<CanvasObject>): CanvasObject => ({
+      id: createObjectId('image'),
+      type: 'image',
+      name: '图片',
+      x: 0,
+      y: 0,
+      width: 280,
+      height: 280,
+      content: DEMO_IMAGE_BAG,
+      ...overrides,
+    });
+
+    const buildGenerator = (
+      generatorType: 'image' | 'video' | 'text',
+      overrides: Partial<CanvasObject> & { generatorState?: any }
+    ): CanvasObject => {
+      const built = buildGeneratorObject([], generatorType, overrides.generatorState);
+      return {
+        ...built.object,
+        ...overrides,
+        generatorState: {
+          ...built.object.generatorState,
+          ...(overrides.generatorState || {}),
+        },
+      };
+    };
+
+    const objectsToAdd: CanvasObject[] = [];
+    const linksToAdd: WorkflowLink[] = [];
+
+    if (preset === 'prompt') {
+      const source = makeImage({
+        id: createObjectId('image'),
+        name: '原图',
+        x: baseX + 470,
+        y: baseY + 20,
+        width: 334,
+        height: 255,
+        content: DEMO_IMAGE_MOON,
+      });
+      const promptNode = buildGenerator('text', {
+        id: createObjectId('generator'),
+        name: '提示词生成1',
+        x: baseX + 880,
+        y: baseY + 20,
+        width: 360,
+        height: 250,
+        generatorState: {
+          generatorType: 'text',
+          prompt: '分析这张图片并生成可复用摄影提示词',
+          model: '文案助手 Pro',
+          ratio: 'auto',
+          refImages: [DEMO_IMAGE_MOON],
+          status: 'success',
+          resultText:
+            '超现实主义摄影，黄昏暮色的旷野上，年轻女人跪坐在荒草中，身着带蕾丝的宽松白色薄纱长裙，蓬松的浅棕卷发，低头凝视捧自己双手捧住的发光圆月，圆月是满月的纹理，散发温暖暖黄色柔光，整体环境是朦胧的冷调灰蓝色暮色，远景是模糊的草坡与朦胧天空，背景虚化，画面带散景橙暖色光斑，低暗调，柔焦，情绪氛围感，梦幻质感，长焦拍摄，4K高清',
+        },
+      });
+      const panel = makeFrame({
+        x: baseX,
+        y: baseY,
+        width: 380,
+        height: 700,
+        name: '提示词生成说明',
+        content: '提示词生成',
+      });
+
+      objectsToAdd.push(
+        panel,
+        makeText({
+          x: baseX + 24,
+          y: baseY + 30,
+          width: 320,
+          height: 48,
+          content: '第1步：替换图片',
+          fontSize: 22,
+          fontWeight: 'bold',
+        }),
+        makeText({
+          x: baseX + 24,
+          y: baseY + 102,
+          width: 300,
+          height: 108,
+          content: '选中左侧原图节点，点击工具栏上的「替换」按钮，将原图替换为自己的图片。',
+          fontSize: 14,
+          fill: '#6b7280',
+        }),
+        makeText({
+          x: baseX + 24,
+          y: baseY + 380,
+          width: 320,
+          height: 48,
+          content: '第2步：生成提示词',
+          fontSize: 22,
+          fontWeight: 'bold',
+        }),
+        makeText({
+          x: baseX + 24,
+          y: baseY + 452,
+          width: 300,
+          height: 112,
+          content: '选中右侧提示词生成节点，在弹出的输入框里点击发送按钮，即可生成可复用提示词。',
+          fontSize: 14,
+          fill: '#6b7280',
+        }),
+        source,
+        promptNode
+      );
+      linksToAdd.push({
+        id: createObjectId('workflow-link'),
+        fromId: source.id,
+        toId: promptNode.id,
+      });
+    }
+
+    if (preset === 'fusion') {
+      const bag = makeImage({
+        id: createObjectId('image'),
+        name: '产品图',
+        x: baseX + 420,
+        y: baseY + 30,
+        width: 260,
+        height: 260,
+        content: DEMO_IMAGE_BAG,
+      });
+      const model = makeImage({
+        id: createObjectId('image'),
+        name: '模特图',
+        x: baseX + 420,
+        y: baseY + 350,
+        width: 260,
+        height: 345,
+        content: DEMO_IMAGE_MODEL,
+      });
+      const fusionResult = makeImage({
+        id: createObjectId('image'),
+        name: '融合结果',
+        x: baseX + 850,
+        y: baseY + 70,
+        width: 290,
+        height: 380,
+        content: DEMO_IMAGE_EDITORIAL,
+      });
+      const fusionNode = buildGenerator('image', {
+        id: createObjectId('generator'),
+        name: '图片生成器1',
+        x: baseX + 18,
+        y: baseY + 70,
+        width: 360,
+        height: 250,
+        generatorState: {
+          generatorType: 'image',
+          prompt: '将#1包袋产品图与#2模特人像图融合，生成高级时尚大片效果。',
+          model: 'Seedream 4.0',
+          ratio: '3:4',
+          refImages: [DEMO_IMAGE_BAG, DEMO_IMAGE_MODEL],
+          status: 'idle',
+        },
+      });
+      const panel = makeFrame({
+        x: baseX,
+        y: baseY,
+        width: 380,
+        height: 690,
+        name: '多图融合说明',
+        content: '多图融合',
+      });
+      objectsToAdd.push(
+        panel,
+        makeText({
+          x: baseX + 24,
+          y: baseY + 30,
+          width: 320,
+          height: 48,
+          content: '第1步：上传多图片',
+          fontSize: 22,
+          fontWeight: 'bold',
+        }),
+        makeText({
+          x: baseX + 24,
+          y: baseY + 102,
+          width: 300,
+          height: 108,
+          content: '先准备产品图与模特图两类素材，分别放到画布中，作为融合时的参考输入。',
+          fontSize: 14,
+          fill: '#6b7280',
+        }),
+        makeText({
+          x: baseX + 24,
+          y: baseY + 380,
+          width: 320,
+          height: 48,
+          content: '第2步：生成融合',
+          fontSize: 22,
+          fontWeight: 'bold',
+        }),
+        makeText({
+          x: baseX + 24,
+          y: baseY + 452,
+          width: 300,
+          height: 112,
+          content: '选中图片生成节点，在弹出的输入框中描述你想要的融合画面效果，点击生成即可。',
+          fontSize: 14,
+          fill: '#6b7280',
+        }),
+        fusionNode,
+        bag,
+        model,
+        fusionResult
+      );
+    }
+
+    if (preset === 'image-to-video') {
+      const source = makeImage({
+        id: createObjectId('image'),
+        name: '封面图',
+        x: baseX + 500,
+        y: baseY + 40,
+        width: 320,
+        height: 420,
+        content: DEMO_IMAGE_MOON,
+      });
+      const videoNode = buildGenerator('video', {
+        id: createObjectId('generator'),
+        name: '视频生成器1',
+        x: baseX + 910,
+        y: baseY + 10,
+        width: 360,
+        height: 500,
+        generatorState: {
+          generatorType: 'video',
+          prompt: '让人物与发光月球产生轻微运动，形成梦幻镜头推近效果。',
+          model: '可灵视频 1.6',
+          ratio: '9:16',
+          refImages: [DEMO_IMAGE_MOON],
+          status: 'success',
+          resultUrl: DEMO_VIDEO_URL,
+        },
+      });
+      objectsToAdd.push(
+        source,
+        videoNode,
+        makeText({
+          x: baseX + 32,
+          y: baseY + 60,
+          width: 300,
+          height: 52,
+          content: '图生视频示例',
+          fontSize: 32,
+          fontWeight: 'bold',
+        }),
+        makeText({
+          x: baseX + 32,
+          y: baseY + 150,
+          width: 340,
+          height: 160,
+          content: '左侧放一张主视觉图片，右侧接一个视频生成节点，即可基于单图延展动态镜头。',
+          fontSize: 16,
+          fill: '#6b7280',
+        })
+      );
+      linksToAdd.push({
+        id: createObjectId('workflow-link'),
+        fromId: source.id,
+        toId: videoNode.id,
+      });
+    }
+
+    if (preset === 'explore') {
+      const imageNode = buildGenerator('image', {
+        id: createObjectId('generator'),
+        name: '图片生成器1',
+        x: baseX + 420,
+        y: baseY + 80,
+        width: 420,
+        height: 420,
+        generatorState: {
+          generatorType: 'image',
+          prompt: '生成一张冷色电影感的主视觉封面图。',
+          model: 'Seedream 4.0',
+          ratio: '1:1',
+          refImages: [],
+          status: 'success',
+          resultUrl: DEMO_IMAGE_MOON,
+        },
+      });
+      const textNode = buildGenerator('text', {
+        id: createObjectId('generator'),
+        name: '文本生成器1',
+        x: baseX + 930,
+        y: baseY + 120,
+        width: 360,
+        height: 260,
+        generatorState: {
+          generatorType: 'text',
+          prompt: '基于这张主视觉图输出一句海报标题与一句副标题。',
+          model: '文案助手 Pro',
+          ratio: 'auto',
+          refImages: [],
+          status: 'success',
+          resultText: '月光坠入旷野\n把冷色调梦境，定格成一张会呼吸的海报。',
+        },
+      });
+      const videoNode = buildGenerator('video', {
+        id: createObjectId('generator'),
+        name: '视频生成器1',
+        x: baseX + 930,
+        y: baseY + 430,
+        width: 360,
+        height: 500,
+        generatorState: {
+          generatorType: 'video',
+          prompt: '延展这张主视觉图，输出一段带推进感的短视频镜头。',
+          model: '可灵视频 1.6',
+          ratio: '9:16',
+          refImages: [DEMO_IMAGE_MOON],
+          status: 'idle',
+        },
+      });
+      objectsToAdd.push(
+        makeText({
+          x: baseX + 24,
+          y: baseY + 30,
+          width: 300,
+          height: 50,
+          content: '探索工作流示例',
+          fontSize: 32,
+          fontWeight: 'bold',
+        }),
+        makeText({
+          x: baseX + 24,
+          y: baseY + 122,
+          width: 320,
+          height: 180,
+          content: '从一个图片节点出发，同时连接文本生成和视频生成，快速搭一个一图多用的创作流程。',
+          fontSize: 16,
+          fill: '#6b7280',
+        }),
+        imageNode,
+        textNode,
+        videoNode
+      );
+      linksToAdd.push(
+        {
+          id: createObjectId('workflow-link'),
+          fromId: imageNode.id,
+          toId: textNode.id,
+        },
+        {
+          id: createObjectId('workflow-link'),
+          fromId: imageNode.id,
+          toId: videoNode.id,
+        }
+      );
+    }
+
+    setObjects(objectsToAdd);
+    setWorkflowLinks(linksToAdd);
+    setSelectedIds([]);
+    setAppMode('workflow');
+  };
+
   const handleCreateLinkedGenerator = (
     sourceId: string,
     side: 'left' | 'right',
@@ -953,9 +1354,13 @@ export default function App() {
                 setSelectedIds([]);
               }
             }}
+            onSelectMany={(ids) => {
+              setSelectedIds(ids);
+            }}
             mode={currentMode}
             appMode={appMode}
             onAddGenerator={handleAddGenerator}
+            onAddWorkflowPreset={handleAddWorkflowPreset}
             onCreateLinkedGenerator={handleCreateLinkedGenerator}
             onReEdit={(prompt) => {
               setAgentInput(prompt);
