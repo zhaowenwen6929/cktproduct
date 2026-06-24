@@ -36,7 +36,12 @@ import {
   AlignRight,
   Wand2,
   Languages,
-  Paintbrush
+  Paintbrush,
+  ScanSearch,
+  Expand,
+  BadgeInfo,
+  BetweenHorizontalStart,
+  Captions
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -433,10 +438,12 @@ const createMockVideoResult = async (prompt: string) => {
 
 const ContextMenu = ({ x, y, type, onAction, onClose }: any) => {
   const imageActions = [
-    { id: 'remove-bg', label: '抠图', icon: Scissors },
+    { id: 'edit-image', label: '改图', icon: Sparkles },
+    { id: 'outpaint', label: '扩图', icon: Maximize },
     { id: 'erase', label: '消除', icon: Eraser },
+    { id: 'hd-upscale', label: '高清放大', icon: ScanSearch },
     { id: 'layering', label: '图文分层', icon: LayersIcon },
-    { id: 'edit-text', label: '无痕改字', icon: Type },
+    { id: 'edit-text', label: '无痕改字', icon: Captions },
     { id: 'extract-subject', label: '提取主体', icon: Target },
     { id: 'crop', label: '裁剪', icon: Crop },
     { id: 'add-to-chat', label: '加入对话', icon: MessageSquare },
@@ -1727,19 +1734,17 @@ const GenerationDetails = ({ obj, onClose, onAddGenerator, onReEdit, scale, posi
 
 const SelectionToolbar = ({ x, y, width, type, onAction, onShowDetails, isGenerated }: { x: number, y: number, width: number, type: 'image' | 'video', onAction: (id: string) => void, onShowDetails: () => void, isGenerated?: boolean }) => {
   const imageActions = [
-    { id: 'remove-bg', label: '抠图', icon: Scissors },
+    { id: 'edit-image', label: '改图', icon: Sparkles },
+    { id: 'outpaint', label: '扩图', icon: Maximize },
     { id: 'erase', label: '消除', icon: Eraser },
+    { id: 'hd-upscale', label: '高清放大', icon: ScanSearch },
     { id: 'layering', label: '图文分层', icon: LayersIcon },
-    { id: 'edit-text', label: '无痕改字', icon: Type },
+    { id: 'edit-text', label: '无痕改字', icon: Captions },
     { id: 'extract-subject', label: '提取主体', icon: Target },
     { id: 'crop', label: '裁剪', icon: Crop },
     { id: 'add-to-chat', label: '加入对话', icon: MessageSquare },
     { id: 'download', label: '下载', icon: Download },
   ];
-
-  if (isGenerated && type === 'image') {
-    imageActions.unshift({ id: 'details', label: '生成详情', icon: Info });
-  }
 
   const videoActions = [
     { id: 'upscale', label: '放大分辨率', icon: Maximize },
@@ -2282,9 +2287,13 @@ export const Canvas: React.FC<CanvasProps> = ({
   const handleAction = (actionId: string, targetId?: string) => {
     const id = targetId || contextMenu?.id || selectedIds[0];
     if (!id) return;
+    const currentObject = objects.find((obj) => obj.id === id);
+    if (!currentObject) return;
     const actionLabels: Record<string, string> = {
-      'remove-bg': '抠图',
+      'edit-image': '改图',
+      'outpaint': '扩图',
       'erase': '消除',
+      'hd-upscale': '高清放大',
       'layering': '图文分层',
       'edit-text': '无痕改字',
       'extract-subject': '提取主体',
@@ -2301,9 +2310,80 @@ export const Canvas: React.FC<CanvasProps> = ({
       return;
     }
 
+    if (actionId === 'add-to-chat') {
+      const label = currentObject.name || (currentObject.type === 'video' ? '视频' : '图片');
+      onReEdit(`基于当前${label}继续处理：`);
+      return;
+    }
+
+    if (actionId === 'outpaint') {
+      onObjectUpdate(id, {
+        x: currentObject.x - 24,
+        y: currentObject.y - 24,
+        width: currentObject.width + 48,
+        height: currentObject.height + 48,
+        isProcessing: true,
+        processingType: actionLabels[actionId],
+      });
+      window.setTimeout(() => {
+        onObjectUpdate(id, { isProcessing: false, processingType: undefined });
+      }, 1200);
+      return;
+    }
+
+    if (actionId === 'hd-upscale' || actionId === 'upscale') {
+      onObjectUpdate(id, {
+        width: Math.round(currentObject.width * 1.25),
+        height: Math.round(currentObject.height * 1.25),
+        isProcessing: true,
+        processingType: actionLabels[actionId],
+      });
+      window.setTimeout(() => {
+        onObjectUpdate(id, { isProcessing: false, processingType: undefined });
+      }, 1200);
+      return;
+    }
+
+    if (actionId === 'extract-subject') {
+      onObjectUpdate(id, {
+        stroke: '#5c5cfc',
+        isProcessing: true,
+        processingType: actionLabels[actionId],
+      });
+      window.setTimeout(() => {
+        onObjectUpdate(id, { isProcessing: false, processingType: undefined });
+      }, 1200);
+      return;
+    }
+
+    if (actionId === 'crop') {
+      onObjectUpdate(id, {
+        width: Math.max(80, Math.round(currentObject.width * 0.86)),
+        height: Math.max(80, Math.round(currentObject.height * 0.86)),
+        isProcessing: true,
+        processingType: actionLabels[actionId],
+      });
+      window.setTimeout(() => {
+        onObjectUpdate(id, { isProcessing: false, processingType: undefined });
+      }, 800);
+      return;
+    }
+
+    if (actionId === 'edit-text') {
+      onObjectUpdate(id, {
+        name: `${currentObject.name || '图片'}-改字版`,
+        isProcessing: true,
+        processingType: actionLabels[actionId],
+      });
+      window.setTimeout(() => {
+        onObjectUpdate(id, { isProcessing: false, processingType: undefined });
+      }, 1200);
+      return;
+    }
+
     // Mock processing
     onObjectUpdate(id, { isProcessing: true, processingType: actionLabels[actionId] });
-    setTimeout(() => {
+    window.setTimeout(() => {
       onObjectUpdate(id, { isProcessing: false });
     }, 2000);
   };

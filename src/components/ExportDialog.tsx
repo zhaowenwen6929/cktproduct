@@ -56,7 +56,7 @@ const modeOptions: Array<{
   label: string;
   description: string;
 }> = [
-  { value: 'source', label: '直接导出', description: '选 1 个直接下载，选多个自动打包下载' },
+  { value: 'source', label: '直接导出', description: '将已选内容逐一导出；选中多个时自动打包下载' },
   { value: 'snapshot', label: '合并导出', description: '将已选内容合为单图片导出，视频仅取首帧' },
 ];
 
