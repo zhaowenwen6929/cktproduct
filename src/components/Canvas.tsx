@@ -41,7 +41,8 @@ import {
   Expand,
   BadgeInfo,
   BetweenHorizontalStart,
-  Captions
+  Captions,
+  Blend
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -2057,6 +2058,157 @@ const MultiSelectionToolbar = ({
   );
 };
 
+const ImageFusionPromptPanel = ({
+  x,
+  y,
+  width,
+  value,
+  onChange,
+  onSubmit,
+  selectedCount,
+  disabled,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  selectedCount: number;
+  disabled?: boolean;
+}) => {
+  const panelWidth = Math.max(360, Math.min(520, width));
+
+  return (
+    <div
+      className="absolute z-[116] rounded-[24px] border border-gray-100 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.14)] animate-in fade-in slide-in-from-top-2 duration-200"
+      style={{ left: x + width / 2 - panelWidth / 2, top: y - 132, width: panelWidth }}
+    >
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="输入你的灵感"
+        className="h-24 w-full resize-none rounded-[18px] bg-[#f7f8fc] px-4 py-3 text-[15px] text-gray-900 outline-none ring-0 placeholder:text-[#a0a8bb]"
+      />
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={disabled || !value.trim()}
+          className={cn(
+            "inline-flex h-11 items-center rounded-2xl px-5 text-[14px] font-medium transition-all",
+            disabled || !value.trim()
+              ? "cursor-not-allowed bg-gray-100 text-gray-400"
+              : "bg-[#5c5cfc] text-white hover:bg-[#4f4ff5]"
+          )}
+        >
+          生成
+          <span className="ml-2 text-[12px] text-inherit/80">({selectedCount} 张)</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const WorkflowEmptyState = ({
+  onAddGenerator,
+}: {
+  onAddGenerator: (generatorType: 'image' | 'video' | 'text', state?: any) => void;
+}) => {
+  const cards: Array<{
+    title: string;
+    subtitle: string;
+    generatorType: 'image' | 'video' | 'text';
+    prompt: string;
+    gradient: string;
+    accent: string;
+  }> = [
+    {
+      title: '图转提示词',
+      subtitle: '拆解图片风格与描述结构',
+      generatorType: 'text',
+      prompt: '请基于上传图片生成一段可复用的高质量提示词。',
+      gradient: 'linear-gradient(135deg, #0f172a 0%, #164e63 55%, #334155 100%)',
+      accent: 'from-[#67e8f9]/35 to-transparent',
+    },
+    {
+      title: '图生视频',
+      subtitle: '让静态画面延展为动态镜头',
+      generatorType: 'video',
+      prompt: '基于当前图片延展生成一段具有镜头运动感的视频。',
+      gradient: 'linear-gradient(135deg, #1e3a8a 0%, #475569 45%, #020617 100%)',
+      accent: 'from-[#93c5fd]/35 to-transparent',
+    },
+    {
+      title: '多图融合',
+      subtitle: '组合多素材生成统一画面',
+      generatorType: 'image',
+      prompt: '将多张参考图的主体、风格与构图融合为一张完整新图。',
+      gradient: 'linear-gradient(135deg, #4c1d95 0%, #7c2d12 48%, #111827 100%)',
+      accent: 'from-[#fdba74]/35 to-transparent',
+    },
+    {
+      title: '探索工作流',
+      subtitle: '从示例节点开始搭建流程',
+      generatorType: 'image',
+      prompt: '从这里开始搭建一个新的多步骤创作工作流。',
+      gradient: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #7c3aed 100%)',
+      accent: 'from-[#c4b5fd]/35 to-transparent',
+    },
+  ];
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="pointer-events-auto flex max-w-[980px] flex-col items-center px-8 animate-in fade-in zoom-in-95 duration-700">
+        <div className="mb-8 flex items-center gap-4 text-sm text-[#98a2b3]">
+          <button
+            type="button"
+            onClick={() => onAddGenerator('image')}
+            className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-[13px] font-medium text-gray-700 shadow-sm transition-colors hover:border-[#cfd7ff] hover:text-[#5c5cfc]"
+          >
+            添加节点
+          </button>
+          <span className="text-[14px]">
+            右键添加或拖拽图片，或是从以下案例入手
+          </span>
+        </div>
+
+        <div className="grid w-full grid-cols-4 gap-4">
+          {cards.map((card, index) => (
+            <button
+              key={card.title}
+              type="button"
+              onClick={() =>
+                onAddGenerator(card.generatorType, {
+                  prompt: card.prompt,
+                })
+              }
+              className="group relative h-[82px] overflow-hidden rounded-[18px] p-0 text-left shadow-[0_10px_40px_rgba(15,23,42,0.12)] transition-all hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(15,23,42,0.18)]"
+              style={{ background: card.gradient }}
+            >
+              <div className={cn("absolute inset-0 bg-gradient-to-r opacity-90", card.accent)} />
+              <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-3">
+                <div className="h-14 w-10 rounded-[10px] border border-white/20 bg-white/15 backdrop-blur-sm" />
+                <div className="h-12 w-12 rounded-[12px] border border-white/20 bg-white/20 backdrop-blur-sm" />
+                <div
+                  className={cn(
+                    "h-14 w-9 rounded-[10px] border border-white/15 backdrop-blur-sm",
+                    index === 0 ? "bg-black/35" : "bg-white/12"
+                  )}
+                />
+              </div>
+              <div className="relative z-10 flex h-full flex-col justify-center px-5">
+                <div className="text-[14px] font-semibold tracking-[0.01em] text-white">{card.title}</div>
+                <div className="mt-1 text-[11px] text-white/70">{card.subtitle}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Canvas: React.FC<CanvasProps> = ({ 
   objects, 
   workflowLinks,
@@ -2094,6 +2246,10 @@ export const Canvas: React.FC<CanvasProps> = ({
     side: 'left' | 'right';
     x: number;
     y: number;
+  } | null>(null);
+  const [imageFusionState, setImageFusionState] = useState<{
+    objectIds: string[];
+    prompt: string;
   } | null>(null);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isStageDragging, setIsStageDragging] = useState(false);
@@ -2241,6 +2397,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     selectedIds.length === 1 && selectedObject?.type === 'text' && !selectedObject.hidden
       ? selectedObject
       : null;
+  const selectedFusionImages = selectedVisibleObjects.filter(
+    (obj) => obj.type === 'image' && Boolean(obj.content)
+  );
   const selectedGeneratorObject =
     selectedObject?.type === 'image-generator' && !selectedObject.hidden ? selectedObject : null;
   const selectedWorkflowObject =
@@ -2279,6 +2438,16 @@ export const Canvas: React.FC<CanvasProps> = ({
   const multiSelectionBounds =
     selectedVisibleObjects.length > 1
       ? getScreenSelectionBounds(selectedVisibleObjects, scale, position)
+      : null;
+  const imageFusionBounds =
+    imageFusionState
+      ? getScreenSelectionBounds(
+          imageFusionState.objectIds
+            .map((id) => objects.find((obj) => obj.id === id))
+            .filter((obj): obj is CanvasObject => Boolean(obj && !obj.hidden)),
+          scale,
+          position
+        )
       : null;
   const workflowMultiSelectableObjects = selectedVisibleObjects.filter(
     (item) => item.type === 'image-generator'
@@ -2425,8 +2594,43 @@ export const Canvas: React.FC<CanvasProps> = ({
     onExportSelection(selectedVisibleObjects.map((item) => item.id));
   };
 
+  const handleOpenImageFusion = () => {
+    if (selectedFusionImages.length < 2) return;
+    setImageFusionState({
+      objectIds: selectedFusionImages.map((item) => item.id),
+      prompt: '',
+    });
+  };
+
+  const handleSubmitImageFusion = () => {
+    if (!imageFusionState) return;
+    const fusionObjects = imageFusionState.objectIds
+      .map((id) => objects.find((obj) => obj.id === id))
+      .filter((obj): obj is CanvasObject => Boolean(obj && obj.type === 'image' && obj.content));
+    if (fusionObjects.length < 2) return;
+
+    onAddGenerator('image', {
+      prompt: imageFusionState.prompt.trim(),
+      refImages: fusionObjects.map((obj) => obj.content as string),
+      status: 'idle',
+      ratio: '1:1',
+      model: 'Seedream 4.0',
+    });
+    setImageFusionState(null);
+  };
+
   const multiSelectionActions = multiSelectionBounds
     ? [
+        ...(selectedFusionImages.length >= 2
+          ? [
+              {
+                id: 'image-fusion',
+                label: '图片融合',
+                icon: Blend,
+                onClick: handleOpenImageFusion,
+              },
+            ]
+          : []),
         ...(appMode === 'workflow' && workflowMultiSelectableObjects.length >= 2
           ? [
               {
@@ -2475,6 +2679,23 @@ export const Canvas: React.FC<CanvasProps> = ({
         },
       ]
     : [];
+
+  useEffect(() => {
+    if (!imageFusionState) return;
+
+    const validIds = imageFusionState.objectIds.filter((id) =>
+      objects.some((obj) => obj.id === id && !obj.hidden && obj.type === 'image' && obj.content)
+    );
+
+    if (validIds.length < 2) {
+      setImageFusionState(null);
+      return;
+    }
+
+    if (validIds.length !== imageFusionState.objectIds.length) {
+      setImageFusionState((prev) => (prev ? { ...prev, objectIds: validIds } : prev));
+    }
+  }, [imageFusionState, objects]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -2864,24 +3085,40 @@ export const Canvas: React.FC<CanvasProps> = ({
 
           {/* Render Images on top */}
           {objects.filter(obj => obj.type === 'image' && !obj.hidden).map((obj) => (
-            <URLImage
-              key={obj.id}
-              id={obj.id}
-              src={obj.content}
-              x={obj.x}
-              y={obj.y}
-              width={obj.width}
-              height={obj.height}
-              isSelected={selectedIds.includes(obj.id)}
-              onSelect={onSelect}
-              onUpdate={onObjectUpdate}
-              mode={interactionMode}
-              onContextMenu={(x: number, y: number, type: string, id: string) => setContextMenu({ x, y, type: type as any, id })}
-              isProcessing={obj.isProcessing}
-              processingType={obj.processingType}
-              locked={obj.locked}
-              onCenterInView={centerObjectInView}
-            />
+            <React.Fragment key={obj.id}>
+              <URLImage
+                id={obj.id}
+                src={obj.content}
+                x={obj.x}
+                y={obj.y}
+                width={obj.width}
+                height={obj.height}
+                isSelected={selectedIds.includes(obj.id)}
+                onSelect={onSelect}
+                onUpdate={onObjectUpdate}
+                mode={interactionMode}
+                onContextMenu={(x: number, y: number, type: string, id: string) => setContextMenu({ x, y, type: type as any, id })}
+                isProcessing={obj.isProcessing}
+                processingType={obj.processingType}
+                locked={obj.locked}
+                onCenterInView={centerObjectInView}
+              />
+              {imageFusionState && imageFusionState.objectIds.includes(obj.id) && (
+                <Group x={obj.x + 8} y={obj.y + 8}>
+                  <Rect width={28} height={24} fill="rgba(255,255,255,0.92)" cornerRadius={8} />
+                  <Text
+                    width={28}
+                    height={24}
+                    text={`#${imageFusionState.objectIds.indexOf(obj.id) + 1}`}
+                    align="center"
+                    verticalAlign="middle"
+                    fontSize={12}
+                    fontStyle="bold"
+                    fill="#6b7280"
+                  />
+                </Group>
+              )}
+            </React.Fragment>
           ))}
 
           {/* Render Videos */}
@@ -3004,35 +3241,38 @@ export const Canvas: React.FC<CanvasProps> = ({
         />
       )}
 
-      {objects.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="max-w-md w-full p-8 text-center space-y-6 animate-in fade-in zoom-in-95 duration-1000">
-            <div className="relative inline-block">
-              <div className="w-24 h-24 bg-white rounded-[32px] shadow-xl flex items-center justify-center border border-gray-100 rotate-[-6deg]">
-                <ImageIcon size={40} className="text-[#5c5cfc]" />
+      {objects.length === 0 &&
+        (appMode === 'workflow' ? (
+          <WorkflowEmptyState onAddGenerator={onAddGenerator} />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="max-w-md w-full p-8 text-center space-y-6 animate-in fade-in zoom-in-95 duration-1000">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 bg-white rounded-[32px] shadow-xl flex items-center justify-center border border-gray-100 rotate-[-6deg]">
+                  <ImageIcon size={40} className="text-[#5c5cfc]" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-12 h-12 bg-[#5c5cfc] rounded-2xl shadow-lg flex items-center justify-center rotate-[12deg]">
+                  <Sparkles size={24} className="text-white" />
+                </div>
               </div>
-              <div className="absolute -top-2 -right-2 w-12 h-12 bg-[#5c5cfc] rounded-2xl shadow-lg flex items-center justify-center rotate-[12deg]">
-                <Sparkles size={24} className="text-white" />
+              
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-gray-900">开启你的创意之旅</h2>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  你可以通过左侧工具栏上传图片，<br />
+                  或者在右侧对话框中描述你的想法，让我为你生成。
+                </p>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-gray-900">开启你的创意之旅</h2>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                你可以通过左侧工具栏上传图片，<br />
-                或者在右侧对话框中描述你的想法，让我为你生成。
-              </p>
-            </div>
 
-            <div className="flex items-center justify-center gap-4 pt-4">
-              <div className="flex items-center gap-2 text-xs font-medium text-gray-400 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-50">
-                <div className="w-2 h-2 bg-green-400 rounded-full" />
-                AI 助手已就绪
+              <div className="flex items-center justify-center gap-4 pt-4">
+                <div className="flex items-center gap-2 text-xs font-medium text-gray-400 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-50">
+                  <div className="w-2 h-2 bg-green-400 rounded-full" />
+                  AI 助手已就绪
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        ))}
 
       {contextMenu && (
         <ContextMenu 
@@ -3073,6 +3313,20 @@ export const Canvas: React.FC<CanvasProps> = ({
           y={multiSelectionBounds.top}
           width={multiSelectionBounds.right - multiSelectionBounds.left}
           actions={multiSelectionActions}
+        />
+      )}
+
+      {imageFusionState && imageFusionBounds && (
+        <ImageFusionPromptPanel
+          x={imageFusionBounds.left}
+          y={imageFusionBounds.top}
+          width={imageFusionBounds.right - imageFusionBounds.left}
+          value={imageFusionState.prompt}
+          onChange={(value) =>
+            setImageFusionState((prev) => (prev ? { ...prev, prompt: value } : prev))
+          }
+          onSubmit={handleSubmitImageFusion}
+          selectedCount={imageFusionState.objectIds.length}
         />
       )}
 
