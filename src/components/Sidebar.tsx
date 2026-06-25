@@ -133,6 +133,209 @@ const deriveDesignTitle = (prompt: string) => {
   return title.slice(0, 10) || '设计任务';
 };
 
+type AnnotationBadgeProps = {
+  id: number;
+  moduleName: string;
+  detail: React.ReactNode;
+  anchorRef: React.RefObject<HTMLElement | null>;
+  portalRoot: HTMLElement | null;
+  positionCache?: { x: number; y: number };
+  badgeOffset?: { top: number; right: number };
+};
+
+const AnnotationBadge = ({
+  id,
+  moduleName,
+  detail,
+  anchorRef,
+  portalRoot,
+  positionCache,
+  badgeOffset = { top: -8, right: -4 },
+}: AnnotationBadgeProps) => {
+  const [open, setOpen] = useState(false);
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(positionCache ?? null);
+  const [dragState, setDragState] = useState<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
+  const [layout, setLayout] = useState<{ badgeX: number; badgeY: number; tooltipX: number; tooltipY: number } | null>(null);
+
+  useEffect(() => {
+    if (!portalRoot || !anchorRef.current) return;
+
+    const updateLayout = () => {
+      if (!anchorRef.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
+      const badgeX = rect.right + badgeOffset.right;
+      const badgeY = rect.top + badgeOffset.top;
+      const defaultTooltipX = badgeX - 450;
+      const defaultTooltipY = badgeY + 22;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const tooltipWidth = 450;
+      const tooltipHeight = 260;
+      let tooltipX = dragPosition?.x ?? defaultTooltipX;
+      let tooltipY = dragPosition?.y ?? defaultTooltipY;
+
+      if (!dragPosition) {
+        if (tooltipX < 8) tooltipX = 8;
+        if (tooltipX + tooltipWidth > viewportWidth - 8) tooltipX = Math.max(8, viewportWidth - tooltipWidth - 8);
+        if (tooltipY + tooltipHeight > viewportHeight - 8) {
+          tooltipY = Math.max(8, badgeY - tooltipHeight - 8);
+        }
+      }
+
+      setLayout({ badgeX, badgeY, tooltipX, tooltipY });
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    window.addEventListener('scroll', updateLayout, true);
+    return () => {
+      window.removeEventListener('resize', updateLayout);
+      window.removeEventListener('scroll', updateLayout, true);
+    };
+  }, [anchorRef, portalRoot, badgeOffset.right, badgeOffset.top, dragPosition]);
+
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handleMove = (event: MouseEvent) => {
+      event.preventDefault();
+      setDragPosition({
+        x: dragState.originX + event.clientX - dragState.startX,
+        y: dragState.originY + event.clientY - dragState.startY,
+      });
+    };
+
+    const handleUp = () => setDragState(null);
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, [dragState]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleMouseDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(`[data-annotation-root="${id}"]`)) {
+        return;
+      }
+      event.stopPropagation();
+    };
+
+    window.addEventListener('mousedown', handleMouseDown, true);
+    return () => window.removeEventListener('mousedown', handleMouseDown, true);
+  }, [id, open]);
+
+  if (!portalRoot || !layout) return null;
+
+  return createPortal(
+    <>
+      <button
+        type="button"
+        onMouseEnter={() => setOpen(true)}
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen(true);
+        }}
+        style={{
+          position: 'fixed',
+          left: layout.badgeX,
+          top: layout.badgeY,
+          display: 'inline-block',
+          verticalAlign: 'top',
+          background: 'rgb(250, 173, 20)',
+          color: '#fff',
+          fontSize: '10px',
+          fontWeight: 700,
+          lineHeight: '14px',
+          padding: '0 4px',
+          borderRadius: '2px',
+          border: 'none',
+          cursor: 'pointer',
+          zIndex: 9999,
+        }}
+      >
+        {id}
+      </button>
+      {open && (
+        <div
+          data-annotation-root={id}
+          style={{
+            position: 'fixed',
+            left: layout.tooltipX,
+            top: layout.tooltipY,
+            width: 450,
+            background: '#f0efef',
+            borderRadius: 4,
+            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.18)',
+            zIndex: 9999,
+          }}
+          onMouseDown={(event) => {
+            event.stopPropagation();
+          }}
+          onWheel={(event) => event.stopPropagation()}
+        >
+          <div
+            style={{ cursor: 'move', padding: '12px 12px 0 12px' }}
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setDragState({
+                startX: event.clientX,
+                startY: event.clientY,
+                originX: layout.tooltipX,
+                originY: layout.tooltipY,
+              });
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{moduleName}</div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setOpen(false);
+                }}
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#6b7280', fontSize: 12 }}
+              >
+                X
+              </button>
+            </div>
+          </div>
+          <div style={{ padding: '8px 12px 12px 12px', fontSize: 12, lineHeight: 1.6, color: '#374151' }}>{detail}</div>
+        </div>
+      )}
+    </>,
+    portalRoot
+  );
+};
+
+const SlowHintAnnotation = ({
+  anchorRef,
+  portalRoot,
+}: {
+  anchorRef: React.RefObject<HTMLDivElement | null>;
+  portalRoot: HTMLElement | null;
+}) => (
+  <AnnotationBadge
+    id={1}
+    moduleName="生成中慢提醒"
+    anchorRef={anchorRef}
+    portalRoot={portalRoot}
+    positionCache={{ x: 0, y: 0 }}
+    detail={<>
+      <div><strong>显示样式：</strong>生成阶段超过 5 秒未返回结果时，在生成面板内展示慢提醒文案；采用逐字展示效果。</div>
+      <div className="mt-2"><strong>交互与排序：</strong>仅在 `generating` 阶段显示；若预览结果返回或用户开启完成提醒，则隐藏；不提供手动关闭按钮。</div>
+      <div className="mt-2"><strong>业务定义：</strong>固定阈值为 5 秒，文案用于解释生成变慢原因并引导继续等待。</div>
+      <div className="mt-2"><strong>备注：</strong>对应实现位于 `src/components/Sidebar.tsx` 的 `GENERATING_HINT_DELAY_MS`、`GENERATING_HINT_TEXT`、`showSlowHintCard`。</div>
+    </>}
+  />
+);
+
 const getGenerationFailureMessage = (error: unknown, refundedCredits: number) => {
   const prefix = `任务执行失败，已为您返还 ${refundedCredits} 积分。`;
 
@@ -287,6 +490,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const modelPreferenceRef = useRef<HTMLDivElement>(null);
   const notificationScopeRef = useRef<HTMLDivElement>(null);
+  const slowHintAnnotationRef = useRef<HTMLDivElement>(null);
 
   const brandGroups = debugNoBrandData ? [] : BRAND_GROUPS;
 
@@ -1737,7 +1941,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                   }}
                   className="overflow-hidden"
                 >
-                  <div ref={notificationScopeRef} className="rounded-[14px] bg-white/90 px-3 py-2.5 shadow-[0_10px_24px_rgba(130,143,255,0.08)]">
+                  <div ref={notificationScopeRef} className="relative rounded-[14px] bg-white/90 px-3 py-2.5 shadow-[0_10px_24px_rgba(130,143,255,0.08)]">
+                    <div ref={slowHintAnnotationRef} className="absolute right-0 top-0 h-0 w-0" aria-hidden="true" />
                     <div className="text-[12px] leading-6 text-[#5f6887] min-h-[48px]">
                       {typedGeneratingHint}
                     </div>
@@ -2264,6 +2469,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
         ? createPortal(
             <>
               <AnimatePresence>
+                {showSlowHintCard && (
+                  <SlowHintAnnotation anchorRef={slowHintAnnotationRef} portalRoot={portalRoot} />
+                )}
                 {hoverPreview && (
                   <motion.div
                     initial={{ opacity: 0, y: 8, scale: 0.96 }}

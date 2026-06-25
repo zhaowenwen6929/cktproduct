@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, ChevronDown, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -32,6 +33,116 @@ interface ExportDialogProps {
   onClose: () => void;
   onSubmit: (payload: ExportSubmitPayload) => void;
 }
+
+
+type AnnotationBadgeProps = {
+  id: number;
+  moduleName: string;
+  detail: React.ReactNode;
+  anchorRef: React.RefObject<HTMLElement | null>;
+  portalRoot: HTMLElement | null;
+};
+
+const AnnotationBadge = ({ id, moduleName, detail, anchorRef, portalRoot }: AnnotationBadgeProps) => {
+  const [open, setOpen] = useState(false);
+  const [layout, setLayout] = useState<{ badgeX: number; badgeY: number; tooltipX: number; tooltipY: number } | null>(null);
+
+  useEffect(() => {
+    if (!portalRoot || !anchorRef.current) return;
+
+    const updateLayout = () => {
+      if (!anchorRef.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
+      const badgeX = rect.right - 4;
+      const badgeY = rect.top - 8;
+      let tooltipX = badgeX - 450;
+      let tooltipY = badgeY + 22;
+
+      if (tooltipX < 8) tooltipX = 8;
+      if (tooltipX + 450 > window.innerWidth - 8) tooltipX = Math.max(8, window.innerWidth - 450 - 8);
+      if (tooltipY + 260 > window.innerHeight - 8) tooltipY = Math.max(8, badgeY - 260 - 8);
+
+      setLayout({ badgeX, badgeY, tooltipX, tooltipY });
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    window.addEventListener('scroll', updateLayout, true);
+    return () => {
+      window.removeEventListener('resize', updateLayout);
+      window.removeEventListener('scroll', updateLayout, true);
+    };
+  }, [anchorRef, portalRoot]);
+
+  if (!portalRoot || !layout) return null;
+
+  return createPortal(
+    <>
+      <button
+        type="button"
+        onMouseEnter={() => setOpen(true)}
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen(true);
+        }}
+        style={{
+          position: 'fixed',
+          left: layout.badgeX,
+          top: layout.badgeY,
+          display: 'inline-block',
+          verticalAlign: 'top',
+          background: 'rgb(250, 173, 20)',
+          color: '#fff',
+          fontSize: '10px',
+          fontWeight: 700,
+          lineHeight: '14px',
+          padding: '0 4px',
+          borderRadius: '2px',
+          border: 'none',
+          cursor: 'pointer',
+          zIndex: 9999,
+        }}
+      >
+        {id}
+      </button>
+      {open && (
+        <div
+          data-annotation-root={id}
+          style={{
+            position: 'fixed',
+            left: layout.tooltipX,
+            top: layout.tooltipY,
+            width: 450,
+            background: '#f0efef',
+            borderRadius: 4,
+            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.18)',
+            zIndex: 9999,
+          }}
+          onMouseDown={(event) => event.stopPropagation()}
+          onWheel={(event) => event.stopPropagation()}
+        >
+          <div style={{ padding: '12px 12px 0 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{moduleName}</div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setOpen(false);
+                }}
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#6b7280', fontSize: 12 }}
+              >
+                X
+              </button>
+            </div>
+          </div>
+          <div style={{ padding: '8px 12px 12px 12px', fontSize: 12, lineHeight: 1.6, color: '#374151' }}>{detail}</div>
+        </div>
+      )}
+    </>,
+    portalRoot
+  );
+};
 
 const formatOptions: Array<{
   value: ExportFormat;
@@ -269,6 +380,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const [mode, setMode] = useState<ExportMode>('source');
   const [format, setFormat] = useState<ExportFormat>(defaultFormat);
   const [scale, setScale] = useState<ExportScale>(defaultScale);
@@ -278,6 +390,14 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
   const [showRangePanel, setShowRangePanel] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const rangeRef = useRef<HTMLDivElement>(null);
+  const modeRef = useRef<HTMLDivElement>(null);
+  const formatRef = useRef<HTMLDivElement>(null);
+  const rangeBlockRef = useRef<HTMLDivElement>(null);
+  const submitRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setPortalRoot(document.body);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -338,7 +458,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
         </div>
 
         <div className="space-y-5 px-6 pb-3">
-          <div className="space-y-2">
+          <div className="relative space-y-2" ref={modeRef}>
             <div className="text-[14px] font-medium text-gray-800">导出方式</div>
             <Dropdown
               value={mode}
@@ -351,9 +471,17 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 </div>
               )}
             />
+            {portalRoot && (
+              <AnnotationBadge id={1} moduleName="导出方式" anchorRef={modeRef} portalRoot={portalRoot} detail={<>
+                <div><strong>显示样式：</strong>下拉单选项，默认显示“直接导出”，右侧展开后可切换方式。</div>
+                <div style={{ marginTop: 8 }}><strong>交互与排序：</strong>切换到“直接导出”时显示图片/视频格式；切换到“合并导出”时显示图片格式与倍率，视频按首帧参与合成。</div>
+                <div style={{ marginTop: 8 }}><strong>业务定义：</strong>用于区分逐个导出与合并导出两类下载路径，解决多素材拆分导出与视频导出可见性问题。</div>
+                <div style={{ marginTop: 8 }}><strong>备注：</strong>对应 `source` / `snapshot` 两种导出提交模式。详细规则、埋点与待确认项见 /Users/zhaowenwen/Cursor/创客贴-无限画布/docs/export-dialog-prd.md。</div>
+              </>} />
+            )}
           </div>
 
-          <div className="space-y-2">
+          <div className="relative space-y-2" ref={formatRef}>
             <div className="text-[14px] font-medium text-gray-800">
               {'导出格式'}
             </div>
@@ -363,7 +491,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                   <Dropdown
                     value={format}
                     options={formatOptions}
-                    onChange={setFormat}
+                    onChange={(value) => setFormat(value as ExportFormat)}
                     renderOption={(option) => (
                       <div>
                         <div className="text-[15px] text-gray-900">{option.label}</div>
@@ -371,7 +499,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                       </div>
                     )}
                   />
-                  <Dropdown value={scale} options={scaleOptions} onChange={setScale} />
+                  <Dropdown value={scale} options={scaleOptions} onChange={(value) => setScale(value as ExportScale)} />
                 </div>
                 <div className="text-xs leading-5 text-[#95a0bc]">
                   {formatOptions.find((option) => option.value === format)?.description}
@@ -394,9 +522,17 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 />
               </div>
             )}
+            {portalRoot && (
+              <AnnotationBadge id={2} moduleName="导出格式" anchorRef={formatRef} portalRoot={portalRoot} detail={<>
+                <div><strong>显示样式：</strong>直接导出下，导出格式区按已选内容类型动态展示：仅包含非视频内容时只显示图片格式；同时包含非视频内容与视频内容时同时显示图片格式和视频格式；仅包含视频内容时只显示视频格式。合并导出下仅显示图片格式与倍率选择。</div>
+                <div style={{ marginTop: 8 }}><strong>交互与排序：</strong>直接导出时，图片格式支持 PNG/JPG，视频格式支持 MP4、首帧 PNG、首帧 JPG；合并导出时视频不单独输出文件，仅以当前首帧参与合成并输出单张图片。</div>
+                <div style={{ marginTop: 8 }}><strong>业务定义：</strong>补足画布已支持视频后，导出入口需要同步表达“视频可导出”的结果。</div>
+                <div style={{ marginTop: 8 }}><strong>备注：</strong>图片格式说明与视频格式说明分别来自独立下拉项。详细规则、埋点与待确认项见 /Users/zhaowenwen/Cursor/创客贴-无限画布/docs/export-dialog-prd.md。</div>
+              </>} />
+            )}
           </div>
 
-          <div className="space-y-2">
+          <div className="relative space-y-2" ref={rangeBlockRef}>
             <div className="text-[14px] font-medium text-gray-800">导出范围</div>
             <div className="relative" ref={rangeRef}>
               <button
@@ -482,10 +618,18 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 </div>
               )}
             </div>
+            {portalRoot && (
+              <AnnotationBadge id={3} moduleName="导出范围" anchorRef={rangeBlockRef} portalRoot={portalRoot} detail={<>
+                <div><strong>显示样式：</strong>以“已选内容 x/y”展示当前勾选数量，支持全选、单选和取消选择。</div>
+                <div style={{ marginTop: 8 }}><strong>交互与排序：</strong>展开后可勾选内容项，关闭面板后保留已选状态；列表展示名称、尺寸和缩略图。</div>
+                <div style={{ marginTop: 8 }}><strong>业务定义：</strong>用于决定最终下载或合成的内容集合，也是批量打包 ZIP 的输入范围。</div>
+                <div style={{ marginTop: 8 }}><strong>备注：</strong>隐藏内容不进入导出范围。</div>
+              </>} />
+            )}
           </div>
         </div>
 
-        <div className="px-6 pb-4 pt-2">
+        <div className="relative px-6 pb-4 pt-2" ref={submitRef}>
           <button
             type="button"
             disabled={checkedIds.length === 0}
@@ -507,6 +651,14 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
               《会员授权许可协议》
             </button>
           </div>
+          {portalRoot && (
+            <AnnotationBadge id={4} moduleName="下载动作" anchorRef={submitRef} portalRoot={portalRoot} detail={<>
+              <div><strong>显示样式：</strong>底部主按钮，直接导出时显示“开始下载”，合并导出时显示“下载”。</div>
+              <div style={{ marginTop: 8 }}><strong>交互与排序：</strong>内容为空时按钮置灰不可点；点击后触发对应导出模式的下载逻辑。</div>
+              <div style={{ marginTop: 8 }}><strong>业务定义：</strong>承接最终导出结果，单文件直接下载，多文件自动打包 ZIP 后下载。</div>
+              <div style={{ marginTop: 8 }}><strong>备注：</strong>按钮下方的协议文案仅为下载前提示，不影响导出逻辑。详细规则、埋点与待确认项见 /Users/zhaowenwen/Cursor/创客贴-无限画布/docs/export-dialog-prd.md。</div>
+            </>} />
+          )}
         </div>
     </div>
   );
