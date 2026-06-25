@@ -193,6 +193,8 @@ const videoFormatDescriptions: Record<VideoExportFormat, string> = {
   'frame-jpg': '导出视频首帧为 JPG，适合轻量分享',
 };
 
+const EXPORT_PRD_URL = 'https://github.com/zhaowenwen6929/cktproduct/blob/main/docs/export-dialog-prd.md';
+
 const Dropdown = <T extends string | number>({
   value,
   options,
@@ -476,7 +478,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 <div><strong>显示样式：</strong>下拉单选项，默认显示“直接导出”，右侧展开后可切换方式。</div>
                 <div style={{ marginTop: 8 }}><strong>交互与排序：</strong>切换到“直接导出”时显示图片/视频格式；切换到“合并导出”时显示图片格式与倍率，视频按首帧参与合成。</div>
                 <div style={{ marginTop: 8 }}><strong>业务定义：</strong>用于区分逐个导出与合并导出两类下载路径，解决多素材拆分导出与视频导出可见性问题。</div>
-                <div style={{ marginTop: 8 }}><strong>备注：</strong>对应 `source` / `snapshot` 两种导出提交模式。详细规则、埋点与待确认项见 /Users/zhaowenwen/Cursor/创客贴-无限画布/docs/export-dialog-prd.md。</div>
+                <div style={{ marginTop: 8 }}><strong>备注：</strong>对应 `source` / `snapshot` 两种导出提交模式。详细规则、埋点与待确认项见 <a href={EXPORT_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
               </>} />
             )}
           </div>
@@ -527,7 +529,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 <div><strong>显示样式：</strong>直接导出下，导出格式区按已选内容类型动态展示：仅包含非视频内容时只显示图片格式；同时包含非视频内容与视频内容时同时显示图片格式和视频格式；仅包含视频内容时只显示视频格式。合并导出下仅显示图片格式与倍率选择。</div>
                 <div style={{ marginTop: 8 }}><strong>交互与排序：</strong>直接导出时，图片格式支持 PNG/JPG，视频格式支持 MP4、首帧 PNG、首帧 JPG；合并导出时视频不单独输出文件，仅以当前首帧参与合成并输出单张图片。</div>
                 <div style={{ marginTop: 8 }}><strong>业务定义：</strong>补足画布已支持视频后，导出入口需要同步表达“视频可导出”的结果。</div>
-                <div style={{ marginTop: 8 }}><strong>备注：</strong>图片格式说明与视频格式说明分别来自独立下拉项。详细规则、埋点与待确认项见 /Users/zhaowenwen/Cursor/创客贴-无限画布/docs/export-dialog-prd.md。</div>
+                <div style={{ marginTop: 8 }}><strong>备注：</strong>图片格式说明与视频格式说明分别来自独立下拉项。详细规则、埋点与待确认项见 <a href={EXPORT_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
               </>} />
             )}
           </div>
@@ -656,7 +658,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
               <div><strong>显示样式：</strong>底部主按钮，直接导出时显示“开始下载”，合并导出时显示“下载”。</div>
               <div style={{ marginTop: 8 }}><strong>交互与排序：</strong>内容为空时按钮置灰不可点；点击后触发对应导出模式的下载逻辑。</div>
               <div style={{ marginTop: 8 }}><strong>业务定义：</strong>承接最终导出结果，单文件直接下载，多文件自动打包 ZIP 后下载。</div>
-              <div style={{ marginTop: 8 }}><strong>备注：</strong>按钮下方的协议文案仅为下载前提示，不影响导出逻辑。详细规则、埋点与待确认项见 /Users/zhaowenwen/Cursor/创客贴-无限画布/docs/export-dialog-prd.md。</div>
+              <div style={{ marginTop: 8 }}><strong>备注：</strong>按钮下方的协议文案仅为下载前提示，不影响导出逻辑。详细规则、埋点与待确认项见 <a href={EXPORT_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
             </>} />
           )}
         </div>
