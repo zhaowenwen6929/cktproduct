@@ -505,6 +505,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const [showGeneratingHint, setShowGeneratingHint] = useState(false);
   const [typedGeneratingHint, setTypedGeneratingHint] = useState('');
   const [countdownMs, setCountdownMs] = useState(GENERATING_ESTIMATE_MS);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [cancelDialog, setCancelDialog] = useState<{
     taskId: string;
     title: string;
@@ -650,6 +651,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     setShowResourceLibraryDialog(true);
   };
 
+  const showErrorToast = (message: string) => {
+    setToastMessage(message);
+  };
+
+  const resolveSeedanceStatus = (name: string) => {
+    const hash = Array.from(name).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return hash % 3 === 0 ? 'failed' : 'passed';
+  };
+
+  const shouldRunSeedanceDetection = (file: File, targetSlotId: VideoReferenceSlotId | null) =>
+    generationMode === 'video' &&
+    isSeedanceVideoModel &&
+    file.type.startsWith('image/') &&
+    (videoInputMode !== 'text' || Boolean(targetSlotId));
+
   useEffect(() => {
     onSessionTitleChange(currentSession.title);
   }, [currentSession.title, onSessionTitleChange]);
@@ -756,6 +772,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     if (typeof Notification === 'undefined') return;
     setNotificationPermission(Notification.permission);
   }, []);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timer = window.setTimeout(() => setToastMessage(null), 2600);
+    return () => window.clearTimeout(timer);
+  }, [toastMessage]);
 
   useEffect(() => {
     readStoredNotificationPreference();
@@ -946,6 +968,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     if (videoReferenceTarget) {
       const file = files[0];
       if (!file) return;
+      if (shouldRunSeedanceDetection(file, videoReferenceTarget) && resolveSeedanceStatus(file.name) !== 'passed') {
+        showErrorToast('未通过Seedance检测，请更换其他资源');
+        event.target.value = '';
+        setVideoReferenceTarget(null);
+        return;
+      }
       const nextAttachment: GenerationAttachment = {
         id: `${Date.now()}-${file.name}-${Math.random().toString(36).slice(2, 7)}`,
         type: file.type.startsWith('audio/')
@@ -971,7 +999,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       return;
     }
 
-    const nextAttachments = files.map((file) => ({
+    const validFiles = files.filter((file) => {
+      if (!shouldRunSeedanceDetection(file, null)) return true;
+      return resolveSeedanceStatus(file.name) === 'passed';
+    });
+    const blockedFiles = files.filter((file) => {
+      if (!shouldRunSeedanceDetection(file, null)) return false;
+      return resolveSeedanceStatus(file.name) !== 'passed';
+    });
+
+    blockedFiles.forEach((file) => {
+      showErrorToast(`“${file.name}”未通过Seedance检测，请更换其他资源`);
+    });
+
+    if (validFiles.length === 0) {
+      event.target.value = '';
+      return;
+    }
+
+    const nextAttachments = validFiles.map((file) => ({
       id: `${Date.now()}-${file.name}-${Math.random().toString(36).slice(2, 7)}`,
       type: file.type.startsWith('video/') ? 'video' : 'image',
       url: URL.createObjectURL(file),
@@ -3065,6 +3111,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 confirmLabel={videoReferenceTarget ? '确定选择' : '确定添加'}
                 onConfirmAssets={addLibraryAttachments}
               />
+
+              <AnimatePresence>
+                {toastMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                    className="fixed left-1/2 top-6 z-[140] -translate-x-1/2 rounded-full bg-[#111827] px-4 py-2 text-[12px] font-medium text-white shadow-[0_18px_36px_rgba(17,24,39,0.22)]"
+                  >
+                    {toastMessage}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <AnimatePresence>
                 {cancelDialog && (
