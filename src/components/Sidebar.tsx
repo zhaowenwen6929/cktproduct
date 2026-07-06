@@ -476,7 +476,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [modelPreference, setModelPreference] = useState<ImageModelId>('auto');
   const [showModelPreferenceDialog, setShowModelPreferenceDialog] = useState(false);
+  const [modelPreferenceTab, setModelPreferenceTab] = useState<'image' | 'video'>('image');
   const [isModelPreferenceEnabled, setIsModelPreferenceEnabled] = useState(false);
+  const [agentImageModelPreferences, setAgentImageModelPreferences] = useState<ImageModelId[]>(['auto']);
+  const [agentVideoModelPreferences, setAgentVideoModelPreferences] = useState<VideoModelId[]>(['seedance-20']);
   const [imageModelSettings, setImageModelSettings] = useState({
     ratio: '3:4',
   });
@@ -531,6 +534,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const assetMenuRef = useRef<HTMLDivElement>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const modelPreferenceRef = useRef<HTMLDivElement>(null);
+  const modelPreferenceTriggerRef = useRef<HTMLButtonElement>(null);
+  const modelPreferencePanelRef = useRef<HTMLDivElement>(null);
   const notificationScopeRef = useRef<HTMLDivElement>(null);
   const slowHintAnnotationRef = useRef<HTMLDivElement>(null);
   const cancelActionAnnotationRef = useRef<HTMLDivElement>(null);
@@ -655,6 +660,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const currentImageParameterSummary = [
     imageModelSettings.ratio,
   ].filter(Boolean).join(' / ');
+  const currentAgentModelSummary = `图片 ${agentImageModelPreferences.length} / 视频 ${agentVideoModelPreferences.length}`;
   const isVideoParameterPreferenceActive = generationMode === 'video';
   const isSeedanceVideoModel = currentVideoModelOption.id.startsWith('seedance');
   const showSeedanceModelGuide = generationMode === 'video' && videoInputMode !== 'text' && isSeedanceVideoModel;
@@ -665,6 +671,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
 
   const updateImageModelSetting = (key: ImageParameterKey, value: string) => {
     setImageModelSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleAgentImageModelPreference = (modelId: ImageModelId) => {
+    setAgentImageModelPreferences((prev) => (
+      prev.includes(modelId)
+        ? (prev.length > 1 ? prev.filter((item) => item !== modelId) : prev)
+        : [...prev, modelId]
+    ));
+  };
+
+  const toggleAgentVideoModelPreference = (modelId: VideoModelId) => {
+    setAgentVideoModelPreferences((prev) => (
+      prev.includes(modelId)
+        ? (prev.length > 1 ? prev.filter((item) => item !== modelId) : prev)
+        : [...prev, modelId]
+    ));
   };
 
   const openModelTabResourceLibrary = () => {
@@ -806,6 +828,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   }, []);
 
   useEffect(() => {
+    if (!showModelPreferenceDialog) return;
+
+    const updatePosition = () => {
+      const trigger = modelPreferenceTriggerRef.current;
+      const panel = modelPreferencePanelRef.current;
+      if (!trigger || !panel) return;
+
+      const triggerRect = trigger.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const viewportPadding = 12;
+      const left = Math.min(
+        Math.max(triggerRect.right - panelRect.width, viewportPadding),
+        window.innerWidth - panelRect.width - viewportPadding,
+      );
+      const top = Math.max(triggerRect.top - panelRect.height - 8, viewportPadding);
+
+      panel.style.left = `${left}px`;
+      panel.style.top = `${top}px`;
+      panel.style.opacity = '1';
+    };
+
+    const rafId = window.requestAnimationFrame(updatePosition);
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [showModelPreferenceDialog, generationMode]);
+
+  useEffect(() => {
     if (!toastMessage) return;
     const timer = window.setTimeout(() => setToastMessage(null), 2600);
     return () => window.clearTimeout(timer);
@@ -888,7 +943,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
         setShowModeMenu(false);
         setShowVideoInputModeMenu(false);
       }
-      if (modelPreferenceRef.current && !modelPreferenceRef.current.contains(event.target as Node)) {
+      const clickedInsideModelPreferenceTrigger = modelPreferenceRef.current?.contains(event.target as Node);
+      const clickedInsideModelPreferencePanel = modelPreferencePanelRef.current?.contains(event.target as Node);
+      if (!clickedInsideModelPreferenceTrigger && !clickedInsideModelPreferencePanel) {
         setShowModelPreferenceDialog(false);
       }
       if (notificationScopeRef.current && !notificationScopeRef.current.contains(event.target as Node)) {
@@ -2694,11 +2751,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 <Tooltip
                   text={generationMode === 'video'
                     ? `模型参数偏好：${currentVideoModelOption.label}${currentVideoParameterSummary ? ` · ${currentVideoParameterSummary}` : ''}`
+                    : generationMode === 'agent'
+                      ? isModelPreferenceEnabled
+                        ? `模型偏好：${currentAgentModelSummary}`
+                        : '模型偏好'
                     : isModelPreferenceEnabled
                       ? `模型偏好：${currentModelOption?.label ?? '已设置'}${currentImageParameterSummary ? ` · ${currentImageParameterSummary}` : ''}`
                       : '模型偏好'}
                 >
                   <button
+                    ref={modelPreferenceTriggerRef}
                     type="button"
                     aria-label={generationMode === 'video' ? '模型参数偏好' : '模型偏好'}
                     onClick={() => setShowModelPreferenceDialog((prev) => !prev)}
@@ -2712,17 +2774,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                     <SlidersHorizontal size={13} />
                   </button>
                 </Tooltip>
-                <AnimatePresence>
-                  {showModelPreferenceDialog && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                      className={cn(
-                        "absolute bottom-full z-[100] mb-2 max-w-[calc(100vw-24px)] rounded-[18px] border border-gray-100 bg-white p-2.5 shadow-2xl",
-                        generationMode === 'video' ? 'right-0 w-[352px]' : 'left-0 w-[352px]'
-                      )}
-                    >
+                {portalRoot && createPortal(
+                  <AnimatePresence>
+                    {showModelPreferenceDialog && (
+                      <motion.div
+                        ref={modelPreferencePanelRef}
+                        initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                        className="fixed z-[120] w-[352px] max-w-[calc(100vw-24px)] rounded-[18px] border border-gray-100 bg-white p-2.5 shadow-2xl"
+                        style={{ left: -9999, top: -9999, opacity: 0 }}
+                      >
                       {generationMode === 'video' ? (
                         <>
                           <h3 className="text-[13px] font-semibold text-gray-900">模型参数偏好</h3>
@@ -2796,7 +2858,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                             </div>
                           </div>
                         </>
-                      ) : (
+                      ) : generationMode === 'image' ? (
                         <>
                           <h3 className="text-[13px] font-semibold text-gray-900">模型偏好</h3>
                           <div className="mt-2.5 grid grid-cols-[156px_minmax(0,1fr)] gap-2">
@@ -2862,10 +2924,130 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                             </div>
                           </div>
                         </>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-[13px] font-semibold text-gray-900">模型偏好</h3>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-medium text-gray-700">智能选择</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsModelPreferenceEnabled((prev) => {
+                                    const next = !prev;
+                                    if (!next) setModelPreference('auto');
+                                    return next;
+                                  });
+                                }}
+                                className={cn(
+                                  "relative h-5 w-9 rounded-full transition-colors",
+                                  isModelPreferenceEnabled ? "bg-[#5c5cfc]" : "bg-gray-200"
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all",
+                                    isModelPreferenceEnabled ? "left-4.5" : "left-0.5"
+                                  )}
+                                />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="mt-2.5 grid grid-cols-2 gap-1 rounded-[12px] bg-[#f3f5fb] p-1">
+                            {[
+                              { id: 'image' as const, label: '生图片', badge: '' },
+                              { id: 'video' as const, label: '生视频', badge: 'VIP' },
+                            ].map((tab) => (
+                              <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setModelPreferenceTab(tab.id)}
+                                className={cn(
+                                  "flex items-center justify-center gap-1 rounded-[10px] px-2 py-1.5 text-[12px] font-medium transition-colors",
+                                  modelPreferenceTab === tab.id ? "bg-white text-gray-900 shadow-sm ring-2 ring-[#1f6fd6]" : "text-gray-700"
+                                )}
+                              >
+                                <span>{tab.label}</span>
+                                {tab.badge && <span className="rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">{tab.badge}</span>}
+                              </button>
+                            ))}
+                          </div>
+
+                          {modelPreferenceTab === 'video' ? (
+                            <div className="mt-2.5 rounded-[14px] bg-[#f6f8fc] p-2">
+                              <div className="px-1 pb-1 text-[11px] font-medium text-[#7c879d]">视频模型</div>
+                              <div className="space-y-1">
+                                {VIDEO_MODEL_OPTIONS.map((option) => {
+                                  const selected = agentVideoModelPreferences.includes(option.id);
+                                  return (
+                                    <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setIsModelPreferenceEnabled(true);
+                                        toggleAgentVideoModelPreference(option.id);
+                                      }}
+                                      className={cn(
+                                        "w-full rounded-[12px] px-2.5 py-2 text-left transition-colors",
+                                        selected ? "bg-white text-gray-900 shadow-sm ring-1 ring-[#cfd7ff]" : "text-gray-700 hover:bg-white/70"
+                                      )}
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate text-[12px] font-medium">{option.label}</span>
+                                        {selected && <Check size={13} className="shrink-0 text-[#5c5cfc]" />}
+                                      </div>
+                                      {option.badge && (
+                                        <span className="mt-1 inline-flex rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">
+                                          {option.badge}
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-2.5 rounded-[14px] bg-[#f6f8fc] p-2">
+                              <div className="px-1 pb-1 text-[11px] font-medium text-[#7c879d]">图片模型</div>
+                              <div className="space-y-1">
+                                {MODEL_OPTIONS.map((option) => {
+                                  const selected = agentImageModelPreferences.includes(option.id);
+                                  return (
+                                    <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setIsModelPreferenceEnabled(true);
+                                        toggleAgentImageModelPreference(option.id);
+                                      }}
+                                      className={cn(
+                                        "w-full rounded-[12px] px-2.5 py-2 text-left transition-colors",
+                                        selected ? "bg-white text-gray-900 shadow-sm ring-1 ring-[#cfd7ff]" : "text-gray-700 hover:bg-white/70"
+                                      )}
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate text-[12px] font-medium">{option.label}</span>
+                                        {selected && <Check size={13} className="shrink-0 text-[#5c5cfc]" />}
+                                      </div>
+                                      {option.badge && (
+                                        <span className="mt-1 inline-flex rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">
+                                          {option.badge}
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>,
+                  portalRoot
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1">
