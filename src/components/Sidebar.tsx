@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Sparkles, Loader2, RefreshCcw, MessageSquarePlus, History, Maximize2, ArrowUp, Plus, Link, X, MessageSquare, Calendar, Clock, Briefcase, Check, ChevronRight, Ban, TriangleAlert, Square, Copy, Pencil, Bot, Image as ImageIcon, Clapperboard, ChevronUp, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { Sparkles, Loader2, RefreshCcw, MessageSquarePlus, History, Maximize2, ArrowUp, Plus, Link, X, MessageSquare, Calendar, Clock, Briefcase, Check, ChevronRight, Ban, TriangleAlert, Square, Copy, Pencil, Bot, Image as ImageIcon, Clapperboard, ChevronUp, ChevronDown, SlidersHorizontal, FolderOpen, Music, Upload } from 'lucide-react';
 import { ChatMessage, GenerationAttachment, GenerationPlan, GenerationTask, Session } from '../types';
 import { BRAND_GROUPS } from '../data/brands';
 import { shouldShowBrandToolkit } from '../lib/brandKeywords';
 import { BrandToolkitCard } from './BrandToolkitCard';
 import { BrandDetailPanel } from './BrandDetailPanel';
+import { ResourceLibraryDialog } from './ResourceLibraryDialog';
 import { executeGenerationPlan, planGenerationRequest, WorkflowStage, WorkflowStatus } from '../services/generationWorkflow';
 import { GenerationError } from '../services/geminiService';
 import { cn } from '../lib/utils';
@@ -71,6 +72,7 @@ const GENERATING_HINT_DELAY_MS = 5000;
 const GENERATING_ESTIMATE_MS = 120000;
 const GENERATING_HINT_TEXT = '亲爱的用户，由于近期需求增长，算力紧张，生成任务排队较多，出图变慢且偶有波动，请大家耐心等待~';
 const NOTIFICATION_PREFERENCE_STORAGE_KEY = 'generation_notification_preference';
+const CANCEL_PRD_URL = 'https://github.com/zhaowenwen6929/cktproduct/blob/main/docs/%E7%94%9F%E6%88%90%E4%BB%BB%E5%8A%A1%E5%8F%96%E6%B6%88%E4%B8%8E%E6%85%A2%E6%8F%90%E9%86%92%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md';
 const GENERATING_DEMO_DURATION_MS = 14800;
 const PERFUME_DEMO_IMAGES = [
   'https://picsum.photos/seed/perfume-candle-1/720/960',
@@ -132,6 +134,19 @@ const deriveDesignTitle = (prompt: string) => {
 
   return title.slice(0, 10) || '设计任务';
 };
+
+const getAttachmentDisplayLabel = (attachment: GenerationAttachment) => {
+  if (attachment.displayTypeLabel) return attachment.displayTypeLabel;
+  if (attachment.type === 'video') return '视频';
+  if (attachment.type === 'audio') return '音频';
+  return '图片';
+};
+
+type VideoInputMode = 'text' | 'frames' | 'reference';
+type VideoReferenceSlotId = 'frame-start' | 'frame-end' | 'ref-image' | 'ref-video' | 'ref-audio';
+type VideoModelId = 'seedance-20' | 'seedance-20-fast' | 'seedance-15-pro' | 'kling-v25-turbo' | 'kling-v26';
+type VideoParameterKey = 'ratio' | 'duration' | 'resolution';
+type LibraryTab = 'image' | 'video' | 'audio' | 'model';
 
 type AnnotationBadgeProps = {
   id: number;
@@ -328,10 +343,10 @@ const SlowHintAnnotation = ({
     portalRoot={portalRoot}
     positionCache={{ x: 0, y: 0 }}
     detail={<>
-      <div><strong>显示样式：</strong>生成阶段超过 5 秒未返回结果时，在生成面板内展示慢提醒文案；采用逐字展示效果。</div>
-      <div className="mt-2"><strong>交互与排序：</strong>仅在 `generating` 阶段显示；若预览结果返回或用户开启完成提醒，则隐藏；不提供手动关闭按钮。</div>
-      <div className="mt-2"><strong>业务定义：</strong>固定阈值为 5 秒，文案用于解释生成变慢原因并引导继续等待。</div>
-      <div className="mt-2"><strong>备注：</strong>对应实现位于 `src/components/Sidebar.tsx` 的 `GENERATING_HINT_DELAY_MS`、`GENERATING_HINT_TEXT`、`showSlowHintCard`。</div>
+      <div><strong>显示样式：</strong>任务进入 `generating` 阶段且超过 5 秒未返回预览结果时，在生成面板内展示慢提醒文案；采用逐字展示效果。</div>
+      <div className="mt-2"><strong>交互与排序：</strong>仅在 `generating` 阶段显示；若任务被取消、结果已返回，或用户已开启完成提醒，则慢提醒区域不再继续展示。</div>
+      <div className="mt-2"><strong>业务定义：</strong>该模块属于“生成过程支持取消”链路的一部分，用于在正式生成阶段向用户解释当前变慢原因，并与取消任务、完成通知形成联动。</div>
+      <div className="mt-2"><strong>备注：</strong>完整取消规则、积分处理、确认弹窗与异常边界见 <a href="https://github.com/zhaowenwen6929/cktproduct/blob/main/docs/%E7%94%9F%E6%88%90%E4%BB%BB%E5%8A%A1%E5%8F%96%E6%B6%88%E4%B8%8E%E6%85%A2%E6%8F%90%E9%86%92%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md" target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
     </>}
   />
 );
@@ -436,17 +451,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const [currentSessionId, setCurrentSessionId] = useState<string>('1');
   const [showHistory, setShowHistory] = useState(false);
   const [showBrandSelector, setShowBrandSelector] = useState(false);
+  const [showAssetMenu, setShowAssetMenu] = useState(false);
+  const [showResourceLibraryDialog, setShowResourceLibraryDialog] = useState(false);
+  const [resourceLibraryInitialTab, setResourceLibraryInitialTab] = useState<LibraryTab | undefined>(undefined);
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [brandDetailOpen, setBrandDetailOpen] = useState(false);
   const [brandDetailBrandId, setBrandDetailBrandId] = useState<string | null>(null);
   const [pendingBrandPrompt, setPendingBrandPrompt] = useState<string | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<GenerationAttachment[]>([]);
   const [generationMode, setGenerationMode] = useState<'agent' | 'image' | 'video'>('agent');
+  const [videoInputMode, setVideoInputMode] = useState<VideoInputMode>('text');
+  const [showVideoInputModeMenu, setShowVideoInputModeMenu] = useState(false);
+  const [videoReferenceTarget, setVideoReferenceTarget] = useState<VideoReferenceSlotId | null>(null);
+  const [videoReferenceMenuSlotId, setVideoReferenceMenuSlotId] = useState<VideoReferenceSlotId | null>(null);
+  const [videoReferenceSlots, setVideoReferenceSlots] = useState<Record<VideoReferenceSlotId, GenerationAttachment | null>>({
+    'frame-start': null,
+    'frame-end': null,
+    'ref-image': null,
+    'ref-video': null,
+    'ref-audio': null,
+  });
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [modelPreference, setModelPreference] = useState<'auto' | 'gpt-image-2-low' | 'gpt-image-2-medium' | 'gpt-image-2-high'>('auto');
   const [showModelPreferenceDialog, setShowModelPreferenceDialog] = useState(false);
   const [modelPreferenceTab, setModelPreferenceTab] = useState<'image' | 'video'>('image');
   const [isModelPreferenceEnabled, setIsModelPreferenceEnabled] = useState(false);
+  const [videoModelPreference, setVideoModelPreference] = useState<VideoModelId>('seedance-20');
+  const [videoModelSettings, setVideoModelSettings] = useState({
+    ratio: '3:4',
+    duration: '5s',
+    resolution: '480p',
+  });
   const [loading, setLoading] = useState(false);
   const [activeWorkflow, setActiveWorkflow] = useState<{
     id: string;
@@ -485,12 +520,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   } | null>(null);
   const taskRuntimeRef = useRef<Record<string, { cancelled: boolean }>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoReferenceInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const selectionRangeRef = useRef<Range | null>(null);
+  const assetMenuRef = useRef<HTMLDivElement>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const modelPreferenceRef = useRef<HTMLDivElement>(null);
   const notificationScopeRef = useRef<HTMLDivElement>(null);
   const slowHintAnnotationRef = useRef<HTMLDivElement>(null);
+  const cancelActionAnnotationRef = useRef<HTMLDivElement>(null);
+  const cancelDialogAnnotationRef = useRef<HTMLDivElement>(null);
 
   const brandGroups = debugNoBrandData ? [] : BRAND_GROUPS;
 
@@ -532,17 +571,99 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     },
   ];
   const VIDEO_MODEL_OPTIONS = [
-    { id: 'seedance-20', label: 'Seedance 2.0', badge: 'VIP' },
-    { id: 'seedance-20-fast', label: 'Seedance 2.0-Fast', badge: 'VIP' },
-    { id: 'seedance-15-pro', label: 'Seedance 1.5 Pro', badge: 'VIP' },
-    { id: 'kling-v25-turbo', label: 'Kling V2.5-Turbo', badge: 'VIP' },
-    { id: 'kling-v26', label: 'Kling V2.6', badge: 'VIP' },
+    {
+      id: 'seedance-20' as const,
+      label: 'Seedance 2.0',
+      badge: 'VIP',
+      params: {
+        ratio: ['16:9', '9:16', '4:3', '3:4', '1:1'],
+        duration: ['5s', '10s', '12s'],
+        resolution: ['480p', '720p', '1080p'],
+      },
+    },
+    {
+      id: 'seedance-20-fast' as const,
+      label: 'Seedance 2.0-Fast',
+      badge: 'VIP',
+      params: {
+        ratio: ['16:9', '9:16', '1:1'],
+        duration: ['5s', '10s'],
+        resolution: ['480p', '720p'],
+      },
+    },
+    {
+      id: 'seedance-15-pro' as const,
+      label: 'Seedance 1.5 Pro',
+      badge: 'VIP',
+      params: {
+        ratio: ['16:9', '9:16', '3:4', '1:1'],
+        duration: ['5s', '10s'],
+        resolution: ['480p', '720p', '1080p'],
+      },
+    },
+    {
+      id: 'kling-v25-turbo' as const,
+      label: 'Kling V2.5-Turbo',
+      badge: 'VIP',
+      params: {
+        ratio: ['16:9', '9:16'],
+        duration: ['5s', '10s'],
+        resolution: ['720p', '1080p'],
+      },
+    },
+    {
+      id: 'kling-v26' as const,
+      label: 'Kling V2.6',
+      badge: 'VIP',
+      params: {
+        ratio: ['16:9', '9:16', '4:3', '3:4'],
+        duration: ['5s', '10s'],
+        resolution: ['720p', '1080p'],
+      },
+    },
   ];
   const currentModelOption = MODEL_OPTIONS.find((item) => item.id === modelPreference);
+  const currentVideoModelOption = VIDEO_MODEL_OPTIONS.find((item) => item.id === videoModelPreference) ?? VIDEO_MODEL_OPTIONS[0];
+  const VIDEO_INPUT_MODE_OPTIONS = [
+    { id: 'text' as const, label: '文生视频' },
+    { id: 'frames' as const, label: '首尾帧' },
+    { id: 'reference' as const, label: '全能参考' },
+  ];
+  const currentVideoInputModeOption = VIDEO_INPUT_MODE_OPTIONS.find((item) => item.id === videoInputMode) ?? VIDEO_INPUT_MODE_OPTIONS[0];
+  const currentVideoParameterSummary = [
+    videoModelSettings.ratio,
+    videoModelSettings.duration,
+    videoModelSettings.resolution,
+  ].filter(Boolean).join(' / ');
+  const isVideoParameterPreferenceActive = generationMode === 'video';
+  const isSeedanceVideoModel = currentVideoModelOption.id.startsWith('seedance');
+  const showSeedanceModelGuide = generationMode === 'video' && videoInputMode !== 'text' && isSeedanceVideoModel;
+
+  const updateVideoModelSetting = (key: VideoParameterKey, value: string) => {
+    setVideoModelSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const openModelTabResourceLibrary = () => {
+    setVideoReferenceTarget(null);
+    setResourceLibraryInitialTab('model');
+    setShowAssetMenu(false);
+    setShowResourceLibraryDialog(true);
+  };
 
   useEffect(() => {
     onSessionTitleChange(currentSession.title);
   }, [currentSession.title, onSessionTitleChange]);
+
+  useEffect(() => {
+    const nextOption = VIDEO_MODEL_OPTIONS.find((item) => item.id === videoModelPreference);
+    if (!nextOption) return;
+
+    setVideoModelSettings((prev) => ({
+      ratio: nextOption.params.ratio.includes(prev.ratio) ? prev.ratio : nextOption.params.ratio[0] ?? '',
+      duration: nextOption.params.duration.includes(prev.duration) ? prev.duration : nextOption.params.duration[0] ?? '',
+      resolution: nextOption.params.resolution.includes(prev.resolution) ? prev.resolution : nextOption.params.resolution[0] ?? '',
+    }));
+  }, [videoModelPreference]);
 
   const setMessages = (newMessages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
     setSessions(prev => prev.map(s => {
@@ -703,8 +824,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (assetMenuRef.current && !assetMenuRef.current.contains(event.target as Node)) {
+        setShowAssetMenu(false);
+      }
+      if (!(event.target instanceof Element && event.target.closest('[data-video-reference-trigger="true"]'))) {
+        setVideoReferenceMenuSlotId(null);
+      }
       if (modeMenuRef.current && !modeMenuRef.current.contains(event.target as Node)) {
         setShowModeMenu(false);
+        setShowVideoInputModeMenu(false);
       }
       if (modelPreferenceRef.current && !modelPreferenceRef.current.contains(event.target as Node)) {
         setShowModelPreferenceDialog(false);
@@ -716,6 +844,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (generationMode !== 'video') {
+      setShowVideoInputModeMenu(false);
+      setVideoReferenceTarget(null);
+      setVideoReferenceMenuSlotId(null);
+    }
+  }, [generationMode]);
 
   useEffect(() => {
     syncSelectedChipState(selectedAttachmentId);
@@ -742,10 +878,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
         img.alt = attachment.name || '图片';
         img.className = 'w-5 h-5 rounded-md object-cover';
         chip.appendChild(img);
+      } else if (attachment.type === 'audio') {
+        const icon = document.createElement('span');
+        icon.className = 'inline-flex h-5 w-5 items-center justify-center rounded-md bg-[#eef2ff] text-[#5c5cfc] text-[10px] font-bold';
+        icon.textContent = '♪';
+        chip.appendChild(icon);
       }
       const label = document.createElement('span');
       label.className = 'text-[11px] font-medium text-gray-700';
-      label.textContent = attachment.type === 'video' ? '视频' : '图片';
+      label.textContent = getAttachmentDisplayLabel(attachment);
       chip.appendChild(label);
       fragment.appendChild(chip);
     });
@@ -771,9 +912,64 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
 - 输出要求：保持品牌一致性、视觉统一、适合营销场景。`;
   };
 
+  const getVideoReferenceAccept = (slotId: VideoReferenceSlotId | null) => {
+    if (slotId === 'ref-audio') return 'audio/*';
+    if (slotId === 'ref-video') return 'video/*';
+    return 'image/*';
+  };
+
+  const addAttachmentToComposer = (attachment: GenerationAttachment) => {
+    setPendingAttachments((prev) => [...prev, attachment]);
+    insertAttachmentChip(attachment);
+  };
+
+  const removeAttachmentById = (attachmentId: string) => {
+    const exists = pendingAttachments.some((item) => item.id === attachmentId);
+    if (exists) {
+      removeAttachment(attachmentId);
+    }
+  };
+
+  const assignVideoReferenceAttachment = (slotId: VideoReferenceSlotId, attachment: GenerationAttachment) => {
+    const previous = videoReferenceSlots[slotId];
+    if (previous) {
+      removeAttachmentById(previous.id);
+    }
+    setVideoReferenceSlots((prev) => ({ ...prev, [slotId]: attachment }));
+    addAttachmentToComposer(attachment);
+  };
+
   const handleAttachmentSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
     if (files.length === 0) return;
+
+    if (videoReferenceTarget) {
+      const file = files[0];
+      if (!file) return;
+      const nextAttachment: GenerationAttachment = {
+        id: `${Date.now()}-${file.name}-${Math.random().toString(36).slice(2, 7)}`,
+        type: file.type.startsWith('audio/')
+          ? 'audio'
+          : file.type.startsWith('video/')
+            ? 'video'
+            : 'image',
+        url: URL.createObjectURL(file),
+        name: file.name,
+        displayTypeLabel: file.type.startsWith('audio/')
+          ? '音频'
+          : file.type.startsWith('video/')
+            ? '视频'
+            : videoReferenceTarget === 'frame-start'
+              ? '首帧图'
+              : videoReferenceTarget === 'frame-end'
+                ? '尾帧图'
+                : '图片',
+      };
+      assignVideoReferenceAttachment(videoReferenceTarget, nextAttachment);
+      setVideoReferenceTarget(null);
+      event.target.value = '';
+      return;
+    }
 
     const nextAttachments = files.map((file) => ({
       id: `${Date.now()}-${file.name}-${Math.random().toString(36).slice(2, 7)}`,
@@ -785,6 +981,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     setPendingAttachments((prev) => [...prev, ...nextAttachments]);
     nextAttachments.forEach(insertAttachmentChip);
     event.target.value = '';
+  };
+
+  const addLibraryAttachments = (assets: Array<{
+    type: 'image' | 'video' | 'audio';
+    url: string;
+    name: string;
+    displayTypeLabel?: string;
+  }>) => {
+    if (assets.length === 0) return;
+
+    if (videoReferenceTarget) {
+      const asset = assets[0];
+      const nextAttachment: GenerationAttachment = {
+        id: `${Date.now()}-${asset.type}-${Math.random().toString(36).slice(2, 7)}`,
+        type: asset.type,
+        url: asset.url,
+        name: asset.name,
+        displayTypeLabel: asset.displayTypeLabel,
+      };
+      assignVideoReferenceAttachment(videoReferenceTarget, nextAttachment);
+      setVideoReferenceTarget(null);
+      setShowAssetMenu(false);
+      setResourceLibraryInitialTab(undefined);
+      setShowResourceLibraryDialog(false);
+      return;
+    }
+
+    const nextAttachments: GenerationAttachment[] = assets.map((asset) => ({
+      id: `${Date.now()}-${asset.type}-${Math.random().toString(36).slice(2, 7)}`,
+      type: asset.type,
+      url: asset.url,
+      name: asset.name,
+      displayTypeLabel: asset.displayTypeLabel,
+    }));
+
+    setPendingAttachments((prev) => [...prev, ...nextAttachments]);
+    nextAttachments.forEach(insertAttachmentChip);
+    setShowAssetMenu(false);
+    setResourceLibraryInitialTab(undefined);
+    setShowResourceLibraryDialog(false);
   };
 
   const requestCompletionNotification = async () => {
@@ -995,11 +1231,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       img.alt = attachment.name || '图片';
       img.className = 'w-6 h-6 rounded object-cover';
       chip.appendChild(img);
+    } else if (attachment.type === 'audio') {
+      const icon = document.createElement('span');
+      icon.className = 'inline-flex h-6 w-6 items-center justify-center rounded-lg bg-[#eef2ff] text-[#5c5cfc] text-[12px] font-bold';
+      icon.textContent = '♪';
+      chip.appendChild(icon);
     }
 
     const label = document.createElement('span');
     label.className = 'text-[12px] font-medium text-gray-700';
-    label.textContent = attachment.type === 'video' ? '视频' : '图片';
+    label.textContent = getAttachmentDisplayLabel(attachment);
     chip.appendChild(label);
 
     const spacer = document.createTextNode('\u00a0');
@@ -1062,6 +1303,90 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       attachments.forEach(insertAttachmentChip);
       focusEditorToEnd();
     });
+  };
+
+  const renderVideoReferenceTrigger = (
+    slotId: VideoReferenceSlotId,
+    title: string,
+    kinds: Array<'image' | 'video' | 'audio'>,
+    joinLabel?: string,
+  ) => {
+    const attachment = videoReferenceSlots[slotId];
+    const isMenuOpen = videoReferenceMenuSlotId === slotId;
+
+    return (
+      <div
+        key={slotId}
+        data-video-reference-trigger="true"
+        className="relative"
+      >
+        <button
+          type="button"
+          onClick={() => setVideoReferenceMenuSlotId((prev) => (prev === slotId ? null : slotId))}
+          className="group relative block w-full overflow-hidden rounded-[16px] border border-[#e7ebf4] bg-white text-left transition-all hover:border-[#cad5eb] hover:shadow-[0_10px_24px_rgba(143,158,186,0.12)]"
+        >
+          <div className="flex aspect-[1.08] items-center justify-center overflow-hidden bg-[#f5f7fc]">
+            {attachment ? (
+              attachment.type === 'audio' ? (
+                <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,#eef2ff_0%,#f8faff_100%)]">
+                  <Music size={22} className="text-[#5c5cfc]" />
+                </div>
+              ) : attachment.type === 'video' ? (
+                <video src={attachment.url} className="h-full w-full object-cover" muted playsInline autoPlay loop />
+              ) : (
+                <img src={attachment.url} alt={attachment.name || title} className="h-full w-full object-cover" />
+              )
+            ) : (
+              <div className="flex flex-col items-center gap-1.5 text-[#98a4bb]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#dbe3f3] bg-white transition-colors group-hover:border-[#c6d3ec] group-hover:text-[#6c7894]">
+                  <Plus size={16} />
+                </div>
+                <div className="text-[11px]">{title}</div>
+              </div>
+            )}
+          </div>
+        </button>
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              className={cn(
+                'absolute z-[80] w-[168px] rounded-[18px] border border-gray-100 bg-white p-1.5 shadow-2xl',
+                joinLabel ? 'left-1/2 top-full mt-2 -translate-x-1/2' : 'left-0 top-full mt-2'
+              )}
+            >
+            <button
+              type="button"
+              onClick={() => {
+                setVideoReferenceTarget(slotId);
+                setVideoReferenceMenuSlotId(null);
+                videoReferenceInputRef.current?.click();
+              }}
+              className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-[12px] font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <Plus size={14} className="text-gray-400" />
+              本地上传
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setVideoReferenceTarget(slotId);
+                setVideoReferenceMenuSlotId(null);
+                setResourceLibraryInitialTab(undefined);
+                setShowResourceLibraryDialog(true);
+              }}
+              className="mt-1 flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-[12px] font-medium text-gray-700 transition-colors hover:bg-[#f5f6fb]"
+            >
+              <FolderOpen size={14} className="text-[#5c5cfc]" />
+              <span>资源库选择</span>
+            </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
   };
 
   const handleCopyMessage = async (msg: ChatMessage) => {
@@ -1534,7 +1859,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     <motion.div 
       initial={{ x: 400 }}
       animate={{ x: 0 }}
-      className="w-[400px] h-full bg-white border-l border-gray-100 flex flex-col shadow-xl z-10 relative overflow-hidden"
+      className="w-[400px] h-full bg-white border-l border-gray-100 flex flex-col shadow-xl z-10 relative overflow-visible"
     >
       <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-white z-20">
         <h2 className="font-bold text-[16px] text-gray-800">Agent对话</h2>
@@ -2074,6 +2399,48 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
             onChange={handleAttachmentSelect}
             className="hidden"
           />
+          <input
+            ref={videoReferenceInputRef}
+            type="file"
+            accept={getVideoReferenceAccept(videoReferenceTarget)}
+            onChange={handleAttachmentSelect}
+            className="hidden"
+          />
+          {generationMode === 'video' && (
+            <div className="mb-3 grid gap-2.5">
+              {videoInputMode !== 'text' && showSeedanceModelGuide && (
+                <div className="flex items-center justify-between rounded-[18px] bg-[#f7f7fa] px-3.5 py-2.5">
+                  <span className="pr-3 text-[12px] font-medium text-[#5f6880]">
+                    模特/角色素材通过资源库审核通过后方可使用
+                  </span>
+                  <button
+                    type="button"
+                    onClick={openModelTabResourceLibrary}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#e3e7ef] bg-white px-3 py-1.5 text-[12px] font-medium text-[#5f6880] transition-colors hover:bg-[#f8fafe]"
+                  >
+                    <Upload size={12} />
+                    <span>上传</span>
+                  </button>
+                </div>
+              )}
+
+              {videoInputMode !== 'text' && (
+                videoInputMode === 'frames' ? (
+                  <div className="grid grid-cols-3 items-center gap-2.5">
+                    {renderVideoReferenceTrigger('frame-start', '首帧图', ['image'])}
+                    <div className="flex items-center justify-center text-[14px] font-medium text-[#99a4bb]">与</div>
+                    {renderVideoReferenceTrigger('frame-end', '尾帧图', ['image'])}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {renderVideoReferenceTrigger('ref-image', '图片', ['image'])}
+                    {renderVideoReferenceTrigger('ref-video', '视频', ['video'])}
+                    {renderVideoReferenceTrigger('ref-audio', '音频', ['audio'])}
+                  </div>
+                )
+              )}
+            </div>
+          )}
           <div
             ref={editorRef}
             contentEditable
@@ -2108,22 +2475,61 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
           />
           <div className="mt-2.5 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  saveSelectionRange();
-                }}
-                onClick={() => {
-                  if (!editorRef.current?.contains(document.activeElement)) {
-                    focusEditorToEnd();
-                  }
-                  fileInputRef.current?.click();
-                }}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-100 text-gray-400 transition-all hover:bg-gray-50 hover:text-gray-900"
-              >
-                <Plus size={14} />
-              </button>
+              {generationMode !== 'video' && (
+                <div className="relative" ref={assetMenuRef}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      saveSelectionRange();
+                    }}
+                    onClick={() => {
+                      if (!editorRef.current?.contains(document.activeElement)) {
+                        focusEditorToEnd();
+                      }
+                      setShowAssetMenu((prev) => !prev);
+                    }}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-100 text-gray-400 transition-all hover:bg-gray-50 hover:text-gray-900"
+                  >
+                    <Plus size={14} />
+                  </button>
+
+                  <AnimatePresence>
+                    {showAssetMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                        className="absolute bottom-full left-0 z-[100] mb-2 w-40 rounded-[18px] border border-gray-100 bg-white p-1.5 shadow-2xl"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAssetMenu(false);
+                            fileInputRef.current?.click();
+                          }}
+                          className="flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-[12px] font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                        >
+                          <Plus size={14} className="text-gray-400" />
+                          <span>本地上传</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAssetMenu(false);
+                            setResourceLibraryInitialTab(undefined);
+                            setShowResourceLibraryDialog(true);
+                          }}
+                          className="mt-1 flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-[12px] font-medium text-gray-700 transition-colors hover:bg-[#f5f6fb]"
+                        >
+                          <FolderOpen size={14} className="text-[#5c5cfc]" />
+                          <span>资源库选择</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
               <div className="relative" ref={modeMenuRef}>
                 <button
                   type="button"
@@ -2134,6 +2540,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                   <span className="text-[11px] font-medium">{currentModeOption.label}</span>
                   {showModeMenu ? <ChevronUp size={11} className="text-gray-500" /> : <ChevronDown size={11} className="text-gray-500" />}
                 </button>
+                {generationMode === 'video' && (
+                  <button
+                    type="button"
+                    onClick={() => setShowVideoInputModeMenu((prev) => !prev)}
+                    className="ml-1 inline-flex h-7 items-center gap-1 rounded-full border border-gray-100 bg-[#f5f6fb] px-2 text-gray-700 transition-all hover:bg-gray-100"
+                  >
+                    <span className="text-[11px] font-medium">{currentVideoInputModeOption.label}</span>
+                    {showVideoInputModeMenu ? <ChevronUp size={11} className="text-gray-500" /> : <ChevronDown size={11} className="text-gray-500" />}
+                  </button>
+                )}
 
                 <AnimatePresence>
                   {showModeMenu && (
@@ -2166,16 +2582,51 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                     </motion.div>
                   )}
                 </AnimatePresence>
+                <AnimatePresence>
+                  {generationMode === 'video' && showVideoInputModeMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      className="absolute bottom-full left-28 z-[95] mb-2 w-36 rounded-[18px] border border-gray-100 bg-white p-1.5 shadow-2xl"
+                    >
+                      {VIDEO_INPUT_MODE_OPTIONS.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            setVideoInputMode(option.id);
+                            setShowVideoInputModeMenu(false);
+                            setVideoReferenceTarget(null);
+                          }}
+                          className={cn(
+                            "w-full flex items-center justify-between rounded-[14px] px-2.5 py-1.5 text-left transition-colors",
+                            videoInputMode === option.id ? "bg-[#f5f6fb] text-gray-900" : "hover:bg-gray-50 text-gray-700"
+                          )}
+                        >
+                          <span className="text-[12px] font-medium">{option.label}</span>
+                          {videoInputMode === option.id && <Check size={13} className="text-gray-700" />}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               <div className="relative" ref={modelPreferenceRef}>
-                <Tooltip text={isModelPreferenceEnabled ? `模型偏好：${currentModelOption?.label ?? '已设置'}` : '模型偏好'}>
+                <Tooltip
+                  text={generationMode === 'video'
+                    ? `模型参数偏好：${currentVideoModelOption.label}${currentVideoParameterSummary ? ` · ${currentVideoParameterSummary}` : ''}`
+                    : isModelPreferenceEnabled
+                      ? `模型偏好：${currentModelOption?.label ?? '已设置'}`
+                      : '模型偏好'}
+                >
                   <button
                     type="button"
-                    aria-label="模型偏好"
+                    aria-label={generationMode === 'video' ? '模型参数偏好' : '模型偏好'}
                     onClick={() => setShowModelPreferenceDialog((prev) => !prev)}
                     className={cn(
                       "inline-flex h-7 w-7 items-center justify-center rounded-full border transition-all",
-                      isModelPreferenceEnabled
+                      generationMode === 'video' || isModelPreferenceEnabled
                         ? "border-[#5c5cfc]/30 bg-[#5c5cfc]/8 text-[#5c5cfc] shadow-sm"
                         : "border-gray-100 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-700"
                     )}
@@ -2183,93 +2634,168 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                     <SlidersHorizontal size={13} />
                   </button>
                 </Tooltip>
-
                 <AnimatePresence>
                   {showModelPreferenceDialog && (
                     <motion.div
                       initial={{ opacity: 0, y: 8, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                      className="absolute bottom-full left-0 z-[100] mb-2 w-[272px] max-w-[calc(100vw-24px)] rounded-[18px] border border-gray-100 bg-white p-2.5 shadow-2xl"
+                      className={cn(
+                        "absolute bottom-full z-[100] mb-2 max-w-[calc(100vw-24px)] rounded-[18px] border border-gray-100 bg-white p-2.5 shadow-2xl",
+                        generationMode === 'video' ? 'right-0 w-[352px]' : 'left-0 w-[272px]'
+                      )}
                     >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-[13px] font-semibold text-gray-900">模型偏好</h3>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-medium text-gray-700">智能选择</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsModelPreferenceEnabled((prev) => {
-                                const next = !prev;
-                                if (!next) setModelPreference('auto');
-                                return next;
-                              });
-                            }}
-                            className={cn(
-                              "relative h-5 w-9 rounded-full transition-colors",
-                              isModelPreferenceEnabled ? "bg-[#5c5cfc]" : "bg-gray-200"
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all",
-                                isModelPreferenceEnabled ? "left-4.5" : "left-0.5"
-                              )}
-                            />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="mt-2.5 grid grid-cols-2 gap-1 rounded-[12px] bg-[#f3f5fb] p-1">
-                        {[
-                          { id: 'image' as const, label: '生图片', badge: '' },
-                          { id: 'video' as const, label: '生视频', badge: 'VIP' },
-                        ].map((tab) => (
-                          <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => setModelPreferenceTab(tab.id)}
-                            className={cn(
-                              "flex items-center justify-center gap-1 rounded-[10px] px-2 py-1.5 text-[12px] font-medium transition-colors",
-                              modelPreferenceTab === tab.id ? "bg-white text-gray-900 shadow-sm ring-2 ring-[#1f6fd6]" : "text-gray-700"
-                            )}
-                          >
-                            <span>{tab.label}</span>
-                            {tab.badge && <span className="rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">{tab.badge}</span>}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="mt-2.5 space-y-1">
-                        {(modelPreferenceTab === 'image' ? MODEL_OPTIONS : VIDEO_MODEL_OPTIONS).map((option) => {
-                          const selected = modelPreferenceTab === 'image'
-                            ? isModelPreferenceEnabled && modelPreference === option.id
-                            : false;
-                          return (
-                            <button
-                              key={option.id}
-                              type="button"
-                              onClick={() => {
-                                if (modelPreferenceTab === 'image') {
-                                  setModelPreference(option.id as typeof modelPreference);
-                                  setIsModelPreferenceEnabled(true);
-                                }
-                              }}
-                              className={cn(
-                                "w-full flex items-center justify-between rounded-[12px] px-2.5 py-2 text-left transition-colors",
-                                selected ? "bg-[#f5f6fb] text-gray-900" : "hover:bg-gray-50 text-gray-800"
-                              )}
-                            >
-                              <div className="flex min-w-0 items-center gap-2">
-                                <span className="shrink-0 text-[13px] text-gray-900">◖◗</span>
-                                <span className="truncate text-[12px] font-medium">{option.label}</span>
-                                {option.badge && <span className="shrink-0 rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">{option.badge}</span>}
+                      {generationMode === 'video' ? (
+                        <>
+                          <h3 className="text-[13px] font-semibold text-gray-900">模型参数偏好</h3>
+                          <div className="mt-2.5 grid grid-cols-[156px_minmax(0,1fr)] gap-2">
+                            <div className="rounded-[14px] bg-[#f6f8fc] p-2">
+                              <div className="px-1 pb-1 text-[11px] font-medium text-[#7c879d]">视频模型</div>
+                              <div className="space-y-1">
+                                {VIDEO_MODEL_OPTIONS.map((option) => {
+                                  const selected = videoModelPreference === option.id;
+                                  return (
+                                    <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => setVideoModelPreference(option.id)}
+                                      className={cn(
+                                        "w-full rounded-[12px] px-2.5 py-2 text-left transition-colors",
+                                        selected ? "bg-white text-gray-900 shadow-sm ring-1 ring-[#cfd7ff]" : "text-gray-700 hover:bg-white/70"
+                                      )}
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate text-[12px] font-medium">{option.label}</span>
+                                        {selected && <Check size={13} className="shrink-0 text-[#5c5cfc]" />}
+                                      </div>
+                                      {option.badge && (
+                                        <span className="mt-1 inline-flex rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">
+                                          {option.badge}
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
                               </div>
-                              {selected && <Check size={14} className="shrink-0 text-gray-900" />}
-                            </button>
-                          );
-                        })}
-                      </div>
+                            </div>
+                            <div className="rounded-[14px] border border-[#edf1f7] bg-white p-3">
+                              <div className="text-[11px] font-medium text-[#7c879d]">参数设置</div>
+                              <div className="mt-3 space-y-3">
+                                {([
+                                  { key: 'ratio', label: '比例' },
+                                  { key: 'duration', label: '时长' },
+                                  { key: 'resolution', label: '分辨率' },
+                                ] as Array<{ key: VideoParameterKey; label: string }>).map((section) => {
+                                  const values = currentVideoModelOption.params[section.key];
+                                  if (!values?.length) return null;
+                                  return (
+                                    <div key={section.key}>
+                                      <div className="text-[12px] font-medium text-[#7c879d]">{section.label}</div>
+                                      <div className="mt-2 grid grid-cols-3 gap-2">
+                                        {values.map((value) => {
+                                          const selected = videoModelSettings[section.key] === value;
+                                          return (
+                                            <button
+                                              key={value}
+                                              type="button"
+                                              onClick={() => updateVideoModelSetting(section.key, value)}
+                                              className={cn(
+                                                "rounded-[12px] border px-2 py-2 text-[12px] font-medium transition-all",
+                                                selected
+                                                  ? "border-[#cfd7ff] bg-[#eef0ff] text-[#5c5cfc]"
+                                                  : "border-transparent bg-[#f6f8fc] text-[#5f6880] hover:border-[#e1e6f0] hover:bg-white"
+                                              )}
+                                            >
+                                              {value}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-[13px] font-semibold text-gray-900">模型偏好</h3>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-medium text-gray-700">智能选择</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsModelPreferenceEnabled((prev) => {
+                                    const next = !prev;
+                                    if (!next) setModelPreference('auto');
+                                    return next;
+                                  });
+                                }}
+                                className={cn(
+                                  "relative h-5 w-9 rounded-full transition-colors",
+                                  isModelPreferenceEnabled ? "bg-[#5c5cfc]" : "bg-gray-200"
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all",
+                                    isModelPreferenceEnabled ? "left-4.5" : "left-0.5"
+                                  )}
+                                />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="mt-2.5 grid grid-cols-2 gap-1 rounded-[12px] bg-[#f3f5fb] p-1">
+                            {[
+                              { id: 'image' as const, label: '生图片', badge: '' },
+                              { id: 'video' as const, label: '生视频', badge: 'VIP' },
+                            ].map((tab) => (
+                              <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setModelPreferenceTab(tab.id)}
+                                className={cn(
+                                  "flex items-center justify-center gap-1 rounded-[10px] px-2 py-1.5 text-[12px] font-medium transition-colors",
+                                  modelPreferenceTab === tab.id ? "bg-white text-gray-900 shadow-sm ring-2 ring-[#1f6fd6]" : "text-gray-700"
+                                )}
+                              >
+                                <span>{tab.label}</span>
+                                {tab.badge && <span className="rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">{tab.badge}</span>}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="mt-2.5 space-y-1">
+                            {MODEL_OPTIONS.map((option) => {
+                              const selected = isModelPreferenceEnabled && modelPreference === option.id;
+                              return (
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setModelPreference(option.id as typeof modelPreference);
+                                    setIsModelPreferenceEnabled(true);
+                                  }}
+                                  className={cn(
+                                    "w-full flex items-center justify-between rounded-[12px] px-2.5 py-2 text-left transition-colors",
+                                    selected ? "bg-[#f5f6fb] text-gray-900" : "hover:bg-gray-50 text-gray-800"
+                                  )}
+                                >
+                                  <div className="flex min-w-0 items-center gap-2">
+                                    <span className="shrink-0 text-[13px] text-gray-900">◖◗</span>
+                                    <span className="truncate text-[12px] font-medium">{option.label}</span>
+                                    {option.badge && <span className="shrink-0 rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">{option.badge}</span>}
+                                  </div>
+                                  {selected && <Check size={14} className="shrink-0 text-gray-900" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -2432,6 +2958,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                   )}
                 </AnimatePresence>
               </div>
+              <div ref={cancelActionAnnotationRef}>
               <Tooltip text={activeWorkflow ? '停止' : '发送'}>
                 <button 
                   onClick={() => {
@@ -2462,6 +2989,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
               </Tooltip>
             </div>
           </div>
+          </div>
         </div>
       </div>
 
@@ -2471,6 +2999,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
               <AnimatePresence>
                 {showSlowHintCard && (
                   <SlowHintAnnotation anchorRef={slowHintAnnotationRef} portalRoot={portalRoot} />
+                )}
+                {portalRoot && cancelActionAnnotationRef.current && (
+                  <AnnotationBadge
+                    id={2}
+                    moduleName="发送与停止入口"
+                    anchorRef={cancelActionAnnotationRef}
+                    portalRoot={portalRoot}
+                    positionCache={{ x: 0, y: 0 }}
+                    detail={<>
+                      <div><strong>显示样式：</strong>无进行中任务时显示发送按钮与箭头图标；有进行中任务时切换为停止按钮与方块图标。</div>
+                      <div className="mt-2"><strong>交互与排序：</strong>输入为空时发送按钮禁用；任务进行中时再次点击不会新建任务，而是进入取消链路。</div>
+                      <div className="mt-2"><strong>业务定义：</strong>该入口承接“发送任务”和“停止任务”两种语义切换，是生成过程支持取消的第一触发点。</div>
+                      <div className="mt-2"><strong>备注：</strong>完整阶段规则与取消策略见 <a href={CANCEL_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
+                    </>}
+                  />
                 )}
                 {hoverPreview && (
                   <motion.div
@@ -2500,6 +3043,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 onClose={() => setBrandDetailOpen(false)}
               />
 
+              <ResourceLibraryDialog
+                open={showResourceLibraryDialog}
+                onClose={() => {
+                  setShowResourceLibraryDialog(false);
+                  setResourceLibraryInitialTab(undefined);
+                }}
+                seedanceDetectionMode={generationMode === 'video' && currentVideoModelOption.id.startsWith('seedance')}
+                initialTab={
+                  resourceLibraryInitialTab ?? (
+                    videoReferenceTarget === 'ref-audio'
+                      ? 'audio'
+                      : videoReferenceTarget === 'ref-video'
+                        ? 'video'
+                        : videoReferenceTarget
+                          ? 'image'
+                          : undefined
+                  )
+                }
+                selectionMode={videoReferenceTarget ? 'single' : 'multi'}
+                confirmLabel={videoReferenceTarget ? '确定选择' : '确定添加'}
+                onConfirmAssets={addLibraryAttachments}
+              />
+
               <AnimatePresence>
                 {cancelDialog && (
                   <>
@@ -2511,6 +3077,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                       onClick={() => setCancelDialog(null)}
                     />
                     <motion.div
+                      ref={cancelDialogAnnotationRef}
                       initial={{ opacity: 0, y: 16, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 12, scale: 0.96 }}
@@ -2548,6 +3115,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                   </>
                 )}
               </AnimatePresence>
+                {portalRoot && cancelDialog && cancelDialogAnnotationRef.current && (
+                  <AnnotationBadge
+                    id={4}
+                    moduleName="取消确认与结果反馈"
+                    anchorRef={cancelDialogAnnotationRef}
+                    portalRoot={portalRoot}
+                    positionCache={{ x: 0, y: 0 }}
+                    detail={<>
+                      <div><strong>显示样式：</strong>`queued` 与 `generating` 阶段点击停止后弹出确认弹窗；包含标题、说明、继续等待和确认按钮。</div>
+                      <div className="mt-2"><strong>交互与排序：</strong>`queued` 阶段确认后取消并返还积分；`generating` 阶段确认后停止任务但不返还积分；点击“继续等待”关闭弹窗并保持任务继续。</div>
+                      <div className="mt-2"><strong>业务定义：</strong>该弹窗用于在高成本阶段拦截误取消，并在确认后写入对应的助手反馈消息与重新生成引导。</div>
+                      <div className="mt-2"><strong>备注：</strong>弹窗标题与说明会根据阶段和媒体类型动态变化，详细文案见 <a href={CANCEL_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
+                    </>}
+                  />
+                )}
 
             </>,
             portalRoot

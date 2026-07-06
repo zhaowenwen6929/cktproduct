@@ -388,10 +388,14 @@ export default function App() {
   };
 
   const handleAddGeneratedAssets = async (attachments: GenerationAttachment[]) => {
-    if (attachments.length === 0) return;
+    const canvasAttachments = attachments.filter(
+      (attachment): attachment is GenerationAttachment & { type: 'image' | 'video' } => attachment.type !== 'audio'
+    );
+
+    if (canvasAttachments.length === 0) return;
 
     const measured = await Promise.all(
-      attachments.map(async (attachment) => {
+      canvasAttachments.map(async (attachment) => {
         const size = await loadAttachmentSize(attachment);
         return {
           attachment,
@@ -464,6 +468,8 @@ export default function App() {
         id: createObjectId('image'),
         type: 'image',
         name: '图片',
+        x: 0,
+        y: 0,
         width,
         height,
         content: url,
@@ -490,6 +496,8 @@ export default function App() {
         id: createObjectId('video'),
         type: 'video',
         name: '视频',
+        x: 0,
+        y: 0,
         width: width * ratio,
         height: height * ratio,
         content: url,
@@ -630,7 +638,7 @@ export default function App() {
           ...built.object.generatorState,
           ...(overrides.generatorState || {}),
         },
-      };
+      } as CanvasObject;
     };
 
     const objectsToAdd: CanvasObject[] = [];

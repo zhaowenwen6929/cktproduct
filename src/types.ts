@@ -64,9 +64,10 @@ export interface ChatMessage {
 
 export interface GenerationAttachment {
   id: string;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'audio';
   url: string;
   name?: string;
+  displayTypeLabel?: string;
 }
 
 export interface GenerationRequest {
