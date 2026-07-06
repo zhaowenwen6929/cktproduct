@@ -145,7 +145,9 @@ const getAttachmentDisplayLabel = (attachment: GenerationAttachment) => {
 type VideoInputMode = 'text' | 'frames' | 'reference';
 type VideoReferenceSlotId = 'frame-start' | 'frame-end' | 'ref-image' | 'ref-video' | 'ref-audio';
 type VideoModelId = 'seedance-20' | 'seedance-20-fast' | 'seedance-15-pro' | 'kling-v25-turbo' | 'kling-v26';
+type ImageModelId = 'gpt-image-2-low' | 'gpt-image-2-medium' | 'gpt-image-2-high' | 'auto';
 type VideoParameterKey = 'ratio' | 'duration' | 'resolution';
+type ImageParameterKey = 'ratio';
 type LibraryTab = 'image' | 'video' | 'audio' | 'model';
 
 type AnnotationBadgeProps = {
@@ -472,10 +474,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     'ref-audio': null,
   });
   const [showModeMenu, setShowModeMenu] = useState(false);
-  const [modelPreference, setModelPreference] = useState<'auto' | 'gpt-image-2-low' | 'gpt-image-2-medium' | 'gpt-image-2-high'>('auto');
+  const [modelPreference, setModelPreference] = useState<ImageModelId>('auto');
   const [showModelPreferenceDialog, setShowModelPreferenceDialog] = useState(false);
-  const [modelPreferenceTab, setModelPreferenceTab] = useState<'image' | 'video'>('image');
   const [isModelPreferenceEnabled, setIsModelPreferenceEnabled] = useState(false);
+  const [imageModelSettings, setImageModelSettings] = useState({
+    ratio: '3:4',
+  });
   const [videoModelPreference, setVideoModelPreference] = useState<VideoModelId>('seedance-20');
   const [videoModelSettings, setVideoModelSettings] = useState({
     ratio: '3:4',
@@ -554,21 +558,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       id: 'gpt-image-2-low' as const,
       label: '全能图像2.0',
       badge: '',
+      params: {
+        ratio: ['1:1', '4:3', '3:4', '16:9', '9:16'],
+      },
     },
     {
       id: 'gpt-image-2-medium' as const,
       label: '全能图像pro',
       badge: '',
+      params: {
+        ratio: ['1:1', '4:3', '3:4', '16:9', '9:16'],
+      },
     },
     {
       id: 'gpt-image-2-high' as const,
       label: 'Seedream 3.0',
       badge: '',
+      params: {
+        ratio: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+      },
     },
     {
       id: 'auto' as const,
       label: 'Seedream 4.0',
       badge: '',
+      params: {
+        ratio: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+      },
     },
   ];
   const VIDEO_MODEL_OPTIONS = [
@@ -636,12 +652,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     videoModelSettings.duration,
     videoModelSettings.resolution,
   ].filter(Boolean).join(' / ');
+  const currentImageParameterSummary = [
+    imageModelSettings.ratio,
+  ].filter(Boolean).join(' / ');
   const isVideoParameterPreferenceActive = generationMode === 'video';
   const isSeedanceVideoModel = currentVideoModelOption.id.startsWith('seedance');
   const showSeedanceModelGuide = generationMode === 'video' && videoInputMode !== 'text' && isSeedanceVideoModel;
 
   const updateVideoModelSetting = (key: VideoParameterKey, value: string) => {
     setVideoModelSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateImageModelSetting = (key: ImageParameterKey, value: string) => {
+    setImageModelSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   const openModelTabResourceLibrary = () => {
@@ -680,6 +703,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       resolution: nextOption.params.resolution.includes(prev.resolution) ? prev.resolution : nextOption.params.resolution[0] ?? '',
     }));
   }, [videoModelPreference]);
+
+  useEffect(() => {
+    const nextOption = MODEL_OPTIONS.find((item) => item.id === modelPreference);
+    if (!nextOption) return;
+
+    setImageModelSettings((prev) => ({
+      ratio: nextOption.params.ratio.includes(prev.ratio) ? prev.ratio : nextOption.params.ratio[0] ?? '',
+    }));
+  }, [modelPreference]);
 
   const setMessages = (newMessages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
     setSessions(prev => prev.map(s => {
@@ -2663,7 +2695,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                   text={generationMode === 'video'
                     ? `模型参数偏好：${currentVideoModelOption.label}${currentVideoParameterSummary ? ` · ${currentVideoParameterSummary}` : ''}`
                     : isModelPreferenceEnabled
-                      ? `模型偏好：${currentModelOption?.label ?? '已设置'}`
+                      ? `模型偏好：${currentModelOption?.label ?? '已设置'}${currentImageParameterSummary ? ` · ${currentImageParameterSummary}` : ''}`
                       : '模型偏好'}
                 >
                   <button
@@ -2688,7 +2720,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                       exit={{ opacity: 0, y: 8, scale: 0.97 }}
                       className={cn(
                         "absolute bottom-full z-[100] mb-2 max-w-[calc(100vw-24px)] rounded-[18px] border border-gray-100 bg-white p-2.5 shadow-2xl",
-                        generationMode === 'video' ? 'right-0 w-[352px]' : 'left-0 w-[272px]'
+                        generationMode === 'video' ? 'right-0 w-[352px]' : 'left-0 w-[352px]'
                       )}
                     >
                       {generationMode === 'video' ? (
@@ -2766,79 +2798,68 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                         </>
                       ) : (
                         <>
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-[13px] font-semibold text-gray-900">模型偏好</h3>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-medium text-gray-700">智能选择</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsModelPreferenceEnabled((prev) => {
-                                    const next = !prev;
-                                    if (!next) setModelPreference('auto');
-                                    return next;
-                                  });
-                                }}
-                                className={cn(
-                                  "relative h-5 w-9 rounded-full transition-colors",
-                                  isModelPreferenceEnabled ? "bg-[#5c5cfc]" : "bg-gray-200"
-                                )}
-                              >
-                                <span
-                                  className={cn(
-                                    "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all",
-                                    isModelPreferenceEnabled ? "left-4.5" : "left-0.5"
-                                  )}
-                                />
-                              </button>
+                          <h3 className="text-[13px] font-semibold text-gray-900">模型偏好</h3>
+                          <div className="mt-2.5 grid grid-cols-[156px_minmax(0,1fr)] gap-2">
+                            <div className="rounded-[14px] bg-[#f6f8fc] p-2">
+                              <div className="px-1 pb-1 text-[11px] font-medium text-[#7c879d]">图片模型</div>
+                              <div className="space-y-1">
+                                {MODEL_OPTIONS.map((option) => {
+                                  const selected = modelPreference === option.id;
+                                  return (
+                                    <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setModelPreference(option.id);
+                                        setIsModelPreferenceEnabled(true);
+                                      }}
+                                      className={cn(
+                                        "w-full rounded-[12px] px-2.5 py-2 text-left transition-colors",
+                                        selected ? "bg-white text-gray-900 shadow-sm ring-1 ring-[#cfd7ff]" : "text-gray-700 hover:bg-white/70"
+                                      )}
+                                    >
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate text-[12px] font-medium">{option.label}</span>
+                                        {selected && <Check size={13} className="shrink-0 text-[#5c5cfc]" />}
+                                      </div>
+                                      {option.badge && (
+                                        <span className="mt-1 inline-flex rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">
+                                          {option.badge}
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-
-                          <div className="mt-2.5 grid grid-cols-2 gap-1 rounded-[12px] bg-[#f3f5fb] p-1">
-                            {[
-                              { id: 'image' as const, label: '生图片', badge: '' },
-                              { id: 'video' as const, label: '生视频', badge: 'VIP' },
-                            ].map((tab) => (
-                              <button
-                                key={tab.id}
-                                type="button"
-                                onClick={() => setModelPreferenceTab(tab.id)}
-                                className={cn(
-                                  "flex items-center justify-center gap-1 rounded-[10px] px-2 py-1.5 text-[12px] font-medium transition-colors",
-                                  modelPreferenceTab === tab.id ? "bg-white text-gray-900 shadow-sm ring-2 ring-[#1f6fd6]" : "text-gray-700"
-                                )}
-                              >
-                                <span>{tab.label}</span>
-                                {tab.badge && <span className="rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">{tab.badge}</span>}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="mt-2.5 space-y-1">
-                            {MODEL_OPTIONS.map((option) => {
-                              const selected = isModelPreferenceEnabled && modelPreference === option.id;
-                              return (
-                                <button
-                                  key={option.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setModelPreference(option.id as typeof modelPreference);
-                                    setIsModelPreferenceEnabled(true);
-                                  }}
-                                  className={cn(
-                                    "w-full flex items-center justify-between rounded-[12px] px-2.5 py-2 text-left transition-colors",
-                                    selected ? "bg-[#f5f6fb] text-gray-900" : "hover:bg-gray-50 text-gray-800"
-                                  )}
-                                >
-                                  <div className="flex min-w-0 items-center gap-2">
-                                    <span className="shrink-0 text-[13px] text-gray-900">◖◗</span>
-                                    <span className="truncate text-[12px] font-medium">{option.label}</span>
-                                    {option.badge && <span className="shrink-0 rounded-full bg-[#f9dcc5] px-1.5 py-0.5 text-[9px] font-semibold text-[#7b4a1f]">{option.badge}</span>}
+                            <div className="rounded-[14px] border border-[#edf1f7] bg-white p-3">
+                              <div className="text-[11px] font-medium text-[#7c879d]">参数设置</div>
+                              <div className="mt-3 space-y-3">
+                                <div>
+                                  <div className="text-[12px] font-medium text-[#7c879d]">比例</div>
+                                  <div className="mt-2 grid grid-cols-3 gap-2">
+                                    {currentModelOption?.params.ratio.map((value) => {
+                                      const selected = imageModelSettings.ratio === value;
+                                      return (
+                                        <button
+                                          key={value}
+                                          type="button"
+                                          onClick={() => updateImageModelSetting('ratio', value)}
+                                          className={cn(
+                                            "rounded-[12px] border px-2 py-2 text-[12px] font-medium transition-all",
+                                            selected
+                                              ? "border-[#cfd7ff] bg-[#eef0ff] text-[#5c5cfc]"
+                                              : "border-transparent bg-[#f6f8fc] text-[#5f6880] hover:border-[#e1e6f0] hover:bg-white"
+                                          )}
+                                        >
+                                          {value}
+                                        </button>
+                                      );
+                                    })}
                                   </div>
-                                  {selected && <Check size={14} className="shrink-0 text-gray-900" />}
-                                </button>
-                              );
-                            })}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </>
                       )}
