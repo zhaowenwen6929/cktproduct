@@ -73,6 +73,7 @@ const GENERATING_ESTIMATE_MS = 120000;
 const GENERATING_HINT_TEXT = '亲爱的用户，由于近期需求增长，算力紧张，生成任务排队较多，出图变慢且偶有波动，请大家耐心等待~';
 const NOTIFICATION_PREFERENCE_STORAGE_KEY = 'generation_notification_preference';
 const CANCEL_PRD_URL = 'https://github.com/zhaowenwen6929/cktproduct/blob/main/docs/%E7%94%9F%E6%88%90%E4%BB%BB%E5%8A%A1%E5%8F%96%E6%B6%88%E4%B8%8E%E6%85%A2%E6%8F%90%E9%86%92%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md';
+const RESOURCE_SELECTION_PRD_URL = 'https://github.com/zhaowenwen6929/cktproduct/blob/main/docs/%E8%B5%84%E6%BA%90%E9%80%89%E6%8B%A9%E3%80%81%E6%A8%A1%E5%BC%8F%E5%88%87%E6%8D%A2%E4%B8%8ESeedance%E6%A3%80%E6%B5%8B%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md';
 const GENERATING_DEMO_DURATION_MS = 14800;
 const PERFUME_DEMO_IMAGES = [
   'https://picsum.photos/seed/perfume-candle-1/720/960',
@@ -538,6 +539,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const modelPreferencePanelRef = useRef<HTMLDivElement>(null);
   const notificationScopeRef = useRef<HTMLDivElement>(null);
   const slowHintAnnotationRef = useRef<HTMLDivElement>(null);
+  const modeSwitchAnnotationRef = useRef<HTMLDivElement>(null);
+  const resourceSelectionAnnotationRef = useRef<HTMLDivElement>(null);
+  const modelPreferenceAnnotationRef = useRef<HTMLDivElement>(null);
+  const seedanceDetectionAnnotationRef = useRef<HTMLDivElement>(null);
   const cancelActionAnnotationRef = useRef<HTMLDivElement>(null);
   const cancelDialogAnnotationRef = useRef<HTMLDivElement>(null);
 
@@ -2543,6 +2548,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
           />
           {generationMode === 'video' && (
             <div className="mb-3 grid gap-2.5">
+              <div ref={seedanceDetectionAnnotationRef} className="absolute left-0 top-0 h-0 w-0" aria-hidden="true" />
               {videoInputMode !== 'text' && showSeedanceModelGuide && (
                 <div className="flex items-center justify-between rounded-[18px] bg-[#f7f7fa] px-3.5 py-2.5">
                   <span className="pr-3 text-[12px] font-medium text-[#5f6880]">
@@ -2610,6 +2616,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
           />
           <div className="mt-2.5 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
+              <div ref={resourceSelectionAnnotationRef} className="absolute left-0 bottom-0 h-0 w-0" aria-hidden="true" />
               {generationMode !== 'video' && (
                 <div className="relative" ref={assetMenuRef}>
                   <button
@@ -2666,6 +2673,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 </div>
               )}
               <div className="relative" ref={modeMenuRef}>
+                <div ref={modeSwitchAnnotationRef} className="absolute right-0 top-0 h-0 w-0" aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => setShowModeMenu((prev) => !prev)}
@@ -2748,6 +2756,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 </AnimatePresence>
               </div>
               <div className="relative" ref={modelPreferenceRef}>
+                <div ref={modelPreferenceAnnotationRef} className="absolute right-0 top-0 h-0 w-0" aria-hidden="true" />
                 <Tooltip
                   text={generationMode === 'video'
                     ? `模型参数偏好：${currentVideoModelOption.label}${currentVideoParameterSummary ? ` · ${currentVideoParameterSummary}` : ''}`
@@ -3248,6 +3257,66 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
               <AnimatePresence>
                 {showSlowHintCard && (
                   <SlowHintAnnotation anchorRef={slowHintAnnotationRef} portalRoot={portalRoot} />
+                )}
+                {portalRoot && modeSwitchAnnotationRef.current && (
+                  <AnnotationBadge
+                    id={3}
+                    moduleName="模式切换与视频输入模式"
+                    anchorRef={modeSwitchAnnotationRef}
+                    portalRoot={portalRoot}
+                    positionCache={{ x: 0, y: 0 }}
+                    detail={<>
+                      <div><strong>显示样式：</strong>底部模式区固定提供 `Agent / 图像 / 视频` 三种生成模式；切到视频模式后，右侧追加 `文生视频 / 首尾帧 / 全能参考` 输入模式切换。</div>
+                      <div className="mt-2"><strong>交互与排序：</strong>切换主模式后，需要同步更新上传入口、模型偏好结构和参考区展示；切换视频输入模式时，文本模式隐藏参考块，首尾帧显示双图参考，全能参考显示图片/视频/音频三类参考块。</div>
+                      <div className="mt-2"><strong>业务定义：</strong>该模块决定当前生成链路的主媒体类型和视频参考方式，是资源选择、Seedance 检测和模型参数联动的上游开关。</div>
+                      <div className="mt-2"><strong>备注：</strong>完整模式定义、参考块结构与联动规则见 <a href={RESOURCE_SELECTION_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
+                    </>}
+                  />
+                )}
+                {portalRoot && resourceSelectionAnnotationRef.current && (
+                  <AnnotationBadge
+                    id={5}
+                    moduleName="资源添加入口与资源库选择"
+                    anchorRef={resourceSelectionAnnotationRef}
+                    portalRoot={portalRoot}
+                    positionCache={{ x: 0, y: 0 }}
+                    detail={<>
+                      <div><strong>显示样式：</strong>普通素材通过底部添加入口进入，本地上传与资源库选择并列；资源库为统一弹框，内部包含分类切换、搜索、文件夹、资源列表、已选择区和确认按钮。</div>
+                      <div className="mt-2"><strong>交互与排序：</strong>普通添加场景支持多选；视频参考槽位走单选回填；资源库底部左侧展示已选择素材缩略汇总，右侧以 `确定添加（X）/确定选择（X）` 完成提交。</div>
+                      <div className="mt-2"><strong>业务定义：</strong>该模块负责承接本地素材与资源库素材进入当前会话的所有入口，并统一管理普通素材添加和视频参考素材回填。</div>
+                      <div className="mt-2"><strong>备注：</strong>资源弹框结构、单多选规则、文件夹与资源 5 列布局见 <a href={RESOURCE_SELECTION_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
+                    </>}
+                  />
+                )}
+                {portalRoot && modelPreferenceAnnotationRef.current && (
+                  <AnnotationBadge
+                    id={6}
+                    moduleName="模型偏好与模型参数偏好"
+                    anchorRef={modelPreferenceAnnotationRef}
+                    portalRoot={portalRoot}
+                    positionCache={{ x: 0, y: 0 }}
+                    detail={<>
+                      <div><strong>显示样式：</strong>Agent 模式下仅提供模型切换弹层；图像模式为“左模型右比例”，视频模式为“左模型右参数”，弹层使用 portal 浮层，避免被侧边栏裁切。</div>
+                      <div className="mt-2"><strong>交互与排序：</strong>Agent 模式下支持 `生图片 / 生视频` tab 切换与多模型勾选，切换或勾选时弹框不自动关闭；图像/视频模式下仍保持单模型选择，并同步更新对应参数区域。</div>
+                      <div className="mt-2"><strong>业务定义：</strong>该模块用于表达当前生成模型偏好和参数偏好，其中 Agent 模式强调模型范围选择，图像/视频模式强调单模型的参数约束。</div>
+                      <div className="mt-2"><strong>备注：</strong>各模式下模型偏好结构、是否允许多选、何时关闭弹框等规则见 <a href={RESOURCE_SELECTION_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
+                    </>}
+                  />
+                )}
+                {portalRoot && generationMode === 'video' && seedanceDetectionAnnotationRef.current && (
+                  <AnnotationBadge
+                    id={7}
+                    moduleName="Seedance 检测与可用性控制"
+                    anchorRef={seedanceDetectionAnnotationRef}
+                    portalRoot={portalRoot}
+                    positionCache={{ x: 0, y: 0 }}
+                    detail={<>
+                      <div><strong>显示样式：</strong>当视频模型为 Seedance 系列且处于首尾帧或全能参考模式时，上方展示模特/角色素材引导条；资源库内通过品牌标识、检测中态、置灰态和可用过滤体现审核结果。</div>
+                      <div className="mt-2"><strong>交互与排序：</strong>未检测图片/模特在受限链路中点击后先检测，通过才进入已选择或参考位；未通过则拦截并提示 `未通过Seedance检测，请更换其他资源`；本地上传图片在受限场景下同样先检测再决定是否加入。</div>
+                      <div className="mt-2"><strong>业务定义：</strong>该模块用于控制 Seedance 系列模型可使用的素材边界，保证图片/模特资源在进入视频生成链路前满足审核前置条件。</div>
+                      <div className="mt-2"><strong>备注：</strong>自动检测、手动检测、通过标识、失败置灰、说明弹框与引导条规则见 <a href={RESOURCE_SELECTION_PRD_URL} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>需求文档</a>。</div>
+                    </>}
+                  />
                 )}
                 {portalRoot && cancelActionAnnotationRef.current && (
                   <AnnotationBadge
