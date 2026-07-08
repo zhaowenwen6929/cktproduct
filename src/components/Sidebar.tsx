@@ -666,6 +666,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     imageModelSettings.ratio,
   ].filter(Boolean).join(' / ');
   const currentAgentModelSummary = `图片 ${agentImageModelPreferences.length} / 视频 ${agentVideoModelPreferences.length}`;
+  const hasAgentManualModelSelection = agentImageModelPreferences.length > 0 || agentVideoModelPreferences.length > 0;
   const isVideoParameterPreferenceActive = generationMode === 'video';
   const isSeedanceVideoModel = currentVideoModelOption.id.startsWith('seedance');
   const showSeedanceModelGuide = generationMode === 'video' && videoInputMode !== 'text' && isSeedanceVideoModel;
@@ -679,6 +680,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   };
 
   const toggleAgentImageModelPreference = (modelId: ImageModelId) => {
+    setIsModelPreferenceEnabled(false);
     setAgentImageModelPreferences((prev) => (
       prev.includes(modelId)
         ? (prev.length > 1 ? prev.filter((item) => item !== modelId) : prev)
@@ -687,6 +689,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   };
 
   const toggleAgentVideoModelPreference = (modelId: VideoModelId) => {
+    setIsModelPreferenceEnabled(false);
     setAgentVideoModelPreferences((prev) => (
       prev.includes(modelId)
         ? (prev.length > 1 ? prev.filter((item) => item !== modelId) : prev)
@@ -2762,8 +2765,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                     ? `模型参数偏好：${currentVideoModelOption.label}${currentVideoParameterSummary ? ` · ${currentVideoParameterSummary}` : ''}`
                     : generationMode === 'agent'
                       ? isModelPreferenceEnabled
-                        ? `模型偏好：${currentAgentModelSummary}`
-                        : '模型偏好'
+                        ? '模型偏好：智能选择'
+                        : hasAgentManualModelSelection
+                          ? `模型偏好：${currentAgentModelSummary}`
+                          : '模型偏好'
                     : isModelPreferenceEnabled
                       ? `模型偏好：${currentModelOption?.label ?? '已设置'}${currentImageParameterSummary ? ` · ${currentImageParameterSummary}` : ''}`
                       : '模型偏好'}
@@ -2775,7 +2780,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                     onClick={() => setShowModelPreferenceDialog((prev) => !prev)}
                     className={cn(
                       "inline-flex h-7 w-7 items-center justify-center rounded-full border transition-all",
-                      generationMode === 'video' || isModelPreferenceEnabled
+                      generationMode === 'video' || isModelPreferenceEnabled || (generationMode === 'agent' && hasAgentManualModelSelection)
                         ? "border-[#5c5cfc]/30 bg-[#5c5cfc]/8 text-[#5c5cfc] shadow-sm"
                         : "border-gray-100 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-700"
                     )}
@@ -2944,6 +2949,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                                 onClick={() => {
                                   setIsModelPreferenceEnabled((prev) => {
                                     const next = !prev;
+                                    if (next) {
+                                      setAgentImageModelPreferences([]);
+                                      setAgentVideoModelPreferences([]);
+                                    }
                                     if (!next) setModelPreference('auto');
                                     return next;
                                   });
@@ -2994,7 +3003,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                                       key={option.id}
                                       type="button"
                                       onClick={() => {
-                                        setIsModelPreferenceEnabled(true);
                                         toggleAgentVideoModelPreference(option.id);
                                       }}
                                       className={cn(
@@ -3027,7 +3035,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                                       key={option.id}
                                       type="button"
                                       onClick={() => {
-                                        setIsModelPreferenceEnabled(true);
                                         toggleAgentImageModelPreference(option.id);
                                       }}
                                       className={cn(
