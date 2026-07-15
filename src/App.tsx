@@ -3,8 +3,11 @@ import { Topbar } from './components/Topbar';
 import { Sidebar } from './components/Sidebar';
 import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
+import { PluginPrototypePage } from './components/PluginPrototypePage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
+
+type AppRoute = '/' | '/canvas' | '/plugin-prototype';
 
 type ExportRequest =
   | {
@@ -42,7 +45,16 @@ const DEMO_IMAGE_EDITORIAL = 'https://picsum.photos/seed/workflow-editorial/700/
 const DEMO_IMAGE_MOON = 'https://picsum.photos/seed/workflow-moon/880/620';
 const DEMO_VIDEO_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
 
+const normalizeRoute = (pathname: string): AppRoute => {
+  if (pathname === '/canvas') return '/canvas';
+  if (pathname === '/plugin-prototype') return '/plugin-prototype';
+  return '/';
+};
+
 export default function App() {
+  const [currentRoute, setCurrentRoute] = useState<AppRoute>(() =>
+    typeof window === 'undefined' ? '/' : normalizeRoute(window.location.pathname)
+  );
   const [objects, setObjects] = useState<CanvasObject[]>([]);
   const [workflowLinks, setWorkflowLinks] = useState<WorkflowLink[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -56,6 +68,15 @@ export default function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [exportSelectedIds, setExportSelectedIds] = useState<string[]>([]);
   const [exportRequest, setExportRequest] = useState<ExportRequest | null>(null);
+
+  const navigateTo = (route: AppRoute) => {
+    if (typeof window === 'undefined') return;
+    const nextRoute = normalizeRoute(route);
+    if (window.location.pathname !== nextRoute) {
+      window.history.pushState({}, '', nextRoute);
+    }
+    setCurrentRoute(nextRoute);
+  };
 
   const exportableItems = useMemo<ExportItem[]>(() => {
     return objects
@@ -1239,6 +1260,134 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIds, objects]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentRoute(normalizeRoute(window.location.pathname));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  if (currentRoute === '/') {
+    const featureCards = [
+      {
+        title: '无线画布',
+        description: '进入当前的创作主工作台，继续使用现有画布、生成与导出能力。',
+        href: '/canvas' as AppRoute,
+        status: '已上线',
+        available: true,
+      },
+      {
+        title: '浏览器插件原型',
+        description: '预览“右侧常驻创作助手”形态，模拟插件在网页里的推荐动作、结果预览与流转闭环。',
+        href: '/plugin-prototype' as AppRoute,
+        status: '原型可看',
+        available: true,
+      },
+      {
+        title: '后续新功能',
+        description: '这个位置预留给你后面新增的能力页，接入方式和无线画布一致。',
+        status: '待接入',
+        available: false,
+      },
+    ];
+
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f7efe5_0%,#f5f0e8_32%,#ebe6dc_100%)] text-stone-900">
+        <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-8 sm:px-10 lg:px-12">
+          <div className="rounded-[32px] border border-white/70 bg-white/75 p-8 shadow-[0_30px_80px_rgba(82,64,39,0.12)] backdrop-blur">
+            <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-3xl">
+                  <div className="mb-4 inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-4 py-1 text-xs font-semibold tracking-[0.24em] text-stone-500 uppercase">
+                    Feature Hub
+                  </div>
+                  <h1 className="text-4xl font-semibold tracking-[-0.04em] text-stone-900 sm:text-5xl">
+                    创作功能目录
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600 sm:text-lg">
+                    这里作为项目首页，统一承接“无线画布”和后续新增功能的入口。以后只需要继续往这里追加卡片和路由，不用再改整体结构。
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('/canvas')}
+                  className="inline-flex items-center justify-center rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  直接进入无线画布
+                </button>
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-2">
+                {featureCards.map((feature) => (
+                  <section
+                    key={feature.title}
+                    className="flex min-h-[280px] flex-col justify-between rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,241,234,0.98)_100%)] p-7 shadow-[0_20px_50px_rgba(120,95,60,0.08)]"
+                  >
+                    <div>
+                      <div className="mb-5 inline-flex rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-500">
+                        {feature.status}
+                      </div>
+                      <h2 className="text-2xl font-semibold tracking-[-0.03em] text-stone-900">
+                        {feature.title}
+                      </h2>
+                      <p className="mt-3 text-sm leading-7 text-stone-600 sm:text-base">
+                        {feature.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-8 flex items-center justify-between gap-4">
+                      <div className="text-sm text-stone-400">
+                        {feature.available ? '可立即打开' : '等待新页面接入'}
+                      </div>
+                      {feature.available ? (
+                        <button
+                          type="button"
+                          onClick={() => navigateTo(feature.href)}
+                          className="inline-flex items-center justify-center rounded-full border border-stone-900 px-5 py-2.5 text-sm font-medium text-stone-900 transition hover:bg-stone-900 hover:text-white"
+                        >
+                          打开入口
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center justify-center rounded-full border border-dashed border-stone-300 px-5 py-2.5 text-sm text-stone-400">
+                          预留中
+                        </span>
+                      )}
+                    </div>
+                  </section>
+                ))}
+              </div>
+
+              <div className="rounded-[28px] border border-stone-200 bg-stone-900 px-6 py-6 text-stone-100">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium">后续扩展方式</h3>
+                    <p className="mt-1 text-sm leading-6 text-stone-300">
+                      新功能接入时，新增一个页面组件和一个路由分支，再在这里补一张功能卡片即可。
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm leading-6 text-stone-200">
+                    当前已接入：`/canvas`
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentRoute === '/plugin-prototype') {
+    return (
+      <PluginPrototypePage
+        onBack={() => navigateTo('/')}
+        onOpenCanvas={() => navigateTo('/canvas')}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen w-screen bg-[#f0f2f5] font-sans text-gray-900 overflow-hidden">
       <Topbar
@@ -1278,6 +1427,13 @@ export default function App() {
         }
       />
       <div className="flex flex-1 overflow-hidden relative">
+        <button
+          type="button"
+          onClick={() => navigateTo('/')}
+          className="absolute left-4 top-4 z-20 inline-flex items-center rounded-full border border-gray-200 bg-white/90 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur transition hover:bg-white"
+        >
+          返回目录
+        </button>
         <Toolbar 
           onAddFrame={handleAddFrame} 
           onAddShape={handleAddShape} 
