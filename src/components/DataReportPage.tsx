@@ -304,6 +304,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [dailyReportRows, setDailyReportRows] = useState<DailyReportRawRow[]>(bundledDailyReportRows);
   const [dailyReportSyncState, setDailyReportSyncState] = useState<DailyReportSyncState>(EMPTY_DAILY_REPORT_SYNC_STATE);
+  const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [dailyDate, setDailyDate] = useState(() =>
     clampDate(getLatestDailyReportDate(), dailyReportSourceStartDate, getToday())
   );
@@ -608,7 +609,14 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   const copyDailyReportText = async () => {
     if (typeof navigator === 'undefined' || !navigator.clipboard) return;
     await navigator.clipboard.writeText(dailyReportText);
+    setIsCopySuccess(true);
   };
+
+  useEffect(() => {
+    if (!isCopySuccess) return;
+    const timer = window.setTimeout(() => setIsCopySuccess(false), 1600);
+    return () => window.clearTimeout(timer);
+  }, [isCopySuccess]);
 
   if (!isUnlocked) {
     return (
@@ -707,6 +715,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
         </aside>
 
         <main className="min-w-0 flex-1 rounded-[30px] border border-white/70 bg-white/80 p-6 shadow-[0_28px_70px_rgba(95,72,37,0.12)] backdrop-blur">
+          <div className="sticky top-8 z-20 -mx-2 rounded-[32px] px-2 pb-3 pt-1 backdrop-blur-[6px]">
           <div className="flex flex-col gap-5 rounded-[28px] bg-[linear-gradient(135deg,#1f1b16_0%,#51412f_100%)] p-6 text-white shadow-[0_24px_50px_rgba(31,27,22,0.18)] lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-stone-200">
@@ -842,6 +851,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
+          </div>
           </div>
 
           <div className="mt-6 overflow-x-auto pb-2">
@@ -1010,7 +1020,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                       }}
                       className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-300 hover:text-stone-900"
                     >
-                      复制
+                      {isCopySuccess ? '复制成功' : '复制'}
                     </button>
                   </div>
                   <pre className="mt-4 min-h-[260px] whitespace-pre-wrap rounded-[18px] bg-stone-950 p-5 text-sm leading-7 text-stone-100">{dailyReportText}</pre>
