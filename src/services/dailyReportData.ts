@@ -64,6 +64,20 @@ export const DAILY_REPORT_FIELD_MAPPING = [
 
 const DAILY_REPORT_ROWS: DailyReportRawRow[] = [
   {
+    date: '2026-08-11',
+    actualPaidCount: 580,
+    actualPaymentAmountFen: 11081837,
+    backendPaidCount: 22,
+    backendPaymentAmountFen: 5900000,
+    canvasPaidCount: 9,
+    canvasPaymentAmountFen: 53800,
+    ecommercePaidCount: 4,
+    ecommercePaymentAmountFen: 35900,
+    mainDesignDownloadCount: 81500,
+    canvasDownloadCount: 574,
+    ecommerceDownloadCount: 279,
+  },
+  {
     date: '2026-08-10',
     actualPaidCount: 709,
     actualPaymentAmountFen: 6537480,
