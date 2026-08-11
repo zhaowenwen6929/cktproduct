@@ -5,7 +5,9 @@ import {
   DAILY_REPORT_FIELD_MAPPING,
   getDailyReportSourceStartDate,
   getLatestDailyReportDate,
+  getDailyReportSnapshotRows,
 } from '../services/dailyReportData';
+import type { DailyReportRawRow } from '../services/dailyReportData';
 
 type ReportType = 'daily' | 'weekly' | 'monthly';
 
@@ -26,9 +28,16 @@ interface DailyReportDraft {
   reasonOverrides: Record<string, DailyReportReasonDraft>;
 }
 
+interface DailyReportSyncState {
+  lastUpdatedAt: string | null;
+  lastAutoSyncSlot: string | null;
+}
+
 const PASSWORD = '123456';
 const STORAGE_KEY = 'ckt-data-report-unlocked';
 const DAILY_REPORT_DRAFT_STORAGE_PREFIX = 'ckt-daily-report-draft';
+const DAILY_REPORT_ROWS_STORAGE_KEY = 'ckt-daily-report-rows';
+const DAILY_REPORT_SYNC_STATE_STORAGE_KEY = 'ckt-daily-report-sync-state';
 const DAY_LABELS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
 const EMPTY_DAILY_REPORT_DRAFT: DailyReportDraft = {
@@ -37,6 +46,11 @@ const EMPTY_DAILY_REPORT_DRAFT: DailyReportDraft = {
   productUpdateHtml: '',
   designUpdateHtml: '',
   reasonOverrides: {},
+};
+
+const EMPTY_DAILY_REPORT_SYNC_STATE: DailyReportSyncState = {
+  lastUpdatedAt: null,
+  lastAutoSyncSlot: null,
 };
 
 const formatDate = (date: Date) =>
@@ -149,6 +163,32 @@ const getTrendTone = (value: string) => {
 
 const getDailyReportDraftStorageKey = (date: Date) => `${DAILY_REPORT_DRAFT_STORAGE_PREFIX}:${formatDate(date)}`;
 
+const getRowDateTime = (row: DailyReportRawRow) => new Date(row.date).getTime();
+
+const sortDailyReportRows = (rows: DailyReportRawRow[]) =>
+  [...rows].sort((left, right) => getRowDateTime(right) - getRowDateTime(left));
+
+const upsertDailyReportRow = (rows: DailyReportRawRow[], nextRow: DailyReportRawRow) => {
+  const nextRows = [...rows];
+  const index = nextRows.findIndex((row) => row.date === nextRow.date);
+  if (index >= 0) {
+    nextRows[index] = nextRow;
+  } else {
+    nextRows.push(nextRow);
+  }
+  return sortDailyReportRows(nextRows);
+};
+
+const getSyncSlotKey = (date: Date) => {
+  const hours = date.getHours();
+  const dateKey = formatDate(date);
+  if (hours >= 18) return `${dateKey}-18`;
+  if (hours >= 12) return `${dateKey}-12`;
+  if (hours >= 9) return `${dateKey}-09`;
+  const previousDate = shiftDays(date, -1);
+  return `${formatDate(previousDate)}-next-day-09`;
+};
+
 const normalizeRichTextHtml = (html: string) =>
   html
     .replace(/<div><br><\/div>/g, '<div></div>')
@@ -257,10 +297,13 @@ function RichTextEditor({
 
 export function DataReportPage({ onBack }: DataReportPageProps) {
   const dailyReportSourceStartDate = useMemo(() => getDailyReportSourceStartDate(getToday()), []);
+  const bundledDailyReportRows = useMemo(() => sortDailyReportRows(getDailyReportSnapshotRows()), []);
   const [reportType, setReportType] = useState<ReportType>('daily');
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [dailyReportRows, setDailyReportRows] = useState<DailyReportRawRow[]>(bundledDailyReportRows);
+  const [dailyReportSyncState, setDailyReportSyncState] = useState<DailyReportSyncState>(EMPTY_DAILY_REPORT_SYNC_STATE);
   const [dailyDate, setDailyDate] = useState(() =>
     clampDate(getLatestDailyReportDate(), dailyReportSourceStartDate, getToday())
   );
@@ -277,7 +320,38 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     setIsUnlocked(window.sessionStorage.getItem(STORAGE_KEY) === 'true');
-  }, []);
+    const storedRows = window.localStorage.getItem(DAILY_REPORT_ROWS_STORAGE_KEY);
+    if (storedRows) {
+      try {
+        const parsedRows = JSON.parse(storedRows) as DailyReportRawRow[];
+        setDailyReportRows(sortDailyReportRows(parsedRows));
+      } catch {
+        setDailyReportRows(bundledDailyReportRows);
+      }
+    }
+
+    const syncStateRaw = window.localStorage.getItem(DAILY_REPORT_SYNC_STATE_STORAGE_KEY);
+    if (syncStateRaw) {
+      try {
+        setDailyReportSyncState({
+          ...EMPTY_DAILY_REPORT_SYNC_STATE,
+          ...JSON.parse(syncStateRaw),
+        });
+      } catch {
+        setDailyReportSyncState(EMPTY_DAILY_REPORT_SYNC_STATE);
+      }
+    }
+  }, [bundledDailyReportRows]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(DAILY_REPORT_ROWS_STORAGE_KEY, JSON.stringify(dailyReportRows));
+  }, [dailyReportRows]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(DAILY_REPORT_SYNC_STATE_STORAGE_KEY, JSON.stringify(dailyReportSyncState));
+  }, [dailyReportSyncState]);
 
   useEffect(() => {
     if (reportType !== 'daily') {
@@ -349,7 +423,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   const calendarDates = useMemo(() => getCalendarDates(dailyCalendarMonth), [dailyCalendarMonth]);
   const canCalendarPrev = getDateTime(getMonthStart(dailyCalendarMonth)) > getDateTime(getMonthStart(dailyReportSourceStartDate));
   const canCalendarNext = getDateTime(getMonthStart(dailyCalendarMonth)) < getDateTime(maxMonthlyDate);
-  const dailyReport = useMemo(() => buildDailyReport(dailyDate), [dailyDate]);
+  const dailyReport = useMemo(() => buildDailyReport(dailyDate, dailyReportRows), [dailyDate, dailyReportRows]);
   const isCurrentDailyDate = reportType === 'daily' && isSameDate(dailyDate, dailyReportEndDate);
   const dailyReportSections = useMemo(
     () =>
@@ -408,6 +482,10 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
       designUpdateText,
     ].join('\n');
   }, [dailyReport, dailyReportDraft, dailyReportSections]);
+  const hasBundledRowForCurrentDate = useMemo(
+    () => bundledDailyReportRows.some((row) => row.date === formatDate(dailyDate)),
+    [bundledDailyReportRows, dailyDate]
+  );
   const summaryMetrics = useMemo(
     () =>
       reportType === 'daily'
@@ -481,6 +559,27 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     setDailyCalendarMonth(getMonthStart(date));
     setIsDailyCalendarOpen(false);
   };
+
+  const refreshDailyRow = (targetDate: Date, source: 'manual' | 'auto') => {
+    const dateKey = formatDate(targetDate);
+    const sourceRow = bundledDailyReportRows.find((row) => row.date === dateKey);
+    if (!sourceRow) return false;
+
+    setDailyReportRows((prev) => upsertDailyReportRow(prev, sourceRow));
+    setDailyReportSyncState((prev) => ({
+      ...prev,
+      lastUpdatedAt: new Date().toISOString(),
+      lastAutoSyncSlot: source === 'auto' ? getSyncSlotKey(new Date()) : prev.lastAutoSyncSlot,
+    }));
+    return true;
+  };
+
+  useEffect(() => {
+    const now = new Date();
+    const slotKey = getSyncSlotKey(now);
+    if (dailyReportSyncState.lastAutoSyncSlot === slotKey) return;
+    refreshDailyRow(dailyReportEndDate, 'auto');
+  }, [dailyReportEndDate, dailyReportSyncState.lastAutoSyncSlot]);
 
   const updateReasonDraft = (metricLabel: string, field: keyof DailyReportReasonDraft, value: string) => {
     setDailyReportDraft((prev) => ({
@@ -719,7 +818,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
 
           {reportType === 'daily' ? (
             <div className="mt-6 space-y-6">
-              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.55fr)]">
                 <section className="rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#fbf8f2_100%)] p-6 shadow-[0_18px_42px_rgba(120,97,63,0.08)]">
                   <div className="flex flex-col gap-3 border-b border-stone-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -729,6 +828,22 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                     <p className="mt-1 text-sm text-stone-500">
                       按固定日报模板展示收入、导出图片设计量及两组对比变化。
                     </p>
+                  </div>
+                  <div className="flex flex-col items-start gap-2">
+                    <button
+                      type="button"
+                      disabled={!hasBundledRowForCurrentDate}
+                      onClick={() => refreshDailyRow(dailyDate, 'manual')}
+                      className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-300 hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      更新当前日期数据
+                    </button>
+                    <div className="text-xs text-stone-400">
+                      最近更新：{dailyReportSyncState.lastUpdatedAt ? new Date(dailyReportSyncState.lastUpdatedAt).toLocaleString('zh-CN') : '暂无'}
+                    </div>
+                    {!hasBundledRowForCurrentDate ? (
+                      <div className="text-xs text-amber-600">当前日期暂无可同步源数据</div>
+                    ) : null}
                   </div>
                 </div>
 
