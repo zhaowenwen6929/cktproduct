@@ -3,9 +3,8 @@ import { ArrowLeft, BarChart3, CalendarDays, ChevronLeft, ChevronRight, External
 import {
   buildDailyReport,
   DAILY_REPORT_FIELD_MAPPING,
-  DAILY_REPORT_SOURCE_START_DATE_KEY,
+  getDailyReportSourceStartDate,
   getLatestDailyReportDate,
-  parseDateKey,
 } from '../services/dailyReportData';
 
 type ReportType = 'daily' | 'weekly' | 'monthly';
@@ -22,7 +21,6 @@ const formatDate = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 const cloneDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-const DAILY_REPORT_SOURCE_START_DATE = parseDateKey(DAILY_REPORT_SOURCE_START_DATE_KEY);
 
 const getToday = () => cloneDate(new Date());
 
@@ -128,18 +126,19 @@ const getTrendTone = (value: string) => {
 };
 
 export function DataReportPage({ onBack }: DataReportPageProps) {
+  const dailyReportSourceStartDate = useMemo(() => getDailyReportSourceStartDate(getToday()), []);
   const [reportType, setReportType] = useState<ReportType>('daily');
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [dailyDate, setDailyDate] = useState(() =>
-    clampDate(getLatestDailyReportDate(), DAILY_REPORT_SOURCE_START_DATE, getToday())
+    clampDate(getLatestDailyReportDate(), dailyReportSourceStartDate, getToday())
   );
   const [weeklyDate, setWeeklyDate] = useState(() => getWeekStart(new Date()));
   const [monthlyDate, setMonthlyDate] = useState(() => getMonthStart(new Date()));
   const [isDailyCalendarOpen, setIsDailyCalendarOpen] = useState(false);
   const [dailyCalendarMonth, setDailyCalendarMonth] = useState(() =>
-    getMonthStart(clampDate(getLatestDailyReportDate(), DAILY_REPORT_SOURCE_START_DATE, getToday()))
+    getMonthStart(clampDate(getLatestDailyReportDate(), dailyReportSourceStartDate, getToday()))
   );
 
   useEffect(() => {
@@ -162,13 +161,13 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
         ? getWeekRangeLabel(weeklyDate)
         : getMonthLabel(monthlyDate);
   const dailyReportEndDate = getToday();
-  const minWeeklyDate = getWeekStart(DAILY_REPORT_SOURCE_START_DATE);
+  const minWeeklyDate = getWeekStart(dailyReportSourceStartDate);
   const maxWeeklyDate = getWeekStart(dailyReportEndDate);
-  const minMonthlyDate = getMonthStart(DAILY_REPORT_SOURCE_START_DATE);
+  const minMonthlyDate = getMonthStart(dailyReportSourceStartDate);
   const maxMonthlyDate = getMonthStart(dailyReportEndDate);
   const canNavigatePrev =
     reportType === 'daily'
-      ? getDateTime(dailyDate) > getDateTime(DAILY_REPORT_SOURCE_START_DATE)
+      ? getDateTime(dailyDate) > getDateTime(dailyReportSourceStartDate)
       : reportType === 'weekly'
         ? getDateTime(weeklyDate) > getDateTime(minWeeklyDate)
         : getDateTime(monthlyDate) > getDateTime(minMonthlyDate);
@@ -179,7 +178,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
         ? getDateTime(weeklyDate) < getDateTime(maxWeeklyDate)
         : getDateTime(monthlyDate) < getDateTime(maxMonthlyDate);
   const calendarDates = useMemo(() => getCalendarDates(dailyCalendarMonth), [dailyCalendarMonth]);
-  const canCalendarPrev = getDateTime(getMonthStart(dailyCalendarMonth)) > getDateTime(minMonthlyDate);
+  const canCalendarPrev = getDateTime(getMonthStart(dailyCalendarMonth)) > getDateTime(getMonthStart(dailyReportSourceStartDate));
   const canCalendarNext = getDateTime(getMonthStart(dailyCalendarMonth)) < getDateTime(maxMonthlyDate);
   const dailyReport = useMemo(() => buildDailyReport(dailyDate), [dailyDate]);
   const summaryMetrics = useMemo(
@@ -237,7 +236,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     const step = direction === 'prev' ? -1 : 1;
     if (reportType === 'daily') {
       setDailyDate((prev) => {
-        const next = clampDate(shiftDays(prev, step), DAILY_REPORT_SOURCE_START_DATE, dailyReportEndDate);
+        const next = clampDate(shiftDays(prev, step), dailyReportSourceStartDate, dailyReportEndDate);
         setDailyCalendarMonth(getMonthStart(next));
         return next;
       });
@@ -251,7 +250,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   };
 
   const selectDailyDate = (date: Date) => {
-    setDailyDate(clampDate(date, DAILY_REPORT_SOURCE_START_DATE, dailyReportEndDate));
+    setDailyDate(clampDate(date, dailyReportSourceStartDate, dailyReportEndDate));
     setDailyCalendarMonth(getMonthStart(date));
     setIsDailyCalendarOpen(false);
   };
@@ -416,7 +415,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                       </div>
                       <div className="mt-2 grid grid-cols-7 gap-1">
                         {calendarDates.map((date) => {
-                          const disabled = !isWithinDateRange(date, DAILY_REPORT_SOURCE_START_DATE, dailyReportEndDate);
+                          const disabled = !isWithinDateRange(date, dailyReportSourceStartDate, dailyReportEndDate);
                           const outsideMonth = date.getMonth() !== dailyCalendarMonth.getMonth();
                           const selected = isSameDate(date, dailyDate);
                           return (
@@ -439,7 +438,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                         })}
                       </div>
                       <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-stone-400">
-                        <span>{formatDate(DAILY_REPORT_SOURCE_START_DATE)}</span>
+                        <span>{formatDate(dailyReportSourceStartDate)}</span>
                         <span>至</span>
                         <span>{formatDate(dailyReportEndDate)}</span>
                       </div>
@@ -561,7 +560,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                   <div>
                     <h3 className="text-xl font-semibold tracking-[-0.03em] text-stone-900">数据源与口径说明</h3>
                     <p className="mt-1 text-sm text-stone-500">
-                      {dailyReport?.sourceLabel ?? 'GrowingIO：产品重要指标--天'}；数据范围 {formatDate(DAILY_REPORT_SOURCE_START_DATE)} 至 {formatDate(dailyReportEndDate)}，金额字段已按分转元处理。
+                      {dailyReport?.sourceLabel ?? 'GrowingIO：产品重要指标--天'}；数据范围 {formatDate(dailyReportSourceStartDate)} 至 {formatDate(dailyReportEndDate)}，金额字段已按分转元处理。
                     </p>
                   </div>
                   {dailyReport ? (

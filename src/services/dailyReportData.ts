@@ -46,7 +46,7 @@ export interface DailyReport {
 export const GROWING_IO_DAILY_REPORT_URL =
   'https://www.growingio.com/projects/QRe7ENoq/product-analytics/eventAnalysis/woVqG5YP';
 
-export const DAILY_REPORT_SOURCE_START_DATE_KEY = '2026-01-01';
+export const DAILY_REPORT_LOOKBACK_DAYS = 100;
 
 export const DAILY_REPORT_FIELD_MAPPING = [
   { label: '实际支付总人数', sourceField: 'I 订单支付(Z)_次' },
@@ -232,6 +232,12 @@ export const parseDateKey = (dateKey: string) => {
 
 export const formatDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+export const getDailyReportSourceStartDate = (referenceDate = new Date()) => {
+  const start = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate());
+  start.setDate(start.getDate() - (DAILY_REPORT_LOOKBACK_DAYS - 1));
+  return start;
+};
 
 export const getDailyReportSnapshotRows = () => [...DAILY_REPORT_ROWS];
 
