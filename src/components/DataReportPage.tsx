@@ -605,6 +605,11 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     }));
   };
 
+  const copyDailyReportText = async () => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(dailyReportText);
+  };
+
   if (!isUnlocked) {
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f7f0e3_0%,#efe7da_45%,#e3dacb_100%)] px-6 py-8 text-stone-900">
@@ -656,7 +661,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f6f1e8_0%,#ede5d7_100%)] px-6 py-8 text-stone-900">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-[1480px] gap-6">
-        <aside className="flex w-full max-w-[280px] flex-col rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,244,237,0.94)_100%)] p-6 shadow-[0_24px_60px_rgba(99,78,45,0.12)]">
+        <aside className="sticky top-8 flex h-fit w-full max-w-[280px] shrink-0 flex-col rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,244,237,0.94)_100%)] p-6 shadow-[0_24px_60px_rgba(99,78,45,0.12)]">
           <button
             type="button"
             onClick={onBack}
@@ -996,7 +1001,18 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                 </section>
 
                 <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-[0_18px_42px_rgba(120,97,63,0.08)]">
-                  <h3 className="text-xl font-semibold tracking-[-0.03em] text-stone-900">日报文案</h3>
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-xl font-semibold tracking-[-0.03em] text-stone-900">日报文案</h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void copyDailyReportText();
+                      }}
+                      className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-300 hover:text-stone-900"
+                    >
+                      复制
+                    </button>
+                  </div>
                   <pre className="mt-4 min-h-[260px] whitespace-pre-wrap rounded-[18px] bg-stone-950 p-5 text-sm leading-7 text-stone-100">{dailyReportText}</pre>
                 </section>
               </div>
