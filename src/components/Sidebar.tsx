@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Sparkles, Loader2, RefreshCcw, MessageSquarePlus, History, Maximize2, ArrowUp, Plus, Link, X, MessageSquare, Calendar, Clock, Briefcase, Check, ChevronRight, Ban, TriangleAlert, Square, Copy, Pencil, Bot, Image as ImageIcon, Clapperboard, ChevronUp, ChevronDown, SlidersHorizontal, FolderOpen, Music, Upload } from 'lucide-react';
-import { ChatMessage, GenerationAttachment, GenerationPlan, GenerationTask, Session } from '../types';
+import { Sparkles, Loader2, RefreshCcw, MessageSquarePlus, History, Maximize2, ArrowUp, Plus, Link, X, MessageSquare, Calendar, Clock, Briefcase, Check, ChevronRight, Ban, TriangleAlert, Square, Copy, Pencil, Bot, Image as ImageIcon, Clapperboard, ChevronUp, ChevronDown, SlidersHorizontal, FolderOpen, Music, Upload, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ChatMessage, GenerationAttachment, GenerationPlan, GenerationTask, PlanFlow, PlanQuestion, PlanStep, Session, SessionMode } from '../types';
 import { BRAND_GROUPS } from '../data/brands';
 import { shouldShowBrandToolkit } from '../lib/brandKeywords';
 import { BrandToolkitCard } from './BrandToolkitCard';
 import { BrandDetailPanel } from './BrandDetailPanel';
 import { ResourceLibraryDialog } from './ResourceLibraryDialog';
+import { PlanningFlowCard } from './PlanningFlowCard';
 import { executeGenerationPlan, planGenerationRequest, WorkflowStage, WorkflowStatus } from '../services/generationWorkflow';
 import { GenerationError } from '../services/geminiService';
 import { cn } from '../lib/utils';
@@ -101,6 +102,126 @@ const applyGenerationModeHint = (prompt: string, mode: 'agent' | 'image' | 'vide
     return `${prompt}\n\n请改为输出静态图片结果。`;
   }
   return prompt;
+};
+
+const PLAN_QUESTION_SEQUENCE: PlanQuestion[] = [
+  {
+    id: 'plan-goal',
+    kind: 'goal',
+    title: '你需要做什么类型的海报?',
+    selectionMode: 'single',
+    options: [
+      { id: 'festival', label: '节日/活动/促销海报' },
+      { id: 'course', label: '招生/课程/培训海报' },
+      { id: 'blessing', label: '日签/祝福/招生海报' },
+      { id: 'notice', label: '通知/公告/邀请函' },
+      { id: 'custom', label: '自定义' },
+    ],
+  },
+  {
+    id: 'plan-style',
+    kind: 'style',
+    title: '风格选择',
+    selectionMode: 'single',
+    options: [
+      { id: 'minimal', label: '极简' },
+      { id: 'tech', label: '科技感' },
+      { id: 'cute', label: '可爱风' },
+      { id: '3d', label: '3D立体风' },
+    ],
+  },
+  {
+    id: 'plan-asset',
+    kind: 'asset',
+    title: '是否需要关联品牌',
+    selectionMode: 'single',
+    options: [
+      { id: 'none', label: '不需要' },
+      { id: 'need', label: '需要' },
+    ],
+  },
+  {
+    id: 'plan-extra',
+    title: '其他补充信息',
+    selectionMode: 'input',
+    allowCustomInput: true,
+    customInputPlaceholder: '例如：主体是这张商品图，背景要干净',
+    options: [],
+  },
+];
+
+const getQuestionByKind = (kind: NonNullable<PlanQuestion['kind']>) =>
+  PLAN_QUESTION_SEQUENCE.find((item) => item.kind === kind) ?? PLAN_QUESTION_SEQUENCE[0];
+
+const hasKeyword = (text: string, patterns: RegExp[]) => patterns.some((pattern) => pattern.test(text));
+
+const detectMissingKinds = (prompt: string, attachments: GenerationAttachment[], answeredKinds: Array<NonNullable<PlanQuestion['kind']>>) => {
+  const missing: Array<NonNullable<PlanQuestion['kind']>> = [];
+  const normalized = prompt.replace(/\s+/g, '');
+  const hasGoal = hasKeyword(normalized, [/(海报|封面|视频|文案|图片|logo|主视觉|banner|场景图|详情页)/i]);
+  const hasStyle = hasKeyword(normalized, [/(极简|科技|温暖|商业|高级|清新|复古|黑金|ins|国风)/i]);
+  const hasAsset = attachments.length > 0 || hasKeyword(normalized, [/(参考图|素材|图片|附件|上传|提供的图|商品图|品牌图)/i]);
+
+  if (!hasGoal && !answeredKinds.includes('goal')) missing.push('goal');
+  if (!hasStyle && !answeredKinds.includes('style')) missing.push('style');
+  if (!hasAsset && !answeredKinds.includes('asset')) missing.push('asset');
+
+  return missing;
+};
+
+const buildPlanFlow = (prompt: string, attachments: GenerationAttachment[]): PlanFlow => {
+  const missingKinds = detectMissingKinds(prompt, attachments, []);
+  const needsClarify = missingKinds.length > 0;
+
+  const steps: PlanStep[] = [
+    {
+      id: 'step-1',
+      title: '理解任务并拆分目标',
+      detail: '先判断用户想做什么，再提炼约束与输出形态。',
+      status: needsClarify ? 'pending' : 'running',
+      output: '正在识别任务类型、输入信息和可执行目标。',
+      collapsible: true,
+    },
+    {
+      id: 'step-2',
+      title: '调用对应技能并组织执行',
+      detail: '按需求选择合适技能，拆分成可执行步骤。',
+      status: 'pending',
+      output: '等待上一步完成后继续。',
+      collapsible: true,
+    },
+    {
+      id: 'step-3',
+      title: '汇总结果并生成交付物',
+      detail: '把每步输出收敛成最终结果。',
+      status: 'pending',
+      output: '等待子Agent执行完成。',
+      collapsible: false,
+    },
+  ];
+
+  return {
+    id: `plan-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    status: needsClarify ? 'thinking' : 'running',
+    summary: needsClarify ? '先思考任务并判断是否需要补充信息' : '信息齐全，开始子Agent执行',
+    sourcePrompt: prompt,
+    attachmentsCount: attachments.length,
+    attachments,
+    questions: needsClarify ? PLAN_QUESTION_SEQUENCE : [],
+    selectedAnswers: {},
+    steps,
+    collectedAnswers: [],
+    answeredKinds: [],
+    subAgentName: '平面设计师',
+    skillLabel: 'visual-creative / image_generation',
+    feedback: {
+      vote: null,
+      reasons: [],
+      panelOpen: false,
+    },
+    resultTitle: '生成完成',
+    resultText: '',
+  };
 };
 
 const deriveDesignTitle = (prompt: string) => {
@@ -436,19 +557,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       id: '1',
       title: '简约咖啡猫LOGO设计',
       messages: [],
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      mode: 'plan',
     },
     {
       id: '2',
       title: '电商场景图生成',
       messages: [],
-      timestamp: Date.now() - 86400000 // Yesterday
+      timestamp: Date.now() - 86400000, // Yesterday
+      mode: 'plan',
     },
     {
       id: '3',
       title: '品牌视觉方案',
       messages: [],
-      timestamp: Date.now() - 86400000 * 3 // 3 days ago
+      timestamp: Date.now() - 86400000 * 3, // 3 days ago
+      mode: 'plan',
     }
   ]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('1');
@@ -520,6 +644,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     description: string;
     confirmLabel: string;
   } | null>(null);
+  const planRuntimeRef = useRef<Record<string, number[]>>({});
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
   const [hoverPreview, setHoverPreview] = useState<{
     url: string;
@@ -527,6 +652,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     x: number;
     y: number;
   } | null>(null);
+  const [resultFeedbackMap, setResultFeedbackMap] = useState<Record<string, { vote: 'up' | 'down' | null; open: boolean; reason?: string }>>({});
   const taskRuntimeRef = useRef<Record<string, { cancelled: boolean }>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoReferenceInputRef = useRef<HTMLInputElement>(null);
@@ -555,6 +681,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
+  const currentSessionMode: SessionMode = currentSession.mode ?? 'chat';
   const messages = currentSession.messages;
 
   const MODE_OPTIONS = [
@@ -724,6 +851,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   }, [currentSession.title, onSessionTitleChange]);
 
   useEffect(() => {
+    return () => {
+      Object.values(planRuntimeRef.current).forEach((timers) => timers.forEach((timerId) => window.clearTimeout(timerId)));
+      planRuntimeRef.current = {};
+    };
+  }, []);
+
+  useEffect(() => {
     const nextOption = VIDEO_MODEL_OPTIONS.find((item) => item.id === videoModelPreference);
     if (!nextOption) return;
 
@@ -755,14 +889,225 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     }));
   };
 
-  const updateCurrentSessionTitle = (title: string) => {
+  const updateCurrentSession = (updates: Partial<Session>) => {
     setSessions((prev) =>
       prev.map((session) =>
         session.id === currentSessionId
-          ? { ...session, title }
+          ? { ...session, ...updates }
           : session
       )
     );
+  };
+
+  const updateCurrentSessionTitle = (title: string) => {
+    updateCurrentSession({ title });
+  };
+
+  const updatePlanMessage = (taskId: string, updater: (flow: PlanFlow) => PlanFlow) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === taskId && msg.planFlow
+          ? { ...msg, planFlow: updater(msg.planFlow) }
+          : msg
+      )
+    );
+  };
+
+  const clearPlanTimeouts = (taskId: string) => {
+    const timers = planRuntimeRef.current[taskId] ?? [];
+    timers.forEach((timerId) => window.clearTimeout(timerId));
+    delete planRuntimeRef.current[taskId];
+  };
+
+  const findLatestPlanFlow = () => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index];
+      if (message.variant === 'plan_flow' && message.planFlow) {
+        return message.planFlow;
+      }
+    }
+    return null;
+  };
+
+  const schedulePlanThought = (flow: PlanFlow) => {
+    clearPlanTimeouts(flow.id);
+    const timerId = window.setTimeout(() => {
+      const selectedAnswerText = Object.entries(flow.selectedAnswers ?? {})
+        .map(([questionId, answer]) => {
+          const question = PLAN_QUESTION_SEQUENCE.find((item) => item.id === questionId);
+          return question ? `${question.title}：${answer}` : answer;
+        })
+        .filter(Boolean)
+        .join('；');
+      const missingKinds = detectMissingKinds(
+        `${flow.sourcePrompt}\n${flow.collectedAnswers.join('\n')}\n${selectedAnswerText}`,
+        flow.attachments,
+        flow.answeredKinds
+      );
+
+      if (missingKinds.length > 0) {
+        updatePlanMessage(flow.id, (current) => ({
+          ...current,
+          status: 'clarifying',
+          summary: '需要先补齐基础信息',
+          questions: PLAN_QUESTION_SEQUENCE,
+        }));
+        return;
+      }
+
+      void startPlanExecution(flow.id, {
+        ...flow,
+        status: 'running',
+      });
+    }, 3000);
+    planRuntimeRef.current[flow.id] = [timerId];
+  };
+
+  const resolvePlanAnswer = async (taskId: string, answers: Record<string, string>) => {
+    const current = messages.find((msg) => msg.id === taskId)?.planFlow;
+    if (!current) return;
+
+    const resolvedAnswers = Object.fromEntries(
+      Object.entries(answers).filter(([, value]) => value.trim())
+    );
+    const answeredKinds = current.questions
+      .filter((question) => resolvedAnswers[question.id]?.trim())
+      .map((question) => question.kind)
+      .filter((kind): kind is NonNullable<PlanQuestion['kind']> => Boolean(kind));
+    const selectedAnswerText = current.questions
+      .map((question) => {
+        const value = resolvedAnswers[question.id]?.trim();
+        return value ? `${question.title}：${value}` : '';
+      })
+      .filter(Boolean)
+      .join('；');
+    const nextFlow: PlanFlow = {
+      ...current,
+      status: 'clarifying',
+      summary: '信息已收到，正在整理补充项',
+      selectedAnswer: selectedAnswerText,
+      selectedAnswers: {
+        ...(current.selectedAnswers ?? {}),
+        ...resolvedAnswers,
+      },
+      collectedAnswers: [...current.collectedAnswers, ...Object.values(resolvedAnswers)],
+      answeredKinds: [...new Set([...current.answeredKinds, ...answeredKinds])],
+      questions: PLAN_QUESTION_SEQUENCE,
+      questionSubmitted: true,
+    };
+
+    updatePlanMessage(taskId, () => nextFlow);
+    schedulePlanThought(nextFlow);
+  };
+
+  const composePlanPrompt = (flow: PlanFlow) => {
+    const selectedAnswerText = Object.entries(flow.selectedAnswers ?? {})
+      .map(([questionId, answer]) => {
+        const question = PLAN_QUESTION_SEQUENCE.find((item) => item.id === questionId);
+        return question ? `${question.title}：${answer}` : answer;
+      })
+      .filter(Boolean)
+      .join('；');
+    const multiRound = selectedAnswerText || (flow.collectedAnswers.length > 0 ? flow.collectedAnswers.join('；') : '');
+    const enrichment = multiRound ? `\n\n补充信息：${multiRound}` : '';
+    return `${flow.sourcePrompt}${enrichment}`;
+  };
+
+  const startPlanExecution = async (taskId: string, flow: PlanFlow) => {
+    clearPlanTimeouts(taskId);
+
+    const pushTimer = (delay: number, fn: () => void) => {
+      const timerId = window.setTimeout(fn, delay);
+      planRuntimeRef.current[taskId] = [...(planRuntimeRef.current[taskId] ?? []), timerId];
+    };
+
+    updatePlanMessage(taskId, (current) => ({
+      ...current,
+      status: 'running',
+      summary: current.selectedAnswer ? '信息已确认，开始分步执行' : '信息齐全，开始分步执行',
+      questions: current.questions,
+      steps: current.steps.map((step, index) => ({
+        ...step,
+        status: index === 0 ? 'running' : 'pending',
+        output:
+          index === 0
+            ? '正在拆解目标、技能和约束。'
+            : index === 1
+              ? '等待技能调度完成后执行。'
+            : '等待前序步骤输出。',
+      })),
+    }));
+
+    pushTimer(800, () => {
+    updatePlanMessage(taskId, (current) => ({
+      ...current,
+      steps: current.steps.map((step, index) =>
+          index === 0
+            ? {
+                ...step,
+                status: 'completed',
+                output: current.selectedAnswer
+                  ? `已确认补充信息：${current.selectedAnswer}`
+                  : '已判断信息齐全，继续编排。',
+              }
+            : index === 1
+              ? {
+                  ...step,
+                  status: 'running',
+                  output: '正在调用对应技能并整理执行参数。',
+                }
+              : step
+        ),
+      }));
+    });
+
+    pushTimer(1700, () => {
+      updatePlanMessage(taskId, (current) => ({
+        ...current,
+        steps: current.steps.map((step, index) =>
+          index <= 1
+            ? {
+                ...step,
+                status: 'completed',
+                output:
+                  index === 1
+                    ? '已完成技能调用与步骤编排，开始进入生成阶段。'
+                    : step.output,
+              }
+            : {
+                ...step,
+                status: 'running',
+                output: '正在调用图片/视频生成器输出最终结果。',
+              }
+        ),
+      }));
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 2200));
+    await generateAndAppend(composePlanPrompt(flow), undefined, `${taskId}-plan`);
+
+    updatePlanMessage(taskId, (current) => ({
+      ...current,
+      status: 'completed',
+      summary: '规划完成，已输出可交付结果',
+      steps: current.steps.map((step) => ({
+        ...step,
+        status: 'completed',
+        output:
+          step.id === 'step-3'
+            ? '已完成最终生成，结果已同步到画布并可反馈。'
+            : step.output,
+      })),
+      resultTitle: '生成完成',
+      resultText: current.selectedAnswer
+        ? '已完成生成并返回 4 个结果，补充信息已同步到生成完成区。'
+        : '已完成生成并返回 4 个结果，结果已同步到生成完成区。',
+    }));
+
+  };
+
+  const handlePlanAnswer = async (taskId: string, answers: Record<string, string>) => {
+    await resolvePlanAnswer(taskId, answers);
   };
 
   const isTaskCancelled = (taskId: string) => taskRuntimeRef.current[taskId]?.cancelled === true;
@@ -1563,9 +1908,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     }));
   };
 
-  const generateAndAppend = async (rawPrompt: string, brand?: typeof brandGroups[number], messageIdPrefix?: string) => {
+  const generateAndAppend = async (
+    rawPrompt: string,
+    brand?: typeof brandGroups[number],
+    messageIdPrefix?: string,
+    attachmentsOverride: GenerationAttachment[] = pendingAttachments
+  ) => {
     const reqId = messageIdPrefix ?? Date.now().toString();
-    if (isPerfumeDemoPrompt(rawPrompt, pendingAttachments)) {
+    if (isPerfumeDemoPrompt(rawPrompt, attachmentsOverride)) {
       taskRuntimeRef.current[reqId] = { cancelled: false };
       setLoading(true);
       setActiveWorkflow({
@@ -1704,7 +2054,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     const effectivePrompt = applyGenerationModeHint(rawPrompt, generationMode);
     const plan = planGenerationRequest({
       prompt: effectivePrompt,
-      attachments: pendingAttachments,
+      attachments: attachmentsOverride,
       brandContext,
     });
     let creditsCharged = false;
@@ -1825,6 +2175,69 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
+    const content = editorRef.current ? getEditorPlainText(editorRef.current) : input;
+    const attachedImages = pendingAttachments.filter((item) => item.type === 'image').map((item) => item.url);
+
+    if (currentSessionMode === 'plan') {
+      const activePlan = findLatestPlanFlow();
+      if (activePlan && (activePlan.status === 'thinking' || activePlan.status === 'clarifying')) {
+        onInputChange('');
+        if (editorRef.current) {
+          editorRef.current.innerHTML = '';
+        }
+        const nextQuestion = activePlan.questions.find((question) => !activePlan.selectedAnswers?.[question.id]) ?? activePlan.questions[0];
+        await resolvePlanAnswer(activePlan.id, {
+          [nextQuestion?.id ?? 'extra']: content || '继续执行',
+        });
+        return;
+      }
+
+      const baseId = Date.now();
+      const userMsg: ChatMessage = {
+        id: `${baseId}-u`,
+        role: 'user',
+        content,
+        images: attachedImages,
+        timestamp: baseId,
+      };
+      updateCurrentSessionTitle(deriveDesignTitle(userMsg.content));
+
+      const planFlow = buildPlanFlow(userMsg.content, pendingAttachments);
+      setMessages((prev) => [
+        ...prev,
+        userMsg,
+        {
+          id: planFlow.id,
+          role: 'assistant',
+          content: '',
+          timestamp: Date.now() + 1,
+          variant: 'plan_flow',
+          planFlow,
+        },
+      ]);
+
+      onInputChange('');
+      if (editorRef.current) {
+        editorRef.current.innerHTML = '';
+      }
+      updatePlanMessage(planFlow.id, (current) => ({
+        ...current,
+        status: 'thinking',
+        summary: '正在思考需求是否完整',
+        sourcePrompt: content,
+        attachments: pendingAttachments,
+        attachmentsCount: pendingAttachments.length,
+      }));
+      schedulePlanThought({
+        ...planFlow,
+        status: 'thinking',
+        sourcePrompt: content,
+        attachments: pendingAttachments,
+        attachmentsCount: pendingAttachments.length,
+      });
+      return;
+    }
+
     const previewPlan = planGenerationRequest({
       prompt: applyGenerationModeHint(input, generationMode),
       attachments: pendingAttachments,
@@ -1848,8 +2261,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     const userMsg: ChatMessage = {
       id: `${baseId}-u`,
       role: 'user',
-      content: editorRef.current ? getEditorPlainText(editorRef.current) : input,
-      images: pendingAttachments.filter((item) => item.type === 'image').map((item) => item.url),
+      content,
+      images: attachedImages,
       timestamp: baseId,
     };
     updateCurrentSessionTitle(deriveDesignTitle(userMsg.content));
@@ -1940,14 +2353,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     const newId = Date.now().toString();
     const newSession: Session = {
       id: newId,
-      title: '新会话',
+      title: '新规划会话',
       messages: [],
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      mode: 'plan',
     };
     setSessions(prev => [newSession, ...prev]);
     setCurrentSessionId(newId);
     setShowHistory(false);
     onInputChange('');
+  };
+
+  const togglePlanModeForCurrentSession = () => {
+    if (currentSessionMode === 'plan') {
+      updateCurrentSession({ mode: 'chat' });
+      return;
+    }
+
+    if (currentSession.messages.length > 0) {
+      const newId = Date.now().toString();
+      const newSession: Session = {
+        id: newId,
+        title: `${currentSession.title} · 规划`,
+        messages: [],
+        timestamp: Date.now(),
+        mode: 'plan',
+      };
+      setSessions((prev) => [newSession, ...prev]);
+      setCurrentSessionId(newId);
+      setShowHistory(false);
+      return;
+    }
+
+    updateCurrentSession({ mode: 'plan' });
   };
 
   const elapsedMs = activeWorkflow?.generatingStartedAt
@@ -2005,7 +2443,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       className="w-[400px] h-full bg-white border-l border-gray-100 flex flex-col shadow-xl z-10 relative overflow-visible"
     >
       <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-white z-20">
-        <h2 className="font-bold text-[16px] text-gray-800">Agent对话</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-bold text-[16px] text-gray-800">{currentSession.title || 'Agent对话'}</h2>
+          <Tooltip text="默认开启规划补问">
+            <button
+              type="button"
+              onClick={togglePlanModeForCurrentSession}
+              className={cn(
+                'inline-flex h-7 w-7 items-center justify-center rounded-full border transition-all',
+                currentSessionMode === 'plan'
+                  ? 'border-[#5c5cfc]/25 bg-[#eef1ff] text-[#5c5cfc]'
+                  : 'border-gray-100 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-700'
+              )}
+              aria-label="规划模式"
+            >
+              <Sparkles size={12} />
+            </button>
+          </Tooltip>
+        </div>
         <div className="flex gap-4">
           <Tooltip text="新建会话">
             <button 
@@ -2075,12 +2530,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={cn(
-                            "text-[14px] font-medium truncate flex-1",
-                            currentSessionId === session.id ? "text-[#5c5cfc]" : "text-gray-700"
-                          )}>
-                            {session.title}
-                          </span>
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className={cn(
+                              "text-[14px] font-medium truncate",
+                              currentSessionId === session.id ? "text-[#5c5cfc]" : "text-gray-700"
+                            )}>
+                              {session.title}
+                            </span>
+                            <span className={cn(
+                              'rounded-full px-1.5 py-0.5 text-[9px] font-semibold',
+                              (session.mode ?? 'chat') === 'plan' ? 'bg-[#eef1ff] text-[#5c5cfc]' : 'bg-gray-100 text-gray-400'
+                            )}>
+                              {(session.mode ?? 'chat') === 'plan' ? '规划' : '普通'}
+                            </span>
+                          </div>
                           <Clock size={12} className="text-gray-300" />
                         </div>
                         <span className="text-[10px] text-gray-400">
@@ -2166,6 +2629,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
         )}
 
         {messages.map((msg) => {
+          if (msg.role === 'assistant' && msg.variant === 'plan_flow' && msg.planFlow) {
+            return (
+              <div key={msg.id} className="w-full flex flex-col gap-2 items-start">
+                <PlanningFlowCard
+                  task={msg.planFlow}
+                  onSubmitAnswers={(answers) => handlePlanAnswer(msg.id, answers)}
+                />
+              </div>
+            );
+          }
+
           if (msg.role === 'assistant' && msg.variant === 'brand_toolkit') {
             // 情况 3：只展示当前已选择的品牌组
             if (msg.brandId) {
@@ -2330,6 +2804,47 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                     </div>
                   ))}
                 </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setResultFeedbackMap((prev) => ({ ...prev, [msg.id]: { vote: 'up', open: false } }))}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors',
+                      resultFeedbackMap[msg.id]?.vote === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-gray-700 hover:bg-gray-50'
+                    )}
+                  >
+                    <ThumbsUp size={13} />
+                    赞
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setResultFeedbackMap((prev) => ({ ...prev, [msg.id]: { vote: 'down', open: true } }))}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors',
+                      resultFeedbackMap[msg.id]?.vote === 'down' ? 'bg-rose-50 text-rose-600' : 'bg-white text-gray-700 hover:bg-gray-50'
+                    )}
+                  >
+                    <ThumbsDown size={13} />
+                    踩
+                  </button>
+                </div>
+                {resultFeedbackMap[msg.id]?.open && resultFeedbackMap[msg.id]?.vote === 'down' && (
+                  <div className="mt-2 rounded-[14px] border border-rose-100 bg-rose-50/50 p-3">
+                    <div className="text-[12px] font-medium text-gray-900">哪里需要改进？</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {['没有遵循指令', '细节有错误', '风格不对', '等待太久'].map((reason) => (
+                        <button
+                          key={reason}
+                          type="button"
+                          onClick={() => setResultFeedbackMap((prev) => ({ ...prev, [msg.id]: { ...prev[msg.id], vote: 'down', open: false, reason } }))}
+                          className="rounded-full bg-white px-3 py-1 text-[11px] text-gray-700 ring-1 ring-rose-100"
+                        >
+                          {reason}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="mt-2.5 text-[12px] leading-6 text-gray-800">{msg.content}</div>
                 {msg.creditsCost != null && (
                   <div className="mt-2.5 flex items-center gap-1.5 text-[#6b63ff] text-[11px] font-semibold">
@@ -2758,6 +3273,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                   )}
                 </AnimatePresence>
               </div>
+              <Tooltip text="规划模式，根据需求自动为你规划需求实施方案">
+                <button
+                  type="button"
+                  onClick={togglePlanModeForCurrentSession}
+                  className={cn(
+                    'inline-flex h-7 w-7 items-center justify-center rounded-full border transition-all',
+                    currentSessionMode === 'plan'
+                      ? 'border-[#5c5cfc]/30 bg-[#eef1ff] text-[#5c5cfc]'
+                      : 'border-gray-100 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  )}
+                  aria-label="规划模式"
+                >
+                  <Sparkles size={12} />
+                </button>
+              </Tooltip>
               <div className="relative" ref={modelPreferenceRef}>
                 <div ref={modelPreferenceAnnotationRef} className="absolute right-0 top-0 h-0 w-0" aria-hidden="true" />
                 <Tooltip

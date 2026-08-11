@@ -1,5 +1,6 @@
 export type CanvasMode = 'select' | 'hand' | 'point';
 export type AppMode = 'canvas' | 'workflow';
+export type SessionMode = 'chat' | 'plan';
 
 export interface WorkflowLink {
   id: string;
@@ -54,12 +55,13 @@ export interface ChatMessage {
   creditsCost?: number;
   timestamp: number;
   /** 对话流中的品牌工具箱卡片（由关键词触发） */
-  variant?: 'brand_toolkit' | 'generation_task';
+  variant?: 'brand_toolkit' | 'generation_task' | 'plan_flow';
   /** 单一品牌组 id（例如“已选择的品牌组”场景） */
   brandId?: string;
   /** 需要在对话中列出来供选择的一组品牌组 id */
   brandIds?: string[];
   generationTask?: GenerationTask;
+  planFlow?: PlanFlow;
 }
 
 export interface GenerationAttachment {
@@ -130,6 +132,62 @@ export interface Session {
   title: string;
   messages: ChatMessage[];
   timestamp: number;
+  mode?: SessionMode;
+}
+
+export interface PlanQuestionOption {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+export type PlanQuestionMode = 'single' | 'multiple' | 'input';
+
+export interface PlanQuestion {
+  id: string;
+  title: string;
+  options?: PlanQuestionOption[];
+  kind?: 'goal' | 'style' | 'asset' | 'quantity';
+  selectionMode?: PlanQuestionMode;
+  allowCustomInput?: boolean;
+  customInputPlaceholder?: string;
+}
+
+export interface PlanStep {
+  id: string;
+  title: string;
+  detail: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  output?: string;
+  collapsible?: boolean;
+}
+
+export interface PlanFeedback {
+  vote: 'up' | 'down' | null;
+  reasons: string[];
+  note?: string;
+  panelOpen?: boolean;
+}
+
+export interface PlanFlow {
+  id: string;
+  status: 'thinking' | 'clarifying' | 'running' | 'completed';
+  summary: string;
+  sourcePrompt: string;
+  attachmentsCount: number;
+  attachments: GenerationAttachment[];
+  questions: PlanQuestion[];
+  selectedAnswer?: string;
+  selectedAnswers?: Record<string, string>;
+  collectedAnswers: string[];
+  answeredKinds: Array<NonNullable<PlanQuestion['kind']>>;
+  steps: PlanStep[];
+  subAgentName?: string;
+  skillLabel?: string;
+  resultTitle?: string;
+  resultText?: string;
+  questionSubmitted?: boolean;
+  feedback: PlanFeedback;
 }
 
 export interface BrandPaletteGroup {
