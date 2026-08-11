@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, BarChart3, CalendarDays, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 
-type ReportType = 'daily' | 'weekly';
+type ReportType = 'daily' | 'weekly' | 'monthly';
 
 interface DataReportPageProps {
   onBack: () => void;
@@ -36,6 +36,16 @@ const getWeekRangeLabel = (date: Date) => {
   return `${formatDate(start)} 至 ${formatDate(end)}`;
 };
 
+const getMonthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
+
+const getMonthLabel = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+const shiftMonths = (date: Date, months: number) => {
+  const start = getMonthStart(date);
+  return new Date(start.getFullYear(), start.getMonth() + months, 1);
+};
+
 const getDailyMetrics = (date: Date) => {
   const seed = date.getDate() + (date.getMonth() + 1) * 3;
   return [
@@ -54,6 +64,17 @@ const getWeeklyMetrics = (date: Date) => {
     { label: '周生成次数', value: `${2310 + seed * 14}`, trend: '+9.6%', tone: 'text-sky-600' },
     { label: '周消耗点数', value: `${7280 + seed * 25}`, trend: '+3.8%', tone: 'text-amber-600' },
     { label: '周留存率', value: `${(24 + (seed % 6) * 1.1).toFixed(1)}%`, trend: '+0.9%', tone: 'text-fuchsia-600' },
+  ];
+};
+
+const getMonthlyMetrics = (date: Date) => {
+  const monthStart = getMonthStart(date);
+  const seed = (monthStart.getMonth() + 1) * 9;
+  return [
+    { label: '月访问量', value: `${38200 + seed * 117}`, trend: '+18.6%', tone: 'text-emerald-600' },
+    { label: '月生成次数', value: `${12680 + seed * 39}`, trend: '+14.2%', tone: 'text-sky-600' },
+    { label: '月消耗点数', value: `${40120 + seed * 88}`, trend: '+6.4%', tone: 'text-amber-600' },
+    { label: '月付费转化', value: `${(31 + (seed % 5) * 1.3).toFixed(1)}%`, trend: '+2.1%', tone: 'text-fuchsia-600' },
   ];
 };
 
@@ -77,6 +98,16 @@ const getWeeklyRows = (date: Date) => {
   ];
 };
 
+const getMonthlyRows = (date: Date) => {
+  const seed = (date.getMonth() + 1) * 8;
+  return [
+    { name: '图片生成', volume: 6480 + seed * 11, users: 2430 + (seed % 120), rate: `${(16 + (seed % 6) * 0.6).toFixed(1)}%` },
+    { name: '视频生成', volume: 2870 + seed * 7, users: 1090 + (seed % 80), rate: `${(11 + (seed % 5) * 0.7).toFixed(1)}%` },
+    { name: '智能排版', volume: 3510 + seed * 8, users: 1520 + (seed % 95), rate: `${(13 + (seed % 4) * 0.8).toFixed(1)}%` },
+    { name: '导出下载', volume: 4290 + seed * 9, users: 1980 + (seed % 110), rate: `${(21 + (seed % 5) * 0.6).toFixed(1)}%` },
+  ];
+};
+
 export function DataReportPage({ onBack }: DataReportPageProps) {
   const [reportType, setReportType] = useState<ReportType>('daily');
   const [passwordInput, setPasswordInput] = useState('');
@@ -84,23 +115,38 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [dailyDate, setDailyDate] = useState(() => cloneDate(new Date()));
   const [weeklyDate, setWeeklyDate] = useState(() => getWeekStart(new Date()));
+  const [monthlyDate, setMonthlyDate] = useState(() => getMonthStart(new Date()));
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     setIsUnlocked(window.sessionStorage.getItem(STORAGE_KEY) === 'true');
   }, []);
 
-  const currentTitle = reportType === 'daily' ? '日报' : '周报';
-  const currentTimeLabel = reportType === 'daily'
-    ? `${formatDate(dailyDate)} ${DAY_LABELS[(dailyDate.getDay() + 6) % 7]}`
-    : getWeekRangeLabel(weeklyDate);
+  const currentTitle =
+    reportType === 'daily' ? '日报' : reportType === 'weekly' ? '周报' : '月报';
+  const currentTimeLabel =
+    reportType === 'daily'
+      ? `${formatDate(dailyDate)} ${DAY_LABELS[(dailyDate.getDay() + 6) % 7]}`
+      : reportType === 'weekly'
+        ? getWeekRangeLabel(weeklyDate)
+        : getMonthLabel(monthlyDate);
   const summaryMetrics = useMemo(
-    () => (reportType === 'daily' ? getDailyMetrics(dailyDate) : getWeeklyMetrics(weeklyDate)),
-    [dailyDate, reportType, weeklyDate]
+    () =>
+      reportType === 'daily'
+        ? getDailyMetrics(dailyDate)
+        : reportType === 'weekly'
+          ? getWeeklyMetrics(weeklyDate)
+          : getMonthlyMetrics(monthlyDate),
+    [dailyDate, monthlyDate, reportType, weeklyDate]
   );
   const tableRows = useMemo(
-    () => (reportType === 'daily' ? getDailyRows(dailyDate) : getWeeklyRows(weeklyDate)),
-    [dailyDate, reportType, weeklyDate]
+    () =>
+      reportType === 'daily'
+        ? getDailyRows(dailyDate)
+        : reportType === 'weekly'
+          ? getWeeklyRows(weeklyDate)
+          : getMonthlyRows(monthlyDate),
+    [dailyDate, monthlyDate, reportType, weeklyDate]
   );
 
   const handleUnlock = (event: React.FormEvent<HTMLFormElement>) => {
@@ -123,7 +169,11 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
       setDailyDate((prev) => shiftDays(prev, step));
       return;
     }
-    setWeeklyDate((prev) => shiftDays(prev, step * 7));
+    if (reportType === 'weekly') {
+      setWeeklyDate((prev) => shiftDays(prev, step * 7));
+      return;
+    }
+    setMonthlyDate((prev) => shiftMonths(prev, step));
   };
 
   if (!isUnlocked) {
@@ -193,13 +243,14 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
             </div>
             <h1 className="text-3xl font-semibold tracking-[-0.04em]">周日报数据查看</h1>
             <p className="mt-3 text-sm leading-7 text-stone-600">
-              左侧切换报告类型，右侧查看对应时间和数据。日报按天切换，周报按自然周切换。
+              左侧切换报告类型，右侧查看对应时间和数据。日报按天切换，周报按自然周切换，月报按自然月切换。
             </p>
           </div>
           <div className="space-y-3">
             {[
               { key: 'daily' as const, title: '日报', desc: '按天查看核心数据变化' },
               { key: 'weekly' as const, title: '周报', desc: '按自然周查看周度汇总' },
+              { key: 'monthly' as const, title: '月报', desc: '按自然月查看月度汇总' },
             ].map((item) => {
               const active = reportType === item.key;
               return (
