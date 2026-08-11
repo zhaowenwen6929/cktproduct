@@ -716,16 +716,9 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
 
         <main className="min-w-0 flex-1 rounded-[30px] border border-white/70 bg-white/80 p-6 shadow-[0_28px_70px_rgba(95,72,37,0.12)] backdrop-blur">
           <div className="sticky top-8 z-20 -mx-2 rounded-[32px] px-2 pb-3 pt-1 backdrop-blur-[6px]">
-          <div className="flex flex-col gap-5 rounded-[28px] bg-[linear-gradient(135deg,#1f1b16_0%,#51412f_100%)] p-6 text-white shadow-[0_24px_50px_rgba(31,27,22,0.18)] lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4 rounded-[28px] bg-[linear-gradient(135deg,#1f1b16_0%,#51412f_100%)] p-5 text-white shadow-[0_24px_50px_rgba(31,27,22,0.18)] lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-stone-200">
-                <CalendarDays className="h-3.5 w-3.5" />
-                {currentTitle}
-              </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em]">{currentTitle}数据概览</h2>
-              <p className="mt-2 text-sm leading-7 text-stone-300">
-                当前查看时间：{currentTimeLabel}
-              </p>
+              <h2 className="text-3xl font-semibold tracking-[-0.04em]">{currentTitle}数据概览</h2>
             </div>
 
             <div className="flex items-center gap-3 self-start rounded-full border border-white/10 bg-white/10 p-1.5 lg:self-auto">
