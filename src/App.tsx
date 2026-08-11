@@ -4,10 +4,11 @@ import { Sidebar } from './components/Sidebar';
 import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
 import { PluginPrototypePage } from './components/PluginPrototypePage';
+import { DataReportPage } from './components/DataReportPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/data-report';
 
 type ExportRequest =
   | {
@@ -48,6 +49,7 @@ const DEMO_VIDEO_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-v
 const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/canvas') return '/canvas';
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
+  if (pathname === '/data-report') return '/data-report';
   return '/';
 };
 
@@ -1269,10 +1271,40 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    const titleMap: Record<AppRoute, { title: string; description: string }> = {
+      '/': {
+        title: '创客贴需求原型',
+        description: '创客贴需求原型首页，统一承接各功能入口。',
+      },
+      '/canvas': {
+        title: '无限画布',
+        description: '无限画布，用于规划模式、多 Agent 协作和图片视频生成。',
+      },
+      '/plugin-prototype': {
+        title: '浏览器插件原型',
+        description: '浏览器插件原型，展示右侧常驻创作助手的交互流程。',
+      },
+      '/data-report': {
+        title: '周日报数据查看',
+        description: '周日报数据查看页面，支持密码校验、日报按天切换、周报按自然周切换。',
+      },
+    };
+
+    const next = titleMap[currentRoute];
+    document.title = next.title;
+    if (metaDescription) {
+      metaDescription.setAttribute('content', next.description);
+    }
+  }, [currentRoute]);
+
   if (currentRoute === '/') {
     const featureCards = [
       {
-        title: '无线画布',
+        title: '无限画布',
         description: '进入当前的创作主工作台，继续使用现有画布、生成与导出能力。',
         href: '/canvas' as AppRoute,
         status: '已上线',
@@ -1286,10 +1318,11 @@ export default function App() {
         available: true,
       },
       {
-        title: '后续新功能',
-        description: '这个位置预留给你后面新增的能力页，接入方式和无线画布一致。',
-        status: '待接入',
-        available: false,
+        title: '周日报数据查看',
+        description: '进入后需要密码 123456，左侧切换日报/周报，右侧查看对应时间与数据明细。',
+        href: '/data-report' as AppRoute,
+        status: '已接入',
+        available: true,
       },
     ];
 
@@ -1304,10 +1337,10 @@ export default function App() {
                     Feature Hub
                   </div>
                   <h1 className="text-4xl font-semibold tracking-[-0.04em] text-stone-900 sm:text-5xl">
-                    创作功能目录
+                    创客贴需求原型
                   </h1>
                   <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600 sm:text-lg">
-                    这里作为项目首页，统一承接“无线画布”和后续新增功能的入口。以后只需要继续往这里追加卡片和路由，不用再改整体结构。
+                    这里作为项目首页，统一承接“无限画布”和后续新增功能的入口。以后只需要继续往这里追加卡片和路由，不用再改整体结构。
                   </p>
                 </div>
                 <button
@@ -1315,7 +1348,7 @@ export default function App() {
                   onClick={() => navigateTo('/canvas')}
                   className="inline-flex items-center justify-center rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
                 >
-                  直接进入无线画布
+                  直接进入无限画布
                 </button>
               </div>
 
@@ -1386,6 +1419,10 @@ export default function App() {
         onOpenCanvas={() => navigateTo('/canvas')}
       />
     );
+  }
+
+  if (currentRoute === '/data-report') {
+    return <DataReportPage onBack={() => navigateTo('/')} />;
   }
 
   return (
