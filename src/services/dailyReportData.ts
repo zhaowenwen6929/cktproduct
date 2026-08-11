@@ -283,6 +283,38 @@ const getTopChangeBreakdown = (
   return candidates.sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))[0];
 };
 
+const isWeekendDateKey = (dateKey: string) => {
+  const day = parseDateKey(dateKey).getDay();
+  return day === 0 || day === 6;
+};
+
+const getDownloadReason = (
+  label: string,
+  currentValue: number,
+  compareValue: number,
+  currentDateKey: string,
+  compareDateKey: string,
+  compareLabel: string,
+  compareType: 'yesterday' | 'lastWeek'
+) => {
+  const delta = currentValue - compareValue;
+  if (delta === 0) return `与${compareLabel}基本持平`;
+
+  const increaseText = `${label}${delta > 0 ? '增加' : '减少'}${formatDelta(delta, '次')}`;
+  if (compareType === 'yesterday') {
+    const currentIsWeekend = isWeekendDateKey(currentDateKey);
+    const compareIsWeekend = isWeekendDateKey(compareDateKey);
+    if (!currentIsWeekend && compareIsWeekend && delta > 0) {
+      return `工作日回流，${increaseText}`;
+    }
+    if (currentIsWeekend && !compareIsWeekend && delta < 0) {
+      return `周末回落，${increaseText}`;
+    }
+  }
+
+  return compareType === 'lastWeek' ? `较${compareLabel}${increaseText}` : increaseText;
+};
+
 const getComparisonReason = (
   label: string,
   current: DailyReportRawRow,
@@ -292,8 +324,6 @@ const getComparisonReason = (
   if (!compare) return '对比日暂无数据';
 
   const compareLabel = compareType === 'yesterday' ? '昨日' : '上周同日';
-  const weekendGap =
-    compareType === 'lastWeek' ? current.date.slice(0, 10) !== compare.date.slice(0, 10) : false;
 
   if (label === '实际支付总人数') {
     const topChannel = getTopChangeBreakdown([
@@ -316,33 +346,42 @@ const getComparisonReason = (
   }
 
   if (label === '自平台主设计页') {
-    const delta = current.mainDesignDownloadCount - compare.mainDesignDownloadCount;
-    if (delta === 0) return `与${compareLabel}下载量基本持平`;
-    if (compareType === 'yesterday') {
-      return delta > 0 ? `工作日流量回升，主设计页下载增加${formatDelta(delta, '次')}` : `流量走弱，主设计页下载减少${formatDelta(delta, '次')}`;
-    }
-    return delta > 0
-      ? `较上周同日多出${formatDelta(delta, '次')}，说明主设计页需求更强`
-      : `较上周同日少了${formatDelta(delta, '次')}，主设计页需求偏弱`;
+    return getDownloadReason(
+      '主设计页下载',
+      current.mainDesignDownloadCount,
+      compare.mainDesignDownloadCount,
+      current.date,
+      compare.date,
+      compareLabel,
+      compareType
+    );
   }
 
   if (label === '自平台无线画布') {
-    const delta = current.canvasDownloadCount - compare.canvasDownloadCount;
-    if (delta === 0) return `与${compareLabel}下载量基本持平`;
-    return delta > 0
-      ? `无线画布下载增加${formatDelta(delta, '次')}，创作活跃度更高`
-      : `无线画布下载减少${formatDelta(delta, '次')}，创作活跃度回落`;
+    return getDownloadReason(
+      '无线画布下载',
+      current.canvasDownloadCount,
+      compare.canvasDownloadCount,
+      current.date,
+      compare.date,
+      compareLabel,
+      compareType
+    );
   }
 
   if (label === '自平台AI电商') {
-    const delta = current.ecommerceDownloadCount - compare.ecommerceDownloadCount;
-    if (delta === 0) return `与${compareLabel}下载量基本持平`;
-    return delta > 0
-      ? `AI电商下载增加${formatDelta(delta, '次')}，商家出图需求提升`
-      : `AI电商下载减少${formatDelta(delta, '次')}，商家出图需求回落`;
+    return getDownloadReason(
+      'AI电商下载',
+      current.ecommerceDownloadCount,
+      compare.ecommerceDownloadCount,
+      current.date,
+      compare.date,
+      compareLabel,
+      compareType
+    );
   }
 
-  return weekendGap ? `较${compareLabel}存在自然流量波动` : `与${compareLabel}相比出现正常波动`;
+  return `与${compareLabel}相比出现数据波动`;
 };
 
 const buildMetric = (

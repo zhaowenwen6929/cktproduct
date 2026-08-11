@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, BarChart3, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, Lock } from 'lucide-react';
 import {
   buildDailyReport,
@@ -13,9 +13,31 @@ interface DataReportPageProps {
   onBack: () => void;
 }
 
+interface DailyReportReasonDraft {
+  yesterday: string;
+  lastWeek: string;
+}
+
+interface DailyReportDraft {
+  productLaunchHtml: string;
+  productIncidentHtml: string;
+  productUpdateHtml: string;
+  designUpdateHtml: string;
+  reasonOverrides: Record<string, DailyReportReasonDraft>;
+}
+
 const PASSWORD = '123456';
 const STORAGE_KEY = 'ckt-data-report-unlocked';
+const DAILY_REPORT_DRAFT_STORAGE_PREFIX = 'ckt-daily-report-draft';
 const DAY_LABELS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+const EMPTY_DAILY_REPORT_DRAFT: DailyReportDraft = {
+  productLaunchHtml: '',
+  productIncidentHtml: '',
+  productUpdateHtml: '',
+  designUpdateHtml: '',
+  reasonOverrides: {},
+};
 
 const formatDate = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -125,6 +147,114 @@ const getTrendTone = (value: string) => {
   return 'text-emerald-600';
 };
 
+const getDailyReportDraftStorageKey = (date: Date) => `${DAILY_REPORT_DRAFT_STORAGE_PREFIX}:${formatDate(date)}`;
+
+const normalizeRichTextHtml = (html: string) =>
+  html
+    .replace(/<div><br><\/div>/g, '<div></div>')
+    .replace(/<p><br><\/p>/g, '<p></p>')
+    .trim();
+
+const htmlToPlainText = (html: string) => {
+  if (!html.trim()) return '';
+  if (typeof window === 'undefined') {
+    return html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(div|p|li)>/gi, '\n')
+      .replace(/<li>/gi, '- ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  const lines = Array.from(container.childNodes).flatMap((node) => {
+    if (node instanceof HTMLElement && node.tagName === 'UL') {
+      return Array.from(node.querySelectorAll('li')).map((item) => `- ${item.textContent?.trim() ?? ''}`);
+    }
+    if (node instanceof HTMLElement && node.tagName === 'OL') {
+      return Array.from(node.querySelectorAll('li')).map((item, index) => `${index + 1}. ${item.textContent?.trim() ?? ''}`);
+    }
+    return [node.textContent?.trim() ?? ''];
+  });
+
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+};
+
+const getBlockText = (html: string, emptyText = '无') => htmlToPlainText(html) || emptyText;
+
+const formatMetricLine = (metric: {
+  label: string;
+  valueText: string;
+  yesterdayChange: string;
+  lastWeekChange: string;
+  breakdown?: Array<{ label: string; valueText: string }>;
+}) =>
+  `${metric.label}：${metric.valueText}${metric.breakdown ? `（其中${metric.breakdown.map((item) => `${item.label}${item.valueText}`).join('，')}）` : ''}，较昨日${metric.yesterdayChange}，较上周同日${metric.lastWeekChange}`;
+
+const execEditorCommand = (command: string) => {
+  if (typeof document === 'undefined') return;
+  document.execCommand(command);
+};
+
+function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+  minHeight = 120,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  minHeight?: number;
+}) {
+  const editorRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+    if (editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value;
+    }
+  }, [value]);
+
+  return (
+    <div className="rounded-[18px] border border-stone-200 bg-stone-50">
+      <div className="flex flex-wrap gap-2 border-b border-stone-200 px-3 py-2">
+        {[
+          { label: 'B', command: 'bold' },
+          { label: '• 列表', command: 'insertUnorderedList' },
+          { label: '1. 列表', command: 'insertOrderedList' },
+          { label: '清格式', command: 'removeFormat' },
+        ].map((item) => (
+          <button
+            key={item.label}
+            type="button"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              editorRef.current?.focus();
+              execEditorCommand(item.command);
+              onChange(normalizeRichTextHtml(editorRef.current?.innerHTML ?? ''));
+            }}
+            className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs text-stone-600 transition hover:border-stone-300 hover:text-stone-900"
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        data-placeholder={placeholder}
+        onInput={(event) => onChange(normalizeRichTextHtml(event.currentTarget.innerHTML))}
+        className="min-h-[120px] px-4 py-3 text-sm leading-7 text-stone-800 outline-none empty:before:text-stone-400 empty:before:content-[attr(data-placeholder)]"
+        style={{ minHeight }}
+      />
+    </div>
+  );
+}
+
 export function DataReportPage({ onBack }: DataReportPageProps) {
   const dailyReportSourceStartDate = useMemo(() => getDailyReportSourceStartDate(getToday()), []);
   const [reportType, setReportType] = useState<ReportType>('daily');
@@ -137,6 +267,9 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   const [weeklyDate, setWeeklyDate] = useState(() => getWeekStart(new Date()));
   const [monthlyDate, setMonthlyDate] = useState(() => getMonthStart(new Date()));
   const [isDailyCalendarOpen, setIsDailyCalendarOpen] = useState(false);
+  const [dailyReportDraft, setDailyReportDraft] = useState<DailyReportDraft>(EMPTY_DAILY_REPORT_DRAFT);
+  const [isDraftReady, setIsDraftReady] = useState(false);
+  const loadedDraftKeyRef = useRef<string | null>(null);
   const [dailyCalendarMonth, setDailyCalendarMonth] = useState(() =>
     getMonthStart(clampDate(getLatestDailyReportDate(), dailyReportSourceStartDate, getToday()))
   );
@@ -151,6 +284,42 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
       setIsDailyCalendarOpen(false);
     }
   }, [reportType]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storageKey = getDailyReportDraftStorageKey(dailyDate);
+    loadedDraftKeyRef.current = null;
+    setIsDraftReady(false);
+    const raw = window.localStorage.getItem(storageKey);
+    if (!raw) {
+      setDailyReportDraft(EMPTY_DAILY_REPORT_DRAFT);
+      loadedDraftKeyRef.current = storageKey;
+      setIsDraftReady(true);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw) as DailyReportDraft;
+      setDailyReportDraft({
+        ...EMPTY_DAILY_REPORT_DRAFT,
+        ...parsed,
+        reasonOverrides: parsed.reasonOverrides ?? {},
+      });
+    } catch {
+      setDailyReportDraft(EMPTY_DAILY_REPORT_DRAFT);
+    }
+    loadedDraftKeyRef.current = storageKey;
+    setIsDraftReady(true);
+  }, [dailyDate]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isDraftReady) return;
+    const storageKey = getDailyReportDraftStorageKey(dailyDate);
+    if (loadedDraftKeyRef.current !== storageKey) return;
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify(dailyReportDraft)
+    );
+  }, [dailyDate, dailyReportDraft, isDraftReady]);
 
   const currentTitle =
     reportType === 'daily' ? '日报' : reportType === 'weekly' ? '周报' : '月报';
@@ -181,11 +350,69 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   const canCalendarPrev = getDateTime(getMonthStart(dailyCalendarMonth)) > getDateTime(getMonthStart(dailyReportSourceStartDate));
   const canCalendarNext = getDateTime(getMonthStart(dailyCalendarMonth)) < getDateTime(maxMonthlyDate);
   const dailyReport = useMemo(() => buildDailyReport(dailyDate), [dailyDate]);
+  const isCurrentDailyDate = reportType === 'daily' && isSameDate(dailyDate, dailyReportEndDate);
+  const dailyReportSections = useMemo(
+    () =>
+      dailyReport?.sections.map((section) => ({
+        ...section,
+        metrics: section.metrics.map((metric) => {
+          const draftReason = dailyReportDraft.reasonOverrides[metric.label];
+          return {
+            ...metric,
+            yesterdayReason:
+              draftReason?.yesterday ?? (isCurrentDailyDate ? '' : metric.yesterdayReason),
+            lastWeekReason:
+              draftReason?.lastWeek ?? (isCurrentDailyDate ? '' : metric.lastWeekReason),
+          };
+        }),
+      })) ?? [],
+    [dailyReport, dailyReportDraft.reasonOverrides, isCurrentDailyDate]
+  );
+  const dailyReportText = useMemo(() => {
+    if (!dailyReport) return '暂无日报数据';
+
+    const productLaunchText = getBlockText(dailyReportDraft.productLaunchHtml);
+    const productIncidentText = getBlockText(dailyReportDraft.productIncidentHtml);
+    const productUpdateText = getBlockText(dailyReportDraft.productUpdateHtml);
+    const designUpdateText = getBlockText(dailyReportDraft.designUpdateHtml);
+
+    return [
+      dailyReport.title,
+      '',
+      ...dailyReportSections.flatMap((section) => [
+        section.title,
+        ...section.metrics.flatMap((metric) => {
+          const lines = [formatMetricLine(metric)];
+          if (metric.yesterdayReason.trim()) {
+            lines.push(`较昨日分析：${metric.yesterdayReason}`);
+          }
+          if (metric.lastWeekReason.trim()) {
+            lines.push(`较上周同日分析：${metric.lastWeekReason}`);
+          }
+          return lines;
+        }),
+        '',
+      ]),
+      '③产品重要事项（产品上线、产品事故等，没有写无）',
+      '产品上线：',
+      productLaunchText,
+      '',
+      '产品事故：',
+      productIncidentText,
+      '',
+      '④昨日重要产品稿或UI稿更新（分享链接）：',
+      '产品：',
+      productUpdateText,
+      '',
+      '设计：',
+      designUpdateText,
+    ].join('\n');
+  }, [dailyReport, dailyReportDraft, dailyReportSections]);
   const summaryMetrics = useMemo(
     () =>
       reportType === 'daily'
         ? dailyReport
-          ? dailyReport.sections.flatMap((section) =>
+          ? dailyReportSections.flatMap((section) =>
               section.metrics.map((metric) => ({
                 label: metric.label,
                 value: metric.valueText,
@@ -206,7 +433,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
         : reportType === 'weekly'
           ? getWeeklyMetrics(weeklyDate).map((metric) => ({ ...metric, trendSuffix: '较上期' }))
           : getMonthlyMetrics(monthlyDate).map((metric) => ({ ...metric, trendSuffix: '较上期' })),
-    [dailyReport, monthlyDate, reportType, weeklyDate]
+    [dailyReport, dailyReportSections, monthlyDate, reportType, weeklyDate]
   );
   const tableRows = useMemo(
     () =>
@@ -253,6 +480,20 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     setDailyDate(clampDate(date, dailyReportSourceStartDate, dailyReportEndDate));
     setDailyCalendarMonth(getMonthStart(date));
     setIsDailyCalendarOpen(false);
+  };
+
+  const updateReasonDraft = (metricLabel: string, field: keyof DailyReportReasonDraft, value: string) => {
+    setDailyReportDraft((prev) => ({
+      ...prev,
+      reasonOverrides: {
+        ...prev.reasonOverrides,
+        [metricLabel]: {
+          yesterday: prev.reasonOverrides[metricLabel]?.yesterday ?? '',
+          lastWeek: prev.reasonOverrides[metricLabel]?.lastWeek ?? '',
+          [field]: value,
+        },
+      },
+    }));
   };
 
   if (!isUnlocked) {
@@ -493,7 +734,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
 
                 {dailyReport ? (
                   <div className="mt-6 space-y-6">
-                    {dailyReport.sections.map((section) => (
+                    {dailyReportSections.map((section) => (
                       <div key={section.title}>
                         <h4 className="text-base font-semibold text-stone-900">{section.title}</h4>
                         <div className="mt-3 overflow-hidden rounded-[18px] border border-stone-200">
@@ -524,15 +765,21 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                                   </td>
                                   <td className={`px-5 py-4 align-top font-medium ${getTrendTone(metric.yesterdayChange)}`}>
                                     <div>{metric.yesterdayChange}</div>
-                                    <div className="mt-1 text-xs font-normal leading-5 text-stone-500">
-                                      {metric.yesterdayReason}
-                                    </div>
+                                    <textarea
+                                      value={metric.yesterdayReason}
+                                      onChange={(event) => updateReasonDraft(metric.label, 'yesterday', event.target.value)}
+                                      placeholder={isCurrentDailyDate ? '未结束日期不自动分析，可手动补充' : '输入较昨日原因'}
+                                      className="mt-2 min-h-[72px] w-full rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-normal leading-5 text-stone-600 outline-none transition focus:border-stone-300 focus:bg-white"
+                                    />
                                   </td>
                                   <td className={`px-5 py-4 align-top font-medium ${getTrendTone(metric.lastWeekChange)}`}>
                                     <div>{metric.lastWeekChange}</div>
-                                    <div className="mt-1 text-xs font-normal leading-5 text-stone-500">
-                                      {metric.lastWeekReason}
-                                    </div>
+                                    <textarea
+                                      value={metric.lastWeekReason}
+                                      onChange={(event) => updateReasonDraft(metric.label, 'lastWeek', event.target.value)}
+                                      placeholder={isCurrentDailyDate ? '未结束日期不自动分析，可手动补充' : '输入较上周同日原因'}
+                                      className="mt-2 min-h-[72px] w-full rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-normal leading-5 text-stone-600 outline-none transition focus:border-stone-300 focus:bg-white"
+                                    />
                                   </td>
                                 </tr>
                               ))}
@@ -541,6 +788,50 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                         </div>
                       </div>
                     ))}
+
+                    <div className="rounded-[22px] border border-stone-200 bg-white p-5">
+                      <h4 className="text-base font-semibold text-stone-900">③产品重要事项（产品上线、产品事故等，没有写无）</h4>
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        <div>
+                          <div className="mb-2 text-sm font-medium text-stone-700">产品上线</div>
+                          <RichTextEditor
+                            value={dailyReportDraft.productLaunchHtml}
+                            onChange={(value) => setDailyReportDraft((prev) => ({ ...prev, productLaunchHtml: value }))}
+                            placeholder="没有写无，支持分行、加粗、列表"
+                          />
+                        </div>
+                        <div>
+                          <div className="mb-2 text-sm font-medium text-stone-700">产品事故</div>
+                          <RichTextEditor
+                            value={dailyReportDraft.productIncidentHtml}
+                            onChange={(value) => setDailyReportDraft((prev) => ({ ...prev, productIncidentHtml: value }))}
+                            placeholder="没有写无，支持分行、加粗、列表"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[22px] border border-stone-200 bg-white p-5">
+                      <h4 className="text-base font-semibold text-stone-900">④昨日重要产品稿或UI稿更新（分享链接）</h4>
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        <div>
+                          <div className="mb-2 text-sm font-medium text-stone-700">产品</div>
+                          <RichTextEditor
+                            value={dailyReportDraft.productUpdateHtml}
+                            onChange={(value) => setDailyReportDraft((prev) => ({ ...prev, productUpdateHtml: value }))}
+                            placeholder="可直接贴分享链接或分点记录"
+                          />
+                        </div>
+                        <div>
+                          <div className="mb-2 text-sm font-medium text-stone-700">设计</div>
+                          <RichTextEditor
+                            value={dailyReportDraft.designUpdateHtml}
+                            onChange={(value) => setDailyReportDraft((prev) => ({ ...prev, designUpdateHtml: value }))}
+                            placeholder="可直接贴分享链接或分点记录"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="mt-6 rounded-[18px] border border-dashed border-stone-300 bg-stone-50 px-5 py-8 text-center text-sm text-stone-500">
@@ -551,7 +842,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
 
                 <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-[0_18px_42px_rgba(120,97,63,0.08)]">
                   <h3 className="text-xl font-semibold tracking-[-0.03em] text-stone-900">日报文案</h3>
-                  <pre className="mt-4 min-h-[260px] whitespace-pre-wrap rounded-[18px] bg-stone-950 p-5 text-sm leading-7 text-stone-100">{dailyReport?.text ?? '暂无日报数据'}</pre>
+                  <pre className="mt-4 min-h-[260px] whitespace-pre-wrap rounded-[18px] bg-stone-950 p-5 text-sm leading-7 text-stone-100">{dailyReportText}</pre>
                 </section>
               </div>
 
