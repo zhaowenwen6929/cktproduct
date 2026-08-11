@@ -113,6 +113,9 @@ const getCalendarDates = (monthDate: Date) => {
   return Array.from({ length: 42 }, (_, index) => shiftDays(firstDate, index));
 };
 
+const getDefaultDailyDate = (minDate: Date, maxDate: Date) =>
+  clampDate(shiftDays(maxDate, -1), minDate, maxDate);
+
 const getWeeklyMetrics = (date: Date) => {
   const weekStart = getWeekStart(date);
   const seed = weekStart.getDate() + (weekStart.getMonth() + 1) * 5;
@@ -296,8 +299,13 @@ function RichTextEditor({
 }
 
 export function DataReportPage({ onBack }: DataReportPageProps) {
-  const dailyReportSourceStartDate = useMemo(() => getDailyReportSourceStartDate(getToday()), []);
+  const today = getToday();
+  const dailyReportSourceStartDate = useMemo(() => getDailyReportSourceStartDate(today), [today]);
   const bundledDailyReportRows = useMemo(() => sortDailyReportRows(getDailyReportSnapshotRows()), []);
+  const defaultDailyDate = useMemo(
+    () => getDefaultDailyDate(dailyReportSourceStartDate, today),
+    [dailyReportSourceStartDate, today]
+  );
   const [reportType, setReportType] = useState<ReportType>('daily');
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -305,18 +313,14 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   const [dailyReportRows, setDailyReportRows] = useState<DailyReportRawRow[]>(bundledDailyReportRows);
   const [dailyReportSyncState, setDailyReportSyncState] = useState<DailyReportSyncState>(EMPTY_DAILY_REPORT_SYNC_STATE);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
-  const [dailyDate, setDailyDate] = useState(() =>
-    clampDate(getLatestDailyReportDate(), dailyReportSourceStartDate, getToday())
-  );
+  const [dailyDate, setDailyDate] = useState(() => defaultDailyDate);
   const [weeklyDate, setWeeklyDate] = useState(() => getWeekStart(new Date()));
   const [monthlyDate, setMonthlyDate] = useState(() => getMonthStart(new Date()));
   const [isDailyCalendarOpen, setIsDailyCalendarOpen] = useState(false);
   const [dailyReportDraft, setDailyReportDraft] = useState<DailyReportDraft>(EMPTY_DAILY_REPORT_DRAFT);
   const [isDraftReady, setIsDraftReady] = useState(false);
   const loadedDraftKeyRef = useRef<string | null>(null);
-  const [dailyCalendarMonth, setDailyCalendarMonth] = useState(() =>
-    getMonthStart(clampDate(getLatestDailyReportDate(), dailyReportSourceStartDate, getToday()))
-  );
+  const [dailyCalendarMonth, setDailyCalendarMonth] = useState(() => getMonthStart(defaultDailyDate));
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
