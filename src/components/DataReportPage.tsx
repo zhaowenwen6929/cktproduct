@@ -560,6 +560,16 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     setIsDailyCalendarOpen(false);
   };
 
+  const jumpToQuickDate = (target: 'yesterday' | 'today') => {
+    const nextDate =
+      target === 'today'
+        ? dailyReportEndDate
+        : clampDate(shiftDays(dailyReportEndDate, -1), dailyReportSourceStartDate, dailyReportEndDate);
+    setDailyDate(nextDate);
+    setDailyCalendarMonth(getMonthStart(nextDate));
+    setIsDailyCalendarOpen(false);
+  };
+
   const refreshDailyRow = (targetDate: Date, source: 'manual' | 'auto') => {
     const dateKey = formatDate(targetDate);
     const sourceRow = bundledDailyReportRows.find((row) => row.date === dateKey);
@@ -714,7 +724,36 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                 <ChevronLeft className="h-5 w-5" />
               </button>
               {reportType === 'daily' ? (
-                <div className="relative">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-1.5 py-1">
+                    <button
+                      type="button"
+                      onClick={() => jumpToQuickDate('yesterday')}
+                      className="rounded-full px-3 py-1 text-xs font-medium text-stone-200 transition hover:bg-white/10 hover:text-white"
+                    >
+                      昨日
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => jumpToQuickDate('today')}
+                      className="rounded-full px-3 py-1 text-xs font-medium text-stone-200 transition hover:bg-white/10 hover:text-white"
+                    >
+                      今日
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDailyCalendarMonth(getMonthStart(dailyDate));
+                        setIsDailyCalendarOpen((prev) => !prev);
+                      }}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                        isDailyCalendarOpen ? 'bg-white text-stone-950' : 'text-stone-200 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      快速定位
+                    </button>
+                  </div>
+                  <div className="relative">
                   <button
                     type="button"
                     onClick={() => {
@@ -784,6 +823,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                       </div>
                     </div>
                   ) : null}
+                </div>
                 </div>
               ) : (
                 <div className="min-w-[220px] px-3 text-center text-sm font-medium text-stone-100">{currentTimeLabel}</div>
