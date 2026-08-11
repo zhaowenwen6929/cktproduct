@@ -460,19 +460,21 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {summaryMetrics.map((metric) => (
-              <section
-                key={metric.label}
-                className="rounded-[24px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8f5ef_100%)] p-5 shadow-[0_18px_32px_rgba(120,97,63,0.08)]"
-              >
-                <div className="text-sm text-stone-500">{metric.label}</div>
-                <div className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-stone-900">{metric.value}</div>
-                <div className={`mt-3 text-sm font-medium ${metric.tone}`}>
-                  {metric.trend}{metric.trendSuffix ? ` ${metric.trendSuffix}` : ''}
-                </div>
-              </section>
-            ))}
+          <div className="mt-6 overflow-x-auto pb-2">
+            <div className="flex min-w-max gap-4">
+              {summaryMetrics.map((metric) => (
+                <section
+                  key={metric.label}
+                  className="w-[220px] shrink-0 rounded-[24px] border border-stone-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8f5ef_100%)] p-5 shadow-[0_18px_32px_rgba(120,97,63,0.08)]"
+                >
+                  <div className="text-sm text-stone-500">{metric.label}</div>
+                  <div className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-stone-900">{metric.value}</div>
+                  <div className={`mt-3 text-sm font-medium ${metric.tone}`}>
+                    {metric.trend}{metric.trendSuffix ? ` ${metric.trendSuffix}` : ''}
+                  </div>
+                </section>
+              ))}
+            </div>
           </div>
 
           {reportType === 'daily' ? (
@@ -521,11 +523,17 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                                       </div>
                                     ) : null}
                                   </td>
-                                  <td className={`px-5 py-4 font-medium ${getTrendTone(metric.yesterdayChange)}`}>
-                                    {metric.yesterdayChange}
+                                  <td className={`px-5 py-4 align-top font-medium ${getTrendTone(metric.yesterdayChange)}`}>
+                                    <div>{metric.yesterdayChange}</div>
+                                    <div className="mt-1 text-xs font-normal leading-5 text-stone-500">
+                                      {metric.yesterdayReason}
+                                    </div>
                                   </td>
-                                  <td className={`px-5 py-4 font-medium ${getTrendTone(metric.lastWeekChange)}`}>
-                                    {metric.lastWeekChange}
+                                  <td className={`px-5 py-4 align-top font-medium ${getTrendTone(metric.lastWeekChange)}`}>
+                                    <div>{metric.lastWeekChange}</div>
+                                    <div className="mt-1 text-xs font-normal leading-5 text-stone-500">
+                                      {metric.lastWeekReason}
+                                    </div>
                                   </td>
                                 </tr>
                               ))}

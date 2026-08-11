@@ -22,7 +22,9 @@ export interface DailyReportMetric {
   label: string;
   valueText: string;
   yesterdayChange: string;
+  yesterdayReason: string;
   lastWeekChange: string;
+  lastWeekReason: string;
   sourceField: string;
   breakdown?: DailyReportMetricBreakdown[];
 }
@@ -234,10 +236,93 @@ const formatPercent = (value: number) => {
   return `${formatNumber(rounded)}%`;
 };
 
+const formatDelta = (value: number, unit: '次' | '元') => {
+  const absValue = Math.abs(value);
+  return `${value > 0 ? '+' : value < 0 ? '-' : ''}${formatNumber(absValue)}${unit}`;
+};
+
 const getChangeText = (current: number, compare?: number) => {
   if (compare == null) return '--';
   if (compare === 0) return current === 0 ? '0%' : '--';
   return formatPercent(((current - compare) / compare) * 100);
+};
+
+const getTopChangeBreakdown = (
+  items: Array<{ label: string; current: number; compare: number | undefined; unit: '次' | '元' }>
+) => {
+  const candidates = items
+    .filter((item) => item.compare != null)
+    .map((item) => ({
+      ...item,
+      delta: item.current - (item.compare as number),
+    }))
+    .filter((item) => item.delta !== 0);
+
+  if (!candidates.length) return null;
+
+  return candidates.sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))[0];
+};
+
+const getComparisonReason = (
+  label: string,
+  current: DailyReportRawRow,
+  compare: DailyReportRawRow | undefined,
+  compareType: 'yesterday' | 'lastWeek'
+) => {
+  if (!compare) return '对比日暂无数据';
+
+  const compareLabel = compareType === 'yesterday' ? '昨日' : '上周同日';
+  const weekendGap =
+    compareType === 'lastWeek' ? current.date.slice(0, 10) !== compare.date.slice(0, 10) : false;
+
+  if (label === '实际支付总人数') {
+    const topChannel = getTopChangeBreakdown([
+      { label: '后台', current: current.backendPaidCount, compare: compare.backendPaidCount, unit: '次' },
+      { label: '无限画布', current: current.canvasPaidCount, compare: compare.canvasPaidCount, unit: '次' },
+      { label: 'AI电商', current: current.ecommercePaidCount, compare: compare.ecommercePaidCount, unit: '次' },
+    ]);
+    if (!topChannel) return `与${compareLabel}基本持平`;
+    return `${topChannel.label}付费人数${topChannel.delta > 0 ? '增加' : '减少'}${formatDelta(topChannel.delta, '次')}，带动整体变化`;
+  }
+
+  if (label === '实际支付总金额') {
+    const topChannel = getTopChangeBreakdown([
+      { label: '后台', current: current.backendPaymentAmountFen / 100, compare: compare.backendPaymentAmountFen / 100, unit: '元' },
+      { label: '无限画布', current: current.canvasPaymentAmountFen / 100, compare: compare.canvasPaymentAmountFen / 100, unit: '元' },
+      { label: 'AI电商', current: current.ecommercePaymentAmountFen / 100, compare: compare.ecommercePaymentAmountFen / 100, unit: '元' },
+    ]);
+    if (!topChannel) return `与${compareLabel}金额基本持平`;
+    return `${topChannel.label}支付金额${topChannel.delta > 0 ? '增加' : '减少'}${formatDelta(topChannel.delta, '元')}，是主要影响项`;
+  }
+
+  if (label === '自平台主设计页') {
+    const delta = current.mainDesignDownloadCount - compare.mainDesignDownloadCount;
+    if (delta === 0) return `与${compareLabel}下载量基本持平`;
+    if (compareType === 'yesterday') {
+      return delta > 0 ? `工作日流量回升，主设计页下载增加${formatDelta(delta, '次')}` : `流量走弱，主设计页下载减少${formatDelta(delta, '次')}`;
+    }
+    return delta > 0
+      ? `较上周同日多出${formatDelta(delta, '次')}，说明主设计页需求更强`
+      : `较上周同日少了${formatDelta(delta, '次')}，主设计页需求偏弱`;
+  }
+
+  if (label === '自平台无线画布') {
+    const delta = current.canvasDownloadCount - compare.canvasDownloadCount;
+    if (delta === 0) return `与${compareLabel}下载量基本持平`;
+    return delta > 0
+      ? `无线画布下载增加${formatDelta(delta, '次')}，创作活跃度更高`
+      : `无线画布下载减少${formatDelta(delta, '次')}，创作活跃度回落`;
+  }
+
+  if (label === '自平台AI电商') {
+    const delta = current.ecommerceDownloadCount - compare.ecommerceDownloadCount;
+    if (delta === 0) return `与${compareLabel}下载量基本持平`;
+    return delta > 0
+      ? `AI电商下载增加${formatDelta(delta, '次')}，商家出图需求提升`
+      : `AI电商下载减少${formatDelta(delta, '次')}，商家出图需求回落`;
+  }
+
+  return weekendGap ? `较${compareLabel}存在自然流量波动` : `与${compareLabel}相比出现正常波动`;
 };
 
 const buildMetric = (
@@ -245,6 +330,9 @@ const buildMetric = (
   current: number,
   previous: number | undefined,
   lastWeek: number | undefined,
+  currentRow: DailyReportRawRow,
+  previousRow: DailyReportRawRow | undefined,
+  lastWeekRow: DailyReportRawRow | undefined,
   sourceField: string,
   unit: '次' | '元',
   breakdown?: DailyReportMetricBreakdown[],
@@ -252,7 +340,9 @@ const buildMetric = (
   label,
   valueText: `${formatNumber(current)}${unit}`,
   yesterdayChange: getChangeText(current, previous),
+  yesterdayReason: getComparisonReason(label, currentRow, previousRow, 'yesterday'),
   lastWeekChange: getChangeText(current, lastWeek),
+  lastWeekReason: getComparisonReason(label, currentRow, lastWeekRow, 'lastWeek'),
   sourceField,
   breakdown,
 });
@@ -277,6 +367,9 @@ export const buildDailyReport = (date: Date, rows = DAILY_REPORT_ROWS): DailyRep
       current.actualPaidCount,
       previous?.actualPaidCount,
       lastWeek?.actualPaidCount,
+      current,
+      previous,
+      lastWeek,
       'I 订单支付(Z)_次',
       '次',
       [
@@ -290,6 +383,9 @@ export const buildDailyReport = (date: Date, rows = DAILY_REPORT_ROWS): DailyRep
       current.actualPaymentAmountFen / 100,
       previous ? previous.actualPaymentAmountFen / 100 : undefined,
       lastWeek ? lastWeek.actualPaymentAmountFen / 100 : undefined,
+      current,
+      previous,
+      lastWeek,
       'J 订单支付(Z)_订单实际支付金额_求和',
       '元',
       [
@@ -306,6 +402,9 @@ export const buildDailyReport = (date: Date, rows = DAILY_REPORT_ROWS): DailyRep
       current.mainDesignDownloadCount,
       previous?.mainDesignDownloadCount,
       lastWeek?.mainDesignDownloadCount,
+      current,
+      previous,
+      lastWeek,
       'H 下载完成_次',
       '次',
     ),
@@ -314,6 +413,9 @@ export const buildDailyReport = (date: Date, rows = DAILY_REPORT_ROWS): DailyRep
       current.canvasDownloadCount,
       previous?.canvasDownloadCount,
       lastWeek?.canvasDownloadCount,
+      current,
+      previous,
+      lastWeek,
       'B 下载完成_次',
       '次',
     ),
@@ -322,6 +424,9 @@ export const buildDailyReport = (date: Date, rows = DAILY_REPORT_ROWS): DailyRep
       current.ecommerceDownloadCount,
       previous?.ecommerceDownloadCount,
       lastWeek?.ecommerceDownloadCount,
+      current,
+      previous,
+      lastWeek,
       'Q 下载弹窗内下载按钮_次',
       '次',
     ),
