@@ -1020,7 +1020,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                       {isCopySuccess ? '复制成功' : '复制'}
                     </button>
                   </div>
-                  <pre className="mt-4 min-h-[260px] whitespace-pre-wrap rounded-[18px] bg-stone-950 p-5 text-sm leading-7 text-stone-100">{dailyReportText}</pre>
+                  <pre className="mt-4 min-h-[260px] whitespace-pre-wrap rounded-[18px] bg-stone-950 p-5 text-xs font-normal leading-6 text-stone-100">{dailyReportText}</pre>
                 </section>
               </div>
 
