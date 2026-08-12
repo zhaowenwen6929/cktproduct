@@ -199,6 +199,10 @@ const mergeBundledAndStoredDailyReportRows = (bundledRows: DailyReportRawRow[], 
 };
 
 const syncDailyReportRowFromApi = async (date: string) => {
+  if (!import.meta.env.DEV) {
+    throw new Error('线上站点不支持直接抓取本机 GIO 页面，请在本地开发环境中更新数据');
+  }
+
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), DAILY_REPORT_SYNC_TIMEOUT_MS);
 
@@ -211,7 +215,12 @@ const syncDailyReportRowFromApi = async (date: string) => {
       body: JSON.stringify({ date }),
       signal: controller.signal,
     });
-    const payload = (await response.json()) as {
+    const responseText = await response.text();
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!contentType.includes('application/json')) {
+      throw new Error('本地同步接口返回了非 JSON 响应，请确认当前运行的是本地开发环境');
+    }
+    const payload = JSON.parse(responseText) as {
       error?: string;
       fetchedAt?: string;
       row?: DailyReportRawRow;

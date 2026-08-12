@@ -46,6 +46,10 @@ const escapeAppleScriptString = (value: string) => value.replace(/\\/g, '\\\\').
 const fetchDailyReportRowFromChrome = (date: string) => {
   const browserScript = `
     const normalize = (value) => (value || '').replace(/\\s+/g, ' ').trim();
+    const normalizeDateCell = (value) => {
+      const matched = normalize(value).match(/(\\d{2})-(\\d{2})/);
+      return matched ? \`2026-\${matched[1]}-\${matched[2]}\` : '';
+    };
     const parseNumericCell = (value) => {
       const normalized = normalize(value).replace(/,/g, '');
       const matched = normalized.match(/-?\\d+(?:\\.\\d+)?/);
@@ -60,16 +64,20 @@ const fetchDailyReportRowFromChrome = (date: string) => {
     const rows = Array.from(targetTable.querySelectorAll('tbody tr')).map((row) =>
       Array.from(row.querySelectorAll('td')).map((cell) => normalize(cell.textContent))
     );
-    const targetRow = rows.find((row) => row[0] === ${JSON.stringify(date)});
+    const targetRow = rows.find((row) => normalizeDateCell(row[0]) === ${JSON.stringify(date)});
     if (!targetRow) {
       return JSON.stringify({
         error: 'GIO 表格中未找到目标日期',
-        availableDates: rows.slice(0, 10).map((row) => row[0]).filter(Boolean),
+        availableDates: rows
+          .slice(0, 10)
+          .map((row) => ({ rawDate: row[0], normalizedDate: normalizeDateCell(row[0]) }))
+          .filter((row) => row.rawDate),
       });
     }
     const rowRecord = Object.fromEntries(headers.map((header, index) => [header, targetRow[index] ?? '']));
     return JSON.stringify({
       date: ${JSON.stringify(date)},
+      rawDate: targetRow[0] ?? '',
       rowRecord,
       title: document.title,
       fetchedAt: new Date().toISOString(),
