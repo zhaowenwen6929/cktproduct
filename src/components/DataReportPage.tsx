@@ -369,9 +369,12 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     const syncStateRaw = window.localStorage.getItem(DAILY_REPORT_SYNC_STATE_STORAGE_KEY);
     if (syncStateRaw) {
       try {
+        const parsedSyncState = JSON.parse(syncStateRaw) as Partial<DailyReportSyncState>;
         setDailyReportSyncState({
           ...EMPTY_DAILY_REPORT_SYNC_STATE,
-          ...JSON.parse(syncStateRaw),
+          ...parsedSyncState,
+          // Never restore an in-flight flag from persisted storage.
+          isSyncing: false,
         });
       } catch {
         setDailyReportSyncState(EMPTY_DAILY_REPORT_SYNC_STATE);
