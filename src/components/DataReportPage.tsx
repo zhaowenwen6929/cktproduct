@@ -31,6 +31,8 @@ interface DailyReportDraft {
 interface DailyReportSyncState {
   lastUpdatedAt: string | null;
   lastAutoSyncSlot: string | null;
+  lastError: string | null;
+  isSyncing: boolean;
 }
 
 const PASSWORD = '123456';
@@ -51,6 +53,8 @@ const EMPTY_DAILY_REPORT_DRAFT: DailyReportDraft = {
 const EMPTY_DAILY_REPORT_SYNC_STATE: DailyReportSyncState = {
   lastUpdatedAt: null,
   lastAutoSyncSlot: null,
+  lastError: null,
+  isSyncing: false,
 };
 
 const formatDate = (date: Date) =>
@@ -180,6 +184,33 @@ const upsertDailyReportRow = (rows: DailyReportRawRow[], nextRow: DailyReportRaw
     nextRows.push(nextRow);
   }
   return sortDailyReportRows(nextRows);
+};
+
+const mergeBundledAndStoredDailyReportRows = (bundledRows: DailyReportRawRow[], storedRows: DailyReportRawRow[]) => {
+  let mergedRows = sortDailyReportRows(storedRows);
+  bundledRows.forEach((row) => {
+    mergedRows = upsertDailyReportRow(mergedRows, row);
+  });
+  return mergedRows;
+};
+
+const syncDailyReportRowFromApi = async (date: string) => {
+  const response = await fetch('/api/daily-report-sync', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ date }),
+  });
+  const payload = (await response.json()) as {
+    error?: string;
+    fetchedAt?: string;
+    row?: DailyReportRawRow;
+  };
+  if (!response.ok || !payload.row) {
+    throw new Error(payload.error ?? `同步 ${date} 数据失败`);
+  }
+  return payload;
 };
 
 const getSyncSlotKey = (date: Date) => {
@@ -329,7 +360,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     if (storedRows) {
       try {
         const parsedRows = JSON.parse(storedRows) as DailyReportRawRow[];
-        setDailyReportRows(sortDailyReportRows(parsedRows));
+        setDailyReportRows(mergeBundledAndStoredDailyReportRows(bundledDailyReportRows, parsedRows));
       } catch {
         setDailyReportRows(bundledDailyReportRows);
       }
@@ -487,10 +518,6 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
       designUpdateText,
     ].join('\n');
   }, [dailyReport, dailyReportDraft, dailyReportSections]);
-  const hasBundledRowForCurrentDate = useMemo(
-    () => bundledDailyReportRows.some((row) => row.date === formatDate(dailyDate)),
-    [bundledDailyReportRows, dailyDate]
-  );
   const summaryMetrics = useMemo(
     () =>
       reportType === 'daily'
@@ -575,26 +602,41 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
     setIsDailyCalendarOpen(false);
   };
 
-  const refreshDailyRow = (targetDate: Date, source: 'manual' | 'auto') => {
+  const refreshDailyRow = async (targetDate: Date, source: 'manual' | 'auto') => {
     const dateKey = formatDate(targetDate);
-    const sourceRow = bundledDailyReportRows.find((row) => row.date === dateKey);
-    if (!sourceRow) return false;
-
-    setDailyReportRows((prev) => upsertDailyReportRow(prev, sourceRow));
     setDailyReportSyncState((prev) => ({
       ...prev,
-      lastUpdatedAt: new Date().toISOString(),
-      lastAutoSyncSlot: source === 'auto' ? getSyncSlotKey(new Date()) : prev.lastAutoSyncSlot,
+      isSyncing: true,
+      lastError: null,
     }));
-    return true;
+
+    try {
+      const payload = await syncDailyReportRowFromApi(dateKey);
+      setDailyReportRows((prev) => upsertDailyReportRow(prev, payload.row!));
+      setDailyReportSyncState((prev) => ({
+        ...prev,
+        isSyncing: false,
+        lastError: null,
+        lastUpdatedAt: payload.fetchedAt ?? new Date().toISOString(),
+        lastAutoSyncSlot: source === 'auto' ? getSyncSlotKey(new Date()) : prev.lastAutoSyncSlot,
+      }));
+      return true;
+    } catch (error) {
+      setDailyReportSyncState((prev) => ({
+        ...prev,
+        isSyncing: false,
+        lastError: error instanceof Error ? error.message : '同步数据失败',
+      }));
+      return false;
+    }
   };
 
   useEffect(() => {
     const now = new Date();
     const slotKey = getSyncSlotKey(now);
-    if (dailyReportSyncState.lastAutoSyncSlot === slotKey) return;
-    refreshDailyRow(dailyReportEndDate, 'auto');
-  }, [dailyReportEndDate, dailyReportSyncState.lastAutoSyncSlot]);
+    if (dailyReportSyncState.isSyncing || dailyReportSyncState.lastAutoSyncSlot === slotKey) return;
+    void refreshDailyRow(dailyReportEndDate, 'auto');
+  }, [dailyReportEndDate, dailyReportSyncState.isSyncing, dailyReportSyncState.lastAutoSyncSlot]);
 
   const updateReasonDraft = (metricLabel: string, field: keyof DailyReportReasonDraft, value: string) => {
     setDailyReportDraft((prev) => ({
@@ -884,18 +926,18 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                   <div className="flex flex-col items-start gap-2">
                     <button
                       type="button"
-                      disabled={!hasBundledRowForCurrentDate}
-                      onClick={() => refreshDailyRow(dailyDate, 'manual')}
+                      disabled={dailyReportSyncState.isSyncing}
+                      onClick={() => {
+                        void refreshDailyRow(dailyDate, 'manual');
+                      }}
                       className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-300 hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      更新当前日期数据
+                      {dailyReportSyncState.isSyncing ? '更新中...' : '更新当前日期数据'}
                     </button>
                     <div className="text-xs text-stone-400">
                       最近更新：{dailyReportSyncState.lastUpdatedAt ? new Date(dailyReportSyncState.lastUpdatedAt).toLocaleString('zh-CN') : '暂无'}
                     </div>
-                    {!hasBundledRowForCurrentDate ? (
-                      <div className="text-xs text-amber-600">当前日期暂无可同步源数据</div>
-                    ) : null}
+                    {dailyReportSyncState.lastError ? <div className="text-xs text-rose-600">{dailyReportSyncState.lastError}</div> : null}
                   </div>
                 </div>
 
