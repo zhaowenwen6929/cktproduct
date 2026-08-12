@@ -31,6 +31,7 @@ interface DailyReportDraft {
 interface DailyReportSyncState {
   lastUpdatedAt: string | null;
   lastAutoSyncSlot: string | null;
+  lastAttemptedAutoSyncSlot: string | null;
   lastError: string | null;
   isSyncing: boolean;
 }
@@ -53,9 +54,12 @@ const EMPTY_DAILY_REPORT_DRAFT: DailyReportDraft = {
 const EMPTY_DAILY_REPORT_SYNC_STATE: DailyReportSyncState = {
   lastUpdatedAt: null,
   lastAutoSyncSlot: null,
+  lastAttemptedAutoSyncSlot: null,
   lastError: null,
   isSyncing: false,
 };
+
+const DAILY_REPORT_SYNC_TIMEOUT_MS = 12000;
 
 const formatDate = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -195,22 +199,35 @@ const mergeBundledAndStoredDailyReportRows = (bundledRows: DailyReportRawRow[], 
 };
 
 const syncDailyReportRowFromApi = async (date: string) => {
-  const response = await fetch('/api/daily-report-sync', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ date }),
-  });
-  const payload = (await response.json()) as {
-    error?: string;
-    fetchedAt?: string;
-    row?: DailyReportRawRow;
-  };
-  if (!response.ok || !payload.row) {
-    throw new Error(payload.error ?? `同步 ${date} 数据失败`);
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), DAILY_REPORT_SYNC_TIMEOUT_MS);
+
+  try {
+    const response = await fetch('/api/daily-report-sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ date }),
+      signal: controller.signal,
+    });
+    const payload = (await response.json()) as {
+      error?: string;
+      fetchedAt?: string;
+      row?: DailyReportRawRow;
+    };
+    if (!response.ok || !payload.row) {
+      throw new Error(payload.error ?? `同步 ${date} 数据失败`);
+    }
+    return payload;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error(`同步 ${date} 数据超时，请确认 Google Chrome 中的 GIO 页面已打开`);
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
   }
-  return payload;
 };
 
 const getSyncSlotKey = (date: Date) => {
@@ -607,10 +624,12 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
 
   const refreshDailyRow = async (targetDate: Date, source: 'manual' | 'auto') => {
     const dateKey = formatDate(targetDate);
+    const autoSyncSlot = source === 'auto' ? getSyncSlotKey(new Date()) : null;
     setDailyReportSyncState((prev) => ({
       ...prev,
       isSyncing: true,
       lastError: null,
+      lastAttemptedAutoSyncSlot: autoSyncSlot ?? prev.lastAttemptedAutoSyncSlot,
     }));
 
     try {
@@ -621,7 +640,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
         isSyncing: false,
         lastError: null,
         lastUpdatedAt: payload.fetchedAt ?? new Date().toISOString(),
-        lastAutoSyncSlot: source === 'auto' ? getSyncSlotKey(new Date()) : prev.lastAutoSyncSlot,
+        lastAutoSyncSlot: autoSyncSlot ?? prev.lastAutoSyncSlot,
       }));
       return true;
     } catch (error) {
@@ -637,9 +656,20 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
   useEffect(() => {
     const now = new Date();
     const slotKey = getSyncSlotKey(now);
-    if (dailyReportSyncState.isSyncing || dailyReportSyncState.lastAutoSyncSlot === slotKey) return;
+    if (
+      dailyReportSyncState.isSyncing ||
+      dailyReportSyncState.lastAutoSyncSlot === slotKey ||
+      dailyReportSyncState.lastAttemptedAutoSyncSlot === slotKey
+    ) {
+      return;
+    }
     void refreshDailyRow(dailyReportEndDate, 'auto');
-  }, [dailyReportEndDate, dailyReportSyncState.isSyncing, dailyReportSyncState.lastAutoSyncSlot]);
+  }, [
+    dailyReportEndDate,
+    dailyReportSyncState.isSyncing,
+    dailyReportSyncState.lastAttemptedAutoSyncSlot,
+    dailyReportSyncState.lastAutoSyncSlot,
+  ]);
 
   const updateReasonDraft = (metricLabel: string, field: keyof DailyReportReasonDraft, value: string) => {
     setDailyReportDraft((prev) => ({
