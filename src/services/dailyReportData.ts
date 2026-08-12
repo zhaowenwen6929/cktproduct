@@ -74,8 +74,8 @@ const DAILY_REPORT_ROWS: DailyReportRawRow[] = [
     ecommercePaidCount: 6,
     ecommercePaymentAmountFen: 51800,
     mainDesignDownloadCount: 87707,
-    canvasDownloadCount: 601,
-    ecommerceDownloadCount: 292,
+    canvasDownloadCount: 864,
+    ecommerceDownloadCount: 341,
   },
   {
     date: '2026-08-10',

@@ -88,10 +88,25 @@ const fetchDailyReportRowFromChrome = (date: string) => {
     set targetUrl to "${escapeAppleScriptString(GROWING_IO_DAILY_REPORT_URL)}"
     set browserScript to "${escapeAppleScriptString(browserScript)}"
     tell application "Google Chrome"
+      if (count of windows) > 0 then
+        set frontTab to active tab of front window
+        if (URL of frontTab) contains targetUrl then
+          set thePayload to execute frontTab javascript browserScript
+          return thePayload
+        end if
+      end if
+
+      repeat with theWindow in windows
+        set activeTabRef to active tab of theWindow
+        if (URL of activeTabRef) contains targetUrl then
+          set thePayload to execute activeTabRef javascript browserScript
+          return thePayload
+        end if
+      end repeat
+
       repeat with theWindow in windows
         repeat with theTab in tabs of theWindow
           if (URL of theTab) contains targetUrl then
-            set active tab index of theWindow to (index of theTab)
             set thePayload to execute theTab javascript browserScript
             return thePayload
           end if
