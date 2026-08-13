@@ -4,11 +4,10 @@ import { Sidebar } from './components/Sidebar';
 import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
 import { PluginPrototypePage } from './components/PluginPrototypePage';
-import { DataReportPage } from './components/DataReportPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/data-report';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype';
 
 type ExportRequest =
   | {
@@ -49,7 +48,6 @@ const DEMO_VIDEO_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-v
 const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/canvas') return '/canvas';
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
-  if (pathname === '/data-report') return '/data-report';
   return '/';
 };
 
@@ -1288,10 +1286,6 @@ export default function App() {
         title: '浏览器插件原型',
         description: '浏览器插件原型，展示右侧常驻创作助手的交互流程。',
       },
-      '/data-report': {
-        title: '周日报数据查看',
-        description: '周日报数据查看页面，支持密码校验、日报按天切换、周报按自然周切换。',
-      },
     };
 
     const next = titleMap[currentRoute];
@@ -1315,13 +1309,6 @@ export default function App() {
         description: '预览“右侧常驻创作助手”形态，模拟插件在网页里的推荐动作、结果预览与流转闭环。',
         href: '/plugin-prototype' as AppRoute,
         status: '原型可看',
-        available: true,
-      },
-      {
-        title: '周日报数据查看',
-        description: '进入后需要密码 123456，左侧切换日报/周报，右侧查看对应时间与数据明细。',
-        href: '/data-report' as AppRoute,
-        status: '已接入',
         available: true,
       },
     ];
@@ -1419,10 +1406,6 @@ export default function App() {
         onOpenCanvas={() => navigateTo('/canvas')}
       />
     );
-  }
-
-  if (currentRoute === '/data-report') {
-    return <DataReportPage onBack={() => navigateTo('/')} />;
   }
 
   return (
