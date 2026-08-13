@@ -293,6 +293,9 @@ const formatMetricLine = (metric: {
 }) =>
   `${metric.label}：${metric.valueText}${metric.breakdown ? `（其中${metric.breakdown.map((item) => `${item.label}${item.valueText}`).join('，')}）` : ''}，较昨日${metric.yesterdayChange}，较上周同日${metric.lastWeekChange}`;
 
+const reasonTextareaClassName =
+  'mt-2 min-h-[104px] w-full resize-y rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-normal leading-6 whitespace-pre-wrap break-words text-stone-600 outline-none transition focus:border-stone-300 focus:bg-white';
+
 const execEditorCommand = (command: string) => {
   if (typeof document === 'undefined') return;
   document.execCommand(command);
@@ -302,7 +305,7 @@ function RichTextEditor({
   value,
   onChange,
   placeholder,
-  minHeight = 120,
+  minHeight = 160,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -348,7 +351,7 @@ function RichTextEditor({
         suppressContentEditableWarning
         data-placeholder={placeholder}
         onInput={(event) => onChange(normalizeRichTextHtml(event.currentTarget.innerHTML))}
-        className="min-h-[120px] px-4 py-3 text-sm leading-7 text-stone-800 outline-none empty:before:text-stone-400 empty:before:content-[attr(data-placeholder)]"
+        className="min-h-[160px] whitespace-pre-wrap break-words px-4 py-3 text-sm leading-7 text-stone-800 outline-none empty:before:text-stone-400 empty:before:content-[attr(data-placeholder)]"
         style={{ minHeight }}
       />
     </div>
@@ -1020,7 +1023,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                                       value={metric.yesterdayReason}
                                       onChange={(event) => updateReasonDraft(metric.label, 'yesterday', event.target.value)}
                                       placeholder={isCurrentDailyDate ? '未结束日期不自动分析，可手动补充' : '输入较昨日原因'}
-                                      className="mt-2 min-h-[72px] w-full rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-normal leading-5 text-stone-600 outline-none transition focus:border-stone-300 focus:bg-white"
+                                      className={reasonTextareaClassName}
                                     />
                                   </td>
                                   <td className={`px-5 py-4 align-top font-medium ${getTrendTone(metric.lastWeekChange)}`}>
@@ -1029,7 +1032,7 @@ export function DataReportPage({ onBack }: DataReportPageProps) {
                                       value={metric.lastWeekReason}
                                       onChange={(event) => updateReasonDraft(metric.label, 'lastWeek', event.target.value)}
                                       placeholder={isCurrentDailyDate ? '未结束日期不自动分析，可手动补充' : '输入较上周同日原因'}
-                                      className="mt-2 min-h-[72px] w-full rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-normal leading-5 text-stone-600 outline-none transition focus:border-stone-300 focus:bg-white"
+                                      className={reasonTextareaClassName}
                                     />
                                   </td>
                                 </tr>
