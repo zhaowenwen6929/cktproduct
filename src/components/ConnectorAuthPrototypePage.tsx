@@ -287,8 +287,8 @@ export function ConnectorAuthPrototypePage({ onBack }: ConnectorAuthPrototypePag
                   <div>
                     <div className="text-[30px] font-black tracking-[-0.05em] text-stone-900">我的 Access Key</div>
                     <div className="mt-4 space-y-2 text-[15px] leading-7 text-[#4d5871]">
-                      <div>· Access key 仅用于创客贴智能体 skills 的调用授权使用，请谨慎保管。</div>
-                      <div>· 连接器授权将基于你选择的 key，为 WorkBuddy 建立调用映射关系。</div>
+                      <div>. Access key 仅用于创客贴智能体 skills 和连接器的调用授权使用，一旦传播给他人，有账号泄露的风险，请谨慎保管！</div>
+                      <div>· 连接器授权将基于你选择的 key 建立调用映射关系。</div>
                       <div>· 如当前没有可用 key，可先创建一个新的 Access Key 再继续授权。</div>
                     </div>
                   </div>
