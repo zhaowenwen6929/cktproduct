@@ -4,10 +4,11 @@ import { Sidebar } from './components/Sidebar';
 import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
 import { PluginPrototypePage } from './components/PluginPrototypePage';
+import { ConnectorAuthPrototypePage } from './components/ConnectorAuthPrototypePage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth';
 
 type ExportRequest =
   | {
@@ -48,6 +49,7 @@ const DEMO_VIDEO_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-v
 const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/canvas') return '/canvas';
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
+  if (pathname === '/connector-auth') return '/connector-auth';
   return '/';
 };
 
@@ -1286,6 +1288,10 @@ export default function App() {
         title: '浏览器插件原型',
         description: '浏览器插件原型，展示右侧常驻创作助手的交互流程。',
       },
+      '/connector-auth': {
+        title: 'AI 连接器授权原型',
+        description: 'AI 连接器授权原型，模拟创客贴登录、Access Key 选择与 WorkBuddy 授权回跳流程。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1309,6 +1315,13 @@ export default function App() {
         description: '预览“右侧常驻创作助手”形态，模拟插件在网页里的推荐动作、结果预览与流转闭环。',
         href: '/plugin-prototype' as AppRoute,
         status: '原型可看',
+        available: true,
+      },
+      {
+        title: 'AI 连接器授权原型',
+        description: '模拟“登录创客贴 -> 查看/创建 Access Key -> 使用授权 -> 回跳 WorkBuddy”的完整流程。',
+        href: '/connector-auth' as AppRoute,
+        status: '新增流程',
         available: true,
       },
     ];
@@ -1406,6 +1419,10 @@ export default function App() {
         onOpenCanvas={() => navigateTo('/canvas')}
       />
     );
+  }
+
+  if (currentRoute === '/connector-auth') {
+    return <ConnectorAuthPrototypePage onBack={() => navigateTo('/')} />;
   }
 
   return (
