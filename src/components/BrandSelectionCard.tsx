@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import type { BrandGroup } from '../types';
 import { cn } from '../lib/utils';
@@ -20,10 +20,29 @@ export const BrandSelectionCard: React.FC<Props> = ({
   onSkip,
   onConfirm,
 }) => {
+  const promptText = '这次需求需要品牌信息，请先选择一个品牌后我再继续。';
+  const [typedLength, setTypedLength] = useState(0);
+  const typedPrompt = useMemo(() => promptText.slice(0, typedLength), [typedLength]);
+
+  useEffect(() => {
+    setTypedLength(0);
+    const timer = window.setInterval(() => {
+      setTypedLength((current) => {
+        if (current >= promptText.length) {
+          window.clearInterval(timer);
+          return promptText.length;
+        }
+        return current + 1;
+      });
+    }, 28);
+
+    return () => window.clearInterval(timer);
+  }, [promptText]);
+
   return (
     <div className="w-full rounded-[18px] bg-white px-3 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.06)] ring-1 ring-[#eef1f7]">
       <div className="text-[12px] leading-6 text-[#3d4454]">
-        这次需求需要品牌信息，请先选择一个品牌后我再继续。
+        {typedPrompt}
       </div>
 
       <div className="mt-2.5 space-y-2">

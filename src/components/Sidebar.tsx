@@ -1058,7 +1058,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       updatePlanMessage(taskId, (flow) => ({ ...flow, awaitingBrandSelection: true }));
       setPendingBrandPrompt(composePlanPrompt(nextFlow));
       setPendingBrandPlanTaskId(taskId);
-      setPendingBrandSelectionId(initialBrandId);
+      setPendingBrandSelectionId(null);
       if (initialBrandId) {
         setBrandDetailBrandId(initialBrandId);
         setBrandDetailOpen(true);
