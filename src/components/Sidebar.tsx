@@ -5,6 +5,7 @@ import { ChatMessage, GenerationAttachment, GenerationPlan, GenerationTask, Plan
 import { BRAND_GROUPS } from '../data/brands';
 import { shouldShowBrandToolkit } from '../lib/brandKeywords';
 import { BrandToolkitCard } from './BrandToolkitCard';
+import { BrandSelectionCard } from './BrandSelectionCard';
 import { BrandDetailPanel } from './BrandDetailPanel';
 import { ResourceLibraryDialog } from './ResourceLibraryDialog';
 import { PlanningFlowCard } from './PlanningFlowCard';
@@ -582,6 +583,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const [showResourceLibraryDialog, setShowResourceLibraryDialog] = useState(false);
   const [resourceLibraryInitialTab, setResourceLibraryInitialTab] = useState<LibraryTab | undefined>(undefined);
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
+  const [pendingBrandSelectionId, setPendingBrandSelectionId] = useState<string | null>(null);
   const [brandDetailOpen, setBrandDetailOpen] = useState(false);
   const [brandDetailBrandId, setBrandDetailBrandId] = useState<string | null>(null);
   const [pendingBrandPrompt, setPendingBrandPrompt] = useState<string | null>(null);
@@ -927,6 +929,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       }
     }
     return null;
+  };
+
+  const handlePendingBrandSelect = (brandId: string) => {
+    setPendingBrandSelectionId(brandId);
+    setBrandDetailBrandId(brandId);
+    setBrandDetailOpen(true);
+  };
+
+  const handlePendingBrandSkip = async () => {
+    if (!pendingBrandPrompt || loading) return;
+    const prompt = pendingBrandPrompt;
+    setPendingBrandPrompt(null);
+    setPendingBrandSelectionId(null);
+    setBrandDetailOpen(false);
+    setBrandDetailBrandId(null);
+    await generateAndAppend(prompt, undefined, `${Date.now()}-skip-brand`);
+  };
+
+  const handlePendingBrandConfirm = async () => {
+    if (!pendingBrandPrompt || !pendingBrandSelectionId || loading) return;
+    const prompt = pendingBrandPrompt;
+    const pickedBrand = brandGroups.find((b) => b.id === pendingBrandSelectionId);
+    if (!pickedBrand) return;
+    setSelectedBrandId(pickedBrand.id);
+    setPendingBrandPrompt(null);
+    setBrandDetailBrandId(pickedBrand.id);
+    setBrandDetailOpen(true);
+    await generateAndAppend(prompt, pickedBrand, `${Date.now()}-confirm-brand`);
   };
 
   const schedulePlanThought = (flow: PlanFlow) => {
@@ -2310,6 +2340,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     // 场景 1：先让用户选品牌组，再触发生图
     if (shouldShowBrandToolkit(userMsg.content) && !selectedBrandId && brandGroups.length > 0) {
       setPendingBrandPrompt(userMsg.content);
+      const initialBrandId = brandGroups[0]?.id ?? null;
+      setPendingBrandSelectionId(initialBrandId);
+      if (initialBrandId) {
+        setBrandDetailBrandId(initialBrandId);
+        setBrandDetailOpen(true);
+      }
       return;
     }
 
@@ -2669,27 +2705,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
               const listBrands = brandGroups.filter((b) => msg.brandIds!.includes(b.id));
               return (
                 <div key={msg.id} className="w-full flex flex-col gap-2 items-start">
-                  <div className="text-[11px] text-gray-500">
-                    发现当前有多个品牌组，请选择要使用哪个
-                  </div>
-                  {listBrands.map((b) => (
-                    <BrandToolkitCard
-                      key={b.id}
-                      title={b.name}
-                      onOpenDetails={async () => {
-                        if (loading) return;
-                        setSelectedBrandId(b.id);
-                        setBrandDetailBrandId(b.id);
-                        setBrandDetailOpen(true);
-
-                        // 场景 1：用户选择品牌后，立即按“品牌数据 + 原提示词”生图
-                        if (pendingBrandPrompt) {
-                          await generateAndAppend(pendingBrandPrompt, b, `${Date.now()}-pick`);
-                          setPendingBrandPrompt(null);
-                        }
-                      }}
-                    />
-                  ))}
+                  <BrandSelectionCard
+                    brands={listBrands}
+                    selectedBrandId={pendingBrandSelectionId}
+                    loading={loading}
+                    onSelectBrand={handlePendingBrandSelect}
+                    onSkip={() => {
+                      void handlePendingBrandSkip();
+                    }}
+                    onConfirm={() => {
+                      void handlePendingBrandConfirm();
+                    }}
+                  />
                 </div>
               );
             }
