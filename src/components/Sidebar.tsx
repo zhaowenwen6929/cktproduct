@@ -584,6 +584,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const [resourceLibraryInitialTab, setResourceLibraryInitialTab] = useState<LibraryTab | undefined>(undefined);
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [pendingBrandSelectionId, setPendingBrandSelectionId] = useState<string | null>(null);
+  const [pendingBrandPlanTaskId, setPendingBrandPlanTaskId] = useState<string | null>(null);
   const [brandDetailOpen, setBrandDetailOpen] = useState(false);
   const [brandDetailBrandId, setBrandDetailBrandId] = useState<string | null>(null);
   const [pendingBrandPrompt, setPendingBrandPrompt] = useState<string | null>(null);
@@ -940,22 +941,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const handlePendingBrandSkip = async () => {
     if (!pendingBrandPrompt || loading) return;
     const prompt = pendingBrandPrompt;
+    const pendingPlanTaskId = pendingBrandPlanTaskId;
     setPendingBrandPrompt(null);
     setPendingBrandSelectionId(null);
+    setPendingBrandPlanTaskId(null);
     setBrandDetailOpen(false);
     setBrandDetailBrandId(null);
+    setMessages((prev) => prev.filter((msg) => msg.id !== `${pendingPlanTaskId}-brand-toolkit`));
+    if (pendingPlanTaskId) {
+      const flow = messages.find((msg) => msg.id === pendingPlanTaskId)?.planFlow;
+      if (flow) {
+        await startPlanExecution(pendingPlanTaskId, flow);
+      }
+      return;
+    }
     await generateAndAppend(prompt, undefined, `${Date.now()}-skip-brand`);
   };
 
   const handlePendingBrandConfirm = async () => {
     if (!pendingBrandPrompt || !pendingBrandSelectionId || loading) return;
     const prompt = pendingBrandPrompt;
+    const pendingPlanTaskId = pendingBrandPlanTaskId;
     const pickedBrand = brandGroups.find((b) => b.id === pendingBrandSelectionId);
     if (!pickedBrand) return;
     setSelectedBrandId(pickedBrand.id);
     setPendingBrandPrompt(null);
+    setPendingBrandPlanTaskId(null);
     setBrandDetailBrandId(pickedBrand.id);
     setBrandDetailOpen(true);
+    setMessages((prev) => prev.filter((msg) => msg.id !== `${pendingPlanTaskId}-brand-toolkit`));
+    if (pendingPlanTaskId) {
+      const flow = messages.find((msg) => msg.id === pendingPlanTaskId)?.planFlow;
+      if (flow) {
+        await startPlanExecution(pendingPlanTaskId, flow, pickedBrand);
+      }
+      return;
+    }
     await generateAndAppend(prompt, pickedBrand, `${Date.now()}-confirm-brand`);
   };
 
@@ -1027,6 +1048,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     };
 
     updatePlanMessage(taskId, () => nextFlow);
+
+    const needsBrandSelection = resolvedAnswers['plan-asset'] === '需要' && !selectedBrandId && brandGroups.length > 0;
+    if (needsBrandSelection) {
+      const initialBrandId = brandGroups[0]?.id ?? null;
+      setPendingBrandPrompt(composePlanPrompt(nextFlow));
+      setPendingBrandPlanTaskId(taskId);
+      setPendingBrandSelectionId(initialBrandId);
+      if (initialBrandId) {
+        setBrandDetailBrandId(initialBrandId);
+        setBrandDetailOpen(true);
+      }
+      setMessages((prev) => {
+        const alreadyExists = prev.some((msg) => msg.id === `${taskId}-brand-toolkit`);
+        if (alreadyExists) return prev;
+        return [
+          ...prev,
+          {
+            id: `${taskId}-brand-toolkit`,
+            role: 'assistant',
+            content: '',
+            timestamp: Date.now(),
+            variant: 'brand_toolkit',
+            brandIds: brandGroups.map((b) => b.id),
+          },
+        ];
+      });
+      return;
+    }
+
     schedulePlanThought(nextFlow);
   };
 
@@ -1043,7 +1093,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     return `${flow.sourcePrompt}${enrichment}`;
   };
 
-  const startPlanExecution = async (taskId: string, flow: PlanFlow) => {
+  const startPlanExecution = async (taskId: string, flow: PlanFlow, brand?: typeof brandGroups[number]) => {
     clearPlanTimeouts(taskId);
 
     const pushTimer = (delay: number, fn: () => void) => {
@@ -1114,7 +1164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     });
 
     await new Promise((resolve) => setTimeout(resolve, 2200));
-    await generateAndAppend(composePlanPrompt(flow), undefined, `${taskId}-plan`);
+    await generateAndAppend(composePlanPrompt(flow), brand, `${taskId}-plan`);
 
     updatePlanMessage(taskId, (current) => ({
       ...current,
@@ -2677,7 +2727,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
             );
           }
 
-          if (isPlanningFlowSession && msg.role === 'assistant') {
+          if (isPlanningFlowSession && msg.role === 'assistant' && msg.variant !== 'brand_toolkit') {
             return null;
           }
 

@@ -39,6 +39,16 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
     [brandName]
   );
 
+  const palettes = brand?.palettes?.length ? brand.palettes : [{ label: '主色', colors: brand?.colors ?? [] }];
+  const logos = brand?.logos?.length
+    ? brand.logos
+    : [{ label: 'Primary Logo' }, { label: 'Symbol' }, { label: 'Wordmark' }];
+  const fonts = brand?.fonts?.length ? brand.fonts : [{ family: '系统字体', styles: ['Regular', 'Bold'] }];
+  const toneTags = brand?.toneTags?.length ? brand.toneTags : ['品牌调性'];
+  const toneBlocks = brand?.toneBlocks?.length ? brand.toneBlocks : [{ title: '表达方式', items: ['简洁、清晰、可执行'] }];
+  const illustrations = brand?.illustrations?.length ? brand.illustrations : [{ label: '插画风格', caption: '待补充' }];
+  const spokespersons = brand?.spokespersons?.length ? brand.spokespersons : [{ label: '代言人素材', caption: '待补充' }];
+
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -60,6 +70,37 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open || !brand) return;
+    const defaults: Record<string, boolean> = {};
+
+    if (logos[0]) defaults['logo-0'] = true;
+
+    if (palettes[0]) {
+      defaults['palette-0'] = true;
+      palettes[0].colors.forEach((color) => {
+        defaults[`color-0-${color}`] = true;
+      });
+    }
+
+    defaults['font-标识'] = true;
+    if (fonts[0]) {
+      defaults['font-family-0'] = true;
+      if (fonts[0].styles[0]) defaults['font-style-0-0'] = true;
+    }
+
+    if (toneTags[0]) defaults['tone-tag-0'] = true;
+    if (toneBlocks[0]) {
+      defaults['tone-block-0'] = true;
+      if (toneBlocks[0].items[0]) defaults['tone-item-0-0'] = true;
+    }
+
+    if (illustrations[0]) defaults['illustration-0'] = true;
+    if (spokespersons[0]) defaults['spokesperson-0'] = true;
+
+    setSelectedItems(defaults);
+  }, [open, brand, logos, palettes, fonts, toneTags, toneBlocks, illustrations, spokespersons]);
+
   const copyText = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -78,17 +119,6 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
 
   // 注意：不要在 hooks 之前根据 brand/open return，否则会导致 hooks 顺序不一致 -> 白屏
   if (!open || !brand) return null;
-
-  const palettes = brand.palettes?.length ? brand.palettes : [{ label: '主色', colors: brand.colors }];
-
-  const logos = brand.logos?.length
-    ? brand.logos
-    : [{ label: 'Primary Logo' }, { label: 'Symbol' }, { label: 'Wordmark' }];
-  const fonts = brand.fonts?.length ? brand.fonts : [{ family: '系统字体', styles: ['Regular', 'Bold'] }];
-  const toneTags = brand.toneTags?.length ? brand.toneTags : ['品牌调性'];
-  const toneBlocks = brand.toneBlocks?.length ? brand.toneBlocks : [{ title: '表达方式', items: ['简洁、清晰、可执行'] }];
-  const illustrations = brand.illustrations?.length ? brand.illustrations : [{ label: '插画风格', caption: '待补充' }];
-  const spokespersons = brand.spokespersons?.length ? brand.spokespersons : [{ label: '代言人素材', caption: '待补充' }];
 
   return (
     <AnimatePresence>
