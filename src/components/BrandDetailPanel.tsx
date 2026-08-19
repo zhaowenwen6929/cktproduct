@@ -21,7 +21,15 @@ type Props = {
 };
 
 export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
-  const [expanded, setExpanded] = useState<SectionId | null>('color');
+  const [expanded, setExpanded] = useState<Record<SectionId, boolean>>({
+    logo: true,
+    color: true,
+    font: true,
+    tone: true,
+    illustration: true,
+    spokesperson: true,
+  });
+  const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -61,6 +69,12 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
       // ignore
     }
   };
+
+  const toggleItem = (key: string) => {
+    setSelectedItems((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const isChecked = (key: string) => Boolean(selectedItems[key]);
 
   // 注意：不要在 hooks 之前根据 brand/open return，否则会导致 hooks 顺序不一致 -> 白屏
   if (!open || !brand) return null;
@@ -117,12 +131,12 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
 
             <div className="flex-1 overflow-y-auto">
               {SECTIONS.map((sec) => {
-                const isOpen = expanded === sec.id;
+                const isOpen = expanded[sec.id];
                 return (
                   <div key={sec.id} className="border-b border-gray-50">
                     <button
                       type="button"
-                      onClick={() => setExpanded(isOpen ? null : sec.id)}
+                      onClick={() => setExpanded((prev) => ({ ...prev, [sec.id]: !prev[sec.id] }))}
                       className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-gray-50/80 transition-colors"
                     >
                       <span className="flex items-center gap-2 text-[14px] font-medium text-gray-900">
@@ -152,18 +166,28 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
                               查看使用指南
                               <ChevronRight size={14} />
                             </button>
-                            <div className="grid grid-cols-3 gap-3">
-                              {logos.slice(0, 3).map((l, idx) => (
-                                <div key={idx} className="space-y-2">
-                                  <div className="h-[78px] rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
-                                    <div className="w-10 h-10 rounded-full bg-black/80 text-white flex items-center justify-center text-[10px] font-bold">
-                                      {brand.name.slice(0, 1).toUpperCase()}
+                          <div className="grid grid-cols-3 gap-3">
+                            {logos.slice(0, 3).map((l, idx) => (
+                              <div key={idx} className="space-y-2">
+                                  <label className="block cursor-pointer">
+                                    <div className="mb-2 flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked(`logo-${idx}`)}
+                                        onChange={() => toggleItem(`logo-${idx}`)}
+                                        className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                      />
+                                      <span className="text-[11px] text-gray-600">{l.label}</span>
                                     </div>
-                                  </div>
-                                  <div className="text-[11px] text-gray-500">{l.label}</div>
-                                </div>
-                              ))}
-                            </div>
+                                    <div className="h-[78px] rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                      <div className="w-10 h-10 rounded-full bg-black/80 text-white flex items-center justify-center text-[10px] font-bold">
+                                        {brand.name.slice(0, 1).toUpperCase()}
+                                      </div>
+                                    </div>
+                                  </label>
+                              </div>
+                            ))}
+                          </div>
                           </div>
                         </motion.div>
                       )}
@@ -187,25 +211,50 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
                             {palettes.map((pg, idx) => (
                               <div key={idx} className="space-y-2">
                                 <div className="flex items-center justify-between gap-3">
-                                  <p className="text-[11px] text-gray-500">{pg.label}</p>
-                                  <button
-                                    type="button"
-                                    className="text-[11px] text-gray-400 hover:text-[#5c5cfc] transition-colors"
-                                  >
+                                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={pg.colors.every((c) => isChecked(`color-${idx}-${c}`))}
+                                      onChange={() => {
+                                        const next = !pg.colors.every((c) => isChecked(`color-${idx}-${c}`));
+                                        setSelectedItems((prev) => {
+                                          const updated = { ...prev };
+                                          pg.colors.forEach((c) => {
+                                            updated[`color-${idx}-${c}`] = next;
+                                          });
+                                          updated[`palette-${idx}`] = next;
+                                          return updated;
+                                        });
+                                      }}
+                                      className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                    />
+                                    <p className="text-[11px] text-gray-500">{pg.label}</p>
+                                  </label>
+                                  <button type="button" className="text-[11px] text-gray-400 hover:text-[#5c5cfc] transition-colors">
                                     使用指南
                                   </button>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                   {pg.colors.map((c, i) => (
-                                    <button
+                                    <label
                                       key={i}
-                                      type="button"
-                                      onClick={() => copyText(c)}
-                                      className="h-9 flex-1 min-w-[56px] max-w-[84px] rounded-md border border-gray-100 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5c5cfc]/30"
+                                      className="relative h-9 flex-1 min-w-[56px] max-w-[84px] rounded-md border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-[#5c5cfc]/30 cursor-pointer overflow-hidden"
                                       style={{ backgroundColor: c }}
-                                      title={`点击复制 ${c}`}
-                                      aria-label={`复制颜色 ${c}`}
-                                    />
+                                      title={`选择颜色 ${c}`}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked(`color-${idx}-${c}`)}
+                                        onChange={() => toggleItem(`color-${idx}-${c}`)}
+                                        className="absolute left-2 top-2 h-4 w-4 rounded border-white/50 bg-white/80 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => copyText(c)}
+                                        className="sr-only"
+                                        aria-label={`复制颜色 ${c}`}
+                                      />
+                                    </label>
                                   ))}
                                 </div>
                                 {copied && pg.colors.includes(copied) && (
@@ -228,22 +277,41 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
                           <ChevronRight size={14} />
                         </button>
                         <div className="grid grid-cols-3 gap-2 text-[11px] text-gray-500">
-                          <div className="bg-gray-50 border border-gray-100 rounded-lg p-2">标识</div>
-                          <div className="bg-gray-50 border border-gray-100 rounded-lg p-2">副标题</div>
-                          <div className="bg-gray-50 border border-gray-100 rounded-lg p-2">小标题</div>
-                          <div className="bg-gray-50 border border-gray-100 rounded-lg p-2">正文</div>
-                          <div className="bg-gray-50 border border-gray-100 rounded-lg p-2">引言</div>
-                          <div className="bg-gray-50 border border-gray-100 rounded-lg p-2">字幕</div>
+                          {['标识', '副标题', '小标题', '正文', '引言', '字幕'].map((item) => (
+                            <label key={item} className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg p-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isChecked(`font-${item}`)}
+                                onChange={() => toggleItem(`font-${item}`)}
+                                className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                              />
+                              <span>{item}</span>
+                            </label>
+                          ))}
                         </div>
                         <div className="space-y-2">
                           {fonts.map((f, idx) => (
                             <div key={idx} className="space-y-1.5">
-                              <div className="text-[12px] text-gray-800 font-medium truncate">{f.family}</div>
+                              <label className="flex items-center gap-2 text-[12px] text-gray-800 font-medium truncate cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked(`font-family-${idx}`)}
+                                  onChange={() => toggleItem(`font-family-${idx}`)}
+                                  className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                />
+                                <span className="truncate">{f.family}</span>
+                              </label>
                               <div className="space-y-0.5">
                                 {f.styles.map((s, i) => (
-                                  <div key={i} className="text-[11px] text-gray-500">
-                                    {`${f.family}-${s}`}
-                                  </div>
+                                  <label key={i} className="flex items-center gap-2 text-[11px] text-gray-500 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked(`font-style-${idx}-${i}`)}
+                                      onChange={() => toggleItem(`font-style-${idx}-${i}`)}
+                                      className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                    />
+                                    <span>{`${f.family}-${s}`}</span>
+                                  </label>
                                 ))}
                               </div>
                             </div>
@@ -263,21 +331,43 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
                         </button>
                         <div className="flex flex-wrap gap-2">
                           {toneTags.map((t, i) => (
-                            <span
+                            <label
                               key={i}
-                              className="px-2 py-1 rounded-full bg-gray-50 border border-gray-100 text-[11px] text-gray-700"
+                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-50 border border-gray-100 text-[11px] text-gray-700 cursor-pointer"
                             >
+                              <input
+                                type="checkbox"
+                                checked={isChecked(`tone-tag-${i}`)}
+                                onChange={() => toggleItem(`tone-tag-${i}`)}
+                                className="h-3.5 w-3.5 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                              />
                               {t}
-                            </span>
+                            </label>
                           ))}
                         </div>
                         <div className="space-y-3">
                           {toneBlocks.map((b, i) => (
                             <div key={i} className="space-y-1">
-                              <div className="font-medium text-gray-900">{b.title}</div>
+                              <label className="flex items-center gap-2 font-medium text-gray-900 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked(`tone-block-${i}`)}
+                                  onChange={() => toggleItem(`tone-block-${i}`)}
+                                  className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                />
+                                <span>{b.title}</span>
+                              </label>
                               <ul className="list-disc pl-5 space-y-1 text-gray-600">
                                 {b.items.map((it, j) => (
-                                  <li key={j}>{it}</li>
+                                  <li key={j} className="flex items-center gap-2 list-none">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked(`tone-item-${i}-${j}`)}
+                                      onChange={() => toggleItem(`tone-item-${i}-${j}`)}
+                                      className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                    />
+                                    <span>{it}</span>
+                                  </li>
                                 ))}
                               </ul>
                             </div>
@@ -303,6 +393,15 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
                                 className="w-[96px] shrink-0"
                                 aria-label={`插画：${it.label}`}
                               >
+                                <label className="mb-1 flex items-center gap-1 text-[11px] text-gray-600 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked(`illustration-${i}`)}
+                                    onChange={() => toggleItem(`illustration-${i}`)}
+                                    className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                  />
+                                  <span className="truncate">{it.label}</span>
+                                </label>
                                 <div className="aspect-square rounded-xl border border-gray-100 bg-gray-50 overflow-hidden shadow-sm">
                                   <img
                                     src={`https://picsum.photos/seed/${encodeURIComponent(it.label)}-${i}-il/240/240`}
@@ -336,6 +435,15 @@ export const BrandDetailPanel: React.FC<Props> = ({ open, brand, onClose }) => {
                                 className="w-[96px] shrink-0"
                                 aria-label={`代言人：${it.label}`}
                               >
+                                <label className="mb-1 flex items-center gap-1 text-[11px] text-gray-600 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked(`spokesperson-${i}`)}
+                                    onChange={() => toggleItem(`spokesperson-${i}`)}
+                                    className="h-4 w-4 rounded border-gray-300 text-[#5c5cfc] focus:ring-[#5c5cfc]"
+                                  />
+                                  <span className="truncate">{it.label}</span>
+                                </label>
                                 <div className="aspect-square rounded-xl border border-gray-100 bg-gray-50 overflow-hidden shadow-sm">
                                   <img
                                     src={`https://picsum.photos/seed/${encodeURIComponent(it.label)}-${i}-sp-${brand.name}/240/240`}

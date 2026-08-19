@@ -110,7 +110,8 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const [feedbackReason, setFeedbackReason] = useState('');
   const searchReferenceTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const showQuestionPanel = Boolean(task.questions.length) && (task.status === 'clarifying' || task.questionSubmitted);
+  const introComplete = task.status !== 'clarifying' || typedIntro.length >= plannerIntro.length;
+  const showQuestionPanel = Boolean(task.questions.length) && (task.questionSubmitted || introComplete);
   const showProcessPanel = Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
 
   useEffect(() => {
