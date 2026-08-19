@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, ChevronUp, Globe, Loader2, Sparkles, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PlanFlow } from '../types';
@@ -17,6 +17,28 @@ const SEARCH_ITEMS = [
   '创客贴设计-AI海报图片设计 - App Store',
 ];
 const SEARCH_SUMMARY = '搜索创客贴（chuangkit.com）品牌信息，包括品牌定位、slogan、视觉风格、Logo…';
+const SEARCH_REFERENCE_ITEMS = [
+  {
+    title: '李白《赠汪伦》儿童风格水彩画',
+    image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=80&auto=format&fit=crop',
+  },
+  {
+    title: '水墨风格画，描绘楼台、竹子、仙鹤',
+    image: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=600&q=80&auto=format&fit=crop',
+  },
+  {
+    title: '古风场景描绘，文人雅士在船上',
+    image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=600&q=80&auto=format&fit=crop',
+  },
+  {
+    title: '水墨风格画，有竹子、山色与飞鸟',
+    image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&q=80&auto=format&fit=crop',
+  },
+  {
+    title: '淡彩留白构图，带有山峦与树影',
+    image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&q=80&auto=format&fit=crop',
+  },
+];
 
 const buildPosterDataUri = (variant: number) => {
   const palettes = [
@@ -81,9 +103,12 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const [posterVisible, setPosterVisible] = useState(false);
   const [posterDone, setPosterDone] = useState(false);
   const [searchSummaryVisible, setSearchSummaryVisible] = useState(false);
+  const [searchReferenceOpen, setSearchReferenceOpen] = useState(false);
+  const [searchReferencePosition, setSearchReferencePosition] = useState({ top: 96, left: 96 });
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackReason, setFeedbackReason] = useState('');
+  const searchReferenceTriggerRef = useRef<HTMLButtonElement>(null);
 
   const showQuestionPanel = Boolean(task.questions.length) && (task.status === 'clarifying' || task.questionSubmitted);
   const showProcessPanel = Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
@@ -116,6 +141,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
       setSearchDone(false);
       setSearchExpanded(true);
       setSearchSummaryVisible(false);
+      setSearchReferenceOpen(false);
       setPosterVisible(false);
       setPosterDone(false);
       setVote(null);
@@ -138,6 +164,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
       setSearchVisibleCount(0);
       setSearchDone(false);
       setSearchSummaryVisible(false);
+      setSearchReferenceOpen(false);
       setPosterVisible(false);
       setPosterDone(false);
       setVote(null);
@@ -226,6 +253,28 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const completionTitle = task.resultTitle || '生成完成';
   const completionText = task.resultText || '已完成生成并返回 4 个结果，结果已同步到画布并可反馈。';
   const completionModelLabel = 'Seedream 4.0（模拟流程）';
+
+  useEffect(() => {
+    if (!searchReferenceOpen) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (searchReferenceTriggerRef.current?.contains(target)) return;
+      const panel = document.getElementById(`search-reference-panel-${task.id}`);
+      if (panel?.contains(target)) return;
+      setSearchReferenceOpen(false);
+    };
+    window.addEventListener('mousedown', handlePointerDown);
+    return () => window.removeEventListener('mousedown', handlePointerDown);
+  }, [searchReferenceOpen, task.id]);
+
+  const openSearchReferencePanel = () => {
+    const rect = searchReferenceTriggerRef.current?.getBoundingClientRect();
+    const panelWidth = 620;
+    const top = Math.max(16, (rect?.top ?? 96) - 8);
+    const left = Math.max(16, (rect?.left ?? 96) - panelWidth - 16);
+    setSearchReferencePosition({ top, left });
+    setSearchReferenceOpen(true);
+  };
 
   return (
     <div className="w-full">
@@ -404,12 +453,17 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
                       </div>
                     ))}
                     {searchSummaryVisible && (
-                      <div className="mt-1 flex items-center gap-2 rounded-[12px] border border-[#e9eefb] bg-white px-2.5 py-2">
+                      <button
+                        ref={searchReferenceTriggerRef}
+                        type="button"
+                        onClick={openSearchReferencePanel}
+                        className="mt-1 flex w-full items-center gap-2 rounded-[12px] border border-[#e9eefb] bg-white px-2.5 py-2 text-left transition-colors hover:bg-[#f8faff]"
+                      >
                         <div className="min-w-0 flex-1 text-[11px] leading-5 text-[#6b7280]">{SEARCH_SUMMARY}</div>
                         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-[8px] bg-[#eef1ff]">
-                          <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=120&q=80&auto=format&fit=crop" alt="" className="h-full w-full object-cover" />
+                          <img src={SEARCH_REFERENCE_ITEMS[0].image} alt="" className="h-full w-full object-cover" />
                         </div>
-                      </div>
+                      </button>
                     )}
                   </div>
                 </ProcessStep>
@@ -513,6 +567,57 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
             </div>
           </div>
         </motion.div>
+      )}
+
+      {searchReferenceOpen && (
+        <div
+          id={`search-reference-panel-${task.id}`}
+          className="fixed z-50"
+          style={{ top: `${searchReferencePosition.top}px`, left: `${searchReferencePosition.left}px` }}
+        >
+          <motion.div
+            initial={{ opacity: 0, x: 8, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 8, scale: 0.98 }}
+            className="w-[620px] rounded-[22px] bg-white p-5 shadow-[0_28px_80px_rgba(15,23,42,0.18)] ring-1 ring-black/5"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[15px] font-semibold leading-7 text-gray-900">
+                  搜索小学六年级必背古诗列表，确认适合制作视觉海报的经典篇目
+                </div>
+                <div className="mt-2 text-[12px] leading-6 text-gray-500">视觉参考</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSearchReferenceOpen(false)}
+                className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <ChevronDown size={18} className="rotate-45" />
+              </button>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {SEARCH_REFERENCE_ITEMS.slice(0, 3).map((item) => (
+                <div key={item.title} className="overflow-hidden rounded-[14px] border border-[#e9eefb] bg-[#fafbff]">
+                  <div className="aspect-[4/3] overflow-hidden bg-[#eef1ff]">
+                    <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="p-2.5 text-[11px] leading-5 text-gray-700">{item.title}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {SEARCH_REFERENCE_ITEMS.slice(3).map((item) => (
+                <div key={item.title} className="overflow-hidden rounded-[14px] border border-[#e9eefb] bg-[#fafbff]">
+                  <div className="aspect-[4/3] overflow-hidden bg-[#eef1ff]">
+                    <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="p-2.5 text-[11px] leading-5 text-gray-700">{item.title}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
