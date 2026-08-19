@@ -2393,6 +2393,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     : 0;
   const generatingTimeLabel = `${formatCountdown(elapsedMs)}/${formatCountdown(GENERATING_ESTIMATE_MS)}`;
   const showPinnedNotificationBar = Boolean(activeWorkflow?.showGeneratingPanel && notifyOnComplete);
+  const isPlanningFlowSession = messages.some((msg) => msg.variant === 'plan_flow');
   const showSlowHintCard = Boolean(showGeneratingHint && !activeWorkflow?.previewResults?.length && !notifyOnComplete);
 
   const groupSessionsByDate = () => {
@@ -2640,6 +2641,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
             );
           }
 
+          if (isPlanningFlowSession && msg.role === 'assistant') {
+            return null;
+          }
+
           if (msg.role === 'assistant' && msg.variant === 'brand_toolkit') {
             // 情况 3：只展示当前已选择的品牌组
             if (msg.brandId) {
@@ -2770,7 +2775,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 </button>
               </div>
             )}
-            {msg.role !== 'user' && getAssistantResultAttachments(msg).length > 0 && (
+            {msg.role !== 'user' && !isPlanningFlowSession && getAssistantResultAttachments(msg).length > 0 && (
               <div className="w-full mt-1 rounded-[20px] bg-[#f6f7ff] border border-[#e7eaff] p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">

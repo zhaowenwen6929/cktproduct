@@ -225,6 +225,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const thoughtLine = '我先判断你想做什么，再把约束和输出形态整理清楚。';
   const completionTitle = task.resultTitle || '生成完成';
   const completionText = task.resultText || '已完成生成并返回 4 个结果，结果已同步到画布并可反馈。';
+  const completionModelLabel = 'Seedream 4.0（模拟流程）';
 
   return (
     <div className="w-full">
@@ -421,102 +422,96 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
                   </div>
                   <div className="overflow-hidden rounded-[14px] border border-[#e9eefb] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.04)]">
                     <div className="flex w-full items-start justify-between gap-3 px-3.5 py-2.5 text-left">
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-normal leading-5 text-[#1f2937]">{posterDone ? '生图完成' : '开始生图'}</div>
+                      <div className="inline-flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-[#6b63ff]">
+                        <Sparkles size={11} className="shrink-0" />
+                        <span className="truncate">{completionModelLabel}</span>
                       </div>
                     </div>
                     <div className="border-t border-[#f0f3ff] px-3.5 py-2.5">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-[#f5f7fb] px-3 py-1.5 text-[10px] leading-4 text-[#7b8496]">
-                        <Loader2 size={11} className="animate-spin" />
-                        {posterVisible ? '已完成最终生成' : 'loading...'}
-                      </div>
+                      {!posterDone ? (
+                        <div className="inline-flex items-center gap-2 rounded-full bg-[#f5f7fb] px-3 py-1.5 text-[10px] leading-4 text-[#7b8496]">
+                          <Loader2 size={11} className="animate-spin" />
+                          {posterVisible ? '生图完成，正在整理最终结果' : 'loading...'}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="inline-flex items-center gap-2 text-[10px] leading-4 text-[#7b8496]">
+                            <Check size={11} className="text-[#5c5cfc]" />
+                            <span>生图完成并同步到最终生成流</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {POSTER_PREVIEWS.map((src, index) => (
+                              <div key={`${src}-${index}`} className="aspect-[3/4] overflow-hidden rounded-[12px] border border-[#d7ddff] bg-[#eef1ff]">
+                                <img src={src} alt={`Generated ${index + 1}`} className="h-full w-full object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setVote('up');
+                                setFeedbackOpen(false);
+                                setFeedbackReason('');
+                              }}
+                              className={[
+                                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors',
+                                vote === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#f8fafc] text-gray-700 hover:bg-gray-50',
+                              ].join(' ')}
+                            >
+                              <ThumbsUp size={13} />
+                              赞
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setVote('down');
+                                setFeedbackOpen(true);
+                              }}
+                              className={[
+                                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors',
+                                vote === 'down' ? 'bg-rose-50 text-rose-600' : 'bg-[#f8fafc] text-gray-700 hover:bg-gray-50',
+                              ].join(' ')}
+                            >
+                              <ThumbsDown size={13} />
+                              踩
+                            </button>
+                          </div>
+                          {feedbackOpen && vote === 'down' && (
+                            <div className="rounded-[14px] bg-[#fff5f6] p-3">
+                              <div className="text-[12px] font-medium text-gray-900">哪里需要改进？</div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {['没有遵循指令', '细节有错误', '风格不对', '等待太久'].map((reason) => (
+                                  <button
+                                    key={reason}
+                                    type="button"
+                                    onClick={() => {
+                                      setFeedbackReason(reason);
+                                      setFeedbackOpen(false);
+                                    }}
+                                    className="rounded-full bg-white px-3 py-1 text-[11px] text-gray-700 ring-1 ring-rose-100"
+                                  >
+                                    {reason}
+                                  </button>
+                                ))}
+                              </div>
+                              <textarea
+                                value={feedbackReason}
+                                onChange={(e) => setFeedbackReason(e.target.value)}
+                                placeholder="补充说明"
+                                className="mt-2 min-h-[64px] w-full rounded-[12px] border border-rose-100 bg-white px-3 py-2 text-[11px] text-gray-800 outline-none placeholder:text-gray-400"
+                              />
+                            </div>
+                          )}
+                          <div className="text-[12px] leading-6 text-gray-800">{completionText}</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
             </div>
           </div>
-        </motion.div>
-      )}
-
-      {posterDone && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-2.5 rounded-[18px] bg-white px-3 py-3 shadow-[0_10px_24px_rgba(92,92,252,0.06)] ring-1 ring-[#e9eefb]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-[#6b63ff]">
-              <Sparkles size={14} />
-              <span className="text-[12px] font-semibold leading-5">{completionTitle}</span>
-            </div>
-            <div className="text-[10px] font-medium text-[#8d98b8]">Seedream 4.0（模拟流程）</div>
-          </div>
-
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {POSTER_PREVIEWS.map((src, index) => (
-              <div key={`${src}-${index}`} className="aspect-[3/4] overflow-hidden rounded-[14px] border border-[#d7ddff] bg-[#eef1ff]">
-                <img src={src} alt={`Generated ${index + 1}`} className="h-full w-full object-cover" />
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setVote('up');
-                setFeedbackOpen(false);
-                setFeedbackReason('');
-              }}
-              className={[
-                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors',
-                vote === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#f8fafc] text-gray-700 hover:bg-gray-50',
-              ].join(' ')}
-            >
-              <ThumbsUp size={13} />
-              赞
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setVote('down');
-                setFeedbackOpen(true);
-              }}
-              className={[
-                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors',
-                vote === 'down' ? 'bg-rose-50 text-rose-600' : 'bg-[#f8fafc] text-gray-700 hover:bg-gray-50',
-              ].join(' ')}
-            >
-              <ThumbsDown size={13} />
-              踩
-            </button>
-          </div>
-
-          {feedbackOpen && vote === 'down' && (
-            <div className="mt-2 rounded-[14px] bg-[#fff5f6] p-3">
-              <div className="text-[12px] font-medium text-gray-900">哪里需要改进？</div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {['没有遵循指令', '细节有错误', '风格不对', '等待太久'].map((reason) => (
-                  <button
-                    key={reason}
-                    type="button"
-                    onClick={() => {
-                      setFeedbackReason(reason);
-                      setFeedbackOpen(false);
-                    }}
-                    className="rounded-full bg-white px-3 py-1 text-[11px] text-gray-700 ring-1 ring-rose-100"
-                  >
-                    {reason}
-                  </button>
-                ))}
-              </div>
-              <textarea
-                value={feedbackReason}
-                onChange={(e) => setFeedbackReason(e.target.value)}
-                placeholder="补充说明"
-                className="mt-2 min-h-[64px] w-full rounded-[12px] border border-rose-100 bg-white px-3 py-2 text-[11px] text-gray-800 outline-none placeholder:text-gray-400"
-              />
-            </div>
-          )}
-
-          <div className="mt-2.5 text-[12px] leading-6 text-gray-800">{completionText}</div>
         </motion.div>
       )}
     </div>
