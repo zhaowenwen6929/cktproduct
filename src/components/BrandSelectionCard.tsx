@@ -7,6 +7,7 @@ type Props = {
   brands: BrandGroup[];
   selectedBrandId: string | null;
   loading?: boolean;
+  readOnly?: boolean;
   onSelectBrand: (brandId: string) => void;
   onSkip: () => void;
   onConfirm: () => void;
@@ -16,6 +17,7 @@ export const BrandSelectionCard: React.FC<Props> = ({
   brands,
   selectedBrandId,
   loading = false,
+  readOnly = false,
   onSelectBrand,
   onSkip,
   onConfirm,
@@ -48,7 +50,7 @@ export const BrandSelectionCard: React.FC<Props> = ({
         <div className="text-[13px] font-semibold text-[#111827]">需求规划师</div>
       </div>
       <div className="rounded-[18px] bg-white px-3 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.06)] ring-1 ring-[#eef1f7]">
-        <div className="text-[12px] leading-6 text-[#3d4454]">
+        <div className={cn('text-[12px] leading-6', readOnly ? 'text-[#aab0c0]' : 'text-[#3d4454]')}>
           {typedPrompt}
         </div>
 
@@ -62,15 +64,31 @@ export const BrandSelectionCard: React.FC<Props> = ({
                 onClick={() => onSelectBrand(brand.id)}
                 className={cn(
                   'flex w-full items-center justify-between rounded-[14px] border px-4 py-3 text-left transition-all',
-                  selected
-                    ? 'border-[#6c72ff] bg-[#f5f6ff] shadow-[0_0_0_1px_rgba(108,114,255,0.08)]'
-                    : 'border-transparent bg-[#f6f7fb] text-[#3d4454] hover:border-[#e3e6f5]'
+                  readOnly
+                    ? selected
+                      ? 'border-[#d7daf0] bg-[#eef1f8] text-[#8087a3] cursor-default'
+                      : 'border-transparent bg-[#f3f5fa] text-[#b2b8c8] cursor-default'
+                    : selected
+                      ? 'border-[#6c72ff] bg-[#f5f6ff] shadow-[0_0_0_1px_rgba(108,114,255,0.08)]'
+                      : 'border-transparent bg-[#f6f7fb] text-[#3d4454] hover:border-[#e3e6f5]'
                 )}
+                disabled={readOnly}
               >
-                <span className={cn('text-[14px]', selected ? 'font-semibold text-[#2f3566]' : 'font-medium text-[#3d4454]')}>
+                <span
+                  className={cn(
+                    'text-[14px]',
+                    readOnly
+                      ? selected
+                        ? 'font-semibold text-[#5d6480]'
+                        : 'font-medium text-[#b2b8c8]'
+                      : selected
+                        ? 'font-semibold text-[#2f3566]'
+                        : 'font-medium text-[#3d4454]'
+                  )}
+                >
                   {brand.name}
                 </span>
-                {selected && <Check size={18} className="text-[#2f3566]" />}
+                {selected && <Check size={18} className={readOnly ? 'text-[#8e94aa]' : 'text-[#2f3566]'} />}
               </button>
             );
           })}
@@ -80,7 +98,7 @@ export const BrandSelectionCard: React.FC<Props> = ({
           <button
             type="button"
             onClick={onSkip}
-            disabled={loading}
+            disabled={loading || readOnly}
             className="inline-flex items-center gap-1 text-[12px] text-[#9aa3bf] transition-colors hover:text-[#6f7897] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <span>跳过，直接生成</span>
@@ -89,10 +107,10 @@ export const BrandSelectionCard: React.FC<Props> = ({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={!selectedBrandId || loading}
+            disabled={!selectedBrandId || loading || readOnly}
             className={cn(
               'rounded-full px-4 py-1.5 text-[12px] font-medium transition-all',
-              selectedBrandId && !loading
+              selectedBrandId && !loading && !readOnly
                 ? 'bg-[#efe9ff] text-[#7a62ff] hover:bg-[#e7deff]'
                 : 'bg-[#f2f3f7] text-[#b7bdd1] cursor-not-allowed'
             )}

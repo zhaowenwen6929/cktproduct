@@ -60,6 +60,8 @@ export interface ChatMessage {
   brandId?: string;
   /** 需要在对话中列出来供选择的一组品牌组 id */
   brandIds?: string[];
+  /** 品牌已确认选择后的品牌组 id */
+  brandSelectedId?: string;
   generationTask?: GenerationTask;
   planFlow?: PlanFlow;
 }

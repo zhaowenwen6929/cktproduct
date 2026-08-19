@@ -976,16 +976,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     setPendingBrandPrompt(null);
     setPendingBrandPlanTaskId(null);
     setPendingBrandMessageId(null);
-    setBrandDetailBrandId(pickedBrand.id);
-    setBrandDetailOpen(true);
     if (toolkitMessageId) {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === toolkitMessageId
             ? {
                 ...msg,
-                brandId: pickedBrand.id,
-                brandIds: undefined,
+                brandSelectedId: pickedBrand.id,
               }
             : msg
         )
@@ -2781,12 +2778,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
             // 情况 1：不使用品牌但有品牌数据，列出所有品牌组供选择
             if (msg.brandIds && msg.brandIds.length > 0) {
               const listBrands = brandGroups.filter((b) => msg.brandIds!.includes(b.id));
+              const selectedBrandId = msg.brandSelectedId ?? pendingBrandSelectionId;
+              const readOnly = Boolean(msg.brandSelectedId);
               return (
                 <div key={msg.id} className="w-full flex flex-col gap-2 items-start">
                   <BrandSelectionCard
                     brands={listBrands}
-                    selectedBrandId={pendingBrandSelectionId}
+                    selectedBrandId={selectedBrandId}
                     loading={loading}
+                    readOnly={readOnly}
                     onSelectBrand={handlePendingBrandSelect}
                     onSkip={() => {
                       void handlePendingBrandSkip();
