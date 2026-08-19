@@ -110,7 +110,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const [feedbackReason, setFeedbackReason] = useState('');
   const searchReferenceTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const introComplete = task.status !== 'clarifying' || typedIntro.length >= plannerIntro.length;
+  const introComplete = task.status === 'clarifying' && typedIntro.length >= plannerIntro.length;
   const showQuestionPanel = Boolean(task.questions.length) && (task.questionSubmitted || introComplete);
   const showProcessPanel = Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
 
@@ -119,12 +119,14 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   }, [task.selectedAnswers, task.id]);
 
   useEffect(() => {
+    setTypedIntro('');
+  }, [task.id]);
+
+  useEffect(() => {
     if (task.status !== 'clarifying') {
-      setTypedIntro('');
       return;
     }
 
-    setTypedIntro('');
     let index = 0;
     const timer = window.setInterval(() => {
       index += 1;
