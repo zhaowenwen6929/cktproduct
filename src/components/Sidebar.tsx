@@ -1073,17 +1073,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
 
     const needsBrandSelection = resolvedAnswers['plan-asset'] === '需要' && !selectedBrandId && brandGroups.length > 0;
     if (needsBrandSelection) {
-      const initialBrandId = brandGroups[0]?.id ?? null;
       const toolkitMessageId = `${taskId}-brand-toolkit`;
       updatePlanMessage(taskId, (flow) => ({ ...flow, awaitingBrandSelection: true }));
       setPendingBrandPrompt(composePlanPrompt(nextFlow));
       setPendingBrandPlanTaskId(taskId);
       setPendingBrandMessageId(toolkitMessageId);
       setPendingBrandSelectionId(null);
-      if (initialBrandId) {
-        setBrandDetailBrandId(initialBrandId);
-        setBrandDetailOpen(true);
-      }
       setMessages((prev) => {
         const alreadyExists = prev.some((msg) => msg.id === toolkitMessageId);
         if (alreadyExists) return prev;
