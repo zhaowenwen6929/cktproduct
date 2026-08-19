@@ -586,6 +586,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [pendingBrandSelectionId, setPendingBrandSelectionId] = useState<string | null>(null);
   const [pendingBrandPlanTaskId, setPendingBrandPlanTaskId] = useState<string | null>(null);
+  const [pendingBrandMessageId, setPendingBrandMessageId] = useState<string | null>(null);
   const [brandDetailOpen, setBrandDetailOpen] = useState(false);
   const [brandDetailBrandId, setBrandDetailBrandId] = useState<string | null>(null);
   const [pendingBrandPrompt, setPendingBrandPrompt] = useState<string | null>(null);
@@ -944,12 +945,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     if (!pendingBrandPrompt || loading) return;
     const prompt = pendingBrandPrompt;
     const pendingPlanTaskId = pendingBrandPlanTaskId;
+    const toolkitMessageId = pendingBrandMessageId;
     setPendingBrandPrompt(null);
     setPendingBrandSelectionId(null);
     setPendingBrandPlanTaskId(null);
+    setPendingBrandMessageId(null);
     setBrandDetailOpen(false);
     setBrandDetailBrandId(null);
-    setMessages((prev) => prev.filter((msg) => msg.id !== `${pendingPlanTaskId}-brand-toolkit`));
+    if (toolkitMessageId) {
+      setMessages((prev) => prev.filter((msg) => msg.id !== toolkitMessageId));
+    }
     if (pendingPlanTaskId) {
       const flow = messages.find((msg) => msg.id === pendingPlanTaskId)?.planFlow;
       if (flow) {
@@ -964,14 +969,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     if (!pendingBrandPrompt || !pendingBrandSelectionId || loading) return;
     const prompt = pendingBrandPrompt;
     const pendingPlanTaskId = pendingBrandPlanTaskId;
+    const toolkitMessageId = pendingBrandMessageId;
     const pickedBrand = brandGroups.find((b) => b.id === pendingBrandSelectionId);
     if (!pickedBrand) return;
     setSelectedBrandId(pickedBrand.id);
     setPendingBrandPrompt(null);
     setPendingBrandPlanTaskId(null);
+    setPendingBrandMessageId(null);
     setBrandDetailBrandId(pickedBrand.id);
     setBrandDetailOpen(true);
-    setMessages((prev) => prev.filter((msg) => msg.id !== `${pendingPlanTaskId}-brand-toolkit`));
+    if (toolkitMessageId) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === toolkitMessageId
+            ? {
+                ...msg,
+                brandId: pickedBrand.id,
+                brandIds: undefined,
+              }
+            : msg
+        )
+      );
+    }
     if (pendingPlanTaskId) {
       const flow = messages.find((msg) => msg.id === pendingPlanTaskId)?.planFlow;
       if (flow) {
@@ -1055,21 +1074,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     const needsBrandSelection = resolvedAnswers['plan-asset'] === '需要' && !selectedBrandId && brandGroups.length > 0;
     if (needsBrandSelection) {
       const initialBrandId = brandGroups[0]?.id ?? null;
+      const toolkitMessageId = `${taskId}-brand-toolkit`;
       updatePlanMessage(taskId, (flow) => ({ ...flow, awaitingBrandSelection: true }));
       setPendingBrandPrompt(composePlanPrompt(nextFlow));
       setPendingBrandPlanTaskId(taskId);
+      setPendingBrandMessageId(toolkitMessageId);
       setPendingBrandSelectionId(null);
       if (initialBrandId) {
         setBrandDetailBrandId(initialBrandId);
         setBrandDetailOpen(true);
       }
       setMessages((prev) => {
-        const alreadyExists = prev.some((msg) => msg.id === `${taskId}-brand-toolkit`);
+        const alreadyExists = prev.some((msg) => msg.id === toolkitMessageId);
         if (alreadyExists) return prev;
         return [
           ...prev,
           {
-            id: `${taskId}-brand-toolkit`,
+            id: toolkitMessageId,
             role: 'assistant',
             content: '',
             timestamp: Date.now(),
@@ -2395,6 +2416,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     // 场景 1：先让用户选品牌组，再触发生图
     if (shouldShowBrandToolkit(userMsg.content) && !selectedBrandId && brandGroups.length > 0) {
       setPendingBrandPrompt(userMsg.content);
+      setPendingBrandMessageId(brandToolkitMsg?.id ?? null);
       const initialBrandId = brandGroups[0]?.id ?? null;
       setPendingBrandSelectionId(initialBrandId);
       if (initialBrandId) {
@@ -2742,6 +2764,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
               const kitBrand = brandGroups.find((b) => b.id === msg.brandId);
               return (
                 <div key={msg.id} className="w-full flex flex-col gap-2 items-start">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">
+                      AI
+                    </div>
+                    <div className="text-[13px] font-semibold text-[#111827]">需求规划师</div>
+                  </div>
                   <BrandToolkitCard
                     title={kitBrand ? `[Sample] ${kitBrand.name} Brand Kit` : '品牌工具包'}
                     onOpenDetails={() => {
@@ -2779,6 +2807,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
             // 情况 2：没有品牌数据，引导创建品牌
             return (
               <div key={msg.id} className="w-full flex flex-col gap-2 items-start">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">
+                    AI
+                  </div>
+                  <div className="text-[13px] font-semibold text-[#111827]">需求规划师</div>
+                </div>
                 <div className="w-full max-w-full">
                   <div className="mb-2 text-[10px] text-gray-500">未检测到可用的品牌组，建议先创建品牌工具包。</div>
                   <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50/60 px-3.5 py-2.5 flex items-center justify-between gap-3">
