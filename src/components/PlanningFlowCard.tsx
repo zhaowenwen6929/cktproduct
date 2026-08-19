@@ -112,7 +112,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
 
   const introComplete = task.status === 'clarifying' && typedIntro.length >= plannerIntro.length;
   const showQuestionPanel = Boolean(task.questions.length) && (task.questionSubmitted || introComplete);
-  const showProcessPanel = Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
+  const showProcessPanel = !task.awaitingBrandSelection && Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
 
   useEffect(() => {
     setSelectedAnswers(task.selectedAnswers ?? {});
@@ -473,9 +473,11 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
               )}
 
               {searchDone && (
-                <div className="relative pl-7">
-                  <div className="absolute left-[2px] top-3 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[#eef1ff] text-[10px] font-semibold text-[#5c5cfc] ring-4 ring-[#f5f7fd]">
-                    {posterDone ? <Check size={11} /> : 3}
+                <div className="relative">
+                  <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold text-[#5c5cfc]">
+                    <div className="flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[#eef1ff] text-[10px] ring-4 ring-[#f5f7fd]">
+                      {posterDone ? <Check size={11} /> : 3}
+                    </div>
                   </div>
                   <div className="overflow-hidden rounded-[14px] border border-[#e9eefb] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.04)]">
                     <div className="flex w-full items-start justify-between gap-3 px-3.5 py-2.5 text-left">

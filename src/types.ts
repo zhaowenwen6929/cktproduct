@@ -187,6 +187,7 @@ export interface PlanFlow {
   resultTitle?: string;
   resultText?: string;
   questionSubmitted?: boolean;
+  awaitingBrandSelection?: boolean;
   feedback: PlanFeedback;
 }
 

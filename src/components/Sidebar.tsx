@@ -215,6 +215,7 @@ const buildPlanFlow = (prompt: string, attachments: GenerationAttachment[]): Pla
     answeredKinds: [],
     subAgentName: '平面设计师',
     skillLabel: 'visual-creative / image_generation',
+    awaitingBrandSelection: false,
     feedback: {
       vote: null,
       reasons: [],
@@ -686,6 +687,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
   const currentSessionMode: SessionMode = currentSession.mode ?? 'chat';
   const messages = currentSession.messages;
+  const displaySessionTitle = messages.length > 0 ? (currentSession.title || 'Agent对话') : 'Agent对话';
 
   const MODE_OPTIONS = [
     { id: 'agent' as const, label: 'Agent', icon: Bot },
@@ -850,8 +852,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     (videoInputMode !== 'text' || Boolean(targetSlotId));
 
   useEffect(() => {
-    onSessionTitleChange(currentSession.title);
-  }, [currentSession.title, onSessionTitleChange]);
+    onSessionTitleChange(displaySessionTitle);
+  }, [displaySessionTitle, onSessionTitleChange]);
 
   useEffect(() => {
     return () => {
@@ -1045,6 +1047,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       answeredKinds: [...new Set([...current.answeredKinds, ...answeredKinds])],
       questions: PLAN_QUESTION_SEQUENCE,
       questionSubmitted: true,
+      awaitingBrandSelection: false,
     };
 
     updatePlanMessage(taskId, () => nextFlow);
@@ -1052,6 +1055,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     const needsBrandSelection = resolvedAnswers['plan-asset'] === '需要' && !selectedBrandId && brandGroups.length > 0;
     if (needsBrandSelection) {
       const initialBrandId = brandGroups[0]?.id ?? null;
+      updatePlanMessage(taskId, (flow) => ({ ...flow, awaitingBrandSelection: true }));
       setPendingBrandPrompt(composePlanPrompt(nextFlow));
       setPendingBrandPlanTaskId(taskId);
       setPendingBrandSelectionId(initialBrandId);
@@ -1104,6 +1108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     updatePlanMessage(taskId, (current) => ({
       ...current,
       status: 'running',
+      awaitingBrandSelection: false,
       summary: current.selectedAnswer ? '信息已确认，开始分步执行' : '信息齐全，开始分步执行',
       questions: current.questions,
       steps: current.steps.map((step, index) => ({
@@ -2531,7 +2536,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     >
       <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-white z-20">
         <div className="flex items-center gap-2">
-          <h2 className="font-bold text-[16px] text-gray-800">{currentSession.title || 'Agent对话'}</h2>
+          <h2 className="font-bold text-[16px] text-gray-800">{displaySessionTitle}</h2>
           <Tooltip text="默认开启规划补问">
             <button
               type="button"
