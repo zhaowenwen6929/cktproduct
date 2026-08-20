@@ -2409,12 +2409,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     if (shouldShowBrandToolkit(userMsg.content) && !selectedBrandId && brandGroups.length > 0) {
       setPendingBrandPrompt(userMsg.content);
       setPendingBrandMessageId(brandToolkitMsg?.id ?? null);
-      const initialBrandId = brandGroups[0]?.id ?? null;
-      setPendingBrandSelectionId(initialBrandId);
-      if (initialBrandId) {
-        setBrandDetailBrandId(initialBrandId);
-        setBrandDetailOpen(true);
-      }
+      setPendingBrandSelectionId(null);
       return;
     }
 
