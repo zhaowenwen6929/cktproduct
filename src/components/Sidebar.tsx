@@ -2502,6 +2502,198 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const showPinnedNotificationBar = Boolean(activeWorkflow?.showGeneratingPanel && notifyOnComplete);
   const isPlanningFlowSession = messages.some((msg) => msg.variant === 'plan_flow');
   const showSlowHintCard = Boolean(showGeneratingHint && !activeWorkflow?.previewResults?.length && !notifyOnComplete);
+  const hasInlineBrandWorkflowAnchor = isPlanningFlowSession && messages.some(
+    (msg) => msg.variant === 'brand_toolkit' && Boolean(msg.brandSelectedId)
+  );
+  const renderActiveWorkflowBlock = () => {
+    if (!activeWorkflow) return null;
+    return (
+      <div className="space-y-2">
+        {activeWorkflow.thoughtTitle && activeWorkflow.typedThought && (
+          <div className="rounded-[18px] bg-[#f4f6ff] border border-[#e7eaff] p-3">
+            <div className="flex items-center gap-1.5 text-[#6b63ff] text-[12px] font-semibold">
+              <Sparkles size={13} className="shrink-0" />
+              <span>{activeWorkflow.thoughtTitle}</span>
+            </div>
+            <div className="mt-2 text-[11px] leading-5 text-gray-600 whitespace-pre-wrap">
+              {activeWorkflow.typedThought}
+            </div>
+          </div>
+        )}
+
+        {activeWorkflow.showGeneratingPanel && (
+          <div className="rounded-[20px] bg-[#f6f7ff] border border-[#e7eaff] p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 text-[14px] font-semibold text-gray-900">
+                  <Sparkles size={14} className="text-[#6b63ff]" />
+                  <span>生成中...</span>
+                </div>
+                <span className="text-[11px] font-medium tabular-nums text-[#a7afd1]">
+                  {generatingTimeLabel}
+                </span>
+              </div>
+              <div className="text-[11px] font-medium text-[#8d98b8]">
+                {activeWorkflow.model}
+              </div>
+            </div>
+            <AnimatePresence initial={false}>
+              {showPinnedNotificationBar && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="mt-2.5 rounded-[14px] border border-[#dfe3ff] bg-white/95 px-3 py-2.5 shadow-[0_10px_24px_rgba(130,143,255,0.08)]"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[12px] font-medium text-[#4f5bd5]">已开启完成提醒</div>
+                      <div className="mt-0.5 text-[11px] text-[#8d98b8]">
+                        {notificationScopeLabel}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearNotificationPreference}
+                      className="rounded-full bg-[#eef1ff] px-3 py-1 text-[11px] font-medium text-[#5b61d6] transition-colors hover:bg-[#e2e7ff]"
+                    >
+                      关闭
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: showSlowHintCard ? 1 : 0,
+                height: showSlowHintCard ? 'auto' : 0,
+                marginTop: showSlowHintCard ? 10 : 0,
+              }}
+              className="overflow-hidden"
+            >
+              <div ref={notificationScopeRef} className="relative rounded-[14px] bg-white/90 px-3 py-2.5 shadow-[0_10px_24px_rgba(130,143,255,0.08)]">
+                <div ref={slowHintAnnotationRef} className="absolute right-0 top-0 h-0 w-0" aria-hidden="true" />
+                <div className="text-[12px] leading-6 text-[#5f6887] min-h-[48px]">
+                  {typedGeneratingHint}
+                </div>
+                <div className="mt-1.5 flex items-center justify-between gap-3 border-t border-[#eef1ff] pt-2.5">
+                  <span className={cn(
+                    'text-[11px]',
+                    notificationPermission === 'denied' && !notifyOnComplete ? 'text-[#f08a5d]' : 'text-[#8d98b8]'
+                  )}>
+                    {notifyOnComplete
+                      ? '已开启提醒，我们将在任务完成后通知你'
+                      : notificationPermission === 'denied'
+                        ? '浏览器通知已禁用，请先在浏览器设置中开启通知权限'
+                      : '开启通知任务完成后提醒我'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (notifyOnComplete) {
+                        clearNotificationPreference();
+                        return;
+                      }
+                      void requestCompletionNotification();
+                    }}
+                    className={cn(
+                      'rounded-full px-3 py-1 text-[11px] font-medium transition-all',
+                      notifyOnComplete
+                        ? 'bg-[#6b63ff] text-white shadow-[0_8px_20px_rgba(107,99,255,0.2)]'
+                        : notificationPermission === 'denied'
+                          ? 'bg-[#fff1eb] text-[#f08a5d] cursor-not-allowed'
+                          : 'bg-[#eef1ff] text-[#5b61d6] hover:bg-[#e2e7ff]'
+                    )}
+                    disabled={notificationPermission === 'denied' && !notifyOnComplete}
+                  >
+                    {notifyOnComplete
+                      ? '关闭'
+                      : notificationPermission === 'denied'
+                        ? '已禁用'
+                        : '开启'}
+                  </button>
+                </div>
+                <AnimatePresence>
+                  {showNotificationScopePicker && notificationPermission === 'granted' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      className="mt-3 rounded-[14px] border border-[#e5e9ff] bg-[#f8f9ff] p-2"
+                    >
+                      <div className="px-2 py-1 text-[11px] text-[#7a84a7]">
+                        选择提醒范围，后续将按你的选择自动生效
+                      </div>
+                      <div className="mt-1 grid gap-2">
+                        <button
+                          type="button"
+                          onClick={() => applyNotificationPreference('once')}
+                          className="rounded-[12px] bg-white px-3 py-2 text-left transition-colors hover:bg-[#eef1ff]"
+                        >
+                          <div className="text-[12px] font-medium text-gray-900">只提醒本次</div>
+                          <div className="mt-0.5 text-[11px] leading-5 text-[#8d98b8]">仅当前任务完成时通知，后续任务不自动开启</div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyNotificationPreference('today')}
+                          className="rounded-[12px] bg-white px-3 py-2 text-left transition-colors hover:bg-[#eef1ff]"
+                        >
+                          <div className="text-[12px] font-medium text-gray-900">提醒今日任务</div>
+                          <div className="mt-0.5 text-[11px] leading-5 text-[#8d98b8]">今天内后续生成任务自动提醒，次日失效</div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyNotificationPreference('always')}
+                          className="rounded-[12px] bg-white px-3 py-2 text-left transition-colors hover:bg-[#eef1ff]"
+                        >
+                          <div className="text-[12px] font-medium text-gray-900">提醒后续所有任务</div>
+                          <div className="mt-0.5 text-[11px] leading-5 text-[#8d98b8]">当前及后续所有生成任务默认自动提醒</div>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+            <div className="mt-2.5 grid grid-cols-2 gap-2">
+              {Array.from({ length: 4 }).map((_, idx) => {
+                const resultUrl = activeWorkflow.previewResults?.[idx];
+                return (
+                  <div key={idx} className="relative aspect-[3/4] overflow-hidden rounded-[14px] border border-[#d7ddff] bg-gradient-to-br from-[#edf0ff] to-[#dfe5ff]">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95),_rgba(229,234,255,0.4)_55%,_rgba(220,226,255,0.9)_100%)]" />
+                    <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(rgba(156,164,255,0.35)_1px,transparent_1px)] [background-size:10px_10px]" />
+                    <motion.div
+                      initial={false}
+                      animate={{ opacity: resultUrl ? 0 : 1 }}
+                      className="absolute inset-0"
+                    />
+                    {resultUrl && (
+                      <motion.img
+                        initial={{ opacity: 0, scale: 1.03 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.55, ease: 'easeOut' }}
+                        src={resultUrl}
+                        alt={`生成结果 ${idx + 1}`}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!activeWorkflow.thoughtTitle && !activeWorkflow.showGeneratingPanel && (
+          <div className="flex items-center gap-1.5 text-[#6b63ff] text-[11px] font-medium">
+            <Sparkles size={12} className="shrink-0" />
+            <span>{activeWorkflow.label}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const groupSessionsByDate = () => {
     const groups: { [key: string]: Session[] } = {};
@@ -2783,7 +2975,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
               const selectedBrandId = msg.brandSelectedId ?? pendingBrandSelectionId;
               const readOnly = Boolean(msg.brandSelectedId);
               return (
-                <div key={msg.id} className="w-full flex flex-col gap-2 items-start">
+              <div key={msg.id} className="w-full flex flex-col gap-2 items-start">
                   <BrandSelectionCard
                     brands={listBrands}
                     selectedBrandId={selectedBrandId}
@@ -2797,6 +2989,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                       void handlePendingBrandConfirm();
                     }}
                   />
+                  {readOnly && renderActiveWorkflowBlock()}
                 </div>
               );
             }
@@ -2977,192 +3170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
           </div>
           );
         })}
-        {activeWorkflow && (
-          <div className="space-y-2">
-            {activeWorkflow.thoughtTitle && activeWorkflow.typedThought && (
-              <div className="rounded-[18px] bg-[#f4f6ff] border border-[#e7eaff] p-3">
-                <div className="flex items-center gap-1.5 text-[#6b63ff] text-[12px] font-semibold">
-                  <Sparkles size={13} className="shrink-0" />
-                  <span>{activeWorkflow.thoughtTitle}</span>
-                </div>
-                <div className="mt-2 text-[11px] leading-5 text-gray-600 whitespace-pre-wrap">
-                  {activeWorkflow.typedThought}
-                </div>
-              </div>
-            )}
-
-            {activeWorkflow.showGeneratingPanel && (
-              <div className="rounded-[20px] bg-[#f6f7ff] border border-[#e7eaff] p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex items-center gap-1.5 text-[14px] font-semibold text-gray-900">
-                      <Sparkles size={14} className="text-[#6b63ff]" />
-                      <span>生成中...</span>
-                    </div>
-                    <span className="text-[11px] font-medium tabular-nums text-[#a7afd1]">
-                      {generatingTimeLabel}
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-medium text-[#8d98b8]">
-                    {activeWorkflow.model}
-                  </div>
-                </div>
-                <AnimatePresence initial={false}>
-                  {showPinnedNotificationBar && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      className="mt-2.5 rounded-[14px] border border-[#dfe3ff] bg-white/95 px-3 py-2.5 shadow-[0_10px_24px_rgba(130,143,255,0.08)]"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-[12px] font-medium text-[#4f5bd5]">已开启完成提醒</div>
-                          <div className="mt-0.5 text-[11px] text-[#8d98b8]">
-                            {notificationScopeLabel}
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={clearNotificationPreference}
-                          className="rounded-full bg-[#eef1ff] px-3 py-1 text-[11px] font-medium text-[#5b61d6] transition-colors hover:bg-[#e2e7ff]"
-                        >
-                          关闭
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <motion.div
-                  initial={false}
-                  animate={{
-                    opacity: showSlowHintCard ? 1 : 0,
-                    height: showSlowHintCard ? 'auto' : 0,
-                    marginTop: showSlowHintCard ? 10 : 0,
-                  }}
-                  className="overflow-hidden"
-                >
-                  <div ref={notificationScopeRef} className="relative rounded-[14px] bg-white/90 px-3 py-2.5 shadow-[0_10px_24px_rgba(130,143,255,0.08)]">
-                    <div ref={slowHintAnnotationRef} className="absolute right-0 top-0 h-0 w-0" aria-hidden="true" />
-                    <div className="text-[12px] leading-6 text-[#5f6887] min-h-[48px]">
-                      {typedGeneratingHint}
-                    </div>
-                    <div className="mt-1.5 flex items-center justify-between gap-3 border-t border-[#eef1ff] pt-2.5">
-                      <span className={cn(
-                        'text-[11px]',
-                        notificationPermission === 'denied' && !notifyOnComplete ? 'text-[#f08a5d]' : 'text-[#8d98b8]'
-                      )}>
-                        {notifyOnComplete
-                          ? '已开启提醒，我们将在任务完成后通知你'
-                          : notificationPermission === 'denied'
-                            ? '浏览器通知已禁用，请先在浏览器设置中开启通知权限'
-                          : '开启通知任务完成后提醒我'}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (notifyOnComplete) {
-                            clearNotificationPreference();
-                            return;
-                          }
-                          void requestCompletionNotification();
-                        }}
-                        className={cn(
-                          'rounded-full px-3 py-1 text-[11px] font-medium transition-all',
-                          notifyOnComplete
-                            ? 'bg-[#6b63ff] text-white shadow-[0_8px_20px_rgba(107,99,255,0.2)]'
-                            : notificationPermission === 'denied'
-                              ? 'bg-[#fff1eb] text-[#f08a5d] cursor-not-allowed'
-                            : 'bg-[#eef1ff] text-[#5b61d6] hover:bg-[#e2e7ff]'
-                        )}
-                        disabled={notificationPermission === 'denied' && !notifyOnComplete}
-                      >
-                        {notifyOnComplete
-                          ? '关闭'
-                          : notificationPermission === 'denied'
-                            ? '已禁用'
-                            : '开启'}
-                      </button>
-                    </div>
-                    <AnimatePresence>
-                      {showNotificationScopePicker && notificationPermission === 'granted' && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                          className="mt-3 rounded-[14px] border border-[#e5e9ff] bg-[#f8f9ff] p-2"
-                        >
-                          <div className="px-2 py-1 text-[11px] text-[#7a84a7]">
-                            选择提醒范围，后续将按你的选择自动生效
-                          </div>
-                          <div className="mt-1 grid gap-2">
-                            <button
-                              type="button"
-                              onClick={() => applyNotificationPreference('once')}
-                              className="rounded-[12px] bg-white px-3 py-2 text-left transition-colors hover:bg-[#eef1ff]"
-                            >
-                              <div className="text-[12px] font-medium text-gray-900">只提醒本次</div>
-                              <div className="mt-0.5 text-[11px] leading-5 text-[#8d98b8]">仅当前任务完成时通知，后续任务不自动开启</div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyNotificationPreference('today')}
-                              className="rounded-[12px] bg-white px-3 py-2 text-left transition-colors hover:bg-[#eef1ff]"
-                            >
-                              <div className="text-[12px] font-medium text-gray-900">提醒今日任务</div>
-                              <div className="mt-0.5 text-[11px] leading-5 text-[#8d98b8]">今天内后续生成任务自动提醒，次日失效</div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyNotificationPreference('always')}
-                              className="rounded-[12px] bg-white px-3 py-2 text-left transition-colors hover:bg-[#eef1ff]"
-                            >
-                              <div className="text-[12px] font-medium text-gray-900">提醒后续所有任务</div>
-                              <div className="mt-0.5 text-[11px] leading-5 text-[#8d98b8]">当前及后续所有生成任务默认自动提醒</div>
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-                <div className="mt-2.5 grid grid-cols-2 gap-2">
-                  {Array.from({ length: 4 }).map((_, idx) => {
-                    const resultUrl = activeWorkflow.previewResults?.[idx];
-                    return (
-                      <div key={idx} className="relative aspect-[3/4] overflow-hidden rounded-[14px] border border-[#d7ddff] bg-gradient-to-br from-[#edf0ff] to-[#dfe5ff]">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95),_rgba(229,234,255,0.4)_55%,_rgba(220,226,255,0.9)_100%)]" />
-                        <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(rgba(156,164,255,0.35)_1px,transparent_1px)] [background-size:10px_10px]" />
-                        <motion.div
-                          initial={false}
-                          animate={{ opacity: resultUrl ? 0 : 1 }}
-                          className="absolute inset-0"
-                        />
-                        {resultUrl && (
-                          <motion.img
-                            initial={{ opacity: 0, scale: 1.03 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.55, ease: 'easeOut' }}
-                            src={resultUrl}
-                            alt={`生成结果 ${idx + 1}`}
-                            className="absolute inset-0 h-full w-full object-cover"
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {!activeWorkflow.thoughtTitle && !activeWorkflow.showGeneratingPanel && (
-              <div className="flex items-center gap-1.5 text-[#6b63ff] text-[11px] font-medium">
-                <Sparkles size={12} className="shrink-0" />
-                <span>{activeWorkflow.label}</span>
-              </div>
-            )}
-          </div>
-        )}
+        {!hasInlineBrandWorkflowAnchor && activeWorkflow && renderActiveWorkflowBlock()}
       </div>
 
       <div className="p-4">
