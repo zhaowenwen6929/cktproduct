@@ -1079,16 +1079,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       setMessages((prev) => {
         const alreadyExists = prev.some((msg) => msg.id === toolkitMessageId);
         if (alreadyExists) return prev;
+        const taskIndex = prev.findIndex((msg) => msg.id === taskId);
+        const toolkitMessage: ChatMessage = {
+          id: toolkitMessageId,
+          role: 'assistant',
+          content: '',
+          timestamp: Date.now(),
+          variant: 'brand_toolkit',
+          brandIds: brandGroups.map((b) => b.id),
+        };
+        if (taskIndex >= 0) {
+          const nextMessages = [...prev];
+          nextMessages.splice(taskIndex + 1, 0, toolkitMessage);
+          return nextMessages;
+        }
         return [
           ...prev,
-          {
-            id: toolkitMessageId,
-            role: 'assistant',
-            content: '',
-            timestamp: Date.now(),
-            variant: 'brand_toolkit',
-            brandIds: brandGroups.map((b) => b.id),
-          },
+          toolkitMessage,
         ];
       });
       return;
