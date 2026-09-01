@@ -8,6 +8,7 @@ import {
   BriefcaseBusiness,
   BrushCleaning,
   Camera,
+  Captions,
   CirclePlus,
   Crown,
   Gift,
@@ -19,7 +20,9 @@ import {
   Info,
   LayoutGrid,
   LayoutTemplate,
+  Languages,
   Menu,
+  Mic2,
   Package,
   PanelsTopLeft,
   PencilRuler,
@@ -145,11 +148,47 @@ const templateWaterfallCards = [
   { title: '春分', subtitle: '仲春片片，樱花半开', tint: 'from-[#f7fff3] via-[#cce8d0] to-[#6fa1f2]', height: 'h-[268px]' },
 ];
 
+const videoTranslationModes = [
+  {
+    id: 'dubbing-and-subtitles',
+    title: '翻译视频配音及字幕',
+    description: '识别视频语音/字幕分别翻译成目标语言语音/字幕',
+    icon: Languages,
+  },
+  {
+    id: 'speech-to-subtitles',
+    title: '视频语音转字幕',
+    description: '识别视频语音内容并生成目标语言字幕',
+    icon: Captions,
+  },
+  {
+    id: 'subtitles-to-speech',
+    title: '视频字幕转语音',
+    description: '识别视频字幕内容并生成目标语言语音',
+    icon: Mic2,
+  },
+  {
+    id: 'translate-subtitles',
+    title: '翻译视频文字/字幕',
+    description: '识别视频字幕并翻译成目标语言字幕',
+    icon: Captions,
+  },
+  {
+    id: 'translate-dubbing',
+    title: '翻译视频配音',
+    description: '识别视频语音并翻译成目标语言语音',
+    icon: Mic2,
+  },
+] as const;
+
 export function PluginPrototypePage({ onBack, onOpenCanvas }: PluginPrototypePageProps) {
   const [activeMode, setActiveMode] = useState<TopMode>('agent');
   const [isPluginOpen, setIsPluginOpen] = useState(true);
   const [activePluginSection, setActivePluginSection] = useState<PluginSectionKey>('create');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [videoTranslationMode, setVideoTranslationMode] = useState<(typeof videoTranslationModes)[number]['id']>(
+    videoTranslationModes[0].id,
+  );
 
   const loginGuideBar = !isLoggedIn ? (
     <div className="mb-4 flex items-center justify-between gap-3 rounded-[18px] border border-[#edf0f7] bg-white px-4 py-3 shadow-[0_12px_28px_rgba(98,111,151,0.06)]">
@@ -714,6 +753,81 @@ export function PluginPrototypePage({ onBack, onOpenCanvas }: PluginPrototypePag
                     </button>
                   ))}
                 </div>
+              </div>
+            ) : activePluginSection === 'video' ? (
+              <div className="mt-6">
+                {loginGuideBar}
+
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-[20px] font-black tracking-[-0.04em] text-stone-900">视频翻译</div>
+                    <div className="mt-1 text-[13px] text-stone-400">翻译视频中的语音、配音和字幕</div>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef4ff] text-[#2f6cff]">
+                    <Languages className="h-5 w-5" />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="mt-5 flex w-full items-center gap-4 rounded-[20px] border border-dashed border-[#cfd8ea] bg-[#f8faff] px-5 py-4 text-left transition hover:border-[#9db8f2] hover:bg-[#f4f8ff]"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-white text-[#2f6cff] shadow-[0_8px_18px_rgba(47,108,255,0.10)]">
+                    <Video className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-[14px] font-semibold text-stone-800">上传需要翻译的视频</div>
+                    <div className="mt-1 text-[12px] text-stone-400">点击或拖拽视频文件到这里</div>
+                  </div>
+                </button>
+
+                <fieldset className="mt-6">
+                  <legend className="text-[14px] font-bold text-stone-900">选择模式</legend>
+                  <div className="mt-3 space-y-2.5">
+                    {videoTranslationModes.map((mode) => {
+                      const Icon = mode.icon;
+                      const selected = videoTranslationMode === mode.id;
+                      return (
+                        <button
+                          key={mode.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => setVideoTranslationMode(mode.id)}
+                          className={`flex w-full items-center gap-3 rounded-[18px] border px-4 py-3 text-left transition ${
+                            selected
+                              ? 'border-[#8eb0ff] bg-[#f4f7ff] shadow-[0_10px_24px_rgba(47,108,255,0.08)]'
+                              : 'border-[#edf0f7] bg-white hover:border-[#d9e1ef]'
+                          }`}
+                        >
+                          <div
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] ${
+                              selected ? 'bg-white text-[#2f6cff]' : 'bg-[#f7f8fb] text-[#7d879b]'
+                            }`}
+                          >
+                            <Icon className="h-4.5 w-4.5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[14px] font-semibold text-stone-800">{mode.title}</div>
+                            <div className="mt-1 text-[12px] leading-5 text-stone-400">{mode.description}</div>
+                          </div>
+                          <span
+                            className={`h-4 w-4 shrink-0 rounded-full border-[4px] ${
+                              selected ? 'border-[#2f6cff] bg-white' : 'border-[#dfe4ee] bg-white'
+                            }`}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+
+                <button
+                  type="button"
+                  className="mt-5 w-full rounded-[14px] bg-[#2f6cff] px-4 py-3 text-[14px] font-semibold text-white shadow-[0_12px_24px_rgba(47,108,255,0.22)]"
+                >
+                  开始翻译
+                </button>
               </div>
             ) : (
               <>
