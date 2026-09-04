@@ -188,6 +188,7 @@ export interface PlanFlow {
   skillLabel?: string;
   resultTitle?: string;
   resultText?: string;
+  resultAttachments?: GenerationAttachment[];
   questionSubmitted?: boolean;
   awaitingBrandSelection?: boolean;
   feedback: PlanFeedback;

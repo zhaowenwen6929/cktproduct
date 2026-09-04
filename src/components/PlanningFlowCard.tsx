@@ -6,6 +6,8 @@ import { PlanFlow } from '../types';
 interface PlanningFlowCardProps {
   task: PlanFlow;
   onSubmitAnswers: (answers: Record<string, string>) => void;
+  onAddImage: (url: string) => void;
+  onAddVideo: (url: string) => void;
 }
 
 const THINK_TEXT = '好的，我先搜索创客贴品牌的视觉调性和核心信息，再据此生成。';
@@ -88,7 +90,7 @@ const buildPosterDataUri = (variant: number) => {
 
 const POSTER_PREVIEWS = [1, 2, 3, 4].map((variant) => buildPosterDataUri(variant));
 
-export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubmitAnswers }) => {
+export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubmitAnswers, onAddImage, onAddVideo }) => {
   const plannerIntro = '你希望做什么主题的海报呢？我需要了解更多的信息才能继续往下推进，请按照提示完善你的需求吧：';
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string | string[]>>(
     task.selectedAnswers ? Object.fromEntries(Object.entries(task.selectedAnswers).map(([key, value]) => [key, value])) : {}
@@ -255,6 +257,14 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const thoughtLine = '我先判断你想做什么，再把约束和输出形态整理清楚。';
   const completionTitle = task.resultTitle || '生成完成';
   const completionText = task.resultText || '已完成生成并返回 4 个结果，结果已同步到画布并可反馈。';
+  const completionAttachments = task.resultAttachments?.length
+    ? task.resultAttachments
+    : POSTER_PREVIEWS.map((src, index) => ({
+        id: `${task.id}-preview-${index}`,
+        type: 'image' as const,
+        url: src,
+        name: `图片 ${index + 1}`,
+      }));
   const completionModelLabel = 'Seedream 4.0（模拟流程）';
 
   useEffect(() => {
@@ -499,10 +509,19 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
                             <span>生图完成并同步到最终生成流</span>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            {POSTER_PREVIEWS.map((src, index) => (
-                              <div key={`${src}-${index}`} className="aspect-[3/4] overflow-hidden rounded-[12px] border border-[#d7ddff] bg-[#eef1ff]">
-                                <img src={src} alt={`Generated ${index + 1}`} className="h-full w-full object-cover" />
-                              </div>
+                            {completionAttachments.map((attachment, index) => (
+                              <button
+                                key={attachment.id}
+                                type="button"
+                                onClick={() => attachment.type === 'video' ? onAddVideo(attachment.url) : onAddImage(attachment.url)}
+                                className="aspect-[3/4] overflow-hidden rounded-[12px] border border-[#d7ddff] bg-[#eef1ff] text-left"
+                              >
+                                {attachment.type === 'video' ? (
+                                  <video src={attachment.url} className="h-full w-full object-cover" muted playsInline autoPlay loop />
+                                ) : (
+                                  <img src={attachment.url} alt={`Generated ${index + 1}`} className="h-full w-full object-cover" />
+                                )}
+                              </button>
                             ))}
                           </div>
                           <div className="flex items-center gap-2">

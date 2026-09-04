@@ -1189,7 +1189,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     });
 
     await new Promise((resolve) => setTimeout(resolve, 2200));
-    await generateAndAppend(composePlanPrompt(flow), brand, `${taskId}-plan`);
+    const resultAttachments = (await generateAndAppend(composePlanPrompt(flow), brand, `${taskId}-plan`)) ?? [];
 
     updatePlanMessage(taskId, (current) => ({
       ...current,
@@ -1207,6 +1207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       resultText: current.selectedAnswer
         ? '已完成生成并返回 4 个结果，补充信息已同步到生成完成区。'
         : '已完成生成并返回 4 个结果，结果已同步到生成完成区。',
+      resultAttachments,
     }));
 
   };
@@ -2018,7 +2019,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     brand?: typeof brandGroups[number],
     messageIdPrefix?: string,
     attachmentsOverride: GenerationAttachment[] = pendingAttachments
-  ) => {
+  ): Promise<GenerationAttachment[] | void> => {
+    let resultAttachments: GenerationAttachment[] = [];
     const reqId = messageIdPrefix ?? Date.now().toString();
     if (isPerfumeDemoPrompt(rawPrompt, attachmentsOverride)) {
       taskRuntimeRef.current[reqId] = { cancelled: false };
@@ -2222,7 +2224,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       if (isTaskCancelled(reqId)) return;
 
       playCompletionSound();
-      const resultAttachments: GenerationAttachment[] = result.results.map((url, index) => ({
+      resultAttachments = result.results.map((url, index) => ({
         id: `${reqId}-result-${index}`,
         type: result.mediaType === 'video' ? 'video' : 'image',
         url,
@@ -2275,6 +2277,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       delete taskRuntimeRef.current[reqId];
       setPendingAttachments([]);
     }
+    return resultAttachments;
   };
 
   const handleSend = async () => {
@@ -2935,6 +2938,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 <PlanningFlowCard
                   task={msg.planFlow}
                   onSubmitAnswers={(answers) => handlePlanAnswer(msg.id, answers)}
+                  onAddImage={onAddImage}
+                  onAddVideo={onAddVideo}
                 />
               </div>
             );
