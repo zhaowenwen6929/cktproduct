@@ -308,12 +308,12 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   // 文档解析是规划师流程中的一个独立阶段：解析期间只展示状态，避免补问卡片提前出现。
   if (document && !documentParsed) {
     return (
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-2.5 rounded-[18px] bg-[#f5f7fd] p-3 shadow-[0_8px_22px_rgba(15,23,42,0.05)]">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="w-full">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#d9ecff_0%,#b8d7ff_100%)] text-[11px] font-semibold text-[#2554d8] shadow-[0_8px_18px_rgba(37,84,216,0.16)]">平</div>
-          <div><div className="text-[14px] font-semibold leading-5 text-[#3d4454]">需求规划师</div><div className="mt-0.5 text-[10px] text-[#8a93a6]">根据补充信息继续完成任务拆解与执行</div></div>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">AI</div>
+          <div className="text-[13px] font-semibold text-[#111827]">需求规划师</div>
         </div>
-        <div className="mt-3 rounded-[16px] bg-white px-3.5 py-2.5 text-[12px] leading-6 text-[#4b5563] shadow-[0_4px_12px_rgba(15,23,42,0.03)]">
+        <div className="ml-0 mt-2.5 inline-flex max-w-[92%] rounded-[18px] bg-white px-4 py-3 text-[13px] leading-6 text-[#111827] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
           我将先分析你的文档，提取其中的关键信息，分析完成后再继续为你规划。
         </div>
         <div className="mt-3 relative"><div className="absolute left-[11px] top-0 bottom-0 w-px bg-[#dce4f6]" /><ProcessStep title="内容解析中" active done={false} collapsible icon={<Loader2 size={11} className="animate-spin" />} open onToggle={() => undefined}><TypingText text={`正在读取 ${document.name}，提取文档中的主题、文案、品牌、视觉要求等关键信息，请完整读取这个文件的内容。`} done={false} /></ProcessStep></div>
