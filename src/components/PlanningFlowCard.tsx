@@ -372,8 +372,8 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
       )}
 
       {document && documentParsed && (
-        <div className="mt-2.5 relative pl-4">
-          <div className="absolute left-[11px] top-0 bottom-0 w-px border-l-2 border-dashed border-[#dce4f6]" />
+        <div className="mt-3 relative">
+          <div className="absolute left-[11px] top-0 bottom-0 w-px bg-[#dce4f6]" />
           <ProcessStep title="内容分析完成" active={false} done collapsible icon={<Check size={11} />} open onToggle={() => undefined}>
             <button type="button" onClick={() => setDocumentOpen(true)} className="w-full text-left">
               <div className="flex items-center gap-2 text-[12px] text-gray-700"><FileText size={16} />{document.name}</div>
