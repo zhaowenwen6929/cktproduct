@@ -313,6 +313,9 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#d9ecff_0%,#b8d7ff_100%)] text-[11px] font-semibold text-[#2554d8] shadow-[0_8px_18px_rgba(37,84,216,0.16)]">平</div>
           <div><div className="text-[14px] font-semibold leading-5 text-[#3d4454]">需求规划师</div><div className="mt-0.5 text-[10px] text-[#8a93a6]">根据补充信息继续完成任务拆解与执行</div></div>
         </div>
+        <div className="mt-3 rounded-[16px] bg-white px-3.5 py-2.5 text-[12px] leading-6 text-[#4b5563] shadow-[0_4px_12px_rgba(15,23,42,0.03)]">
+          我将先分析你的文档，提取其中的关键信息，分析完成后再继续为你规划。
+        </div>
         <div className="mt-3 relative"><div className="absolute left-[11px] top-0 bottom-0 w-px bg-[#dce4f6]" /><ProcessStep title="内容解析中" active done={false} collapsible icon={<Loader2 size={11} className="animate-spin" />} open onToggle={() => undefined}><TypingText text={`正在读取 ${document.name}，提取文档中的主题、文案、品牌、视觉要求等关键信息，请完整读取这个文件的内容。`} done={false} /></ProcessStep></div>
       </motion.div>
     );
