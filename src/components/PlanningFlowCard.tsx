@@ -112,6 +112,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const [feedbackReason, setFeedbackReason] = useState('');
   const [documentOpen, setDocumentOpen] = useState(false);
   const [documentParsed, setDocumentParsed] = useState(false);
+  const [documentPreviewHover, setDocumentPreviewHover] = useState(false);
   const document = task.attachments.find((item) => item.type === 'document');
   const documentImages = [
     'https://picsum.photos/seed/doc-page-1/260/180',
@@ -378,8 +379,18 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
           <ProcessStep title="内容分析完成" active={false} done collapsible icon={<Check size={11} />} open onToggle={() => undefined}>
             <button type="button" onClick={() => setDocumentOpen(true)} className="w-full text-left">
               <div className="flex items-center gap-2 text-[12px] text-gray-700"><FileText size={16} />{document.name}</div>
-              <div className="mt-2 text-[12px] leading-5 text-gray-700">这份文档解析出来是一份内容资料 —— 已提取文档中的核心主题、信息要点和视觉素材，点击查看完整解析结果。</div>
-              <div className="mt-2 grid grid-cols-4 gap-2">{documentImages.map((image) => <img key={image} src={image} className="h-14 w-full rounded object-cover" alt="文档素材" />)}</div>
+              <div
+                className="mt-2 flex min-h-[66px] items-center justify-between gap-3 overflow-visible border border-[#e5e7eb] bg-white px-3 py-2.5 transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
+                onMouseEnter={() => setDocumentPreviewHover(true)}
+                onMouseLeave={() => setDocumentPreviewHover(false)}
+              >
+                <div className="min-w-0 flex-1 text-[17px] font-semibold leading-6 text-[#a3a3a3] line-clamp-2">电子发票（增值税专用发票）— 48300元技术服务费</div>
+                <div className="relative h-12 w-[106px] shrink-0">
+                  {documentImages.slice(0, 3).map((image, index) => (
+                    <img key={image} src={image} alt="文档素材" className="absolute right-0 top-0 h-11 w-16 rounded-[3px] border border-white object-cover shadow-sm transition-transform duration-300" style={{ transform: documentPreviewHover ? `translateX(${(index - 1) * 22}px) rotate(${(index - 1) * 10}deg)` : `translateX(${index * -10}px) rotate(${(index - 1) * 3}deg)`, zIndex: 3 - index }} />
+                  ))}
+                </div>
+              </div>
             </button>
           </ProcessStep>
         </div>
