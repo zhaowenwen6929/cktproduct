@@ -308,14 +308,14 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   // 文档解析是规划师流程中的一个独立阶段：解析期间只展示状态，避免补问卡片提前出现。
   if (document && !documentParsed) {
     return (
-      <div className="w-full max-w-[560px]">
+      <div className="w-full max-w-[560px] rounded-[18px] bg-[#f5f7fd] p-3 shadow-[0_8px_22px_rgba(15,23,42,0.05)]">
         <div className="mb-2 flex items-center gap-2">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">AI</div>
           <div className="text-[13px] font-semibold text-[#111827]">需求规划师</div>
         </div>
-        <div className="flex items-start gap-2 border-l-2 border-dashed border-gray-300 pl-4 text-[13px] text-gray-600">
+        <div className="mt-3 flex items-start gap-2 border-l-2 border-dashed border-[#dce4f6] pl-4 text-[13px] text-gray-600">
           <Loader2 size={15} className="mt-0.5 animate-spin text-gray-700" />
-          <div><div className="font-medium text-gray-800">内容解析中</div><div className="mt-1 text-[12px] leading-6 text-gray-400">正在读取 {document.name}，提取文档中的主题、文案、品牌、视觉要求等关键信息，请完整读取这个文件的内容。</div></div>
+          <div><div className="font-medium text-gray-800">内容解析中</div><div className="mt-1 rounded-[12px] bg-white px-3 py-2 text-[12px] leading-6 text-gray-400">正在读取 {document.name}，提取文档中的主题、文案、品牌、视觉要求等关键信息，请完整读取这个文件的内容。</div></div>
         </div>
       </div>
     );
