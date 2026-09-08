@@ -172,7 +172,7 @@ const detectMissingKinds = (prompt: string, attachments: GenerationAttachment[],
 
 const buildPlanFlow = (prompt: string, attachments: GenerationAttachment[]): PlanFlow => {
   const missingKinds = detectMissingKinds(prompt, attachments, []);
-  const needsClarify = missingKinds.length > 0;
+  const needsClarify = missingKinds.length > 0 && !attachments.some((item) => item.type === 'document');
 
   const steps: PlanStep[] = [
     {
@@ -261,6 +261,9 @@ const deriveDesignTitle = (prompt: string) => {
 
 const getAttachmentDisplayLabel = (attachment: GenerationAttachment) => {
   if (attachment.displayTypeLabel) return attachment.displayTypeLabel;
+  if (attachment.type === 'document') {
+    return attachment.name || '文档';
+  }
   if (attachment.type === 'video') return '视频';
   if (attachment.type === 'audio') return '音频';
   return '图片';
@@ -1567,9 +1570,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
 
     const nextAttachments = validFiles.map((file) => ({
       id: `${Date.now()}-${file.name}-${Math.random().toString(36).slice(2, 7)}`,
-      type: file.type.startsWith('video/') ? 'video' : 'image',
+      type: file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'document',
       url: URL.createObjectURL(file),
       name: file.name,
+      mimeType: file.type,
     })) as GenerationAttachment[];
 
     setPendingAttachments((prev) => [...prev, ...nextAttachments]);
@@ -1819,7 +1823,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
       setHoverPreview((prev) => (prev?.url === attachment.url ? null : prev));
     });
 
-    if (attachment.type === 'image') {
+    if (attachment.type === 'document') {
+      const icon = document.createElement('span');
+      icon.className = 'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#555] text-[11px] font-bold text-white';
+      icon.textContent = (attachment.name?.split('.').pop() || 'DOC').slice(0, 3).toUpperCase();
+      chip.appendChild(icon);
+    } else if (attachment.type === 'image') {
       const img = document.createElement('img');
       img.src = attachment.url;
       img.alt = attachment.name || '图片';
@@ -3183,7 +3192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/*"
+            accept="image/*,video/*,.pdf,.doc,.docx,.txt,.md,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
             multiple
             onChange={handleAttachmentSelect}
             className="hidden"

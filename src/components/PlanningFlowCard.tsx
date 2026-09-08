@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Globe, Loader2, Sparkles, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Globe, Loader2, Sparkles, ThumbsDown, ThumbsUp, FileText, X, Maximize2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PlanFlow } from '../types';
 
@@ -110,6 +110,15 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackReason, setFeedbackReason] = useState('');
+  const [documentOpen, setDocumentOpen] = useState(false);
+  const [documentParsed, setDocumentParsed] = useState(false);
+  const document = task.attachments.find((item) => item.type === 'document');
+  const documentImages = [
+    'https://picsum.photos/seed/doc-page-1/260/180',
+    'https://picsum.photos/seed/doc-page-2/260/180',
+    'https://picsum.photos/seed/doc-page-3/260/180',
+    'https://picsum.photos/seed/doc-page-4/260/180',
+  ];
   const searchReferenceTriggerRef = useRef<HTMLButtonElement>(null);
 
   const introComplete = task.status === 'clarifying' && typedIntro.length >= plannerIntro.length;
@@ -210,6 +219,13 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
     };
   }, [showProcessPanel, task.id]);
 
+  useEffect(() => {
+    if (!document || task.status === 'clarifying') return;
+    setDocumentParsed(false);
+    const timer = window.setTimeout(() => setDocumentParsed(true), 4200);
+    return () => window.clearTimeout(timer);
+  }, [document?.id, task.status]);
+
   const getQuestionMode = (question: NonNullable<(typeof task.questions)[number]>) => question.selectionMode ?? 'single';
   const getQuestionValue = (questionId: string) => selectedAnswers[questionId];
 
@@ -291,6 +307,32 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
 
   return (
     <div className="w-full">
+      {document && (
+        <div className="mb-3 w-full max-w-[560px]">
+          {!documentParsed ? (
+            <div className="flex items-start gap-2 border-l-2 border-dashed border-gray-300 pl-4 text-[13px] text-gray-600">
+              <Loader2 size={15} className="mt-0.5 animate-spin text-gray-700" />
+              <div><div className="font-medium text-gray-800">内容解析中</div><div className="mt-1 text-[12px] leading-6 text-gray-400">正在读取 {document.name}，提取文档中的主题、文案、品牌、视觉要求等关键信息，请完整读取这个文件的内容。</div></div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setDocumentOpen(true)} className="w-full text-left border-l-2 border-dashed border-gray-300 pl-4">
+              <div className="flex items-center gap-2 text-[14px] font-medium text-gray-800"><Check size={16} className="text-black" />内容分析完成</div>
+              <div className="mt-2 rounded border border-gray-200 bg-white p-2.5"><div className="flex items-center gap-2 text-[13px] font-medium text-gray-700"><FileText size={18} />{document.name}</div></div>
+              <div className="mt-3 text-[13px] leading-6 text-gray-700"><span className="font-medium">这份文档解析出来是一份内容资料</span> —— 已提取文档中的核心主题、信息要点和视觉素材，点击查看完整解析结果。</div>
+              <div className="mt-2 grid grid-cols-4 gap-2">{documentImages.map((image) => <img key={image} src={image} className="h-16 w-full rounded object-cover" alt="文档素材" />)}</div>
+            </button>
+          )}
+        </div>
+      )}
+      {documentOpen && document && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/30 p-5" onClick={() => setDocumentOpen(false)}>
+          <div className="max-h-[86vh] w-[520px] overflow-auto rounded-xl bg-white p-4 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b pb-3 text-[16px] font-medium"><span>{document.name}</span><button onClick={() => setDocumentOpen(false)}><X size={18}/></button></div>
+            <div className="mt-3 rounded bg-gray-50 p-3 text-[13px] text-gray-700"><div className="flex items-center gap-2 font-medium"><FileText size={18}/> {document.name}</div><div className="mt-4 border-t pt-3"><div className="mb-1 text-gray-400">内容要点</div>本文为文档内容摘要，已提取主题、文案、品牌信息及视觉要求等关键内容。文档中的核心信息将用于后续规划与设计生成。</div></div>
+            <div className="mt-4 text-[13px] font-medium text-gray-700">文档素材</div><div className="mt-2 grid grid-cols-3 gap-2">{documentImages.map((image) => <div key={image} className="relative"><img src={image} className="h-28 w-full rounded object-cover" alt="文档素材"/><Maximize2 size={14} className="absolute right-2 top-2 text-white"/></div>)}</div>
+          </div>
+        </div>
+      )}
       {task.status === 'thinking' && (
         <div className="ml-0 inline-flex items-center gap-2 rounded-[10px] bg-white px-4 py-2 text-[13px] font-medium text-[#111827] shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
           <Loader2 size={14} className="animate-spin text-[#111827]" />

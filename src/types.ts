@@ -68,10 +68,11 @@ export interface ChatMessage {
 
 export interface GenerationAttachment {
   id: string;
-  type: 'image' | 'video' | 'audio';
+  type: 'image' | 'video' | 'audio' | 'document';
   url: string;
   name?: string;
   displayTypeLabel?: string;
+  mimeType?: string;
 }
 
 export interface GenerationRequest {
