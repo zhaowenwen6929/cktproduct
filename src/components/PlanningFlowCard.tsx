@@ -222,7 +222,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   useEffect(() => {
     if (!document || task.status === 'clarifying') return;
     setDocumentParsed(false);
-    const timer = window.setTimeout(() => setDocumentParsed(true), 4200);
+    const timer = window.setTimeout(() => setDocumentParsed(true), 5000);
     return () => window.clearTimeout(timer);
   }, [document?.id, task.status]);
 
