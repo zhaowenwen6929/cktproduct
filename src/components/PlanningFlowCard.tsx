@@ -305,6 +305,22 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
     setSearchReferenceOpen(true);
   };
 
+  // 文档解析是规划师流程中的一个独立阶段：解析期间只展示状态，避免补问卡片提前出现。
+  if (document && !documentParsed) {
+    return (
+      <div className="w-full max-w-[560px]">
+        <div className="mb-2 flex items-center gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">AI</div>
+          <div className="text-[13px] font-semibold text-[#111827]">需求规划师</div>
+        </div>
+        <div className="flex items-start gap-2 border-l-2 border-dashed border-gray-300 pl-4 text-[13px] text-gray-600">
+          <Loader2 size={15} className="mt-0.5 animate-spin text-gray-700" />
+          <div><div className="font-medium text-gray-800">内容解析中</div><div className="mt-1 text-[12px] leading-6 text-gray-400">正在读取 {document.name}，提取文档中的主题、文案、品牌、视觉要求等关键信息，请完整读取这个文件的内容。</div></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       {document && (
