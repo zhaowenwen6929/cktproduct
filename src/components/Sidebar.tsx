@@ -2315,6 +2315,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
         role: 'user',
         content,
         images: attachedImages,
+        generationAttachments: pendingAttachments,
         timestamp: baseId,
       };
       updateCurrentSessionTitle(deriveDesignTitle(userMsg.content));
@@ -3037,10 +3038,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
 
           return (
           <div key={msg.id} className={cn("group/message flex flex-col gap-1", msg.role === 'user' ? "items-end" : "items-start")}>
-            {msg.role === 'user' && msg.images && msg.images.length > 0 ? (
+            {msg.role === 'user' && ((msg.images && msg.images.length > 0) || (msg.generationAttachments && msg.generationAttachments.length > 0)) ? (
               <div className="w-full max-w-[88%] rounded-[20px] border border-[#dfe3ff] bg-[#f6f7ff] px-3 py-2 text-gray-800 shadow-sm">
                 <div className="text-[11px] leading-[1.95] text-[#253047]">
-                  {msg.images[0] && (
+                  {msg.generationAttachments?.map((attachment) => (
+                    <span key={attachment.id} className="mr-1 inline-flex max-w-[180px] translate-y-[-1px] items-center gap-1 rounded-[12px] border border-[#d9def5] bg-white px-1.5 py-0.5 align-middle shadow-sm">
+                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#555] text-[9px] font-bold text-white">{attachment.name?.split('.').pop()?.slice(0, 3).toUpperCase() || 'DOC'}</span>
+                      <span className="truncate text-[10px] font-semibold text-[#253047]">{attachment.name || getAttachmentDisplayLabel(attachment)}</span>
+                    </span>
+                  ))}
+                  {msg.images?.[0] && (
                     <span
                       className="mr-1 inline-flex translate-y-[-1px] items-center gap-1 rounded-[12px] border border-[#d9def5] bg-white px-1.5 py-0.5 shadow-sm align-middle"
                       onMouseEnter={(event) => {
@@ -3055,7 +3062,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                       onMouseLeave={() => setHoverPreview((prev) => (prev?.url === msg.images?.[0] ? null : prev))}
                     >
                       <img
-                        src={msg.images[0]}
+                        src={msg.images?.[0]}
                         alt="Uploaded"
                         className="h-5 w-5 rounded object-cover"
                       />
