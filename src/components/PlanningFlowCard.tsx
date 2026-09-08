@@ -323,7 +323,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
 
   return (
     <div className="w-full">
-      {document && (
+      {document && !documentParsed && (
         <div className="mb-3 w-full max-w-[560px]">
           {!documentParsed ? (
             <div className="flex items-start gap-2 border-l-2 border-dashed border-gray-300 pl-4 text-[13px] text-gray-600">
@@ -369,6 +369,17 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
             {task.status === 'clarifying' && typedIntro.length < plannerIntro.length && <span className="ml-0.5 inline-block h-4 w-[1px] animate-pulse bg-[#111827] align-middle" />}
           </div>
         </div>
+      )}
+
+      {document && documentParsed && (
+        <button type="button" onClick={() => setDocumentOpen(true)} className="mt-2.5 w-full text-left border-l-2 border-dashed border-[#dce4f6] pl-4">
+          <div className="rounded-[14px] border border-[#e9eefb] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.04)]">
+            <div className="flex items-center gap-2 border-b border-[#f0f3ff] px-3.5 py-2.5 text-[13px] font-medium text-gray-800"><Check size={14} />内容分析完成</div>
+            <div className="flex items-center gap-2 px-3.5 py-2.5 text-[12px] text-gray-700"><FileText size={16} />{document.name}</div>
+            <div className="px-3.5 pb-2 text-[12px] leading-5 text-gray-700">这份文档解析出来是一份内容资料 —— 已提取文档中的核心主题、信息要点和视觉素材，点击查看完整解析结果。</div>
+            <div className="grid grid-cols-4 gap-2 px-3.5 pb-3">{documentImages.map((image) => <img key={image} src={image} className="h-14 w-full rounded object-cover" alt="文档素材" />)}</div>
+          </div>
+        </button>
       )}
 
       {showQuestionPanel && (
