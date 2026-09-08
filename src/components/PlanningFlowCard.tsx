@@ -220,11 +220,11 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   }, [showProcessPanel, task.id]);
 
   useEffect(() => {
-    if (!document || task.status === 'clarifying') return;
+    if (!document) return;
     setDocumentParsed(false);
     const timer = window.setTimeout(() => setDocumentParsed(true), 5000);
     return () => window.clearTimeout(timer);
-  }, [document?.id, task.status]);
+  }, [document?.id]);
 
   const getQuestionMode = (question: NonNullable<(typeof task.questions)[number]>) => question.selectionMode ?? 'single';
   const getQuestionValue = (questionId: string) => selectedAnswers[questionId];
