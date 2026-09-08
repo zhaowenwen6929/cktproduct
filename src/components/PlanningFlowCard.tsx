@@ -372,14 +372,16 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
       )}
 
       {document && documentParsed && (
-        <button type="button" onClick={() => setDocumentOpen(true)} className="mt-2.5 w-full text-left border-l-2 border-dashed border-[#dce4f6] pl-4">
-          <div className="rounded-[14px] border border-[#e9eefb] bg-white shadow-[0_6px_18px_rgba(15,23,42,0.04)]">
-            <div className="flex items-center gap-2 border-b border-[#f0f3ff] px-3.5 py-2.5 text-[13px] font-medium text-gray-800"><Check size={14} />内容分析完成</div>
-            <div className="flex items-center gap-2 px-3.5 py-2.5 text-[12px] text-gray-700"><FileText size={16} />{document.name}</div>
-            <div className="px-3.5 pb-2 text-[12px] leading-5 text-gray-700">这份文档解析出来是一份内容资料 —— 已提取文档中的核心主题、信息要点和视觉素材，点击查看完整解析结果。</div>
-            <div className="grid grid-cols-4 gap-2 px-3.5 pb-3">{documentImages.map((image) => <img key={image} src={image} className="h-14 w-full rounded object-cover" alt="文档素材" />)}</div>
-          </div>
-        </button>
+        <div className="mt-2.5 relative pl-4">
+          <div className="absolute left-[11px] top-0 bottom-0 w-px border-l-2 border-dashed border-[#dce4f6]" />
+          <ProcessStep title="内容分析完成" active={false} done collapsible icon={<Check size={11} />} open onToggle={() => undefined}>
+            <button type="button" onClick={() => setDocumentOpen(true)} className="w-full text-left">
+              <div className="flex items-center gap-2 text-[12px] text-gray-700"><FileText size={16} />{document.name}</div>
+              <div className="mt-2 text-[12px] leading-5 text-gray-700">这份文档解析出来是一份内容资料 —— 已提取文档中的核心主题、信息要点和视觉素材，点击查看完整解析结果。</div>
+              <div className="mt-2 grid grid-cols-4 gap-2">{documentImages.map((image) => <img key={image} src={image} className="h-14 w-full rounded object-cover" alt="文档素材" />)}</div>
+            </button>
+          </ProcessStep>
+        </div>
       )}
 
       {showQuestionPanel && (
