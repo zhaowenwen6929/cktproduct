@@ -125,7 +125,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const introComplete = task.status === 'clarifying' && typedIntro.length >= plannerIntro.length;
   // 文档解析完成后，当前对话流停留在解析结果，不展示原有需求补问面板。
   const showQuestionPanel = !document && Boolean(task.questions.length) && (task.questionSubmitted || introComplete);
-  const showProcessPanel = !task.awaitingBrandSelection && Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
+  const showProcessPanel = !document && !task.awaitingBrandSelection && Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
 
   useEffect(() => {
     setSelectedAnswers(task.selectedAnswers ?? {});
@@ -358,7 +358,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
         </div>
       )}
 
-      {task.status !== 'thinking' && (
+      {(task.status !== 'thinking' || document) && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">
@@ -378,7 +378,6 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
           <div className="absolute left-[11px] top-0 bottom-0 w-px bg-[#dce4f6]" />
           <ProcessStep title="内容分析完成" active={false} done collapsible icon={<Check size={11} />} open onToggle={() => undefined}>
             <button type="button" onClick={() => setDocumentOpen(true)} className="w-full text-left">
-              <div className="flex items-center gap-2 text-[12px] text-gray-700"><FileText size={16} />{document.name}</div>
               <div
                 className="mt-2 flex min-h-[66px] items-center justify-between gap-3 overflow-visible border border-[#e5e7eb] bg-white px-3 py-2.5 transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
                 onMouseEnter={() => setDocumentPreviewHover(true)}
