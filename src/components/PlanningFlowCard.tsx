@@ -379,14 +379,14 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
           <ProcessStep title="内容分析完成" active={false} done collapsible icon={<Check size={11} />} open onToggle={() => undefined}>
             <button type="button" onClick={() => setDocumentOpen(true)} className="w-full text-left">
               <div
-                className="mt-2 flex min-h-[66px] items-center justify-between gap-3 overflow-visible border border-[#e5e7eb] bg-white px-3 py-2.5 transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
+                className="mt-2 flex min-h-[58px] items-center justify-between gap-3 overflow-visible border border-[#e5e7eb] bg-white px-2.5 py-2 transition-shadow hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
                 onMouseEnter={() => setDocumentPreviewHover(true)}
                 onMouseLeave={() => setDocumentPreviewHover(false)}
               >
-                <div className="min-w-0 flex-1 text-[17px] font-semibold leading-6 text-[#a3a3a3] line-clamp-2">电子发票（增值税专用发票）— 48300元技术服务费</div>
-                <div className="relative h-12 w-[106px] shrink-0">
+                <div className="min-w-0 flex-1 text-[13px] font-semibold leading-5 text-[#a3a3a3] line-clamp-2">电子发票（增值税专用发票）— 48300元技术服务费</div>
+                <div className="relative h-9 w-[82px] shrink-0">
                   {documentImages.slice(0, 3).map((image, index) => (
-                    <img key={image} src={image} alt="文档素材" className="absolute right-0 top-0 h-11 w-16 rounded-[3px] border border-white object-cover shadow-sm transition-transform duration-300" style={{ transform: documentPreviewHover ? `translateX(${(index - 1) * 22}px) rotate(${(index - 1) * 10}deg)` : `translateX(${index * -10}px) rotate(${(index - 1) * 3}deg)`, zIndex: 3 - index }} />
+                    <img key={image} src={image} alt="文档素材" className="absolute right-0 top-0 h-8 w-12 rounded-[3px] border border-white object-cover shadow-sm transition-transform duration-300" style={{ transform: documentPreviewHover ? `translateX(${(index - 1) * 17}px) rotate(${(index - 1) * 9}deg)` : `translateX(${index * -8}px) rotate(${(index - 1) * 3}deg)`, zIndex: 3 - index }} />
                   ))}
                 </div>
               </div>
