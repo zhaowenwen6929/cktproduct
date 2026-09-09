@@ -123,8 +123,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const searchReferenceTriggerRef = useRef<HTMLButtonElement>(null);
 
   const introComplete = task.status === 'clarifying' && typedIntro.length >= plannerIntro.length;
-  // 文档解析完成后，当前对话流停留在解析结果，不展示原有需求补问面板。
-  const showQuestionPanel = !document && Boolean(task.questions.length) && (task.questionSubmitted || introComplete);
+  const showQuestionPanel = Boolean(task.questions.length) && (task.questionSubmitted || introComplete || Boolean(document));
   const showProcessPanel = !document && !task.awaitingBrandSelection && Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
 
   useEffect(() => {
