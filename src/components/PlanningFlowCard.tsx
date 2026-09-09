@@ -124,7 +124,9 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
 
   const introComplete = task.status === 'clarifying' && typedIntro.length >= plannerIntro.length;
   const showQuestionPanel = Boolean(task.questions.length) && (task.questionSubmitted || introComplete || Boolean(document));
-  const showProcessPanel = !document && !task.awaitingBrandSelection && Boolean(task.subAgentName) && (task.questionSubmitted || task.status === 'running' || task.status === 'completed');
+  const showProcessPanel = !task.awaitingBrandSelection && Boolean(task.subAgentName)
+    && (task.questionSubmitted || task.status === 'running' || task.status === 'completed')
+    && (!document || (documentParsed && task.questionSubmitted));
 
   useEffect(() => {
     setSelectedAnswers(task.selectedAnswers ?? {});
