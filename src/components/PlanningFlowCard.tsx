@@ -392,6 +392,9 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
               </div>
             </button>
           </ProcessStep>
+          <div className="mt-2 px-0.5 text-[12px] leading-5 text-[#374151]">
+            这份 PDF 解析出来是一张电子发票（增值税专用发票）——内容是一笔 ¥48,300 的“信息系统增值服务·技术服务费”交易（购买方：北京艺源酷科技；销售方：杭州王道控股）。
+          </div>
         </div>
       )}
 
