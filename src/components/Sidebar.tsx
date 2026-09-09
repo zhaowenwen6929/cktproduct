@@ -987,9 +987,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                 ...msg,
                 brandSelectedId: pickedBrand.id,
               }
-            : msg
+          : msg
         )
       );
+      // 品牌选择属于信息收集阶段：确认后把它移动到规划信息之后，子 Agent 流程从其下方开始。
+      setMessages((prev) => {
+        const taskIndex = prev.findIndex((msg) => msg.id === pendingPlanTaskId);
+        const toolkitIndex = prev.findIndex((msg) => msg.id === toolkitMessageId);
+        if (taskIndex < 0 || toolkitIndex < 0 || toolkitIndex > taskIndex) return prev;
+        const next = [...prev];
+        const [toolkit] = next.splice(toolkitIndex, 1);
+        const nextTaskIndex = next.findIndex((msg) => msg.id === pendingPlanTaskId);
+        next.splice(nextTaskIndex + 1, 0, toolkit);
+        return next;
+      });
     }
     if (pendingPlanTaskId) {
       const flow = messages.find((msg) => msg.id === pendingPlanTaskId)?.planFlow;
