@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Globe, Loader2, Sparkles, ThumbsDown, ThumbsUp, FileText, X, Maximize2 } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Globe, Loader2, Sparkles, ThumbsDown, ThumbsUp, FileText, X, Maximize2, Plus } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PlanFlow } from '../types';
 
@@ -347,8 +347,8 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/30 p-5" onClick={() => setDocumentOpen(false)}>
           <div className="max-h-[86vh] w-[520px] overflow-auto rounded-xl bg-white p-4 shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between border-b pb-3 text-[16px] font-medium"><span>{document.name}</span><button onClick={() => setDocumentOpen(false)}><X size={18}/></button></div>
-            <div className="mt-3 rounded bg-gray-50 p-3 text-[13px] text-gray-700"><div className="flex items-center gap-2 font-medium"><FileText size={18}/> {document.name}</div><div className="mt-4 border-t pt-3"><div className="mb-1 text-gray-400">内容要点</div>本文为文档内容摘要，已提取主题、文案、品牌信息及视觉要求等关键内容。文档中的核心信息将用于后续规划与设计生成。</div></div>
-            <div className="mt-4 text-[13px] font-medium text-gray-700">文档素材</div><div className="mt-2 grid grid-cols-3 gap-2">{documentImages.map((image) => <div key={image} className="relative"><img src={image} className="h-28 w-full rounded object-cover" alt="文档素材"/><Maximize2 size={14} className="absolute right-2 top-2 text-white"/></div>)}</div>
+            <div className="mt-3 rounded-[12px] bg-[#f7f8fb] p-3 text-[13px] text-gray-700"><div className="flex items-center gap-2 border-b border-[#dfe3eb] pb-3 font-medium"><FileText size={17}/> {document.name}</div><div className="pt-3"><div className="mb-1 text-[12px] text-gray-400">内容要点</div>本文为文档内容摘要，已提取主题、文案、品牌信息及视觉要求等关键内容。文档中的核心信息将用于后续规划与设计生成。</div></div>
+            <div className="mt-4 text-[13px] font-medium text-gray-700">文档素材</div><div className="mt-2 grid grid-cols-3 gap-2">{documentImages.map((image) => <div key={image} className="group relative overflow-hidden rounded-[7px] bg-gray-100"><img src={image} className="h-28 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" alt="文档素材"/><div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/25 group-hover:opacity-100"><button type="button" aria-label="放大" onClick={() => window.open(image, '_blank', 'noopener,noreferrer')} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm hover:bg-white"><Maximize2 size={14}/></button><button type="button" aria-label="添加到画布" onClick={() => onAddImage(image)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm hover:bg-white"><Plus size={15}/></button></div></div>)}</div>
           </div>
         </div>
       )}
