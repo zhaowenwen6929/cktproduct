@@ -2961,6 +2961,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
                   onSubmitAnswers={(answers) => handlePlanAnswer(msg.id, answers)}
                   onAddImage={onAddImage}
                   onAddVideo={onAddVideo}
+                  onAddToConversation={addAttachmentToComposer}
                 />
               </div>
             );

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Globe, Loader2, Sparkles, ThumbsDown, ThumbsUp, FileText, X, Maximize2, Plus } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Globe, Loader2, Sparkles, ThumbsDown, ThumbsUp, FileText, X, Maximize2, Plus, MessageSquare } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PlanFlow } from '../types';
 
@@ -8,6 +8,7 @@ interface PlanningFlowCardProps {
   onSubmitAnswers: (answers: Record<string, string>) => void;
   onAddImage: (url: string) => void;
   onAddVideo: (url: string) => void;
+  onAddToConversation: (attachment: import('../types').GenerationAttachment) => void;
 }
 
 const THINK_TEXT = '好的，我先搜索创客贴品牌的视觉调性和核心信息，再据此生成。';
@@ -90,7 +91,7 @@ const buildPosterDataUri = (variant: number) => {
 
 const POSTER_PREVIEWS = [1, 2, 3, 4].map((variant) => buildPosterDataUri(variant));
 
-export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubmitAnswers, onAddImage, onAddVideo }) => {
+export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubmitAnswers, onAddImage, onAddVideo, onAddToConversation }) => {
   const plannerIntro = '你希望做什么主题的海报呢？我需要了解更多的信息才能继续往下推进，请按照提示完善你的需求吧：';
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string | string[]>>(
     task.selectedAnswers ? Object.fromEntries(Object.entries(task.selectedAnswers).map(([key, value]) => [key, value])) : {}
@@ -356,7 +357,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
               <div className="group relative flex items-center gap-2 border-b border-[#dfe3eb] pb-3 font-medium"><FileText size={17}/> {document.name}<div className="absolute right-0 top-[-4px] flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"><button type="button" aria-label="放大文件信息" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Maximize2 size={13}/></button><button type="button" aria-label="添加文件" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Plus size={14}/></button></div></div>
               <div className="group relative pt-3"><div className="mb-1 text-[12px] text-gray-400">内容要点</div><div className="line-clamp-3 leading-5">本文件为一张电子发票（增值税专用发票）。根据用户提取文案和信息用于海报制作的需求，以下为发票上的全部关键文字与数据内容：核心文案与信息——主题/发票类型：电子发票；发票号码：26332000001801880731；开票日期：2026年03月06日；购买方：北京艺源酷科技有限公司；销售方：杭州王道控股有限公司；价税合计总额：¥48300.00。</div><div className="absolute right-0 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"><button type="button" aria-label="放大内容要点" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Maximize2 size={13}/></button><button type="button" aria-label="添加内容要点" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Plus size={14}/></button></div></div>
             </div>
-            <div className="mt-4 text-[13px] font-medium text-gray-700">文档素材</div><div className="mt-2 columns-3 gap-2">{documentImages.map((image, index) => <div key={image} className="group relative mb-2 break-inside-avoid overflow-hidden rounded-[7px] bg-gray-100"><img src={image} className={`w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] ${index % 3 === 0 ? 'h-28' : index % 3 === 1 ? 'h-20' : 'h-36'}`} alt="文档素材"/><div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/25 group-hover:opacity-100"><button type="button" aria-label="放大" onClick={() => window.open(image, '_blank', 'noopener,noreferrer')} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm hover:bg-white"><Maximize2 size={14}/></button><button type="button" aria-label="添加到画布" onClick={() => onAddImage(image)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm hover:bg-white"><Plus size={15}/></button></div></div>)}</div>
+            <div className="mt-4 text-[13px] font-medium text-gray-700">文档素材</div><div className="mt-2 columns-3 gap-2">{documentImages.map((image, index) => <div key={image} className="group relative mb-2 break-inside-avoid overflow-hidden rounded-[7px] bg-gray-100"><img src={image} className={`w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] ${index % 3 === 0 ? 'h-28' : index % 3 === 1 ? 'h-20' : 'h-36'}`} alt="文档素材"/><div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/25 group-hover:opacity-100"><button type="button" aria-label="放大" onClick={() => window.open(image, '_blank', 'noopener,noreferrer')} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm hover:bg-white"><Maximize2 size={14}/></button><button type="button" aria-label="添加到画布" onClick={() => onAddImage(image)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm hover:bg-white"><Plus size={15}/></button><button type="button" aria-label="添加到对话" onClick={() => onAddToConversation({ id: `doc-material-${index}`, type: 'image', url: image, name: `文档素材${index + 1}` })} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm hover:bg-white"><MessageSquare size={14}/></button></div></div>)}</div>
           </div>
         </div>
       )}
