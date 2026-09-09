@@ -349,8 +349,8 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
         </div>
       )}
       {documentOpen && document && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-start bg-black/10 p-5" onClick={() => setDocumentOpen(false)}>
-          <div className="ml-2 max-h-[90vh] w-[520px] overflow-auto rounded-[18px] border border-[#e7ebf3] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.18)]" onClick={(event) => event.stopPropagation()}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-end bg-black/10 p-5" onClick={() => setDocumentOpen(false)}>
+          <div className="mr-[390px] max-h-[90vh] w-[520px] overflow-auto rounded-[18px] border border-[#e7ebf3] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.18)]" onClick={(event) => event.stopPropagation()}>
           <div className="relative flex items-center justify-center border-b pb-3 text-[16px] font-medium"><span>{document.name}</span><button className="absolute right-0" onClick={() => setDocumentOpen(false)}><X size={18}/></button></div>
             <div className="mt-3 rounded-[12px] bg-[#f7f8fb] p-3 text-[13px] text-gray-700">
               <div className="group relative flex items-center gap-2 border-b border-[#dfe3eb] pb-3 font-medium"><FileText size={17}/> {document.name}<div className="absolute right-0 top-[-4px] flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"><button type="button" aria-label="放大文件信息" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Maximize2 size={13}/></button><button type="button" aria-label="添加文件" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Plus size={14}/></button></div></div>
