@@ -367,7 +367,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
             <div className="text-[13px] font-semibold text-[#111827]">需求规划师</div>
           </div>
           <div className="ml-0 inline-flex max-w-[92%] rounded-[18px] bg-white px-4 py-3 text-[13px] leading-6 text-[#111827] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-            {typedIntro}
+            {document ? plannerIntro : typedIntro}
             {task.status === 'clarifying' && typedIntro.length < plannerIntro.length && <span className="ml-0.5 inline-block h-4 w-[1px] animate-pulse bg-[#111827] align-middle" />}
           </div>
         </div>
