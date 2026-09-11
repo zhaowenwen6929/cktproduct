@@ -399,7 +399,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
               </div>
               <aside className="flex w-[430px] shrink-0 flex-col border-l border-gray-100 bg-white">
                 <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8"><h2 className="text-lg font-semibold text-gray-900">内容要点</h2><div className="mt-5 whitespace-pre-wrap text-[13px] leading-6 text-gray-700">{documentSummaryMarkdown.replace('# 文档内容要点\n\n', '')}</div></div>
-                <div className="border-t border-gray-100 px-8 py-5"><button type="button" className="w-full rounded-full bg-black px-6 py-2.5 text-sm text-white transition hover:bg-gray-800" onClick={() => { onAddToConversation({ id: `document-summary-${document.id}`, type: 'document', url: `data:text/markdown;charset=utf-8,${encodeURIComponent(documentSummaryMarkdown)}`, name: '文档内容要点.md', displayTypeLabel: 'MD' }); setDocumentContentPreviewOpen(false); }}>添加到对话</button></div>
+                <div className="border-t border-gray-100 px-8 py-5"><button type="button" className="w-full rounded-full bg-black px-6 py-2.5 text-sm text-white transition hover:bg-gray-800" onClick={() => { onAddToConversation({ id: `document-summary-${document.id}`, type: 'document', url: `data:text/markdown;charset=utf-8,${encodeURIComponent(documentSummaryMarkdown)}`, name: '内容要点.md', displayTypeLabel: '内容要点' }); setDocumentContentPreviewOpen(false); }}>添加到对话</button></div>
               </aside>
             </div>
           </div>
