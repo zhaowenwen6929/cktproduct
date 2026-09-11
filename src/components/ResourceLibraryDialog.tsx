@@ -936,7 +936,7 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
                         {filteredDocumentAssets.map((asset) => (
                           <button key={asset.id} type="button" onClick={() => applyAssetSelection(asset)} className={cn('rounded-[16px] border bg-white p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(99,114,130,0.14)]', isSelected(asset.id) ? 'border-[#111827] ring-2 ring-[#111827]/15' : 'border-[#e8ecf4]')}>
                             <div className="flex h-24 items-center justify-center rounded-xl bg-[#f4f5f8]"><div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[#5c5cfc] shadow-sm"><FileText size={23}/></div></div>
-                            <div className="mt-2 truncate text-[11px] font-medium text-gray-900">{asset.name}</div><div className="mt-1 text-[10px] text-[#8c98ae]">{asset.format} · {asset.summary}</div>
+                            <div className="mt-2 truncate text-[11px] font-medium text-gray-900">{asset.name}</div><div className="mt-1 text-[10px] text-[#8c98ae]">{asset.format}</div>
                           </button>
                         ))}
                       </div>
