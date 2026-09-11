@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Upload, FolderOpen, ChevronDown, ChevronUp, Play, Music, UserRound, Image as ImageIcon, Clapperboard, Check, X, MoreHorizontal, CircleHelp } from 'lucide-react';
+import { Search, Upload, FolderOpen, ChevronDown, ChevronUp, Play, Music, UserRound, Image as ImageIcon, Clapperboard, Check, X, MoreHorizontal, CircleHelp, FileText } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-type ResourceTab = 'image' | 'video' | 'audio' | 'model';
+type ResourceTab = 'image' | 'video' | 'audio' | 'document' | 'model';
 type VideoGenerateMode = 'text' | 'frames' | 'reference';
 type ReferenceSlotKind = 'image' | 'video' | 'audio';
 
@@ -15,7 +15,7 @@ interface ResourceLibraryDialogProps {
   confirmLabel?: string;
   seedanceDetectionMode?: boolean;
   onConfirmAssets: (assets: Array<{
-    type: 'image' | 'video' | 'audio';
+    type: 'image' | 'video' | 'audio' | 'document';
     url: string;
     name: string;
     displayTypeLabel?: string;
@@ -53,10 +53,11 @@ type AudioAsset = {
   duration: string;
   accent: string;
 };
+type DocumentAsset = { id: string; kind: 'document'; name: string; url: string; format: string; summary: string };
 
 type SelectedAsset = {
   id: string;
-  type: 'image' | 'video' | 'audio';
+  type: 'image' | 'video' | 'audio' | 'document';
   url: string;
   name: string;
   displayTypeLabel?: string;
@@ -101,6 +102,12 @@ const AUDIO_ASSETS: AudioAsset[] = [
   { id: 'audio-3', kind: 'audio', name: '柔和旁白', url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3', duration: '00:12', accent: 'from-[#84d4bd] to-[#d8f5eb]' },
   { id: 'audio-4', kind: 'audio', name: '电商提示音', url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3', duration: '00:08', accent: 'from-[#cab3ff] to-[#ece3ff]' },
 ];
+const DOCUMENT_ASSETS: DocumentAsset[] = [
+  { id: 'document-1', kind: 'document', name: '品牌视觉规范.pdf', url: '#document-1', format: 'PDF', summary: '品牌定位、视觉调性与核心规范' },
+  { id: 'document-2', kind: 'document', name: '产品资料.docx', url: '#document-2', format: 'DOCX', summary: '产品信息、卖点与宣传文案' },
+  { id: 'document-3', kind: 'document', name: '海报需求说明.md', url: '#document-3', format: 'MD', summary: '海报主题、尺寸与设计要求' },
+  { id: 'document-4', kind: 'document', name: '活动文案.txt', url: '#document-4', format: 'TXT', summary: '活动时间、地点与推广信息' },
+];
 
 const MODEL_ASSETS: ImageAsset[] = [
   { id: 'model-1', kind: 'model', name: '通勤女模', url: 'https://picsum.photos/seed/resource-model-1/720/960', aspectClass: 'aspect-[3/4]', seedanceStatus: 'passed' },
@@ -115,6 +122,7 @@ const TABS: Array<{ id: ResourceTab; label: string; icon: React.ComponentType<{ 
   { id: 'image', label: '图像', icon: ImageIcon },
   { id: 'video', label: '视频', icon: Clapperboard },
   { id: 'audio', label: '音频', icon: Music },
+  { id: 'document', label: '文档', icon: FileText },
   { id: 'model', label: '模特', icon: UserRound },
 ];
 
@@ -206,6 +214,7 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
   );
   const filteredVideoAssets = useMemo(() => videoAssets.filter((item) => item.name.toLowerCase().includes(keyword.trim().toLowerCase())), [videoAssets, keyword]);
   const filteredAudioAssets = useMemo(() => audioAssets.filter((item) => item.name.toLowerCase().includes(keyword.trim().toLowerCase())), [audioAssets, keyword]);
+  const filteredDocumentAssets = useMemo(() => DOCUMENT_ASSETS.filter((item) => item.name.toLowerCase().includes(keyword.trim().toLowerCase())), [keyword]);
   const filteredModelAssets = useMemo(
     () => modelAssets.filter((item) => item.name.toLowerCase().includes(keyword.trim().toLowerCase()) && (!seedanceOnly || item.seedanceStatus === 'passed')),
     [modelAssets, keyword, seedanceOnly],
@@ -227,6 +236,8 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
       ? 'video/*'
       : activeTab === 'audio'
         ? 'audio/*'
+        : activeTab === 'document'
+          ? '.pdf,.doc,.docx,.txt,.md,application/pdf,text/plain,text/markdown'
         : 'image/*';
 
   const addSelectedAssetUnique = (asset: SelectedAsset) => {
@@ -346,7 +357,8 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
     event.target.value = '';
   };
 
-  const mapAssetToSelection = (asset: ImageAsset | VideoAsset | AudioAsset): SelectedAsset => {
+  const mapAssetToSelection = (asset: ImageAsset | VideoAsset | AudioAsset | DocumentAsset): SelectedAsset => {
+    if (asset.kind === 'document') return { id: asset.id, type: 'document', url: asset.url, name: asset.name, displayTypeLabel: asset.format };
     if (asset.kind === 'video') {
       return { id: asset.id, type: 'video', url: asset.url, name: asset.name, displayTypeLabel: '视频' };
     }
@@ -356,7 +368,7 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
     return { id: asset.id, type: 'image', url: asset.url, name: asset.name, displayTypeLabel: asset.kind === 'model' ? '模特' : '图片' };
   };
 
-  const applyAssetSelection = (asset: ImageAsset | VideoAsset | AudioAsset) => {
+  const applyAssetSelection = (asset: ImageAsset | VideoAsset | AudioAsset | DocumentAsset) => {
     const next = mapAssetToSelection(asset);
     if (pendingReferenceSlotId) {
       const slotKind = getSlotKindById(pendingReferenceSlotId);
@@ -406,7 +418,7 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
     onClose();
   };
 
-  const resourceCount = activeTab === 'image' ? filteredImageAssets.length : activeTab === 'video' ? filteredVideoAssets.length : activeTab === 'audio' ? filteredAudioAssets.length : filteredModelAssets.length;
+  const resourceCount = activeTab === 'image' ? filteredImageAssets.length : activeTab === 'video' ? filteredVideoAssets.length : activeTab === 'audio' ? filteredAudioAssets.length : activeTab === 'document' ? filteredDocumentAssets.length : filteredModelAssets.length;
 
   const isSelected = (assetId: string) => selectedAssets.some((item) => item.id === assetId);
   const isSeedanceFilterVisible = activeTab === 'image' || activeTab === 'model';
@@ -914,6 +926,17 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
                                 ))}
                               </div>
                             </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {activeTab === 'document' && (
+                      <div className="grid grid-cols-4 gap-3">
+                        {filteredDocumentAssets.map((asset) => (
+                          <button key={asset.id} type="button" onClick={() => applyAssetSelection(asset)} className={cn('rounded-[16px] border bg-white p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(99,114,130,0.14)]', isSelected(asset.id) ? 'border-[#111827] ring-2 ring-[#111827]/15' : 'border-[#e8ecf4]')}>
+                            <div className="flex h-24 items-center justify-center rounded-xl bg-[#f4f5f8]"><div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[#5c5cfc] shadow-sm"><FileText size={23}/></div></div>
+                            <div className="mt-2 truncate text-[11px] font-medium text-gray-900">{asset.name}</div><div className="mt-1 text-[10px] text-[#8c98ae]">{asset.format} · {asset.summary}</div>
                           </button>
                         ))}
                       </div>
