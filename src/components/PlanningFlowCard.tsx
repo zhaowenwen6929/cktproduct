@@ -115,6 +115,8 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const [documentParsed, setDocumentParsed] = useState(false);
   const [documentPreviewHover, setDocumentPreviewHover] = useState(false);
   const [focusedMaterialIndex, setFocusedMaterialIndex] = useState<number | null>(null);
+  const [documentContentPreviewOpen, setDocumentContentPreviewOpen] = useState(false);
+  const documentSummaryMarkdown = '# 文档内容要点\n\n本文件为一张电子发票（增值税专用发票）。\n\n- 发票号码：26332000001801880731\n- 开票日期：2026年03月06日\n- 购买方：北京艺源酷科技有限公司\n- 销售方：杭州王道控股有限公司\n- 价税合计：¥48300.00\n- 视觉要求：白底、红线/红章、黑字的标准税务凭证版式。';
   const document = task.attachments.find((item) => item.type === 'document');
   const documentImages = [
     'https://picsum.photos/seed/doc-page-1/260/180',
@@ -354,7 +356,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
         <div className="fixed inset-0 z-[200] flex items-center justify-end bg-black/10 p-5" onClick={() => setDocumentOpen(false)}>
           <div className="mr-[390px] max-h-[90vh] w-[520px] overflow-auto rounded-[18px] border border-[#e7ebf3] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.18)]" onClick={(event) => event.stopPropagation()}>
           <div className="relative flex items-center justify-center border-b pb-3 text-[16px] font-medium"><span>{document.name}</span><button className="absolute right-0" onClick={() => setDocumentOpen(false)}><X size={18}/></button></div>
-            <div className="mt-3 rounded-[12px] bg-[#f7f8fb] p-3 text-[13px] text-gray-700">
+            <div onClick={() => setDocumentContentPreviewOpen(true)} className="mt-3 rounded-[12px] bg-[#f7f8fb] p-3 text-[13px] text-gray-700">
               <div className="group relative flex items-center gap-2 border-b border-[#dfe3eb] pb-3 font-medium"><FileText size={17}/> {document.name}<div className="absolute right-0 top-[-4px] flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"><button type="button" aria-label="放大文件信息" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Maximize2 size={13}/></button><button type="button" aria-label="添加文件" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Plus size={14}/></button></div></div>
               <div className="group relative pt-3"><div className="mb-1 text-[12px] text-gray-400">内容要点</div><div className="line-clamp-3 leading-5">本文件为一张电子发票（增值税专用发票）。根据用户提取文案和信息用于海报制作的需求，以下为发票上的全部关键文字与数据内容：核心文案与信息——主题/发票类型：电子发票；发票号码：26332000001801880731；开票日期：2026年03月06日；购买方：北京艺源酷科技有限公司；销售方：杭州王道控股有限公司；价税合计总额：¥48300.00。</div><div className="absolute right-0 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"><button type="button" aria-label="放大内容要点" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Maximize2 size={13}/></button><button type="button" aria-label="添加内容要点" className="rounded-md bg-white p-1 text-gray-600 shadow-sm hover:text-black"><Plus size={14}/></button></div></div>
             </div>
@@ -368,6 +370,15 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {documentContentPreviewOpen && document && (
+        <div className="fixed inset-0 z-[240] flex items-center justify-center bg-black/35 p-6" onClick={() => setDocumentContentPreviewOpen(false)}>
+          <div className="relative flex h-[min(88vh,900px)] w-[min(1200px,92vw)] overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <button type="button" aria-label="关闭文档预览" className="absolute right-5 top-4 z-10 rounded-full p-2 hover:bg-gray-100" onClick={() => setDocumentContentPreviewOpen(false)}><X size={21}/></button>
+            <div className="flex flex-1 items-center justify-center bg-[#f4f5f7] p-10"><div className="flex h-full w-[72%] items-center justify-center bg-[#d5d5d5] text-sm text-gray-500 shadow-inner">文档原文预览</div></div>
+            <div className="w-[430px] shrink-0 overflow-y-auto border-l border-gray-100 p-8"><h2 className="text-xl font-semibold text-gray-900">内容要点</h2><div className="mt-6 whitespace-pre-wrap text-[14px] leading-7 text-gray-700">{documentSummaryMarkdown.replace('# 文档内容要点\n\n', '')}</div><button type="button" className="mt-8 rounded-full bg-black px-6 py-2.5 text-sm text-white" onClick={() => { onAddToConversation({ id: `document-summary-${document.id}`, type: 'document', url: `data:text/markdown;charset=utf-8,${encodeURIComponent(documentSummaryMarkdown)}`, name: '文档内容要点.md', displayTypeLabel: 'MD' }); setDocumentContentPreviewOpen(false); }}>添加到对话</button></div>
           </div>
         </div>
       )}
