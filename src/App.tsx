@@ -475,6 +475,18 @@ export default function App() {
 
   const handleAddImage = (url: string) => {
     const img = new Image();
+    img.crossOrigin = 'anonymous';
+    const fallbackSize = { width: 400, height: 300 };
+    const createImageObject = (width: number, height: number) => {
+      const newObj: CanvasObject = {
+        id: createObjectId('image'), type: 'image', name: '图片', x: 0, y: 0, width, height, content: url,
+      };
+      setObjects((prev) => {
+        const position = getNextMediaGridPosition(prev, width, height);
+        return [...prev, { ...newObj, ...position }];
+      });
+      setSelectedIds([newObj.id]);
+    };
     img.onload = () => {
       const maxWidth = 400;
       const maxHeight = 400;
@@ -487,22 +499,9 @@ export default function App() {
         height *= ratio;
       }
 
-      const newObj: CanvasObject = {
-        id: createObjectId('image'),
-        type: 'image',
-        name: '图片',
-        x: 0,
-        y: 0,
-        width,
-        height,
-        content: url,
-      };
-      setObjects((prev) => {
-        const position = getNextMediaGridPosition(prev, width, height);
-        return [...prev, { ...newObj, ...position }];
-      });
-      setSelectedIds([newObj.id]);
+      createImageObject(width, height);
     };
+    img.onerror = () => createImageObject(fallbackSize.width, fallbackSize.height);
     img.src = url;
   };
 
