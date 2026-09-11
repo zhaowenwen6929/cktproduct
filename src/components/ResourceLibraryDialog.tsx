@@ -1044,6 +1044,8 @@ export const ResourceLibraryDialog: React.FC<ResourceLibraryDialogProps> = ({
                                   <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,#eef2ff_0%,#f8faff_100%)]">
                                     <Music size={18} className="text-[#5c5cfc]" />
                                   </div>
+                                ) : asset.type === 'document' ? (
+                                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[linear-gradient(180deg,#f1f3f8_0%,#e9edf5_100%)] px-2"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#5c5cfc] shadow-sm"><FileText size={21} /></div><span className="max-w-full truncate text-[10px] font-medium text-[#4b5563]">{asset.name}</span></div>
                                 ) : asset.type === 'video' ? (
                                   <video src={asset.url} className="h-full w-full object-cover" muted playsInline autoPlay loop />
                                 ) : (
