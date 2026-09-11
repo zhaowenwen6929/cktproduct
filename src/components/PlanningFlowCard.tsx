@@ -382,11 +382,10 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
       {documentContentPreviewOpen && document && (
         <div className="fixed inset-0 z-[240] flex items-center justify-center bg-black/35 p-6" onClick={() => setDocumentContentPreviewOpen(false)}>
           <div className="relative flex h-[min(88vh,900px)] w-[min(1280px,94vw)] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <button type="button" aria-label="关闭文档预览" className="absolute right-5 top-4 z-10 rounded-full p-2 hover:bg-gray-100" onClick={() => setDocumentContentPreviewOpen(false)}><X size={21}/></button>
+            <div className="relative flex h-16 shrink-0 items-center border-b border-gray-100 px-8"><h1 className="truncate pr-12 text-lg font-semibold text-gray-900">{document.name}</h1><span className="ml-3 rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-500">文档预览</span><button type="button" aria-label="关闭文档预览" className="absolute right-5 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-gray-700 transition hover:bg-gray-100" onClick={() => setDocumentContentPreviewOpen(false)}><X size={20}/></button></div>
             <div className="flex min-h-0 flex-1">
               <div className="flex min-w-0 flex-1 items-center justify-center bg-[#f4f5f7] p-8">
                 <div className="flex h-full max-h-[720px] w-[min(650px,80%)] flex-col overflow-hidden rounded-sm bg-white shadow-[0_8px_30px_rgba(15,23,42,0.12)]">
-                  <div className="border-b border-[#e5e7eb] px-8 py-5 text-center text-lg font-semibold text-gray-900">{document.name}</div>
                   <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6 text-[13px] leading-6 text-gray-700">
                     <div className="mb-5 flex items-center justify-between border-b-2 border-red-700 pb-3"><span className="text-xl font-bold text-red-700">电子发票</span><span className="rounded border border-red-500 px-2 py-1 text-[11px] text-red-600">增值税专用发票</span></div>
                     <div className="mb-5 grid grid-cols-[1fr_150px] gap-5"><div><p>发票号码：26332000001801880731</p><p>开票日期：2026年03月06日</p><p>校验码：9182 4726 0318 6654</p></div><img src={documentImages[0]} alt="文档原文中的图像素材" className="h-24 w-full rounded object-cover" /></div>
@@ -399,7 +398,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
                 </div>
               </div>
               <aside className="flex w-[430px] shrink-0 flex-col border-l border-gray-100 bg-white">
-                <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8"><h2 className="text-xl font-semibold text-gray-900">内容要点</h2><div className="mt-6 whitespace-pre-wrap text-[14px] leading-7 text-gray-700">{documentSummaryMarkdown.replace('# 文档内容要点\n\n', '')}</div></div>
+                <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8"><h2 className="text-lg font-semibold text-gray-900">内容要点</h2><div className="mt-5 whitespace-pre-wrap text-[13px] leading-6 text-gray-700">{documentSummaryMarkdown.replace('# 文档内容要点\n\n', '')}</div></div>
                 <div className="border-t border-gray-100 px-8 py-5"><button type="button" className="w-full rounded-full bg-black px-6 py-2.5 text-sm text-white transition hover:bg-gray-800" onClick={() => { onAddToConversation({ id: `document-summary-${document.id}`, type: 'document', url: `data:text/markdown;charset=utf-8,${encodeURIComponent(documentSummaryMarkdown)}`, name: '文档内容要点.md', displayTypeLabel: 'MD' }); setDocumentContentPreviewOpen(false); }}>添加到对话</button></div>
               </aside>
             </div>
