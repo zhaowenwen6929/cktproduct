@@ -116,7 +116,7 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
   const [documentPreviewHover, setDocumentPreviewHover] = useState(false);
   const [focusedMaterialIndex, setFocusedMaterialIndex] = useState<number | null>(null);
   const [documentContentPreviewOpen, setDocumentContentPreviewOpen] = useState(false);
-  const documentSummaryMarkdown = '# 文档内容要点\n\n本文件为一张电子发票（增值税专用发票）。\n\n- 发票号码：26332000001801880731\n- 开票日期：2026年03月06日\n- 购买方：北京艺源酷科技有限公司\n- 销售方：杭州王道控股有限公司\n- 价税合计：¥48300.00\n- 视觉要求：白底、红线/红章、黑字的标准税务凭证版式。';
+  const documentSummaryMarkdown = '# 文档内容要点\n\n本文件为一张电子发票（增值税专用发票），内容完整、字段清晰，可作为本次海报提取文案与视觉方向的主要依据。\n\n## 核心信息\n\n- 发票类型：电子发票（增值税专用发票）\n- 发票号码：26332000001801880731\n- 开票日期：2026年03月06日\n- 价税合计：¥48,300.00（大写：肆万捌仟叁佰圆整）\n\n## 交易双方\n\n购买方为北京艺源酷科技有限公司，统一社会信用代码 91110108306717573P；销售方（品牌方）为杭州王道控股有限公司，统一社会信用代码 91330108MA27XB680Q。\n\n## 服务明细\n\n项目名称为“信息系统增值服务技术服务费”。数量 1，单价 45,566.0377…，金额 45,566.04，税率 6%，税额 2,733.96。\n\n## 视觉与制作建议\n\n发票整体采用标准税务凭证版式：白色底色、黑色正文、红色线条与红色监制章。左上角包含防伪二维码，顶部中央有“国家税务总局浙江省税务局”红色监制章。海报制作时可重点提取“电子发票”“¥48,300.00”、交易双方名称和“信息系统增值服务技术服务费”等信息作为主视觉文案。\n\n文档还包含全国统一发票监制章、发票二维码、标题字体、正文字体及二维码等视觉素材，适合延展为正式、可信、信息层级清晰的宣传海报。';
   const document = task.attachments.find((item) => item.type === 'document');
   const documentImages = [
     'https://picsum.photos/seed/doc-page-1/260/180',
@@ -375,10 +375,28 @@ export const PlanningFlowCard: React.FC<PlanningFlowCardProps> = ({ task, onSubm
       )}
       {documentContentPreviewOpen && document && (
         <div className="fixed inset-0 z-[240] flex items-center justify-center bg-black/35 p-6" onClick={() => setDocumentContentPreviewOpen(false)}>
-          <div className="relative flex h-[min(88vh,900px)] w-[min(1200px,92vw)] overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+          <div className="relative flex h-[min(88vh,900px)] w-[min(1280px,94vw)] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <button type="button" aria-label="关闭文档预览" className="absolute right-5 top-4 z-10 rounded-full p-2 hover:bg-gray-100" onClick={() => setDocumentContentPreviewOpen(false)}><X size={21}/></button>
-            <div className="flex flex-1 items-center justify-center bg-[#f4f5f7] p-10"><div className="flex h-full w-[72%] items-center justify-center bg-[#d5d5d5] text-sm text-gray-500 shadow-inner">文档原文预览</div></div>
-            <div className="w-[430px] shrink-0 overflow-y-auto border-l border-gray-100 p-8"><h2 className="text-xl font-semibold text-gray-900">内容要点</h2><div className="mt-6 whitespace-pre-wrap text-[14px] leading-7 text-gray-700">{documentSummaryMarkdown.replace('# 文档内容要点\n\n', '')}</div><button type="button" className="mt-8 rounded-full bg-black px-6 py-2.5 text-sm text-white" onClick={() => { onAddToConversation({ id: `document-summary-${document.id}`, type: 'document', url: `data:text/markdown;charset=utf-8,${encodeURIComponent(documentSummaryMarkdown)}`, name: '文档内容要点.md', displayTypeLabel: 'MD' }); setDocumentContentPreviewOpen(false); }}>添加到对话</button></div>
+            <div className="flex min-h-0 flex-1">
+              <div className="flex min-w-0 flex-1 items-center justify-center bg-[#f4f5f7] p-8">
+                <div className="flex h-full max-h-[720px] w-[min(650px,80%)] flex-col overflow-hidden rounded-sm bg-white shadow-[0_8px_30px_rgba(15,23,42,0.12)]">
+                  <div className="border-b border-[#e5e7eb] px-8 py-5 text-center text-lg font-semibold text-gray-900">{document.name}</div>
+                  <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6 text-[13px] leading-6 text-gray-700">
+                    <div className="mb-5 flex items-center justify-between border-b-2 border-red-700 pb-3"><span className="text-xl font-bold text-red-700">电子发票</span><span className="rounded border border-red-500 px-2 py-1 text-[11px] text-red-600">增值税专用发票</span></div>
+                    <div className="mb-5 grid grid-cols-[1fr_150px] gap-5"><div><p>发票号码：26332000001801880731</p><p>开票日期：2026年03月06日</p><p>校验码：9182 4726 0318 6654</p></div><img src={documentImages[0]} alt="文档原文中的图像素材" className="h-24 w-full rounded object-cover" /></div>
+                    <div className="mb-5 rounded border border-gray-200 p-3"><p className="font-medium text-gray-900">购买方：北京艺源酷科技有限公司</p><p>统一社会信用代码：91110108306717573P</p><p className="mt-2 font-medium text-gray-900">销售方：杭州王道控股有限公司</p><p>统一社会信用代码：91330108MA27XB680Q</p></div>
+                    <table className="mb-5 w-full border-collapse border border-gray-300 text-left"><thead><tr className="bg-gray-50"><th className="border border-gray-300 p-2">项目名称</th><th className="border border-gray-300 p-2">数量</th><th className="border border-gray-300 p-2">金额</th><th className="border border-gray-300 p-2">税率</th></tr></thead><tbody><tr><td className="border border-gray-300 p-2">信息系统增值服务技术服务费</td><td className="border border-gray-300 p-2">1</td><td className="border border-gray-300 p-2">45566.04</td><td className="border border-gray-300 p-2">6%</td></tr></tbody></table>
+                    <div className="mb-5 flex items-center justify-between border-y border-gray-200 py-4"><span className="font-medium">价税合计（小写）</span><span className="text-lg font-semibold">¥48300.00</span></div>
+                    <div className="grid grid-cols-2 gap-3"><img src={documentImages[1]} alt="文档附图" className="h-28 w-full rounded object-cover" /><img src={documentImages[2]} alt="文档附图" className="h-28 w-full rounded object-cover" /></div>
+                    <p className="mt-5 text-gray-500">备注：5:5　开票人：彭贵婷　顶部含税务监制章，左上角含防伪二维码。</p>
+                  </div>
+                </div>
+              </div>
+              <aside className="flex w-[430px] shrink-0 flex-col border-l border-gray-100 bg-white">
+                <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8"><h2 className="text-xl font-semibold text-gray-900">内容要点</h2><div className="mt-6 whitespace-pre-wrap text-[14px] leading-7 text-gray-700">{documentSummaryMarkdown.replace('# 文档内容要点\n\n', '')}</div></div>
+                <div className="border-t border-gray-100 px-8 py-5"><button type="button" className="w-full rounded-full bg-black px-6 py-2.5 text-sm text-white transition hover:bg-gray-800" onClick={() => { onAddToConversation({ id: `document-summary-${document.id}`, type: 'document', url: `data:text/markdown;charset=utf-8,${encodeURIComponent(documentSummaryMarkdown)}`, name: '文档内容要点.md', displayTypeLabel: 'MD' }); setDocumentContentPreviewOpen(false); }}>添加到对话</button></div>
+              </aside>
+            </div>
           </div>
         </div>
       )}
