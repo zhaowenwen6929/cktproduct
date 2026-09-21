@@ -239,7 +239,7 @@ const templateCards = [
   { title: '轻松办公提案', tone: 'from-lime-100 via-green-200 to-teal-300', kicker: '效率工具' },
 ];
 
-type TemplateGalleryKind = 'editorial' | 'calendar' | 'award' | 'recruitment';
+type TemplateGalleryKind = 'editorial' | 'calendar' | 'award' | 'recruitment' | 'recent' | 'redbook' | 'marketing' | 'amazon' | 'detail' | 'drama';
 
 interface TemplateGalleryItem {
   title: string;
@@ -250,7 +250,30 @@ interface TemplateGalleryItem {
   accent: string;
 }
 
-const templateGallerySections: { title: string; description: string; kind: TemplateGalleryKind; items: TemplateGalleryItem[] }[] = [
+interface TemplateGallerySeed {
+  title: string;
+  description: string;
+  tone: string;
+  kicker?: string;
+  foreground?: string;
+  accent?: string;
+}
+
+const makeGalleryItems = (seeds: TemplateGallerySeed[], defaultForeground = 'text-white'): TemplateGalleryItem[] => seeds.map((item, index) => ({
+  ...item,
+  kicker: item.kicker ?? `DESIGN · ${String(index + 1).padStart(2, '0')}`,
+  foreground: item.foreground ?? defaultForeground,
+  accent: item.accent ?? 'bg-[#ffd66b]',
+}));
+
+interface TemplateGallerySectionData {
+  title: string;
+  description: string;
+  kind: TemplateGalleryKind;
+  items: TemplateGalleryItem[];
+}
+
+const templateGallerySections: TemplateGallerySectionData[] = [
   {
     title: '编辑精选', description: '创意模板精选，快速开启设计', kind: 'editorial',
     items: [
@@ -300,6 +323,93 @@ const templateGallerySections: { title: string; description: string; kind: Templ
       { title: '招募合伙人', description: '一起开启全新事业', kicker: 'WE NEED YOU', tone: 'from-amber-200 via-orange-300 to-yellow-400', foreground: 'text-[#51321e]', accent: 'bg-[#1e1d1b]' },
       { title: '有个工作想给你', description: '轻松活泼招聘模板', kicker: 'HIRING NOW', tone: 'from-lime-100 via-green-100 to-teal-100', foreground: 'text-[#365a47]', accent: 'bg-[#80bda1]' },
     ],
+  },
+];
+
+const agentGallerySections: TemplateGallerySectionData[] = [
+  {
+    title: '最近设计', description: '继续编辑最近创作的设计', kind: 'recent',
+    items: makeGalleryItems([
+      { title: '春日上新', description: '春季新品推广图', tone: 'from-sky-100 via-blue-200 to-cyan-100', foreground: 'text-[#315f91]', kicker: 'SPRING · NEW' },
+      { title: '月亮与我', description: '治愈系日签海报', tone: 'from-amber-50 via-yellow-100 to-orange-100', foreground: 'text-[#806239]', kicker: 'GOOD NIGHT' },
+      { title: '周末计划', description: '周末生活方式拼贴', tone: 'from-orange-100 via-rose-100 to-fuchsia-100', foreground: 'text-[#9e4d69]', kicker: 'WEEKEND' },
+      { title: '留白练习', description: '极简文字排版设计', tone: 'from-stone-100 via-white to-slate-100', foreground: 'text-[#384052]', kicker: 'TYPE STUDY' },
+      { title: '知识分享', description: '课程知识卡片', tone: 'from-sky-100 via-blue-100 to-indigo-100', foreground: 'text-[#294c88]', kicker: 'LEARN MORE' },
+      { title: '春日折页', description: '活动宣传长图', tone: 'from-rose-100 via-orange-100 to-amber-100', foreground: 'text-[#90502a]', kicker: 'SPRING DAY' },
+      { title: '中秋月圆', description: '节日主题海报', tone: 'from-indigo-800 via-blue-800 to-amber-500', foreground: 'text-[#fff4cd]', kicker: 'MID-AUTUMN' },
+      { title: '品牌灵感', description: '品牌视觉方案', tone: 'from-fuchsia-100 via-violet-100 to-sky-100', foreground: 'text-[#543f88]', kicker: 'BRAND STORY' },
+      { title: '商品上新', description: '电商商品主图', tone: 'from-emerald-100 via-lime-100 to-yellow-100', foreground: 'text-[#35604a]', kicker: 'JUST ARRIVED' },
+    ]),
+  },
+  {
+    title: '小红书封面', description: '热门笔记封面模板，快速吸引关注', kind: 'redbook',
+    items: makeGalleryItems([
+      { title: '猫咪行为科普', description: '猫咪行为科普小红书封面', tone: 'from-pink-200 via-rose-100 to-amber-50', foreground: 'text-[#714754]', kicker: 'CAT · CUTIE' },
+      { title: '职场干货', description: '职场经验分享封面', tone: 'from-emerald-100 via-teal-100 to-cyan-100', foreground: 'text-[#225e62]', kicker: 'WORK TIPS' },
+      { title: '排版设计学', description: '排版设计入门笔记', tone: 'from-amber-200 via-yellow-100 to-orange-100', foreground: 'text-[#6f4a20]', kicker: 'DESIGN CLASS' },
+      { title: '互联网运营', description: '运营知识干货分享', tone: 'from-blue-500 via-cyan-400 to-sky-300', kicker: '运营干货' },
+      { title: '自媒体标题', description: '自媒体标题灵感合集', tone: 'from-violet-500 via-fuchsia-400 to-pink-300', kicker: 'CONTENT IDEAS' },
+      { title: '科学育儿', description: '育儿知识分享封面', tone: 'from-yellow-200 via-lime-100 to-emerald-100', foreground: 'text-[#465b35]', kicker: 'PARENTING' },
+      { title: '亲子沟通', description: '亲子关系成长笔记', tone: 'from-sky-300 via-blue-400 to-indigo-500', kicker: '成长日记' },
+      { title: '护肤避坑指南', description: '护肤成分知识分享', tone: 'from-rose-100 via-pink-200 to-violet-200', foreground: 'text-[#764966]', kicker: 'SKINCARE' },
+      { title: '克服三分钟热度', description: '自律习惯养成计划', tone: 'from-lime-300 via-green-300 to-teal-400', foreground: 'text-[#254e46]', kicker: '坚持打卡' },
+    ]),
+  },
+  {
+    title: '营销海报', description: '促销活动、新品发布等营销场景一站制作', kind: 'marketing',
+    items: makeGalleryItems([
+      { title: '英语萌趣启蒙', description: '少儿英语培训招生海报', tone: 'from-orange-100 via-amber-100 to-rose-200', foreground: 'text-[#704332]', kicker: 'JOIN OUR CLASS' },
+      { title: '少儿托管招生', description: '托管班招生宣传海报', tone: 'from-pink-200 via-rose-100 to-yellow-100', foreground: 'text-[#744455]', kicker: '招生啦' },
+      { title: '招募小伙伴', description: '课程与团队招募宣传', tone: 'from-sky-200 via-blue-200 to-amber-100', foreground: 'text-[#315d83]', kicker: 'DISCOVER MORE' },
+      { title: '618限时促销', description: '年中大促商品海报', tone: 'from-red-600 via-rose-600 to-orange-500', kicker: '618 PROMOTION' },
+      { title: '618狂欢盛典', description: '电商年中大促主视觉', tone: 'from-rose-700 via-red-700 to-pink-500', kicker: 'BIG SALE' },
+      { title: '超级会员日', description: '会员专享折扣活动', tone: 'from-yellow-200 via-amber-100 to-orange-200', foreground: 'text-[#473927]', kicker: 'MEMBER DAY' },
+      { title: '全场限时特惠', description: '限时优惠活动宣传', tone: 'from-emerald-800 via-green-700 to-lime-500', kicker: 'LIMITED OFFER' },
+      { title: '买买买攻略', description: '购物节优惠攻略海报', tone: 'from-amber-100 via-yellow-200 to-orange-100', foreground: 'text-[#755126]', kicker: 'SHOPPING GUIDE' },
+      { title: '新品发布会', description: '品牌新品发布活动', tone: 'from-indigo-700 via-violet-600 to-fuchsia-500', kicker: 'NEW ARRIVAL' },
+    ]),
+  },
+  {
+    title: '亚马逊套图', description: '高转化电商主图与商品信息图', kind: 'amazon',
+    items: makeGalleryItems([
+      { title: '细节拆解图', description: '材质与结构细节展示', tone: 'from-stone-100 via-white to-amber-50', foreground: 'text-[#333b45]', kicker: 'PREMIUM PET MAT' },
+      { title: '核心卖点对比', description: 'Before / After 对比展示', tone: 'from-sky-100 via-white to-blue-100', foreground: 'text-[#31546d]', kicker: 'YOUR GO-TO SOLUTION' },
+      { title: '健康喂养对比图', description: '产品使用效果对比', tone: 'from-blue-100 via-white to-slate-100', foreground: 'text-[#243c54]', kicker: 'INCORRECT / CORRECT' },
+      { title: '多场景适用图', description: '展示多种使用场景', tone: 'from-cyan-100 via-white to-sky-100', foreground: 'text-[#205370]', kicker: 'MULTIPLE SCENARIOS' },
+      { title: '尺寸指南图', description: '展示产品尺寸与规格', tone: 'from-slate-100 via-white to-blue-50', foreground: 'text-[#39495b]', kicker: 'SIZE GUIDELINE' },
+      { title: '产品细节展示', description: '突出产品关键细节', tone: 'from-blue-50 via-white to-cyan-100', foreground: 'text-[#28546d]', kicker: 'PRODUCT FEATURES' },
+      { title: '功能优势说明', description: '图文呈现商品核心功能', tone: 'from-cyan-100 via-sky-50 to-indigo-100', foreground: 'text-[#2e526c]', kicker: 'KEY BENEFITS' },
+      { title: '舒适设计亮点', description: '材质工艺与舒适体验', tone: 'from-sky-100 via-white to-blue-50', foreground: 'text-[#2b5471]', kicker: 'COMFORT DESIGN' },
+      { title: '商品信息图', description: '适配亚马逊详情展示', tone: 'from-slate-100 via-white to-sky-100', foreground: 'text-[#314c62]', kicker: 'PRODUCT INFOGRAPHIC' },
+    ], 'text-[#33485f]'),
+  },
+  {
+    title: '商品详情页', description: '多屏详情页模板，完整展示商品卖点', kind: 'detail',
+    items: makeGalleryItems([
+      { title: '沐浴露详情页', description: '香氛沐浴露商品详情', tone: 'from-amber-50 via-orange-50 to-rose-100', foreground: 'text-[#513b31]', kicker: 'BOTANICAL BODY WASH' },
+      { title: '燕窝礼盒详情页', description: '滋补礼盒产品介绍', tone: 'from-red-900 via-rose-800 to-amber-500', kicker: '臻选好礼' },
+      { title: '防晒衣详情页', description: '轻薄防晒服产品展示', tone: 'from-sky-100 via-white to-blue-200', foreground: 'text-[#365c78]', kicker: 'SUN PROTECTION' },
+      { title: '面膜详情页', description: '护肤产品功效介绍', tone: 'from-violet-100 via-white to-fuchsia-100', foreground: 'text-[#604c80]', kicker: 'PURE INGREDIENTS' },
+      { title: '宠物粮详情页', description: '宠物食品营养信息', tone: 'from-lime-100 via-white to-amber-100', foreground: 'text-[#475d37]', kicker: 'NATURAL RECIPE' },
+      { title: '防晒伞详情页', description: '遮阳伞产品功能展示', tone: 'from-emerald-100 via-white to-sky-100', foreground: 'text-[#35665a]', kicker: 'UV PROTECTION' },
+      { title: '手持风扇详情页', description: '夏日清凉小家电展示', tone: 'from-blue-100 via-white to-cyan-100', foreground: 'text-[#355c76]', kicker: 'COOLING POWER' },
+      { title: '蓝牙耳机详情页', description: '数码产品卖点介绍', tone: 'from-sky-100 via-blue-100 to-indigo-200', foreground: 'text-[#304f6e]', kicker: 'WIRELESS SOUND' },
+      { title: '音响详情页', description: '音响产品氛围展示', tone: 'from-stone-900 via-slate-800 to-amber-700', kicker: 'PREMIUM SOUND' },
+    ]),
+  },
+  {
+    title: '🎉短剧带货', description: '短剧视频灵感与带货内容模板', kind: 'drama',
+    items: makeGalleryItems([
+      { title: '离开豪门后', description: '爽剧反转 · 第01集', tone: 'from-slate-800 via-stone-600 to-rose-300', kicker: 'SHORT DRAMA' },
+      { title: '气垫试色', description: '美妆种草 · 上妆实测', tone: 'from-amber-100 via-rose-100 to-stone-200', foreground: 'text-[#543e3b]', kicker: 'BEAUTY REVIEW' },
+      { title: '溜溜梅', description: '古风剧情 · 好物推荐', tone: 'from-emerald-800 via-teal-700 to-stone-800', kicker: '古风好物' },
+      { title: '面霜好物', description: '护肤测评 · 使用分享', tone: 'from-rose-100 via-white to-sky-100', foreground: 'text-[#54415b]', kicker: 'SKINCARE STORY' },
+      { title: '黑蝴蝶', description: '古装剧情 · 片段推荐', tone: 'from-slate-950 via-indigo-950 to-amber-700', kicker: '剧情片段' },
+      { title: '精华液', description: '护肤带货 · 成分解析', tone: 'from-amber-900 via-orange-700 to-yellow-300', kicker: 'GLOWING SKIN' },
+      { title: '防晒霜', description: '夏日剧情 · 防晒推荐', tone: 'from-sky-900 via-blue-700 to-cyan-300', kicker: 'SUN CARE' },
+      { title: '女主逆袭', description: '短剧高光 · 爆款片段', tone: 'from-rose-950 via-red-900 to-yellow-700', kicker: '反转时刻' },
+      { title: '今日爆款', description: '热门短剧 · 好物清单', tone: 'from-stone-800 via-amber-700 to-rose-400', kicker: 'TRENDING NOW' },
+    ]),
   },
 ];
 
@@ -715,6 +825,12 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
           </section>
         )}
 
+        {mode === 'agent' ? (
+          <section className="mx-auto max-w-[1920px] space-y-8 px-6 pb-12">
+            {agentGallerySections.map((section) => <TemplateGallerySection key={section.title} section={section} />)}
+          </section>
+        ) : null}
+
         <section className="mx-auto max-w-[1920px] px-6 pb-16">
           <div className="mb-3 flex items-center justify-between"><h2 className="text-[16px] font-semibold text-[#30364a]">为你推荐</h2><button type="button" className="text-[11px] text-[#8a95aa]">更多 ›</button></div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
@@ -806,10 +922,12 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
   );
 }
 
-function TemplateGallerySection({ section }: { section: (typeof templateGallerySections)[number] }) {
+function TemplateGallerySection({ section }: { section: TemplateGallerySectionData }) {
   const columns = section.kind === 'calendar' || section.kind === 'award'
     ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-8'
-    : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7';
+    : section.kind === 'recent' || section.kind === 'redbook' || section.kind === 'marketing' || section.kind === 'amazon' || section.kind === 'detail' || section.kind === 'drama'
+      ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-9'
+      : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7';
 
   return (
     <section>
@@ -839,7 +957,7 @@ function TemplateGallerySection({ section }: { section: (typeof templateGalleryS
               </div>
             ) : (
               <div className="overflow-hidden rounded-[12px] border border-[#edf0f5] bg-[#f2f5fb] p-2 transition group-hover:shadow-[0_8px_22px_rgba(51,65,94,0.1)]">
-                {section.kind === 'calendar' ? <TemplateCalendarArtwork item={item} index={index} /> : <TemplatePosterArtwork item={item} />}
+                {section.kind === 'calendar' ? <TemplateCalendarArtwork item={item} index={index} /> : section.kind === 'award' || section.kind === 'recruitment' || section.kind === 'redbook' || section.kind === 'marketing' ? <TemplatePosterArtwork item={item} /> : <AgentGalleryArtwork item={item} kind={section.kind} index={index} />}
                 <div className="px-1 pb-1 pt-2">
                   <span className="block truncate text-[12px] font-semibold text-[#343b4b]">{item.title}</span>
                   <span className="mt-0.5 block truncate text-[10px] text-[#9aa3b2]">{item.description}</span>
@@ -850,6 +968,62 @@ function TemplateGallerySection({ section }: { section: (typeof templateGalleryS
         ))}
       </div>
     </section>
+  );
+}
+
+function AgentGalleryArtwork({ item, kind, index }: { item: TemplateGalleryItem; kind: TemplateGalleryKind; index: number }) {
+  if (kind === 'recent') {
+    return (
+      <div className={`relative aspect-[1.35/1] overflow-hidden rounded-[7px] bg-gradient-to-br ${item.tone}`}>
+        <span className="absolute -right-5 -top-6 h-24 w-24 rounded-full bg-white/30 blur-2xl" />
+        <div className="absolute left-[13%] top-[19%] h-[68%] w-[48%] -rotate-[7deg] overflow-hidden rounded-[4px] border border-white/80 bg-white p-1.5 shadow-lg">
+          <div className={`flex h-full flex-col items-center justify-center rounded-[2px] bg-gradient-to-br ${item.tone} ${item.foreground} p-1 text-center`}>
+            <span className="text-[5px] tracking-widest">{item.kicker}</span><span className="mt-1 text-[9px] font-black leading-tight">{item.title}</span><span className="mt-1 h-1 w-8 rounded-full bg-current/35" />
+          </div>
+        </div>
+        <div className="absolute right-[13%] top-[24%] h-[64%] w-[46%] rotate-[6deg] overflow-hidden rounded-[4px] border border-white/80 bg-white p-1.5 shadow-lg">
+          <div className="relative flex h-full flex-col items-center justify-center overflow-hidden rounded-[2px] bg-white p-1 text-center">
+            <div className={`absolute inset-x-0 top-0 h-[40%] bg-gradient-to-br ${item.tone}`} />
+            <span className={`relative mt-auto text-[5px] tracking-widest ${item.foreground}`}>{item.kicker}</span><span className="relative mt-1 text-[8px] font-black leading-tight text-[#384153]">{item.title}</span><span className="relative mb-auto mt-1 text-[4px] text-[#7b8493]">{item.description}</span>
+          </div>
+        </div>
+        <span className="absolute bottom-2 left-2 rounded-full bg-white/85 px-2 py-0.5 text-[6px] font-medium text-[#566173]">最近编辑</span>
+      </div>
+    );
+  }
+
+  if (kind === 'drama') {
+    return (
+      <div className={`relative aspect-[3/4] overflow-hidden rounded-[7px] bg-gradient-to-br ${item.tone}`}>
+        <span className="absolute -right-4 top-[10%] h-24 w-24 rounded-full bg-white/20 blur-xl" />
+        <div className={`absolute left-1/2 top-[20%] h-[31%] w-[30%] -translate-x-1/2 rounded-full border-[3px] border-white/35 ${index % 3 === 1 ? 'bg-[#edc5b2]' : 'bg-[#d2a58d]'}`} />
+        <div className={`absolute bottom-[14%] left-[14%] h-[43%] w-[72%] rounded-t-[48%] border-x border-t border-white/25 ${index % 2 === 0 ? 'bg-gradient-to-b from-[#ead8d0] to-[#38495e]' : 'bg-gradient-to-b from-[#ead2af] to-[#3c2b2d]'}`} />
+        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
+        <span className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/35 text-white"><Video className="h-3.5 w-3.5" /></span>
+        <div className="absolute inset-x-2 bottom-2 text-white"><span className="block text-[6px] tracking-[0.16em] opacity-80">{item.kicker}</span><span className="mt-1 block truncate text-[13px] font-bold">{item.title}</span><span className="mt-0.5 block truncate text-[8px] opacity-80">{item.description}</span></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative aspect-[3/4] overflow-hidden rounded-[7px] bg-gradient-to-br ${item.tone} p-2`}>
+      <div className="relative flex h-full flex-col overflow-hidden rounded-[4px] border border-white/75 bg-white/90 p-2 text-[#334155] shadow-sm">
+        <div className="flex items-center justify-between gap-1 border-b border-[#e8edf2] pb-1">
+          <span className="truncate text-[6px] font-semibold tracking-wide">{item.kicker}</span><Sparkles className="h-2.5 w-2.5 shrink-0 text-[#f0a944]" />
+        </div>
+        <span className="mt-1 truncate text-[9px] font-bold">{item.title}</span>
+        <div className={`relative mt-1.5 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[4px] bg-gradient-to-br ${item.tone}`}>
+          <span className="absolute left-[9%] top-[17%] h-[28%] w-[23%] rounded-[4px] border border-white/80 bg-white/70 shadow-sm" />
+          <span className="absolute right-[9%] top-[24%] h-[21%] w-[26%] rounded-full border border-white/80 bg-white/55 shadow-sm" />
+          <span className={`relative h-[53%] w-[29%] rounded-[7px] border border-white/80 shadow-[0_5px_12px_rgba(37,53,78,0.2)] ${kind === 'amazon' ? 'bg-gradient-to-b from-[#f8faf9] via-[#d9e5e1] to-[#829b92]' : 'bg-gradient-to-b from-[#fff4e5] via-[#f5c6a4] to-[#d7826f]'}`} />
+          <span className="absolute bottom-[12%] left-[12%] h-[3px] w-[29%] rounded-full bg-white/90" />
+          <span className="absolute bottom-[12%] right-[12%] h-[3px] w-[22%] rounded-full bg-white/70" />
+        </div>
+        <div className="mt-1.5 grid grid-cols-2 gap-1">
+          {['材质细节', '使用场景', '核心优势', '产品参数'].map((label, labelIndex) => <div key={label} className="rounded-[3px] bg-[#f2f5f8] px-1 py-1"><span className={`mb-1 block h-1 w-3/4 rounded-full ${labelIndex === index % 4 ? 'bg-[#52a9df]' : 'bg-[#c9d5df]'}`} /><span className="block truncate text-[5px] text-[#718093]">{label}</span></div>)}
+        </div>
+      </div>
+    </div>
   );
 }
 
