@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import cktAiEcomLogo from '../assets/ckt-ai-ecom-logo.svg';
 import {
   Bell,
@@ -6,6 +6,7 @@ import {
   Camera,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   CircleHelp,
   Clock3,
   FileImage,
@@ -65,6 +66,14 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
+    id: 'viral-remake', title: '爆款图复刻', description: '一张商品图，成套复刻爆款风格', category: '电商设计',
+    fields: [
+      { id: 'images', label: '参考图片', type: 'upload', required: true, max: 10 },
+      { id: 'platform', label: '适配平台', type: 'select', options: ['亚马逊', 'Shopify', '淘宝/天猫', '京东'] },
+      { id: 'requirements', label: '复刻要求', type: 'textarea', placeholder: '描述希望保留的风格、布局、卖点和需要替换的内容', rows: 4 },
+    ],
+  },
+  {
     id: 'a-plus', title: 'A+详情页', description: '生成高转化的商品详情页模块', category: '电商设计',
     fields: [
       { id: 'images', label: '商品图片', type: 'upload', required: true, max: 10 },
@@ -74,7 +83,7 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
-    id: 'product-copy', title: '商品文案', description: '生成适配平台的商品标题和卖点文案', category: '电商设计',
+    id: 'product-copy', title: '商品文案', description: 'Listing文案撰写，多平台适配', category: '电商设计',
     fields: [
       { id: 'product', label: '商品名称', type: 'input', required: true, placeholder: '例如：便携式无线蓝牙耳机' },
       { id: 'platform', label: '适配平台', type: 'select', options: ['亚马逊', 'Shopify', '淘宝/天猫', '京东'] },
@@ -100,7 +109,7 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
-    id: 'competitor-analysis', title: '竞品分析', description: '提炼竞品卖点、视觉和内容策略', category: '电商设计',
+    id: 'competitor-analysis', title: '竞品分析', description: 'Amazon ASIN 诊断与竞品分析', category: '电商设计',
     fields: [
       { id: 'images', label: '竞品图片', type: 'upload', max: 10 },
       { id: 'links', label: '竞品链接/名称', type: 'textarea', placeholder: '粘贴商品链接或填写竞品名称', rows: 3 },
@@ -132,6 +141,29 @@ const skills: SkillDefinition[] = [
       { id: 'topic', label: '海报主题', type: 'input', required: true, placeholder: '例如：春季新品发布会' },
       { id: 'ratio', label: '海报比例', type: 'ratio', options: ['3:4', '9:16', '1:1', '16:9'] },
       { id: 'style', label: '风格与要求', type: 'textarea', placeholder: '填写文案、活动信息、视觉风格和配色偏好', rows: 4 },
+    ],
+  },
+  {
+    id: 'marketing-poster', title: '营销海报', description: '促销/活动/节日/发布会主题海报', category: '海报设计',
+    fields: [
+      { id: 'topic', label: '海报主题', type: 'input', required: true, placeholder: '例如：春季新品发布会、限时促销' },
+      { id: 'ratio', label: '海报比例', type: 'ratio', options: ['3:4', '9:16', '1:1', '16:9'] },
+      { id: 'requirements', label: '活动文案&要求', type: 'textarea', placeholder: '填写时间、地点、优惠内容、视觉风格等', rows: 4 },
+    ],
+  },
+  {
+    id: 'poster-beautify', title: '海报美化', description: '旧海报快速美化升级', category: '海报设计',
+    fields: [
+      { id: 'images', label: '上传海报', type: 'upload', required: true, max: 10 },
+      { id: 'requirements', label: '优化要求', type: 'textarea', placeholder: '说明希望优化的布局、字体、配色或文案层级', rows: 4 },
+    ],
+  },
+  {
+    id: 'daily-notice', title: '通知与日常物料', description: '通知/邀请函/招聘/证书/日签等', category: '办公设计',
+    fields: [
+      { id: 'material', label: '物料类型', type: 'select', options: ['通知公告', '邀请函', '招聘海报', '证书', '日签'] },
+      { id: 'topic', label: '主题与文案', type: 'textarea', required: true, placeholder: '填写标题、时间、地点和需要展示的文字', rows: 4 },
+      { id: 'style', label: '风格要求', type: 'textarea', placeholder: '补充品牌色、受众和设计风格', rows: 3 },
     ],
   },
   {
@@ -189,6 +221,11 @@ const homepageFeatureCards = [
   { title: '电商主图', desc: '一键生成爆款主图', art: 'commerce' },
   { title: '智能抠图', desc: '一键抠图', art: 'cutout' },
   { title: '印刷定制', desc: '点击即可快速开始', art: 'print' },
+];
+
+const aiSkillRows = [
+  ['product-set', 'viral-remake', 'sku-variants', 'competitor-analysis', 'product-copy', 'daily-notice'],
+  ['a-plus', 'white-background', 'promo-image', 'keyword-analysis', 'marketing-poster', 'poster-beautify'],
 ];
 
 const templateCards = [
@@ -256,6 +293,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
   const [activeCategory, setActiveCategory] = useState('最近使用');
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, FieldValue>>>({});
+  const skillsRailRef = useRef<HTMLDivElement>(null);
 
   const visibleSkills = useMemo(() => {
     const base = activeCategory === '最近使用'
@@ -499,41 +537,64 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-[1920px] grid-cols-1 gap-3 px-6 pb-7 xl:grid-cols-[minmax(300px,420px)_minmax(0,1fr)]">
-          <div className="grid grid-cols-2 grid-rows-[132px_88px] gap-3">
-            <button type="button" className="relative col-span-2 overflow-hidden rounded-[17px] border border-[#ececf8] bg-[linear-gradient(110deg,#f2f2ff_0%,#f8f8ff_72%,#fff_100%)] px-5 py-4 text-left">
-              <span className="block text-[14px] font-semibold text-[#4e5872]">创建设计</span>
-              <span className="mt-1 block text-[10px] text-[#9aa3b8]">高频创作场景一键直达</span>
-              <span className="absolute bottom-5 left-5 flex h-7 w-7 items-center justify-center rounded-full border border-[#edf0ff] bg-white text-[#8176ff]">›</span>
-              <span className="absolute right-5 top-6 flex h-[82px] w-[78px] items-center justify-center rounded-[13px] border border-[#e3e9ff] bg-white/75 shadow-[0_6px_18px_rgba(77,127,255,0.08)]"><span className="flex h-12 w-12 items-center justify-center border border-dashed border-[#7aaaff] text-[#3985ff]"><Plus className="h-5 w-5" /></span></span>
-            </button>
-            <button type="button" onClick={onOpenCanvas} className="rounded-[15px] border border-[#eef0f5] bg-[linear-gradient(120deg,#f8fbff,#fff)] px-4 py-3 text-left hover:border-[#ccd9ff]"><span className="block text-[13px] font-semibold text-[#515a70]">无限画布</span><span className="mt-1 block text-[10px] text-[#9da7ba]">点击即可快速开始</span></button>
-            <button type="button" className="rounded-[15px] border border-[#eef0f5] bg-[linear-gradient(120deg,#f8f9ff,#fff)] px-4 py-3 text-left"><span className="block text-[13px] font-semibold text-[#515a70]">图片编辑</span><span className="mt-1 block text-[10px] text-[#9da7ba]">点击即可快速开始</span></button>
-          </div>
-
-          <div className="rounded-[17px] bg-[#f3f6fc] p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-4 text-[11px] font-medium text-[#7d879a]">
-                {['热门推荐', 'AI商拍', '模板特效', '视频创作', 'POD印花', '图片处理', '印刷制作'].map((tab, index) => <button key={tab} type="button" className={index === 0 ? 'relative text-[#252b3b] after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-6 after:bg-[#8e80ff]' : 'hover:text-[#252b3b]'}>{tab}</button>)}
-              </div>
-              <button type="button" className="shrink-0 text-[10px] text-[#8490a6]">更多 ›</button>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5 2xl:grid-cols-4">
-              {homepageFeatureCards.map((card, index) => (
-                <div key={card.title} className="relative flex h-[80px] min-w-0 items-center justify-between overflow-hidden rounded-[14px] bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(58,71,101,0.025)]">
-                  <div className="relative z-10 min-w-0">
-                    <div className="truncate text-[12px] font-semibold text-[#303749]">{card.title}</div>
-                    <div className="mt-1 truncate text-[10px] text-[#9aa4b7]">{card.desc}</div>
-                    {index === 1 ? <button type="button" onClick={() => openSkillPicker()} className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#f0edff] px-2 py-0.5 text-[9px] font-semibold text-[#7064e8] hover:bg-[#e5e0ff]"><Puzzle className="h-2.5 w-2.5" />Agent skills</button> : null}
+        {mode === 'agent' ? (
+          <section className="mx-auto max-w-[1920px] px-6 pb-7">
+            <div className="relative overflow-hidden rounded-[16px] bg-[#f5f6f9] p-2">
+              <div ref={skillsRailRef} className="space-y-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {aiSkillRows.map((row, rowIndex) => (
+                  <div key={rowIndex} className="flex w-max gap-2.5">
+                    {row.map((skillId, columnIndex) => {
+                      const skill = skills.find((item) => item.id === skillId);
+                      if (!skill) return null;
+                      return (
+                        <div key={skill.id} className="w-[300px] shrink-0">
+                          <SkillCard skill={skill} index={columnIndex + 2} hot={columnIndex === 0} onClick={() => selectSkillFromChip(skill.id)} />
+                        </div>
+                      );
+                    })}
                   </div>
-                  <FeatureArt kind={card.art} />
-                </div>
-              ))}
+                ))}
+              </div>
+              <button type="button" onClick={() => skillsRailRef.current?.scrollBy({ left: 620, behavior: 'smooth' })} aria-label="查看更多 skills" className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#525b6d] shadow-[0_4px_14px_rgba(52,65,92,0.18)]"><ChevronRight className="h-4 w-4" /></button>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section className="mx-auto grid max-w-[1920px] grid-cols-1 gap-3 px-6 pb-7 xl:grid-cols-[minmax(300px,420px)_minmax(0,1fr)]">
+            <div className="grid grid-cols-2 grid-rows-[132px_88px] gap-3">
+              <button type="button" className="relative col-span-2 overflow-hidden rounded-[17px] border border-[#ececf8] bg-[linear-gradient(110deg,#f2f2ff_0%,#f8f8ff_72%,#fff_100%)] px-5 py-4 text-left">
+                <span className="block text-[14px] font-semibold text-[#4e5872]">创建设计</span>
+                <span className="mt-1 block text-[10px] text-[#9aa3b8]">高频创作场景一键直达</span>
+                <span className="absolute bottom-5 left-5 flex h-7 w-7 items-center justify-center rounded-full border border-[#edf0ff] bg-white text-[#8176ff]">›</span>
+                <span className="absolute right-5 top-6 flex h-[82px] w-[78px] items-center justify-center rounded-[13px] border border-[#e3e9ff] bg-white/75 shadow-[0_6px_18px_rgba(77,127,255,0.08)]"><span className="flex h-12 w-12 items-center justify-center border border-dashed border-[#7aaaff] text-[#3985ff]"><Plus className="h-5 w-5" /></span></span>
+              </button>
+              <button type="button" onClick={onOpenCanvas} className="rounded-[15px] border border-[#eef0f5] bg-[linear-gradient(120deg,#f8fbff,#fff)] px-4 py-3 text-left hover:border-[#ccd9ff]"><span className="block text-[13px] font-semibold text-[#515a70]">无限画布</span><span className="mt-1 block text-[10px] text-[#9da7ba]">点击即可快速开始</span></button>
+              <button type="button" className="rounded-[15px] border border-[#eef0f5] bg-[linear-gradient(120deg,#f8f9ff,#fff)] px-4 py-3 text-left"><span className="block text-[13px] font-semibold text-[#515a70]">图片编辑</span><span className="mt-1 block text-[10px] text-[#9da7ba]">点击即可快速开始</span></button>
+            </div>
 
-        <section className="mx-auto max-w-[1920px] px-6 pb-16">
+            <div className="rounded-[17px] bg-[#f3f6fc] p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-4 text-[11px] font-medium text-[#7d879a]">
+                  {['热门推荐', 'AI商拍', '模板特效', '视频创作', 'POD印花', '图片处理', '印刷制作'].map((tab, index) => <button key={tab} type="button" className={index === 0 ? 'relative text-[#252b3b] after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-6 after:bg-[#8e80ff]' : 'hover:text-[#252b3b]'}>{tab}</button>)}
+                </div>
+                <button type="button" className="shrink-0 text-[10px] text-[#8490a6]">更多 ›</button>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 2xl:grid-cols-4">
+                {homepageFeatureCards.map((card, index) => (
+                  <div key={card.title} className="relative flex h-[80px] min-w-0 items-center justify-between overflow-hidden rounded-[14px] bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(58,71,101,0.025)]">
+                    <div className="relative z-10 min-w-0">
+                      <div className="truncate text-[12px] font-semibold text-[#303749]">{card.title}</div>
+                      <div className="mt-1 truncate text-[10px] text-[#9aa4b7]">{card.desc}</div>
+                      {index === 1 ? <button type="button" onClick={() => openSkillPicker()} className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#f0edff] px-2 py-0.5 text-[9px] font-semibold text-[#7064e8] hover:bg-[#e5e0ff]"><Puzzle className="h-2.5 w-2.5" />Agent skills</button> : null}
+                    </div>
+                    <FeatureArt kind={card.art} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {mode === 'templates' ? <section className="mx-auto max-w-[1920px] px-6 pb-16">
           <div className="mb-3 flex items-center justify-between"><h2 className="text-[16px] font-semibold text-[#30364a]">为你推荐</h2><button type="button" className="text-[11px] text-[#8a95aa]">更多 ›</button></div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
             {templateCards.map((card, index) => (
@@ -546,7 +607,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
               </button>
             ))}
           </div>
-        </section>
+        </section> : null}
       </main>
 
       <button type="button" className="fixed bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#7a879b] shadow-[0_5px_22px_rgba(63,78,112,0.17)]"><CircleHelp className="h-5 w-5" /></button>
@@ -618,11 +679,11 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
   );
 }
 
-function SkillCard({ skill, index, onClick }: { skill: SkillDefinition; index: number; onClick: () => void }) {
+function SkillCard({ skill, index, hot = index < 2, onClick }: { skill: SkillDefinition; index: number; hot?: boolean; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="group flex min-h-[88px] items-center gap-3 rounded-[14px] bg-white px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(74,92,132,0.09)]">
+    <button type="button" onClick={onClick} className="group flex min-h-[88px] w-full items-center gap-3 rounded-[14px] bg-white px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(74,92,132,0.09)]">
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2 text-[13px] font-medium text-[#2a303a]">{skill.title}{index < 2 ? <span className="rounded-[4px] bg-[#ffe9e4] px-1.5 py-0.5 text-[9px] font-medium text-[#f07358]">热门</span> : null}</span>
+        <span className="flex items-center gap-2 text-[13px] font-medium text-[#2a303a]">{skill.title}{hot ? <span className="rounded-[4px] bg-[#ffe9e4] px-1.5 py-0.5 text-[9px] font-medium text-[#f07358]">热门</span> : null}</span>
         <span className="mt-1 block truncate text-[11px] text-[#989eaa]">{skill.description}</span>
       </span>
       <span className={`relative flex h-[58px] w-[58px] shrink-0 items-center justify-center overflow-hidden rounded-[11px] border border-[#edf0f2] ${index % 4 === 0 ? 'bg-gradient-to-br from-amber-100 via-orange-50 to-rose-100' : index % 4 === 1 ? 'bg-gradient-to-br from-sky-100 via-white to-blue-100' : index % 4 === 2 ? 'bg-gradient-to-br from-fuchsia-100 via-violet-50 to-blue-100' : 'bg-gradient-to-br from-emerald-100 via-white to-lime-100'}`}>
