@@ -935,49 +935,70 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
 
 function SkillResultPreview({ skill }: { skill: SkillDefinition }) {
   const hasImageInput = skill.fields.some((field) => field.type === 'upload');
-  const isCommerce = skill.category === '电商设计' || skill.category === '服饰穿戴';
-  const palettes = isCommerce
-    ? ['from-amber-100 via-orange-50 to-rose-100', 'from-sky-100 via-white to-blue-100', 'from-emerald-100 via-lime-50 to-yellow-100', 'from-violet-100 via-fuchsia-50 to-pink-100']
-    : ['from-sky-100 via-white to-indigo-100', 'from-rose-100 via-orange-50 to-amber-100', 'from-teal-100 via-cyan-50 to-blue-100', 'from-violet-100 via-white to-fuchsia-100'];
-  const imageLabels = ['主视觉预览', '卖点展示', '细节效果', '场景应用'];
-  const contentLabels = ['内容提纲', '核心信息', '重点呈现', '结果预览'];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const slideLabels = ['主视觉预览', '卖点展示', '细节效果', '场景应用', '成品预览'];
+  const previousIndex = (activeIndex + slideLabels.length - 1) % slideLabels.length;
+  const nextIndex = (activeIndex + 1) % slideLabels.length;
+  const moveSlide = (direction: -1 | 1) => setActiveIndex((index) => (index + direction + slideLabels.length) % slideLabels.length);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
-        {palettes.map((palette, index) => (
-          <div key={palette} className="min-w-0 rounded-[12px] border border-[#e9edf3] bg-white p-2 shadow-[0_2px_8px_rgba(38,53,79,0.04)]">
-            <div className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[8px] bg-gradient-to-br ${palette}`}>
-              <span className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-white/50 blur-xl" />
-              {hasImageInput ? (
-                <>
-                  <span className="absolute bottom-[17%] left-[19%] h-[34%] w-[27%] rounded-[8px] border border-white/80 bg-white/70 shadow-sm" />
-                  <span className={`relative h-[54%] w-[25%] rounded-[9px] border border-white/90 shadow-[0_8px_16px_rgba(45,61,88,0.18)] ${index % 2 === 0 ? 'bg-gradient-to-b from-[#fffdf7] via-[#f6d8b3] to-[#d78c62]' : 'bg-gradient-to-b from-[#f8fbff] via-[#dbeaf2] to-[#829eaa]'}`} />
-                  <span className="absolute right-[18%] top-[18%] h-[27%] w-[24%] rounded-full border border-white/80 bg-white/60" />
-                  <span className="absolute bottom-2 left-2 rounded-full bg-white/85 px-2 py-0.5 text-[6px] font-medium text-[#5b6576]">AI DESIGN</span>
-                </>
-              ) : (
-                <div className="relative w-[72%] rounded-[6px] border border-white/90 bg-white/90 p-2 shadow-sm">
-                  <span className="block h-1 w-1/3 rounded-full bg-[#9ab6db]" />
-                  <span className="mt-1 block truncate text-[8px] font-bold text-[#3b4c66]">{skill.title}</span>
-                  <span className="mt-1 block h-1 w-full rounded-full bg-[#e1e7ef]" />
-                  <span className="mt-1 block h-1 w-4/5 rounded-full bg-[#e1e7ef]" />
-                  <span className="mt-2 block h-5 rounded-[3px] bg-gradient-to-r from-[#d9e8fa] to-[#f6dfd1]" />
-                </div>
-              )}
-            </div>
-            <div className="mt-2 flex items-center justify-between gap-1">
-              <span className="truncate text-[9px] font-medium text-[#4b5567]">{hasImageInput ? imageLabels[index] : contentLabels[index]}</span>
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#8d82ff]" />
-            </div>
-          </div>
-        ))}
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-[16px] bg-[#eef1f6]">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,#ffffff_0%,#f4f6fa_60%,#e9edf4_100%)]" />
+        <div className="relative flex h-full items-center justify-center gap-3 px-0">
+          {[previousIndex, activeIndex, nextIndex].map((slideIndex, position) => (
+            <ResultPreviewSlide key={slideIndex} skill={skill} label={slideLabels[slideIndex]} index={slideIndex} active={position === 1} hasImageInput={hasImageInput} onClick={() => setActiveIndex(slideIndex)} />
+          ))}
+        </div>
+        <button type="button" onClick={() => moveSlide(-1)} aria-label="上一张效果示意" className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronLeft className="h-4 w-4" /></button>
+        <button type="button" onClick={() => moveSlide(1)} aria-label="下一张效果示意" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronRight className="h-4 w-4" /></button>
       </div>
-      <div className="mt-3 flex items-center justify-between text-[10px] text-[#939caf]">
-        <span>示意效果仅供参考</span>
-        <span className="flex items-center gap-1"><Sparkles className="h-3 w-3 text-[#887bff]" />{skill.category}</span>
+      <div className="mt-3 flex items-center justify-between gap-3 text-[10px] text-[#939caf]">
+        <span className="truncate">示意效果仅供参考 · {skill.category}</span>
+        <div className="flex shrink-0 items-center gap-1.5" aria-label="效果示意轮播">
+          {slideLabels.map((label, index) => <button key={label} type="button" onClick={() => setActiveIndex(index)} aria-label={`查看${label}`} className={`h-1.5 rounded-full transition-all ${activeIndex === index ? 'w-5 bg-[#6961f5]' : 'w-1.5 bg-[#c8ced9] hover:bg-[#929bad]'}`} />)}
+        </div>
       </div>
     </div>
+  );
+}
+
+function ResultPreviewSlide({ skill, label, index, active, hasImageInput, onClick }: { skill: SkillDefinition; label: string; index: number; active: boolean; hasImageInput: boolean; onClick: () => void }) {
+  const palettes = [
+    'from-[#fff2ce] via-[#fff2e8] to-[#f8dfe6]',
+    'from-[#dff2ff] via-[#f5fbff] to-[#dce8ff]',
+    'from-[#d9f8e9] via-[#f6ffe8] to-[#fbf3bd]',
+    'from-[#f1e8ff] via-[#fff4fc] to-[#f7e0ef]',
+    'from-[#e5efff] via-[#f5f7ff] to-[#d9f8f5]',
+  ];
+
+  return (
+    <button type="button" onClick={onClick} aria-label={`查看${label}`} className={`relative isolate flex aspect-[3/4] shrink-0 flex-col overflow-hidden rounded-[12px] border border-white/90 bg-gradient-to-br ${palettes[index]} p-3 text-left shadow-[0_12px_28px_rgba(55,68,94,0.18)] transition-all duration-300 ${active ? 'z-10 w-[61%] opacity-100' : 'w-[40%] scale-[0.92] opacity-75'}`}>
+      <span className="absolute -right-5 top-[12%] h-20 w-20 rounded-full bg-white/55 blur-xl" />
+      <div className="relative flex items-center justify-between gap-1 text-[6px] font-medium tracking-[0.14em] text-[#637086]"><span className="truncate">{skill.category.toUpperCase()}</span><Sparkles className="h-3 w-3 shrink-0 text-[#8d82ff]" /></div>
+      <div className="relative mt-2 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[8px] border border-white/70 bg-white/35">
+        {hasImageInput ? (
+          <>
+            <span className="absolute bottom-[17%] left-[12%] h-[35%] w-[27%] rounded-[8px] border border-white/90 bg-white/75 shadow-sm" />
+            <span className={`relative h-[57%] w-[27%] rounded-[10px] border border-white/90 shadow-[0_8px_16px_rgba(45,61,88,0.22)] ${index % 2 === 0 ? 'bg-gradient-to-b from-[#fffdf7] via-[#f4d4ad] to-[#cf8159]' : 'bg-gradient-to-b from-[#f8fbff] via-[#dbeaf2] to-[#829eaa]'}`} />
+            <span className="absolute right-[12%] top-[18%] h-[25%] w-[24%] rounded-full border border-white/90 bg-white/65" />
+            <span className="absolute bottom-[13%] right-[14%] h-[3px] w-[23%] rounded-full bg-white/90" />
+          </>
+        ) : (
+          <div className="relative w-[82%] rounded-[7px] border border-white/90 bg-white/90 p-2 shadow-sm">
+            <span className="block h-1 w-1/3 rounded-full bg-[#9ab6db]" />
+            <span className="mt-1 block break-words text-[9px] font-bold leading-tight text-[#3b4c66]">{skill.title}</span>
+            <span className="mt-1.5 block h-1 w-full rounded-full bg-[#e1e7ef]" />
+            <span className="mt-1 block h-1 w-4/5 rounded-full bg-[#e1e7ef]" />
+            <span className="mt-2 block h-8 rounded-[4px] bg-gradient-to-r from-[#d9e8fa] to-[#f6dfd1]" />
+          </div>
+        )}
+      </div>
+      <div className="relative mt-2 rounded-[8px] bg-white/75 px-2 py-1.5">
+        <span className="block truncate text-[8px] font-semibold text-[#3f4b60]">{active ? skill.title : label}</span>
+        <span className="mt-0.5 block truncate text-[6px] text-[#8791a1]">{label} · AI DESIGN</span>
+      </div>
+    </button>
   );
 }
 
