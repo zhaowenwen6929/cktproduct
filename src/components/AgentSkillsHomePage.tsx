@@ -899,27 +899,84 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
       ) : null}
 
       {selectedSkill ? (
-        <div className="fixed inset-0 z-[60] flex justify-end bg-[#1b2335]/35 backdrop-blur-[2px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>
-          <section className="relative flex h-full w-full max-w-[476px] flex-col rounded-l-[24px] bg-white shadow-[-18px_0_60px_rgba(25,35,57,0.16)]">
-            <div className="flex h-[66px] shrink-0 items-center border-b border-[#f0f1f4] px-6">
-              <button type="button" onClick={() => setSelectedSkill(null)} className="mr-2 rounded-full p-1 text-[#1f2632] hover:bg-[#f3f4f7]" aria-label="返回技能分类"><ChevronLeft className="h-5 w-5" /></button>
-              <h2 className="text-[16px] font-semibold text-[#202631]">{selectedSkill.title}</h2>
-              <button type="button" onClick={() => { setSelectedSkill(null); setSkillPickerOpen(false); }} className="ml-auto rounded-full p-2 text-[#6b7280] hover:bg-[#f4f5f7] sm:hidden" aria-label="关闭"><X className="h-4 w-4" /></button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-28 pt-5">
-              {renderSkillFields()}
-              <div className="mt-2 rounded-[12px] border border-[#edf0f5] bg-[#fbfcfe] p-3">
-                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-[#858da0]"><Sparkles className="h-3.5 w-3.5 text-[#8378ff]" />生成提示词预览</div>
-                <p className="line-clamp-3 whitespace-pre-line text-[11px] leading-5 text-[#858da0]">{promptPreview}</p>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1b2335]/40 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>
+          <section className="relative flex h-[min(760px,calc(100vh-40px))] w-[min(1080px,calc(100vw-40px))] overflow-hidden rounded-[22px] bg-white shadow-[0_28px_90px_rgba(25,35,57,0.28)]">
+            <aside className="hidden w-[42%] shrink-0 flex-col border-r border-[#eceff4] bg-[#f5f6f9] p-6 lg:flex">
+              <div className="mb-4">
+                <h3 className="text-[16px] font-semibold text-[#303749]">生成效果示意</h3>
+                <p className="mt-1 text-[11px] leading-5 text-[#929bad]">填写右侧信息后，可生成类似的设计结果</p>
               </div>
-            </div>
-            <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 border-t border-[#eff0f2] bg-white px-7 py-4">
-              <button type="button" onClick={bringIntoPrompt} className="h-[44px] shrink-0 rounded-[12px] bg-[#f3f4f6] px-4 text-[13px] font-medium text-[#8d929a] transition hover:bg-[#e9ebf0] hover:text-[#3b4353]">带入输入框</button>
-              <button type="button" disabled={!hasRequiredValues} onClick={startGeneration} className={`h-[44px] flex-1 rounded-[12px] text-[13px] font-semibold text-white transition ${hasRequiredValues ? 'bg-[#615cff] hover:bg-[#514bea]' : 'cursor-not-allowed bg-[#d9d9dc]'}`}>开始生成</button>
+              <SkillResultPreview skill={selectedSkill} />
+            </aside>
+            <div className="relative flex min-w-0 flex-1 flex-col bg-white">
+              <div className="flex h-[66px] shrink-0 items-center border-b border-[#f0f1f4] px-5 sm:px-6">
+                <button type="button" onClick={() => setSelectedSkill(null)} className="mr-2 rounded-full p-1 text-[#1f2632] hover:bg-[#f3f4f7]" aria-label="返回技能分类"><ChevronLeft className="h-5 w-5" /></button>
+                <h2 className="text-[16px] font-semibold text-[#202631]">{selectedSkill.title}</h2>
+                <button type="button" onClick={() => { setSelectedSkill(null); setSkillPickerOpen(false); }} className="ml-auto rounded-full p-2 text-[#6b7280] hover:bg-[#f4f5f7]" aria-label="关闭"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-28 pt-5 sm:px-7">
+                {renderSkillFields()}
+                <div className="mt-2 rounded-[12px] border border-[#edf0f5] bg-[#fbfcfe] p-3">
+                  <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-[#858da0]"><Sparkles className="h-3.5 w-3.5 text-[#8378ff]" />生成提示词预览</div>
+                  <p className="line-clamp-3 whitespace-pre-line text-[11px] leading-5 text-[#858da0]">{promptPreview}</p>
+                </div>
+              </div>
+              <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 border-t border-[#eff0f2] bg-white px-5 py-4 sm:px-7">
+                <button type="button" onClick={bringIntoPrompt} className="h-[44px] shrink-0 rounded-[12px] bg-[#f3f4f6] px-4 text-[13px] font-medium text-[#8d929a] transition hover:bg-[#e9ebf0] hover:text-[#3b4353]">带入输入框</button>
+                <button type="button" disabled={!hasRequiredValues} onClick={startGeneration} className={`h-[44px] flex-1 rounded-[12px] text-[13px] font-semibold text-white transition ${hasRequiredValues ? 'bg-[#615cff] hover:bg-[#514bea]' : 'cursor-not-allowed bg-[#d9d9dc]'}`}>开始生成</button>
+              </div>
             </div>
           </section>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function SkillResultPreview({ skill }: { skill: SkillDefinition }) {
+  const hasImageInput = skill.fields.some((field) => field.type === 'upload');
+  const isCommerce = skill.category === '电商设计' || skill.category === '服饰穿戴';
+  const palettes = isCommerce
+    ? ['from-amber-100 via-orange-50 to-rose-100', 'from-sky-100 via-white to-blue-100', 'from-emerald-100 via-lime-50 to-yellow-100', 'from-violet-100 via-fuchsia-50 to-pink-100']
+    : ['from-sky-100 via-white to-indigo-100', 'from-rose-100 via-orange-50 to-amber-100', 'from-teal-100 via-cyan-50 to-blue-100', 'from-violet-100 via-white to-fuchsia-100'];
+  const imageLabels = ['主视觉预览', '卖点展示', '细节效果', '场景应用'];
+  const contentLabels = ['内容提纲', '核心信息', '重点呈现', '结果预览'];
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
+        {palettes.map((palette, index) => (
+          <div key={palette} className="min-w-0 rounded-[12px] border border-[#e9edf3] bg-white p-2 shadow-[0_2px_8px_rgba(38,53,79,0.04)]">
+            <div className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[8px] bg-gradient-to-br ${palette}`}>
+              <span className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-white/50 blur-xl" />
+              {hasImageInput ? (
+                <>
+                  <span className="absolute bottom-[17%] left-[19%] h-[34%] w-[27%] rounded-[8px] border border-white/80 bg-white/70 shadow-sm" />
+                  <span className={`relative h-[54%] w-[25%] rounded-[9px] border border-white/90 shadow-[0_8px_16px_rgba(45,61,88,0.18)] ${index % 2 === 0 ? 'bg-gradient-to-b from-[#fffdf7] via-[#f6d8b3] to-[#d78c62]' : 'bg-gradient-to-b from-[#f8fbff] via-[#dbeaf2] to-[#829eaa]'}`} />
+                  <span className="absolute right-[18%] top-[18%] h-[27%] w-[24%] rounded-full border border-white/80 bg-white/60" />
+                  <span className="absolute bottom-2 left-2 rounded-full bg-white/85 px-2 py-0.5 text-[6px] font-medium text-[#5b6576]">AI DESIGN</span>
+                </>
+              ) : (
+                <div className="relative w-[72%] rounded-[6px] border border-white/90 bg-white/90 p-2 shadow-sm">
+                  <span className="block h-1 w-1/3 rounded-full bg-[#9ab6db]" />
+                  <span className="mt-1 block truncate text-[8px] font-bold text-[#3b4c66]">{skill.title}</span>
+                  <span className="mt-1 block h-1 w-full rounded-full bg-[#e1e7ef]" />
+                  <span className="mt-1 block h-1 w-4/5 rounded-full bg-[#e1e7ef]" />
+                  <span className="mt-2 block h-5 rounded-[3px] bg-gradient-to-r from-[#d9e8fa] to-[#f6dfd1]" />
+                </div>
+              )}
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-1">
+              <span className="truncate text-[9px] font-medium text-[#4b5567]">{hasImageInput ? imageLabels[index] : contentLabels[index]}</span>
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#8d82ff]" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-between text-[10px] text-[#939caf]">
+        <span>示意效果仅供参考</span>
+        <span className="flex items-center gap-1"><Sparkles className="h-3 w-3 text-[#887bff]" />{skill.category}</span>
+      </div>
     </div>
   );
 }
