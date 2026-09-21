@@ -579,12 +579,11 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
                 <button type="button" className="shrink-0 text-[10px] text-[#8490a6]">更多 ›</button>
               </div>
               <div className="grid grid-cols-2 gap-2.5 2xl:grid-cols-4">
-                {homepageFeatureCards.map((card, index) => (
+                {homepageFeatureCards.map((card) => (
                   <div key={card.title} className="relative flex h-[80px] min-w-0 items-center justify-between overflow-hidden rounded-[14px] bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(58,71,101,0.025)]">
                     <div className="relative z-10 min-w-0">
                       <div className="truncate text-[12px] font-semibold text-[#303749]">{card.title}</div>
                       <div className="mt-1 truncate text-[10px] text-[#9aa4b7]">{card.desc}</div>
-                      {index === 1 ? <button type="button" onClick={() => openSkillPicker()} className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#f0edff] px-2 py-0.5 text-[9px] font-semibold text-[#7064e8] hover:bg-[#e5e0ff]"><Puzzle className="h-2.5 w-2.5" />Agent skills</button> : null}
                     </div>
                     <FeatureArt kind={card.art} />
                   </div>
@@ -594,7 +593,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
           </section>
         )}
 
-        {mode === 'templates' ? <section className="mx-auto max-w-[1920px] px-6 pb-16">
+        <section className="mx-auto max-w-[1920px] px-6 pb-16">
           <div className="mb-3 flex items-center justify-between"><h2 className="text-[16px] font-semibold text-[#30364a]">为你推荐</h2><button type="button" className="text-[11px] text-[#8a95aa]">更多 ›</button></div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
             {templateCards.map((card, index) => (
@@ -607,7 +606,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
               </button>
             ))}
           </div>
-        </section> : null}
+        </section>
       </main>
 
       <button type="button" className="fixed bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#7a879b] shadow-[0_5px_22px_rgba(63,78,112,0.17)]"><CircleHelp className="h-5 w-5" /></button>
