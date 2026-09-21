@@ -487,7 +487,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
       </header>
 
       <main className="ml-[56px] pt-[56px]">
-        <section className="relative min-h-[325px] overflow-hidden bg-[radial-gradient(ellipse_at_50%_25%,#eef1ff_0%,#f8f9ff_48%,#ffffff_82%)] px-4 pb-7 pt-[28px]">
+        <section className={`relative ${mode === 'templates' ? 'min-h-[240px]' : 'min-h-[325px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_25%,#eef1ff_0%,#f8f9ff_48%,#ffffff_82%)] px-4 pb-7 pt-[28px]`}>
           <div className="pointer-events-none absolute left-[38%] top-[12px] h-32 w-32 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[28%] top-[10px] h-36 w-36 rounded-full bg-[#d8e4ff]/50 blur-3xl" />
           <h1 className="relative text-center text-[21px] font-semibold tracking-[0.04em] text-[#30364a]">今天你想做些什么？</h1>
