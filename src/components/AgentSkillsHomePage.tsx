@@ -503,7 +503,17 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
                 <span className="block skew-x-6">{option.label}</span>
               </button>
             ))}
-            <div className="absolute -right-3 -top-2 z-20 flex h-12 w-10 rotate-[-9deg] items-center justify-center rounded-[10px] border border-white bg-[linear-gradient(145deg,#7da8ff,#6d59fa)] text-white shadow-[0_5px_18px_rgba(81,111,255,0.26)]"><Sparkles className="h-4 w-4" /></div>
+            {mode === 'templates' ? (
+              <div aria-hidden="true" className="absolute left-[112px] -top-[14px] z-30 h-[72px] w-[58px] rotate-[5deg] rounded-[10px] border border-white bg-white p-[3px] shadow-[0_6px_18px_rgba(73,114,190,0.22)]">
+                <div className="relative flex h-full items-center justify-center overflow-hidden rounded-[7px] bg-[linear-gradient(155deg,#d8f4ff_0%,#7ec5ff_48%,#7267ff_100%)]">
+                  <div className="absolute left-1.5 top-1.5 h-2 w-6 rounded-full bg-white/80" />
+                  <div className="absolute bottom-2 left-2 right-2 h-8 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#fff6cc_0%,#ffb568_48%,#fa6e69_100%)] shadow-sm" />
+                  <LayoutTemplate className="relative z-10 h-5 w-5 text-white drop-shadow" />
+                </div>
+              </div>
+            ) : (
+              <div aria-hidden="true" className="absolute -right-1 -top-1 z-20 flex h-9 w-7 rotate-[-9deg] items-center justify-center rounded-[8px] border border-white bg-[linear-gradient(145deg,#7da8ff,#6d59fa)] text-white shadow-[0_5px_14px_rgba(81,111,255,0.22)]"><Sparkles className="h-3.5 w-3.5" /></div>
+            )}
           </div>
 
           {mode === 'templates' ? (
