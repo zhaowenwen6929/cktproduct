@@ -493,27 +493,43 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
           <h1 className="relative text-center text-[21px] font-semibold tracking-[0.04em] text-[#30364a]">今天你想做些什么？</h1>
 
           <div className="relative mx-auto mt-5 flex h-12 w-fit items-end justify-center gap-1.5">
-            {modeOptions.map((option) => (
-              <button
-                key={option.key}
-                type="button"
-                onClick={() => setMode(option.key)}
-                className={`relative -skew-x-6 rounded-t-[15px] border px-5 transition-all duration-200 ${mode === option.key ? 'z-20 h-11 min-w-[156px] border-[#2784ff] bg-white text-[13px] font-semibold text-[#272d40] shadow-[0_7px_18px_rgba(39,132,255,0.16)]' : 'z-10 h-9 min-w-[142px] border-[#e9edf6] bg-white/65 text-[12px] font-medium text-[#8b93a7] hover:bg-white'}`}
-              >
-                <span className="block skew-x-6">{option.label}</span>
-              </button>
-            ))}
-            {mode === 'templates' ? (
-              <div aria-hidden="true" className="absolute left-[112px] -top-[14px] z-30 h-[72px] w-[58px] rotate-[5deg] rounded-[10px] border border-white bg-white p-[3px] shadow-[0_6px_18px_rgba(73,114,190,0.22)]">
-                <div className="relative flex h-full items-center justify-center overflow-hidden rounded-[7px] bg-[linear-gradient(155deg,#d8f4ff_0%,#7ec5ff_48%,#7267ff_100%)]">
-                  <div className="absolute left-1.5 top-1.5 h-2 w-6 rounded-full bg-white/80" />
-                  <div className="absolute bottom-2 left-2 right-2 h-8 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#fff6cc_0%,#ffb568_48%,#fa6e69_100%)] shadow-sm" />
-                  <LayoutTemplate className="relative z-10 h-5 w-5 text-white drop-shadow" />
+            {modeOptions.map((option) => {
+              const isSelected = mode === option.key;
+              const isTemplate = option.key === 'templates';
+              return (
+                <div key={option.key} className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setMode(option.key)}
+                    className={`relative -skew-x-6 rounded-t-[15px] border px-5 transition-all duration-200 ${isSelected ? 'z-20 h-11 min-w-[156px] border-[#2784ff] bg-white text-[13px] font-semibold text-[#272d40] shadow-[0_7px_18px_rgba(39,132,255,0.16)]' : 'z-10 h-9 min-w-[142px] border-[#e9edf6] bg-white/65 text-[12px] font-medium text-[#8b93a7] hover:bg-white'}`}
+                  >
+                    <span className="block skew-x-6">{option.label}</span>
+                  </button>
+                  {isSelected ? (
+                    <div
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute -right-[24px] -top-[14px] z-30 rotate-[5deg] rounded-[10px] border border-white bg-white p-[3px] shadow-[0_6px_18px_rgba(73,114,190,0.22)] transition-all duration-200 ${isTemplate ? 'h-[72px] w-[58px]' : 'h-[52px] w-[42px]'}`}
+                    >
+                      <div className={`relative flex h-full items-center justify-center overflow-hidden rounded-[7px] ${isTemplate ? 'bg-[linear-gradient(155deg,#d8f4ff_0%,#7ec5ff_48%,#7267ff_100%)]' : 'bg-[linear-gradient(155deg,#e8e3ff_0%,#9a91ff_52%,#695cff_100%)]'}`}>
+                        {isTemplate ? (
+                          <>
+                            <div className="absolute left-1.5 top-1.5 h-2 w-6 rounded-full bg-white/80" />
+                            <div className="absolute bottom-2 left-2 right-2 h-8 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#fff6cc_0%,#ffb568_48%,#fa6e69_100%)] shadow-sm" />
+                            <LayoutTemplate className="relative z-10 h-5 w-5 text-white drop-shadow" />
+                          </>
+                        ) : (
+                          <>
+                            <div className="absolute left-1.5 top-1.5 h-2 w-4 rounded-full bg-white/80" />
+                            <div className="absolute bottom-1.5 left-1.5 right-1.5 h-5 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#f5f1ff_0%,#c4bcff_100%)] shadow-sm" />
+                            <Sparkles className="relative z-10 h-4 w-4 text-white drop-shadow" />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-            ) : (
-              <div aria-hidden="true" className="absolute -right-1 -top-1 z-20 flex h-9 w-7 rotate-[-9deg] items-center justify-center rounded-[8px] border border-white bg-[linear-gradient(145deg,#7da8ff,#6d59fa)] text-white shadow-[0_5px_14px_rgba(81,111,255,0.22)]"><Sparkles className="h-3.5 w-3.5" /></div>
-            )}
+              );
+            })}
           </div>
 
           {mode === 'templates' ? (
