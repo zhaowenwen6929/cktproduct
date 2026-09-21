@@ -831,20 +831,22 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
           </section>
         ) : null}
 
-        <section className="mx-auto max-w-[1920px] px-6 pb-16">
-          <div className="mb-3 flex items-center justify-between"><h2 className="text-[16px] font-semibold text-[#30364a]">为你推荐</h2><button type="button" className="text-[11px] text-[#8a95aa]">更多 ›</button></div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-            {templateCards.map((card, index) => (
-              <button key={card.title} type="button" className="overflow-hidden rounded-[12px] border border-[#edf0f6] bg-[#f4f7fc] p-2 text-left">
-                <div className={`relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-[6px] bg-gradient-to-br ${card.tone} p-4 text-center text-white`}>
-                  <span className="absolute inset-2 rounded border border-white/25" />
-                  <span className="relative drop-shadow-sm"><span className="block text-[9px] font-medium tracking-[0.15em]">{card.kicker}</span><span className="mt-3 block text-[15px] font-black leading-tight">{card.title}</span><span className="mt-2 block text-[8px] opacity-80">CREATE · INSPIRE · DESIGN</span></span>
-                  {index === 0 ? <span className="absolute bottom-5 left-0 right-0 h-12 bg-[linear-gradient(180deg,transparent,rgba(16,54,112,.5))]" /> : null}
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
+        {mode === 'templates' ? (
+          <section className="mx-auto max-w-[1920px] px-6 pb-16">
+            <div className="mb-3 flex items-center justify-between"><h2 className="text-[16px] font-semibold text-[#30364a]">为你推荐</h2><button type="button" className="text-[11px] text-[#8a95aa]">更多 ›</button></div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
+              {templateCards.map((card, index) => (
+                <button key={card.title} type="button" className="overflow-hidden rounded-[12px] border border-[#edf0f6] bg-[#f4f7fc] p-2 text-left">
+                  <div className={`relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-[6px] bg-gradient-to-br ${card.tone} p-4 text-center text-white`}>
+                    <span className="absolute inset-2 rounded border border-white/25" />
+                    <span className="relative drop-shadow-sm"><span className="block text-[9px] font-medium tracking-[0.15em]">{card.kicker}</span><span className="mt-3 block text-[15px] font-black leading-tight">{card.title}</span><span className="mt-2 block text-[8px] opacity-80">CREATE · INSPIRE · DESIGN</span></span>
+                    {index === 0 ? <span className="absolute bottom-5 left-0 right-0 h-12 bg-[linear-gradient(180deg,transparent,rgba(16,54,112,.5))]" /> : null}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {mode === 'templates' ? (
           <section className="mx-auto max-w-[1920px] space-y-8 px-6 pb-16">
