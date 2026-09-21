@@ -239,6 +239,70 @@ const templateCards = [
   { title: '轻松办公提案', tone: 'from-lime-100 via-green-200 to-teal-300', kicker: '效率工具' },
 ];
 
+type TemplateGalleryKind = 'editorial' | 'calendar' | 'award' | 'recruitment';
+
+interface TemplateGalleryItem {
+  title: string;
+  description: string;
+  kicker: string;
+  tone: string;
+  foreground: string;
+  accent: string;
+}
+
+const templateGallerySections: { title: string; description: string; kind: TemplateGalleryKind; items: TemplateGalleryItem[] }[] = [
+  {
+    title: '编辑精选', description: '创意模板精选，快速开启设计', kind: 'editorial',
+    items: [
+      { title: '中秋节', description: '3种中秋设计', kicker: 'MID-AUTUMN', tone: 'from-emerald-100 via-amber-50 to-rose-100', foreground: 'text-[#34544d]', accent: 'bg-[#f3d36f]' },
+      { title: '国庆快乐', description: '盛世华诞 喜迎国庆', kicker: 'NATIONAL DAY', tone: 'from-rose-300 via-red-500 to-orange-500', foreground: 'text-white', accent: 'bg-[#ffbd64]' },
+      { title: '秋日特辑', description: '秋日限时上新', kicker: 'HELLO AUTUMN', tone: 'from-amber-100 via-orange-200 to-yellow-500', foreground: 'text-[#74421c]', accent: 'bg-[#d77d31]' },
+      { title: '小红书', description: '爆款图文掌握流量', kicker: 'LIFESTYLE', tone: 'from-sky-100 via-cyan-100 to-blue-300', foreground: 'text-[#2c6481]', accent: 'bg-[#58b8ca]' },
+      { title: '早安日签', description: '每日一张开启新一天', kicker: 'GOOD MORNING', tone: 'from-blue-300 via-cyan-200 to-lime-200', foreground: 'text-[#1f5c81]', accent: 'bg-[#f5d568]' },
+      { title: '邀请函', description: '海量邀请函 活动必备', kicker: 'INVITATION', tone: 'from-blue-100 via-indigo-200 to-violet-300', foreground: 'text-[#394c85]', accent: 'bg-[#f6db9d]' },
+      { title: '假期美工', description: '超丰富模板素材大数据', kicker: 'HOLIDAY IDEAS', tone: 'from-rose-100 via-pink-200 to-sky-200', foreground: 'text-[#703d6b]', accent: 'bg-[#81b9ec]' },
+    ],
+  },
+  {
+    title: '新年台历（可在线打印）', description: '精选台历模板，记录崭新一年的每一天', kind: 'calendar',
+    items: [
+      { title: '2027', description: '马年插画台历', kicker: 'HAPPY NEW YEAR', tone: 'from-red-400 via-orange-300 to-amber-200', foreground: 'text-white', accent: 'bg-[#ffe27a]' },
+      { title: '马年大吉', description: '新年主题台历', kicker: '2027 · 新年快乐', tone: 'from-emerald-300 via-sky-300 to-cyan-100', foreground: 'text-[#23697d]', accent: 'bg-white' },
+      { title: '金马迎春', description: '喜庆国风台历', kicker: '新春纳福', tone: 'from-rose-700 via-red-600 to-amber-400', foreground: 'text-[#fff2c4]', accent: 'bg-[#f7d65e]' },
+      { title: '春日序曲', description: '清新插画年历', kicker: 'HELLO 2027', tone: 'from-sky-300 via-blue-400 to-cyan-200', foreground: 'text-white', accent: 'bg-[#fff4c8]' },
+      { title: '新年心愿', description: '可打印桌面台历', kicker: '新的一年', tone: 'from-red-600 via-rose-500 to-orange-300', foreground: 'text-white', accent: 'bg-[#ffd980]' },
+      { title: '萌趣日历', description: '治愈系插画台历', kicker: 'HAPPY 2027', tone: 'from-amber-100 via-yellow-200 to-orange-200', foreground: 'text-[#9a5428]', accent: 'bg-[#e99353]' },
+      { title: '山水年历', description: '东方美学台历', kicker: '岁序更新', tone: 'from-blue-800 via-indigo-600 to-sky-400', foreground: 'text-white', accent: 'bg-[#f4d88e]' },
+      { title: '简约台历', description: '全年日历打印模板', kicker: '2027 CALENDAR', tone: 'from-stone-100 via-amber-50 to-orange-100', foreground: 'text-[#685244]', accent: 'bg-[#bf815c]' },
+    ],
+  },
+  {
+    title: '喜报', description: '精美喜报合集，好设计彰显实力', kind: 'award',
+    items: [
+      { title: '全部模板', description: '精选喜报模板', kicker: '喜报', tone: 'from-red-700 via-red-600 to-orange-400', foreground: 'text-[#fff2c6]', accent: 'bg-[#ffc54f]' },
+      { title: '销冠喜报', description: '业绩捷报 · 冠军榜', kicker: '荣耀时刻', tone: 'from-red-600 via-rose-600 to-orange-500', foreground: 'text-white', accent: 'bg-[#ffdb70]' },
+      { title: '业绩喜报', description: '业绩突破 · 再创佳绩', kicker: 'GOOD NEWS', tone: 'from-amber-300 via-orange-500 to-red-600', foreground: 'text-white', accent: 'bg-[#fff0a6]' },
+      { title: '光荣榜', description: '榜样力量 · 荣誉表彰', kicker: 'HONOR ROLL', tone: 'from-rose-700 via-red-700 to-amber-500', foreground: 'text-[#fff2c6]', accent: 'bg-[#ffe174]' },
+      { title: '获奖喜报', description: '竞赛获奖荣誉展示', kicker: '热烈祝贺', tone: 'from-red-700 via-orange-600 to-amber-400', foreground: 'text-white', accent: 'bg-[#fff1ab]' },
+      { title: '优秀员工表彰', description: '员工荣誉榜单', kicker: '表彰先进', tone: 'from-slate-100 via-stone-50 to-amber-200', foreground: 'text-[#4f5a64]', accent: 'bg-[#c79138]' },
+      { title: '团队喜报', description: '团队荣誉与成绩展示', kicker: 'TEAM HONOR', tone: 'from-red-600 via-rose-500 to-orange-300', foreground: 'text-white', accent: 'bg-[#ffe58c]' },
+      { title: '考试喜报', description: '升学考试成绩喜报', kicker: '金榜题名', tone: 'from-rose-800 via-red-700 to-red-500', foreground: 'text-[#fff1c8]', accent: 'bg-[#f7d86e]' },
+    ],
+  },
+  {
+    title: '招聘', description: 'HR必备！招聘物料合集', kind: 'recruitment',
+    items: [
+      { title: '寻找好物主理人', description: '创意岗位招聘海报', kicker: 'JOIN OUR TEAM', tone: 'from-yellow-100 via-lime-100 to-emerald-100', foreground: 'text-[#325949]', accent: 'bg-[#72b987]' },
+      { title: '此刻招募', description: '招募你的下一位伙伴', kicker: 'WE ARE HIRING', tone: 'from-blue-600 via-sky-500 to-indigo-700', foreground: 'text-white', accent: 'bg-[#ffe16a]' },
+      { title: '速来pick', description: '高薪岗位等你来', kicker: 'CAREER OFFER', tone: 'from-sky-300 via-blue-500 to-cyan-600', foreground: 'text-white', accent: 'bg-[#fff06b]' },
+      { title: '招聘计划', description: '企业人才招募计划', kicker: '招贤纳士', tone: 'from-emerald-100 via-lime-100 to-rose-100', foreground: 'text-[#397558]', accent: 'bg-[#f5a4bf]' },
+      { title: '找工作啦', description: '热门岗位火热招聘', kicker: 'JOIN US', tone: 'from-cyan-500 via-blue-500 to-teal-600', foreground: 'text-white', accent: 'bg-[#f8da4f]' },
+      { title: '招募合伙人', description: '一起开启全新事业', kicker: 'WE NEED YOU', tone: 'from-amber-200 via-orange-300 to-yellow-400', foreground: 'text-[#51321e]', accent: 'bg-[#1e1d1b]' },
+      { title: '有个工作想给你', description: '轻松活泼招聘模板', kicker: 'HIRING NOW', tone: 'from-lime-100 via-green-100 to-teal-100', foreground: 'text-[#365a47]', accent: 'bg-[#80bda1]' },
+    ],
+  },
+];
+
 function getDefaultValue(field: SkillField): FieldValue {
   if (field.type === 'upload') return [];
   if (field.type === 'ratio') return field.options[0];
@@ -665,6 +729,12 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
             ))}
           </div>
         </section>
+
+        {mode === 'templates' ? (
+          <section className="mx-auto max-w-[1920px] space-y-8 px-6 pb-16">
+            {templateGallerySections.map((section) => <TemplateGallerySection key={section.title} section={section} />)}
+          </section>
+        ) : null}
       </main>
 
       <button type="button" className="fixed bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#7a879b] shadow-[0_5px_22px_rgba(63,78,112,0.17)]"><CircleHelp className="h-5 w-5" /></button>
@@ -732,6 +802,95 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
           </section>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function TemplateGallerySection({ section }: { section: (typeof templateGallerySections)[number] }) {
+  const columns = section.kind === 'calendar' || section.kind === 'award'
+    ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-8'
+    : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7';
+
+  return (
+    <section>
+      <div className="mb-3 flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-[16px] font-semibold text-[#30364a]">{section.title}</h2>
+          <p className="mt-1 text-[11px] text-[#9aa4b7]">{section.description}</p>
+        </div>
+        <button type="button" className="shrink-0 text-[11px] text-[#8a95aa] hover:text-[#555d70]">更多 ›</button>
+      </div>
+      <div className={columns}>
+        {section.items.map((item, index) => (
+          <button key={item.title} type="button" className="group min-w-0 text-left transition hover:-translate-y-0.5">
+            {section.kind === 'editorial' ? (
+              <div className="overflow-hidden rounded-[12px] border border-[#edf0f5] bg-white shadow-[0_2px_8px_rgba(51,65,94,0.035)] transition group-hover:shadow-[0_8px_22px_rgba(51,65,94,0.1)]">
+                <div className={`relative flex h-[132px] items-center justify-center overflow-hidden bg-gradient-to-br ${item.tone} px-4`}>
+                  <span className="absolute -right-5 -top-8 h-24 w-24 rounded-full bg-white/25 blur-xl" />
+                  <div className="relative flex items-center justify-center">
+                    <TemplatePosterArtwork item={item} compact className="w-[64px] -rotate-[8deg] shadow-lg" />
+                    <TemplatePosterArtwork item={item} compact className="-ml-2 w-[64px] rotate-[7deg] shadow-lg" />
+                  </div>
+                </div>
+                <div className="flex h-[46px] items-center justify-between gap-2 px-3">
+                  <span className="min-w-0"><span className="block truncate text-[12px] font-semibold text-[#343b4b]">{item.title}</span><span className="mt-0.5 block truncate text-[10px] text-[#9aa3b2]">{item.description}</span></span>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#f1f3f6] text-[#6f7787]"><ChevronRight className="h-3.5 w-3.5" /></span>
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-[12px] border border-[#edf0f5] bg-[#f2f5fb] p-2 transition group-hover:shadow-[0_8px_22px_rgba(51,65,94,0.1)]">
+                {section.kind === 'calendar' ? <TemplateCalendarArtwork item={item} index={index} /> : <TemplatePosterArtwork item={item} />}
+                <div className="px-1 pb-1 pt-2">
+                  <span className="block truncate text-[12px] font-semibold text-[#343b4b]">{item.title}</span>
+                  <span className="mt-0.5 block truncate text-[10px] text-[#9aa3b2]">{item.description}</span>
+                </div>
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TemplatePosterArtwork({ item, className = '', compact = false }: { item: TemplateGalleryItem; className?: string; compact?: boolean }) {
+  return (
+    <div className={`relative isolate flex aspect-[3/4] shrink-0 flex-col items-center overflow-hidden rounded-[5px] bg-gradient-to-br ${item.tone} ${item.foreground} ${compact ? 'p-1.5' : 'w-full p-3'} ${className}`}>
+      <span className={`absolute -right-4 top-[28%] h-14 w-14 rounded-full opacity-25 ${item.accent}`} />
+      <span className="absolute inset-[5px] rounded-[3px] border border-current/20" />
+      <div className={`relative flex w-full items-center justify-between opacity-80 ${compact ? 'text-[5px]' : 'text-[7px]'}`}><span>CKT DESIGN</span><Sparkles className={compact ? 'h-2 w-2' : 'h-3 w-3'} /></div>
+      <div className="relative mt-auto flex w-full flex-col items-center pb-1 text-center">
+        <span className={`font-medium tracking-[0.14em] opacity-80 ${compact ? 'text-[5px]' : 'text-[7px]'}`}>{item.kicker}</span>
+        <span className={`mt-1 max-w-full font-black leading-tight drop-shadow-sm ${compact ? 'text-[9px]' : 'text-[clamp(14px,1vw,22px)]'}`}>{item.title}</span>
+        <span className={`mt-1 max-w-full truncate rounded-full px-2 py-0.5 font-medium ${compact ? 'text-[4px]' : 'text-[7px]'} ${item.accent} text-white`}>{item.description}</span>
+      </div>
+      <div className={`relative mt-auto flex w-full items-center justify-between border-t border-current/20 pt-1 opacity-75 ${compact ? 'text-[4px]' : 'text-[6px]'}`}><span>CREATE · INSPIRE</span><span>2027</span></div>
+    </div>
+  );
+}
+
+function TemplateCalendarArtwork({ item, index }: { item: TemplateGalleryItem; index: number }) {
+  const months = ['JAN', 'FEB', 'MAR', 'APR'];
+  return (
+    <div className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-[7px] bg-white p-1.5 shadow-sm">
+      <div className={`relative flex h-[48%] shrink-0 flex-col items-center justify-center overflow-hidden rounded-[4px] bg-gradient-to-br ${item.tone} ${item.foreground}`}>
+        <span className={`absolute -right-4 -top-3 h-16 w-16 rounded-full opacity-40 ${item.accent}`} />
+        <span className="relative text-[7px] font-medium tracking-[0.13em]">{item.kicker}</span>
+        <span className="relative mt-1 text-[clamp(17px,1.5vw,30px)] font-black leading-none">{item.title}</span>
+        <span className="relative mt-1 text-[7px] font-medium tracking-[0.2em]">新年 · 新愿 · 新开始</span>
+        <span className="absolute bottom-1.5 left-2 h-4 w-8 rounded-t-full bg-white/20" />
+        <span className="absolute bottom-1.5 right-2 h-6 w-6 rounded-full border border-white/30 bg-white/15" />
+      </div>
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-1 p-1">
+        {months.map((month, monthIndex) => (
+          <div key={month} className="rounded-[3px] border border-[#edf0f4] p-1">
+            <div className={`mb-1 text-center text-[6px] font-bold ${monthIndex === index % 4 ? 'text-[#e55247]' : 'text-[#778294]'}`}>{month}</div>
+            <div className="grid grid-cols-4 gap-[2px]">
+              {Array.from({ length: 12 }, (_, day) => <i key={day} className={`h-[3px] rounded-[1px] ${day === (index + monthIndex * 2) % 12 ? 'bg-[#f28f70]' : 'bg-[#dce2ea]'}`} />)}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
