@@ -11,7 +11,6 @@ import {
   Clock3,
   FileImage,
   Grid2x2,
-  Heart,
   Home,
   Image as ImageIcon,
   LayoutTemplate,
@@ -51,7 +50,8 @@ interface UploadedFile {
 
 type FieldValue = string | UploadedFile[];
 
-const categories = ['最近使用', '电商设计', '海报设计', '视频创作', '自媒体营销', '品牌设计', '办公设计', '服饰穿戴', '图像处理'];
+const skillCategories = ['电商设计', '海报设计', '品牌营销', '企业宣传', '新媒体运营', '文案策划', '企业办公', '专业内容', '图片处理', '视频处理', '服饰穿戴', '文旅娱乐', '产品包装'];
+const skillPickerCategories = ['最近使用', ...skillCategories, '全部技能'];
 
 const skills: SkillDefinition[] = [
   {
@@ -159,7 +159,7 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
-    id: 'daily-notice', title: '通知与日常物料', description: '通知/邀请函/招聘/证书/日签等', category: '办公设计',
+    id: 'daily-notice', title: '通知与日常物料', description: '通知/邀请函/招聘/证书/日签等', category: '企业办公',
     fields: [
       { id: 'material', label: '物料类型', type: 'select', options: ['通知公告', '邀请函', '招聘海报', '证书', '日签'] },
       { id: 'topic', label: '主题与文案', type: 'textarea', required: true, placeholder: '填写标题、时间、地点和需要展示的文字', rows: 4 },
@@ -167,7 +167,7 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
-    id: 'social-cover', title: '小红书封面', description: '制作醒目、有信息层次的笔记封面', category: '自媒体营销',
+    id: 'social-cover', title: '小红书封面', description: '制作醒目、有信息层次的笔记封面', category: '新媒体运营',
     fields: [
       { id: 'topic', label: '笔记主题', type: 'input', required: true, placeholder: '例如：一周高效收纳好物分享' },
       { id: 'images', label: '参考图片', type: 'upload', max: 5 },
@@ -175,7 +175,7 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
-    id: 'video-agent', title: '视频创作', description: '从创意到脚本，规划一条完整短视频', category: '视频创作',
+    id: 'video-agent', title: '视频创作', description: '从创意到脚本，规划一条完整短视频', category: '视频处理',
     fields: [
       { id: 'topic', label: '视频主题', type: 'input', required: true, placeholder: '描述视频主体或推广产品' },
       { id: 'duration', label: '视频时长', type: 'select', options: ['15 秒', '30 秒', '60 秒'] },
@@ -193,7 +193,7 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
-    id: 'brand-visual', title: '品牌视觉方案', description: '定义品牌标识、配色和整体视觉方向', category: '品牌设计',
+    id: 'brand-visual', title: '品牌视觉方案', description: '定义品牌标识、配色和整体视觉方向', category: '品牌营销',
     fields: [
       { id: 'brand', label: '品牌名称', type: 'input', required: true, placeholder: '请输入品牌名称' },
       { id: 'industry', label: '品牌行业', type: 'input', placeholder: '例如：美妆、餐饮、生活方式' },
@@ -201,7 +201,7 @@ const skills: SkillDefinition[] = [
     ],
   },
   {
-    id: 'image-edit', title: '图片扩图', description: '智能扩展画布，补全自然的画面内容', category: '图像处理',
+    id: 'image-edit', title: '图片扩图', description: '智能扩展画布，补全自然的画面内容', category: '图片处理',
     fields: [
       { id: 'images', label: '原始图片', type: 'upload', required: true, max: 10 },
       { id: 'ratio', label: '扩展比例', type: 'ratio', options: ['1:1', '3:4', '16:9', '9:16'] },
@@ -291,6 +291,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
   const [homeAttachments, setHomeAttachments] = useState<GenerationAttachment[]>([]);
   const [skillPickerOpen, setSkillPickerOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('最近使用');
+  const [activeHomeSkillCategory, setActiveHomeSkillCategory] = useState('电商设计');
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, FieldValue>>>({});
   const skillsRailRef = useRef<HTMLDivElement>(null);
@@ -298,10 +299,18 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
   const visibleSkills = useMemo(() => {
     const base = activeCategory === '最近使用'
       ? recentSkillIds.map((id) => skills.find((item) => item.id === id)).filter((item): item is SkillDefinition => Boolean(item))
-      : skills.filter((item) => item.category === activeCategory);
+      : activeCategory === '全部技能'
+        ? skills
+        : skills.filter((item) => item.category === activeCategory);
     if (!searchTerm.trim()) return base;
     return base.filter((item) => `${item.title}${item.description}`.includes(searchTerm.trim()));
   }, [activeCategory, searchTerm]);
+  const homepageSkillRows = useMemo(() => {
+    const filteredSkills = activeHomeSkillCategory === '全部技能'
+      ? aiSkillRows.flat().map((id) => skills.find((skill) => skill.id === id)).filter((skill): skill is SkillDefinition => Boolean(skill))
+      : skills.filter((skill) => skill.category === activeHomeSkillCategory);
+    return Array.from({ length: Math.ceil(filteredSkills.length / 6) }, (_, index) => filteredSkills.slice(index * 6, index * 6 + 6));
+  }, [activeHomeSkillCategory]);
 
   const selectedValues = selectedSkill ? fieldValues[selectedSkill.id] ?? {} : {};
   const promptPreview = selectedSkill ? makePrompt(selectedSkill, selectedValues) : '';
@@ -570,21 +579,39 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
 
         {mode === 'agent' ? (
           <section className="mx-auto max-w-[1920px] px-6 pb-7">
+            <div className="mb-2 flex items-center gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto whitespace-nowrap text-[11px] font-medium [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {skillCategories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => {
+                      setActiveHomeSkillCategory(category);
+                      skillsRailRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+                    }}
+                    aria-pressed={activeHomeSkillCategory === category}
+                    className={`relative shrink-0 py-1.5 transition-colors ${activeHomeSkillCategory === category ? 'text-[#303749] after:absolute after:-bottom-0.5 after:left-0 after:h-[2px] after:w-full after:bg-[#8377ff]' : 'text-[#7d879a] hover:text-[#303749]'}`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={() => openSkillPicker('全部技能')} className="flex shrink-0 items-center gap-0.5 py-1.5 text-[11px] font-medium text-[#7d879a] hover:text-[#5c5cfc]">
+                全部技能<ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
             <div className="relative overflow-hidden rounded-[16px] bg-[#f5f6f9] p-2">
               <div ref={skillsRailRef} className="space-y-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {aiSkillRows.map((row, rowIndex) => (
+                {homepageSkillRows.map((row, rowIndex) => (
                   <div key={rowIndex} className="flex w-max gap-2.5">
-                    {row.map((skillId, columnIndex) => {
-                      const skill = skills.find((item) => item.id === skillId);
-                      if (!skill) return null;
-                      return (
-                        <div key={skill.id} className="w-[300px] shrink-0">
-                          <SkillCard skill={skill} index={columnIndex + 2} hot={columnIndex === 0} onClick={() => selectSkillFromChip(skill.id)} />
-                        </div>
-                      );
-                    })}
+                    {row.map((skill, columnIndex) => (
+                      <div key={skill.id} className="w-[300px] shrink-0">
+                        <SkillCard skill={skill} index={columnIndex + 2} hot={columnIndex === 0} onClick={() => selectSkillFromChip(skill.id)} />
+                      </div>
+                    ))}
                   </div>
                 ))}
+                {homepageSkillRows.length === 0 ? <div className="flex h-[170px] w-full items-center justify-center rounded-[12px] bg-white text-[12px] text-[#9ba3b2]">该分类下暂无技能</div> : null}
               </div>
               <button type="button" onClick={() => skillsRailRef.current?.scrollBy({ left: 620, behavior: 'smooth' })} aria-label="查看更多 skills" className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#525b6d] shadow-[0_4px_14px_rgba(52,65,92,0.18)]"><ChevronRight className="h-4 w-4" /></button>
             </div>
@@ -645,10 +672,10 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
       {skillPickerOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#172035]/35 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) { setSkillPickerOpen(false); setSelectedSkill(null); } }}>
           <div className="relative flex h-[min(640px,calc(100vh-48px))] w-[min(1120px,calc(100vw-48px))] overflow-hidden rounded-[24px] bg-[#f7f8fb] shadow-[0_30px_90px_rgba(21,31,55,0.26)]">
-            <aside className="w-[190px] shrink-0 border-r border-[#eaedf3] bg-[#f4f5f8] px-3 py-3">
-              {categories.map((category, index) => (
+            <aside className="w-[190px] shrink-0 overflow-y-auto border-r border-[#eaedf3] bg-[#f4f5f8] px-3 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {skillPickerCategories.map((category) => (
                 <button key={category} type="button" onClick={() => setActiveCategory(category)} className={`mb-1.5 flex h-[43px] w-full items-center gap-3 rounded-[11px] px-3 text-left text-[13px] ${activeCategory === category ? 'bg-[#eaedf4] font-medium text-[#293142]' : 'text-[#41495a] hover:bg-white/75'}`}>
-                  {index === 0 ? <Clock3 className="h-[17px] w-[17px]" /> : index === 5 ? <Heart className="h-[17px] w-[17px]" /> : <Puzzle className="h-[17px] w-[17px]" />}{category}
+                  {category === '最近使用' ? <Clock3 className="h-[17px] w-[17px]" /> : category === '全部技能' ? <Grid2x2 className="h-[17px] w-[17px]" /> : <Puzzle className="h-[17px] w-[17px]" />}{category}
                 </button>
               ))}
             </aside>
