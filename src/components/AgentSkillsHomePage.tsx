@@ -508,14 +508,14 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
                   {isSelected ? (
                     <div
                       aria-hidden="true"
-                      className={`pointer-events-none absolute -right-[24px] -top-[14px] z-30 rotate-[5deg] rounded-[10px] border border-white bg-white p-[3px] shadow-[0_6px_18px_rgba(73,114,190,0.22)] transition-all duration-200 ${isTemplate ? 'h-[72px] w-[58px]' : 'h-[52px] w-[42px]'}`}
+                      className={`pointer-events-none absolute -right-[24px] -top-[14px] z-30 rotate-[5deg] rounded-[10px] border border-white bg-white p-[3px] shadow-[0_6px_18px_rgba(73,114,190,0.22)] transition-all duration-200 ${isTemplate ? 'h-[56px] w-[46px]' : 'h-[52px] w-[42px]'}`}
                     >
                       <div className={`relative flex h-full items-center justify-center overflow-hidden rounded-[7px] ${isTemplate ? 'bg-[linear-gradient(155deg,#d8f4ff_0%,#7ec5ff_48%,#7267ff_100%)]' : 'bg-[linear-gradient(155deg,#e8e3ff_0%,#9a91ff_52%,#695cff_100%)]'}`}>
                         {isTemplate ? (
                           <>
-                            <div className="absolute left-1.5 top-1.5 h-2 w-6 rounded-full bg-white/80" />
-                            <div className="absolute bottom-2 left-2 right-2 h-8 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#fff6cc_0%,#ffb568_48%,#fa6e69_100%)] shadow-sm" />
-                            <LayoutTemplate className="relative z-10 h-5 w-5 text-white drop-shadow" />
+                            <div className="absolute left-1.5 top-1.5 h-1.5 w-5 rounded-full bg-white/80" />
+                            <div className="absolute bottom-1.5 left-1.5 right-1.5 h-6 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#fff6cc_0%,#ffb568_48%,#fa6e69_100%)] shadow-sm" />
+                            <LayoutTemplate className="relative z-10 h-4 w-4 text-white drop-shadow" />
                           </>
                         ) : (
                           <>
