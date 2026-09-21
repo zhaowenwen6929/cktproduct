@@ -285,7 +285,7 @@ interface AgentSkillsHomePageProps {
 }
 
 export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCanvasGeneration }: AgentSkillsHomePageProps) {
-  const [mode, setMode] = useState<HomeMode>('agent');
+  const [mode, setMode] = useState<HomeMode>('templates');
   const [searchTerm, setSearchTerm] = useState('');
   const [homePrompt, setHomePrompt] = useState('');
   const [homeAttachments, setHomeAttachments] = useState<GenerationAttachment[]>([]);
@@ -493,8 +493,13 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
           <h1 className="relative text-center text-[21px] font-semibold tracking-[0.04em] text-[#30364a]">今天你想做些什么？</h1>
 
           <div className="relative mx-auto mt-5 flex h-12 w-fit items-end justify-center gap-1.5">
-            {modeOptions.map((option, index) => (
-              <button key={option.key} type="button" onClick={() => setMode(option.key)} className={`relative z-10 h-10 min-w-[142px] -skew-x-6 rounded-t-[15px] border px-5 text-[13px] font-medium shadow-[0_4px_18px_rgba(116,137,193,0.08)] ${mode === option.key ? 'border-[#e7e9f2] bg-white text-[#272d40]' : 'border-[#e9edf6] bg-white/65 text-[#8b93a7]'}`}>
+            {modeOptions.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => setMode(option.key)}
+                className={`relative -skew-x-6 rounded-t-[15px] border px-5 transition-all duration-200 ${mode === option.key ? 'z-20 h-11 min-w-[156px] border-[#2784ff] bg-white text-[13px] font-semibold text-[#272d40] shadow-[0_7px_18px_rgba(39,132,255,0.16)]' : 'z-10 h-9 min-w-[142px] border-[#e9edf6] bg-white/65 text-[12px] font-medium text-[#8b93a7] hover:bg-white'}`}
+              >
                 <span className="block skew-x-6">{option.label}</span>
               </button>
             ))}
