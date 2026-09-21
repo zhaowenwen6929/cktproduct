@@ -23,6 +23,8 @@ interface SidebarProps {
   onAddGeneratedAssets: (attachments: GenerationAttachment[]) => Promise<void> | void;
   input: string;
   onInputChange: (val: string) => void;
+  autoGenerateRequest: { requestId: number; prompt: string; attachments: GenerationAttachment[] } | null;
+  onAutoGenerateConsumed: (requestId: number) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   credits: number;
@@ -554,7 +556,7 @@ const writeStoredNotificationPreference = (scope: Extract<NotificationPreference
   window.localStorage.setItem(NOTIFICATION_PREFERENCE_STORAGE_KEY, JSON.stringify(payload));
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddGeneratedAssets, input, onInputChange, isCollapsed, onToggleCollapse, credits, onCreditsChange, onSessionTitleChange }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddGeneratedAssets, input, onInputChange, autoGenerateRequest, onAutoGenerateConsumed, isCollapsed, onToggleCollapse, credits, onCreditsChange, onSessionTitleChange }) => {
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const [debugNoBrandData, setDebugNoBrandData] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([
@@ -665,6 +667,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoReferenceInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
+  const autoGenerateRequestRef = useRef<number | null>(null);
   const selectionRangeRef = useRef<Range | null>(null);
   const assetMenuRef = useRef<HTMLDivElement>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
@@ -2300,13 +2303,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     return resultAttachments;
   };
 
-  const handleSend = async () => {
+  const handleSend = async ({ bypassPlan = false }: { bypassPlan?: boolean } = {}) => {
     if (!input.trim() || loading) return;
 
     const content = editorRef.current ? getEditorPlainText(editorRef.current) : input;
     const attachedImages = pendingAttachments.filter((item) => item.type === 'image').map((item) => item.url);
 
-    if (currentSessionMode === 'plan') {
+    if (currentSessionMode === 'plan' && !bypassPlan) {
       const activePlan = findLatestPlanFlow();
       if (activePlan && (activePlan.status === 'thinking' || activePlan.status === 'clarifying')) {
         onInputChange('');
@@ -2453,6 +2456,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ onAddImage, onAddVideo, onAddG
     const currentBrand = selectedBrandId ? brandGroups.find((b) => b.id === selectedBrandId) : undefined;
     await generateAndAppend(userMsg.content, currentBrand, `${baseId}`);
   };
+
+  useEffect(() => {
+    if (!autoGenerateRequest) return;
+    if (input !== autoGenerateRequest.prompt) {
+      onInputChange(autoGenerateRequest.prompt);
+      return;
+    }
+    const hasMatchingAttachments = pendingAttachments.length === autoGenerateRequest.attachments.length &&
+      pendingAttachments.every((attachment, index) => attachment.id === autoGenerateRequest.attachments[index]?.id);
+    if (!hasMatchingAttachments) {
+      setPendingAttachments(autoGenerateRequest.attachments);
+      return;
+    }
+    if (loading || autoGenerateRequestRef.current === autoGenerateRequest.requestId) return;
+
+    autoGenerateRequestRef.current = autoGenerateRequest.requestId;
+    onAutoGenerateConsumed(autoGenerateRequest.requestId);
+    void handleSend({ bypassPlan: true });
+  }, [autoGenerateRequest, handleSend, input, loading, onAutoGenerateConsumed, onInputChange, pendingAttachments]);
 
   const handleCancelClick = (workflow: NonNullable<typeof activeWorkflow>) => {
     if (workflow.stage === 'submitting' || workflow.stage === 'analyzing') {

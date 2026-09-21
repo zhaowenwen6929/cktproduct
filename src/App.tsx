@@ -5,10 +5,11 @@ import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
 import { PluginPrototypePage } from './components/PluginPrototypePage';
 import { ConnectorAuthPrototypePage } from './components/ConnectorAuthPrototypePage';
+import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home';
 
 type ExportRequest =
   | {
@@ -50,6 +51,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/canvas') return '/canvas';
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
   if (pathname === '/connector-auth') return '/connector-auth';
+  if (pathname === '/agent-skills-home') return '/agent-skills-home';
   return '/';
 };
 
@@ -70,6 +72,7 @@ export default function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [exportSelectedIds, setExportSelectedIds] = useState<string[]>([]);
   const [exportRequest, setExportRequest] = useState<ExportRequest | null>(null);
+  const [autoGenerateRequest, setAutoGenerateRequest] = useState<{ requestId: number; prompt: string; attachments: GenerationAttachment[] } | null>(null);
 
   const navigateTo = (route: AppRoute) => {
     if (typeof window === 'undefined') return;
@@ -1291,6 +1294,10 @@ export default function App() {
         title: 'AI 连接器授权原型',
         description: 'AI 连接器授权原型，模拟创客贴登录、Access Key 选择与 WorkBuddy 授权回跳流程。',
       },
+      '/agent-skills-home': {
+        title: 'Agent skills 创作首页',
+        description: '创客贴首页原型，展示 Agent skills 入口、技能表单和无限画布生成流程。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1321,6 +1328,13 @@ export default function App() {
         description: '模拟“登录创客贴 -> 查看/创建 Access Key -> 使用授权 -> 回跳 WorkBuddy”的完整流程。',
         href: '/connector-auth' as AppRoute,
         status: '新增流程',
+        available: true,
+      },
+      {
+        title: 'Agent skills 首页',
+        description: '进入创作首页，浏览技能分类、填写技能参数，并将需求带入无限画布生成。',
+        href: '/agent-skills-home' as AppRoute,
+        status: '新增入口',
         available: true,
       },
     ];
@@ -1422,6 +1436,20 @@ export default function App() {
 
   if (currentRoute === '/connector-auth') {
     return <ConnectorAuthPrototypePage onBack={() => navigateTo('/')} />;
+  }
+
+  if (currentRoute === '/agent-skills-home') {
+    return (
+      <AgentSkillsHomePage
+        onBackToDirectory={() => navigateTo('/')}
+        onOpenCanvas={() => navigateTo('/canvas')}
+        onStartCanvasGeneration={(prompt, attachments = []) => {
+          setAgentInput(prompt);
+          setAutoGenerateRequest({ requestId: Date.now(), prompt, attachments });
+          navigateTo('/canvas');
+        }}
+      />
+    );
   }
 
   return (
@@ -1588,6 +1616,10 @@ export default function App() {
           onAddGeneratedAssets={handleAddGeneratedAssets}
           input={agentInput}
           onInputChange={setAgentInput}
+          autoGenerateRequest={autoGenerateRequest}
+          onAutoGenerateConsumed={(requestId) => {
+            setAutoGenerateRequest((current) => current?.requestId === requestId ? null : current);
+          }}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           credits={credits}
