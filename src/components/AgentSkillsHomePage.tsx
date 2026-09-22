@@ -941,16 +941,18 @@ function SkillResultPreview({ skill }: { skill: SkillDefinition }) {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-[16px] bg-[#eef1f6]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,#ffffff_0%,#f4f6fa_60%,#e9edf4_100%)]" />
-        <div className="relative flex h-full items-center justify-center gap-3 px-0">
-          {[previousIndex, activeIndex, nextIndex].map((slideIndex, position) => (
-            <ResultPreviewSlide key={slideIndex} skill={skill} label={slideLabels[slideIndex]} index={slideIndex} active={position === 1} hasImageInput={hasImageInput} onClick={() => setActiveIndex(slideIndex)} />
-          ))}
+        <div className="relative flex h-full flex-col items-center justify-center">
+          <div className="relative flex h-[min(390px,58vh)] w-full shrink-0 items-center justify-center gap-3 overflow-hidden px-0">
+            {[previousIndex, activeIndex, nextIndex].map((slideIndex, position) => (
+              <ResultPreviewSlide key={slideIndex} skill={skill} label={slideLabels[slideIndex]} index={slideIndex} active={position === 1} hasImageInput={hasImageInput} onClick={() => setActiveIndex(slideIndex)} />
+            ))}
+            <button type="button" onClick={() => moveSlide(-1)} aria-label="上一张效果示意" className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronLeft className="h-4 w-4" /></button>
+            <button type="button" onClick={() => moveSlide(1)} aria-label="下一张效果示意" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronRight className="h-4 w-4" /></button>
+          </div>
+          <div className="mt-3 flex justify-center gap-1.5" aria-label="效果示意轮播">
+            {slideLabels.map((label, index) => <button key={label} type="button" onClick={() => setActiveIndex(index)} aria-label={`查看${label}`} className={`h-1.5 rounded-full transition-all ${activeIndex === index ? 'w-5 bg-[#6961f5]' : 'w-1.5 bg-[#c8ced9] hover:bg-[#929bad]'}`} />)}
+          </div>
         </div>
-        <button type="button" onClick={() => moveSlide(-1)} aria-label="上一张效果示意" className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronLeft className="h-4 w-4" /></button>
-        <button type="button" onClick={() => moveSlide(1)} aria-label="下一张效果示意" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronRight className="h-4 w-4" /></button>
-      </div>
-      <div className="mt-3 flex justify-center gap-1.5" aria-label="效果示意轮播">
-        {slideLabels.map((label, index) => <button key={label} type="button" onClick={() => setActiveIndex(index)} aria-label={`查看${label}`} className={`h-1.5 rounded-full transition-all ${activeIndex === index ? 'w-5 bg-[#6961f5]' : 'w-1.5 bg-[#c8ced9] hover:bg-[#929bad]'}`} />)}
       </div>
     </div>
   );
