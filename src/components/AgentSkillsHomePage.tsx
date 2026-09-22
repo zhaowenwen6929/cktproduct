@@ -902,10 +902,6 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1b2335]/40 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>
           <section className="relative flex h-[min(760px,calc(100vh-40px))] w-[min(1080px,calc(100vw-40px))] overflow-hidden rounded-[22px] bg-white shadow-[0_28px_90px_rgba(25,35,57,0.28)]">
             <aside className="hidden w-[42%] shrink-0 flex-col border-r border-[#eceff4] bg-[#f5f6f9] p-6 lg:flex">
-              <div className="mb-4">
-                <h3 className="text-[16px] font-semibold text-[#303749]">生成效果示意</h3>
-                <p className="mt-1 text-[11px] leading-5 text-[#929bad]">填写右侧信息后，可生成类似的设计结果</p>
-              </div>
               <SkillResultPreview skill={selectedSkill} />
             </aside>
             <div className="relative flex min-w-0 flex-1 flex-col bg-white">
@@ -953,11 +949,8 @@ function SkillResultPreview({ skill }: { skill: SkillDefinition }) {
         <button type="button" onClick={() => moveSlide(-1)} aria-label="上一张效果示意" className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronLeft className="h-4 w-4" /></button>
         <button type="button" onClick={() => moveSlide(1)} aria-label="下一张效果示意" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#697386] shadow-md transition hover:bg-white"><ChevronRight className="h-4 w-4" /></button>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3 text-[10px] text-[#939caf]">
-        <span className="truncate">示意效果仅供参考 · {skill.category}</span>
-        <div className="flex shrink-0 items-center gap-1.5" aria-label="效果示意轮播">
-          {slideLabels.map((label, index) => <button key={label} type="button" onClick={() => setActiveIndex(index)} aria-label={`查看${label}`} className={`h-1.5 rounded-full transition-all ${activeIndex === index ? 'w-5 bg-[#6961f5]' : 'w-1.5 bg-[#c8ced9] hover:bg-[#929bad]'}`} />)}
-        </div>
+      <div className="mt-3 flex justify-center gap-1.5" aria-label="效果示意轮播">
+        {slideLabels.map((label, index) => <button key={label} type="button" onClick={() => setActiveIndex(index)} aria-label={`查看${label}`} className={`h-1.5 rounded-full transition-all ${activeIndex === index ? 'w-5 bg-[#6961f5]' : 'w-1.5 bg-[#c8ced9] hover:bg-[#929bad]'}`} />)}
       </div>
     </div>
   );
