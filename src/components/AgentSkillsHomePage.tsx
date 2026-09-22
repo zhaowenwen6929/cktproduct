@@ -912,10 +912,6 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-28 pt-5 sm:px-7">
                 {renderSkillFields()}
-                <div className="mt-2 rounded-[12px] border border-[#edf0f5] bg-[#fbfcfe] p-3">
-                  <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-[#858da0]"><Sparkles className="h-3.5 w-3.5 text-[#8378ff]" />生成提示词预览</div>
-                  <p className="line-clamp-3 whitespace-pre-line text-[11px] leading-5 text-[#858da0]">{promptPreview}</p>
-                </div>
               </div>
               <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 border-t border-[#eff0f2] bg-white px-5 py-4 sm:px-7">
                 <button type="button" onClick={bringIntoPrompt} className="h-[44px] shrink-0 rounded-[12px] bg-[#f3f4f6] px-4 text-[13px] font-medium text-[#8d929a] transition hover:bg-[#e9ebf0] hover:text-[#3b4353]">带入输入框</button>
