@@ -29,12 +29,29 @@ const historyGroups = [
   { date: '03月10日', items: ['麦角硫因精华水介绍'] },
 ];
 
+const workItems = [
+  { title: '中秋国庆放假通知', date: '09月22日', variant: 'cream' },
+  { title: '品牌灵感海报', date: '09月20日', variant: 'blue' },
+  { title: '秋日活动主视觉', date: '09月17日', variant: 'blank' },
+  { title: '月满人团圆', date: '09月08日', variant: 'moon' },
+  { title: '产品宣传海报', date: '03月12日', variant: 'poster' },
+];
+
 function CompletedStep({ children }: { children: ReactNode }) {
   return (
     <div className="design-ai-step">
       <span className="design-ai-step__check"><Check size={12} strokeWidth={3} /></span>
       <span>{children}</span>
     </div>
+  );
+}
+
+function WorkThumbnail({ variant }: { variant: string }) {
+  return (
+    <span className={`design-ai-work-thumb design-ai-work-thumb--${variant}`} aria-hidden="true">
+      <span className="design-ai-work-thumb__copy">{variant === 'blue' ? '品牌\n灵感' : variant === 'moon' ? '月满\n人团圆' : ''}</span>
+      <span className="design-ai-work-thumb__moon" />
+    </span>
   );
 }
 
@@ -46,6 +63,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
   const [isNewConversation, setIsNewConversation] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isWorksOpen, setIsWorksOpen] = useState(false);
   const [conversationTitle, setConversationTitle] = useState('中秋快乐');
 
   const notify = (message: string) => {
@@ -71,12 +89,14 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
     setInputValue('');
     setIsComposerExpanded(false);
     setIsHistoryOpen(false);
+    setIsWorksOpen(false);
   };
 
   const handleHistorySelect = (title: string) => {
     setConversationTitle(title);
     setIsNewConversation(title !== '中秋快乐');
     setIsHistoryOpen(false);
+    setIsWorksOpen(false);
   };
 
   return (
@@ -105,8 +125,8 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
               </button>
               {isMoreMenuOpen && (
                 <div className="design-ai-more-menu">
-                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsHistoryOpen(true); }}>历史对话</button>
-                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); notify('我的作品即将上线'); }}>我的作品</button>
+                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsWorksOpen(false); setIsHistoryOpen(true); }}>历史对话</button>
+                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsHistoryOpen(false); setIsWorksOpen(true); }}>我的作品</button>
                   <button type="button" onClick={() => { setIsMoreMenuOpen(false); notify('举报功能即将上线'); }}>举报</button>
                 </div>
               )}
@@ -242,35 +262,50 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
           </>
         )}
       </main>
-      {isHistoryOpen && (
+      {(isHistoryOpen || isWorksOpen) && (
         <>
-          <button type="button" className="design-ai-history-backdrop" onClick={() => setIsHistoryOpen(false)} aria-label="关闭历史对话" />
-          <aside className="design-ai-history-panel" aria-label="历史对话列表">
+          <button type="button" className="design-ai-history-backdrop" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(false); }} aria-label="关闭侧边列表" />
+          <aside className="design-ai-history-panel" aria-label={isHistoryOpen ? '历史对话列表' : '我的作品列表'}>
             <div className="design-ai-history-header">
-              <h2>历史对话</h2>
+              <h2>{isHistoryOpen ? '历史对话' : '我的作品'}</h2>
               <div>
                 <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
-                <button type="button" onClick={() => setIsHistoryOpen(false)} aria-label="关闭历史对话"><X size={25} strokeWidth={2} /></button>
+                <button type="button" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(false); }} aria-label="关闭侧边列表"><X size={25} strokeWidth={2} /></button>
               </div>
             </div>
-            <div className="design-ai-history-list">
-              {historyGroups.map((group) => (
-                <section key={group.date}>
-                  <h3>{group.date}</h3>
-                  {group.items.map((item, index) => (
-                    <button
-                      key={`${group.date}-${item}-${index}`}
-                      type="button"
-                      className={item === conversationTitle && !isNewConversation ? 'is-current' : ''}
-                      onClick={() => handleHistorySelect(item)}
-                    >
-                      <span>{item}</span>
-                      <MoreHorizontal size={20} strokeWidth={2.5} />
-                    </button>
-                  ))}
-                </section>
-              ))}
-            </div>
+            {isHistoryOpen ? (
+              <div className="design-ai-history-list">
+                {historyGroups.map((group) => (
+                  <section key={group.date}>
+                    <h3>{group.date}</h3>
+                    {group.items.map((item, index) => (
+                      <button
+                        key={`${group.date}-${item}-${index}`}
+                        type="button"
+                        className={item === conversationTitle && !isNewConversation ? 'is-current' : ''}
+                        onClick={() => handleHistorySelect(item)}
+                      >
+                        <span>{item}</span>
+                        <MoreHorizontal size={20} strokeWidth={2.5} />
+                      </button>
+                    ))}
+                  </section>
+                ))}
+              </div>
+            ) : (
+              <div className="design-ai-works-list">
+                {workItems.map((work) => (
+                  <button key={work.title} type="button" className="design-ai-work-item" onClick={() => notify(`打开作品：${work.title}`)}>
+                    <WorkThumbnail variant={work.variant} />
+                    <span className="design-ai-work-item__meta">
+                      <strong>{work.title}</strong>
+                      <small>{work.date}</small>
+                    </span>
+                    <MoreHorizontal size={20} strokeWidth={2.5} />
+                  </button>
+                ))}
+              </div>
+            )}
           </aside>
         </>
       )}
