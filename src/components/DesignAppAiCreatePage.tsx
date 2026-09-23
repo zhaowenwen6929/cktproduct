@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import {
   ArrowUp,
+  Box,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -9,6 +10,7 @@ import {
   MessageSquarePlus,
   MoreHorizontal,
   Paperclip,
+  SlidersHorizontal,
   Sparkles,
 } from 'lucide-react';
 
@@ -29,6 +31,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
   const [inputValue, setInputValue] = useState('');
   const [submittedPrompt, setSubmittedPrompt] = useState('');
   const [toast, setToast] = useState('');
+  const [isComposerExpanded, setIsComposerExpanded] = useState(false);
 
   const notify = (message: string) => {
     setToast(message);
@@ -43,6 +46,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
     }
     setSubmittedPrompt(prompt);
     setInputValue('');
+    setIsComposerExpanded(false);
     notify('已收到你的设计需求');
   };
 
@@ -139,21 +143,52 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
           <div className="design-ai-bottom-space" />
         </section>
 
-        <form className="design-ai-composer" onSubmit={(event) => { event.preventDefault(); handleGenerate(); }}>
-          <button type="button" className="design-ai-composer__attach" onClick={() => notify('附件功能即将上线')} aria-label="添加附件">
-            <Paperclip size={20} strokeWidth={2} />
-          </button>
-          <input
-            value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
-            placeholder="#输入您的设计需求～"
-            aria-label="输入设计需求"
-          />
-          <button type="submit" className="design-ai-composer__submit">
-            <span>生成</span>
-            <ArrowUp size={17} strokeWidth={2.4} />
-          </button>
-        </form>
+        {!isComposerExpanded ? (
+          <form className="design-ai-composer" onSubmit={(event) => { event.preventDefault(); handleGenerate(); }}>
+            <button type="button" className="design-ai-composer__attach" onClick={() => setIsComposerExpanded(true)} aria-label="添加附件">
+              <Paperclip size={20} strokeWidth={2} />
+            </button>
+            <input
+              value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              onFocus={() => setIsComposerExpanded(true)}
+              placeholder="#输入您的设计需求～"
+              aria-label="输入设计需求"
+            />
+            <button type="submit" className="design-ai-composer__submit">
+              <span>生成</span>
+              <ArrowUp size={17} strokeWidth={2.4} />
+            </button>
+          </form>
+        ) : (
+          <>
+            <button type="button" className="design-ai-input-backdrop" onClick={() => setIsComposerExpanded(false)} aria-label="关闭输入面板" />
+            <form className="design-ai-input-sheet" onClick={(event) => event.stopPropagation()} onSubmit={(event) => { event.preventDefault(); handleGenerate(); }}>
+              <button type="button" className="design-ai-input-sheet__attachment" onClick={() => notify('附件功能即将上线')} aria-label="添加图片">
+                <span>+</span>
+              </button>
+              <textarea
+                autoFocus
+                value={inputValue}
+                onChange={(event) => setInputValue(event.target.value)}
+                placeholder="描述下您想要的内容，我们为您呈现～"
+                aria-label="详细描述设计需求"
+              />
+              <div className="design-ai-input-sheet__toolbar">
+                <div className="design-ai-input-sheet__modes">
+                  <button type="button" onClick={() => notify('当前为 Agent 模式')}>
+                    <Box size={21} strokeWidth={2} />
+                    <span>Agent模式</span>
+                  </button>
+                  <button type="button" onClick={() => notify('生成参数设置即将上线')} aria-label="生成参数">
+                    <SlidersHorizontal size={21} strokeWidth={2} />
+                  </button>
+                </div>
+                <button type="submit" className="design-ai-input-sheet__generate">生成</button>
+              </div>
+            </form>
+          </>
+        )}
       </main>
       {toast && <div className="design-ai-toast" role="status">{toast}</div>}
     </div>

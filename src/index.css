@@ -242,6 +242,18 @@ button {
 .design-ai-composer__submit { display: inline-flex; align-items: center; gap: 3px; height: 50px; padding: 0 13px; border: 0; border-radius: 16px; background: linear-gradient(135deg, #e0d7ff, #d3d4ff); color: #fff; font-size: 16px; cursor: pointer; }
 .design-ai-composer__submit:hover { background: linear-gradient(135deg, #cbbcff, #b8baff); }
 .design-ai-toast { position: fixed; z-index: 30; bottom: 104px; left: 50%; transform: translateX(-50%); padding: 10px 17px; border-radius: 999px; background: rgba(30, 33, 45, .9); color: #fff; font-size: 13px; white-space: nowrap; box-shadow: 0 8px 24px rgba(25, 30, 50, .18); }
+.design-ai-input-backdrop { position: fixed; z-index: 18; inset: 0; border: 0; background: rgba(18, 20, 28, .68); cursor: default; }
+.design-ai-input-sheet { position: fixed; z-index: 20; bottom: 0; left: 50%; display: flex; flex-direction: column; width: min(100%, 520px); min-height: 285px; transform: translateX(-50%); padding: 36px 18px 15px; border-radius: 30px 30px 0 0; background: #fff; box-shadow: 0 -8px 26px rgba(30, 32, 55, .14); }
+.design-ai-input-sheet__attachment { display: grid; place-items: center; width: 100px; height: 100px; padding: 0; border: 1px solid #e5e7f1; border-radius: 17px; background: linear-gradient(145deg, #fffafd, #f5f7ff); color: #20212a; cursor: pointer; }
+.design-ai-input-sheet__attachment span { font-size: 48px; font-weight: 300; line-height: 1; }
+.design-ai-input-sheet textarea { width: 100%; min-height: 75px; flex: 1; margin: 17px 0 13px; resize: none; border: 0; outline: 0; background: transparent; color: #2c2e39; font-size: 19px; line-height: 1.55; }
+.design-ai-input-sheet textarea::placeholder { color: #9b9daa; }
+.design-ai-input-sheet__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.design-ai-input-sheet__modes { display: flex; align-items: center; gap: 8px; }
+.design-ai-input-sheet__modes button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; padding: 0 12px; border: 1px solid #ececf0; border-radius: 13px; background: #fff; color: #20232e; font-size: 15px; cursor: pointer; }
+.design-ai-input-sheet__modes button + button { width: 46px; padding: 0; }
+.design-ai-input-sheet__generate { min-width: 78px; height: 50px; padding: 0 16px; border: 0; border-radius: 16px; background: linear-gradient(135deg, #ded7ff, #cfd3ff); color: #fff; font-size: 17px; cursor: pointer; }
+.design-ai-input-sheet__generate:hover { background: linear-gradient(135deg, #c8bdff, #b8bcff); }
 
 @media (max-width: 700px) {
   .design-app-directory-button { top: 8px; left: 10px; opacity: .12; }
