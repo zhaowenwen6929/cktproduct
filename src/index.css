@@ -168,6 +168,112 @@ button {
 .design-app-template-card__bottom { position: absolute; left: -8%; right: -8%; bottom: -5px; height: 49px; border-radius: 50% 50% 0 0; background: rgba(255, 246, 207, .53); }
 .design-app-template-card--red .design-app-template-card__bottom { background: rgba(255, 231, 176, .44); }
 .design-app-template-card--blue .design-app-template-card__bottom, .design-app-template-card--purple .design-app-template-card__bottom { background: rgba(37, 44, 105, .46); }
+.design-app-feed-section { padding: 32px 0 0 18px; }
+.design-app-feed-section + .design-app-feed-section { padding-top: 39px; }
+.design-app-feed-section .design-app-section-heading h2 { font-size: 22px; }
+.design-app-section-heading--with-subtitle { align-items: flex-start; }
+.design-app-section-heading--with-subtitle p { margin: 5px 0 0; color: #999ca8; font-size: 14px; }
+.design-app-poster-list { padding-top: 16px; }
+.design-app-home-poster { position: relative; display: block; flex: 0 0 176px; height: 281px; overflow: hidden; padding: 0; border: 1px solid #e7e8ee; border-radius: 17px; background: #f4f5f8; box-shadow: 0 5px 14px rgba(31, 36, 61, .04); cursor: pointer; }
+.design-app-home-poster__art { position: absolute; inset: 0 0 42px; display: block; overflow: hidden; color: #fff; text-align: left; }
+.design-app-home-poster__menu { position: absolute; top: 9px; right: 9px; z-index: 3; display: grid; place-items: center; width: 36px; height: 25px; border-radius: 14px; background: rgba(255,255,255,.82); color: #242632; box-shadow: 0 2px 6px rgba(28, 34, 53, .05); }
+.design-app-home-poster__kicker { position: absolute; top: 12px; left: 13px; z-index: 2; color: rgba(255,255,255,.8); font-size: 7px; letter-spacing: .08em; }
+.design-app-home-poster__art strong { position: absolute; top: 39px; left: 13px; z-index: 2; max-width: 148px; font-family: Georgia, "Songti SC", serif; font-size: 27px; line-height: 1.13; letter-spacing: .02em; }
+.design-app-home-poster__subtitle { position: absolute; top: 104px; left: 14px; z-index: 2; max-width: 145px; font-size: 11px; letter-spacing: .08em; }
+.design-app-home-poster__sun { position: absolute; top: 98px; right: 21px; width: 82px; height: 82px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #fffbd1, #eec76c 68%, #ce8152); box-shadow: 0 0 28px rgba(255, 223, 144, .7); }
+.design-app-home-poster__landscape { position: absolute; right: -10%; bottom: 0; left: -10%; height: 72px; border-radius: 50% 50% 0 0; background: rgba(41, 54, 84, .55); }
+.design-app-home-poster__spark { position: absolute; right: 18px; bottom: 31px; width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: -20px -20px 0 rgba(255,255,255,.55), 33px -26px 0 rgba(255,255,255,.4); }
+.design-app-home-poster__footer { position: absolute; right: 0; bottom: 0; left: 0; display: grid; place-items: center; height: 42px; background: #f0f1fa; color: #30323e; font-size: 16px; }
+.design-app-home-poster--sky-moon { background: #f2f6f7; }
+.design-app-home-poster--sky-moon .design-app-home-poster__art { background: linear-gradient(160deg, #a8e1f7, #e1f3ed 57%, #d4c77f); color: #687481; }
+.design-app-home-poster--sky-moon .design-app-home-poster__art strong { top: 47px; left: auto; right: 13px; color: #6c7d88; font-size: 30px; font-weight: 400; writing-mode: vertical-rl; }
+.design-app-home-poster--sky-moon .design-app-home-poster__sun { top: 105px; right: 46px; width: 93px; height: 93px; }
+.design-app-home-poster--sky-moon .design-app-home-poster__landscape { background: rgba(164, 144, 87, .42); }
+.design-app-home-poster--festival-red { background: #f5f1e8; }
+.design-app-home-poster--festival-red .design-app-home-poster__art { background: linear-gradient(160deg, #fff3d3, #f3d796 58%, #d95c42); color: #9b2c20; }
+.design-app-home-poster--festival-red .design-app-home-poster__art strong, .design-app-home-poster--festival-pink .design-app-home-poster__art strong { top: 42px; left: 16px; color: #8c291e; font-size: 25px; }
+.design-app-home-poster--festival-red .design-app-home-poster__subtitle, .design-app-home-poster--festival-pink .design-app-home-poster__subtitle { top: 101px; left: 17px; color: #a43a2a; }
+.design-app-home-poster--festival-red .design-app-home-poster__sun, .design-app-home-poster--festival-pink .design-app-home-poster__sun { top: 125px; right: 54px; width: 65px; height: 65px; background: #fff2bf; box-shadow: none; }
+.design-app-home-poster--festival-red .design-app-home-poster__landscape { background: rgba(181, 53, 34, .65); }
+.design-app-home-poster--festival-pink .design-app-home-poster__art { background: linear-gradient(160deg, #bfe9e1, #d7c7c5 53%, #8dbdc7); color: #35585a; }
+.design-app-home-poster--festival-pink .design-app-home-poster__art strong { color: #365457; }
+.design-app-home-poster--festival-pink .design-app-home-poster__subtitle { color: #4e6c70; }
+.design-app-home-poster--festival-pink .design-app-home-poster__landscape { background: rgba(107, 98, 126, .4); }
+.design-app-home-poster--festival-orange .design-app-home-poster__art { background: linear-gradient(160deg, #ffb733, #ef6d22 66%, #d33927); }
+.design-app-home-poster--festival-orange .design-app-home-poster__art strong { top: 42px; font-size: 27px; }
+.design-app-home-poster--festival-orange .design-app-home-poster__sun { right: 40px; background: #ffe16d; }
+.design-app-home-poster--national-pink .design-app-home-poster__art { background: linear-gradient(160deg, #ffe5db, #f6aaa2 58%, #e67f76); }
+.design-app-home-poster--national-pink .design-app-home-poster__art strong { top: 38px; left: 16px; color: #d95762; font-family: Inter, sans-serif; font-size: 23px; }
+.design-app-home-poster--national-pink .design-app-home-poster__subtitle { color: #be5964; }
+.design-app-home-poster--national-pink .design-app-home-poster__sun { right: 47px; background: #f7d4bd; box-shadow: none; }
+.design-app-home-poster--national-mountain .design-app-home-poster__art { background: linear-gradient(165deg, #faf3dd, #eec38a 51%, #b93f2e); color: #af3f2e; }
+.design-app-home-poster--national-mountain .design-app-home-poster__art strong { top: 44px; color: #383941; }
+.design-app-home-poster--national-mountain .design-app-home-poster__landscape { background: rgba(145, 48, 35, .67); }
+.design-app-home-poster--national-red .design-app-home-poster__art { background: linear-gradient(165deg, #f8edbe, #e96339 57%, #b42827); }
+.design-app-home-poster--national-red .design-app-home-poster__art strong { top: 42px; font-family: Inter, sans-serif; font-size: 24px; }
+.design-app-home-poster--national-red .design-app-home-poster__sun { right: 44px; background: #ffdb5e; }
+.design-app-home-poster--autumn-lake .design-app-home-poster__art, .design-app-home-poster--autumn-road .design-app-home-poster__art, .design-app-home-poster--autumn-mountain .design-app-home-poster__art { background: linear-gradient(165deg, #fff4db, #d99e63 58%, #6d9f8f); color: #522c26; }
+.design-app-home-poster--autumn-road .design-app-home-poster__art { background: linear-gradient(165deg, #ffeed0, #d89152 60%, #8e533b); }
+.design-app-home-poster--autumn-mountain .design-app-home-poster__art { background: linear-gradient(165deg, #f8ebd2, #bda074 57%, #6d7362); }
+.design-app-home-poster--autumn-lake .design-app-home-poster__art strong, .design-app-home-poster--autumn-road .design-app-home-poster__art strong, .design-app-home-poster--autumn-mountain .design-app-home-poster__art strong { top: 52px; color: #5a2e28; font-family: Georgia, serif; font-size: 32px; }
+.design-app-home-poster--autumn-lake .design-app-home-poster__subtitle, .design-app-home-poster--autumn-road .design-app-home-poster__subtitle, .design-app-home-poster--autumn-mountain .design-app-home-poster__subtitle { top: 102px; color: #5e4434; }
+.design-app-home-poster--autumn-lake .design-app-home-poster__sun, .design-app-home-poster--autumn-road .design-app-home-poster__sun, .design-app-home-poster--autumn-mountain .design-app-home-poster__sun { top: 133px; right: 46px; width: 74px; height: 74px; background: #e9ac56; box-shadow: none; }
+.design-app-home-poster--autumn-lake .design-app-home-poster__landscape, .design-app-home-poster--autumn-road .design-app-home-poster__landscape, .design-app-home-poster--autumn-mountain .design-app-home-poster__landscape { background: rgba(107, 127, 104, .68); }
+.design-app-home-poster--award-gold .design-app-home-poster__art, .design-app-home-poster--award-trophy .design-app-home-poster__art { background: linear-gradient(160deg, #fff6d9, #ecbc6c 52%, #be6d31); color: #a3291e; }
+.design-app-home-poster--award-gold .design-app-home-poster__art strong, .design-app-home-poster--award-trophy .design-app-home-poster__art strong { top: 51px; color: #a3291e; font-size: 36px; }
+.design-app-home-poster--award-gold .design-app-home-poster__subtitle, .design-app-home-poster--award-trophy .design-app-home-poster__subtitle { top: 106px; color: #95321e; }
+.design-app-home-poster--award-gold .design-app-home-poster__sun, .design-app-home-poster--award-trophy .design-app-home-poster__sun { top: 146px; right: 55px; width: 63px; height: 63px; background: #d88f4c; box-shadow: none; }
+.design-app-home-poster--award-person .design-app-home-poster__art { background: linear-gradient(160deg, #d52320, #ed6b36 54%, #9c1e26); }
+.design-app-home-poster--award-person .design-app-home-poster__art strong { top: 45px; font-size: 24px; }
+.design-app-home-poster--award-person .design-app-home-poster__sun { top: 133px; right: 46px; background: #f8d24c; }
+.design-app-home-poster--award-trophy .design-app-home-poster__art { background: linear-gradient(160deg, #fff9db, #efa75c 56%, #cb5f32); }
+.design-app-home-poster--award-red .design-app-home-poster__art { background: linear-gradient(160deg, #af3028, #ec7250 57%, #8d1d2a); }
+.design-app-home-poster--award-red .design-app-home-poster__art strong { top: 52px; font-size: 35px; }
+.design-app-home-poster--award-red .design-app-home-poster__sun { top: 143px; right: 46px; background: #f8d24c; }
+.design-app-home-poster--sign-green .design-app-home-poster__art { background: linear-gradient(160deg, #dbe8d2, #b9c9b4 58%, #71826a); color: #fff; }
+.design-app-home-poster--sign-orange .design-app-home-poster__art { background: linear-gradient(160deg, #ffe0a4, #e5a265 58%, #b96a40); color: #fff; }
+.design-app-home-poster--sign-green .design-app-home-poster__art strong, .design-app-home-poster--sign-orange .design-app-home-poster__art strong { top: 51px; font-size: 24px; }
+.design-app-home-poster--sign-green .design-app-home-poster__sun, .design-app-home-poster--sign-orange .design-app-home-poster__sun { top: 142px; right: 49px; background: rgba(255,245,187,.85); box-shadow: none; }
+.design-app-home-poster--recruit-blue .design-app-home-poster__art, .design-app-home-poster--scene-blue .design-app-home-poster__art { background: linear-gradient(160deg, #d8edfa, #4e9bc7 55%, #1b6eab); }
+.design-app-home-poster--recruit-blue .design-app-home-poster__art strong, .design-app-home-poster--scene-blue .design-app-home-poster__art strong { top: 46px; font-family: Inter, sans-serif; font-size: 27px; }
+.design-app-home-poster--recruit-yellow .design-app-home-poster__art { background: linear-gradient(160deg, #fbf1cf, #efd28d 55%, #82986a); }
+.design-app-home-poster--recruit-yellow .design-app-home-poster__art strong { top: 44px; color: #343b3a; font-family: Inter, sans-serif; font-size: 25px; }
+.design-app-home-poster--xiaohongshu-pink .design-app-home-poster__art { background: linear-gradient(160deg, #ffd5cc, #f37975 53%, #e33e53); }
+.design-app-home-poster--xiaohongshu-pink .design-app-home-poster__art strong { top: 46px; color: #56252a; font-family: Inter, sans-serif; font-size: 25px; }
+.design-app-home-poster--scene-blue .design-app-home-poster__art strong { color: #fff; }
+.design-app-home-poster--scene-blue .design-app-home-poster__sun { background: #ffc75a; }
+.design-app-home-poster--festival-red .design-app-home-poster__footer, .design-app-home-poster--festival-pink .design-app-home-poster__footer { background: #f1f2fb; }
+.design-app-calendar-list { padding-top: 16px; }
+.design-app-calendar-card { display: flex; align-items: center; justify-content: space-between; flex: 0 0 235px; height: 82px; padding: 0 17px 0 21px; border: 1px solid transparent; border-radius: 18px; background: #f5f6fb; color: #242733; text-align: left; cursor: pointer; }
+.design-app-calendar-card.is-active { border-color: #5798e8; background: #e9f2ff; color: #377bd6; box-shadow: inset 0 0 0 1px rgba(73, 144, 227, .08); }
+.design-app-calendar-card span { display: flex; flex-direction: column; gap: 7px; }
+.design-app-calendar-card strong { font-size: 22px; }
+.design-app-calendar-card small { color: #8e95a7; font-size: 16px; }
+.design-app-calendar-card.is-active small { color: #5a98e1; }
+.design-app-calendar-card em { padding: 8px 12px; border-radius: 10px; background: #fff; color: #dd7882; font-size: 16px; font-style: normal; }
+.design-app-calendar-posters { padding-top: 16px; }
+.design-app-section-heading--with-subtitle + .design-app-poster-list { padding-top: 15px; }
+.design-app-scene-list { padding-top: 15px; }
+.design-app-scene-card { position: relative; display: block; flex: 0 0 176px; height: 161px; overflow: hidden; padding: 18px 15px; border: 1px solid #ebedf2; border-radius: 18px; background: #f5f6fa; color: #252936; text-align: left; cursor: pointer; }
+.design-app-scene-card strong { position: relative; z-index: 2; display: block; text-align: center; font-size: 19px; }
+.design-app-scene-card__art { position: absolute; right: 34px; bottom: 17px; left: 34px; height: 82px; border-radius: 8px; box-shadow: 0 4px 10px rgba(28, 36, 70, .1); }
+.design-app-scene-card__art--recruit-blue { background: linear-gradient(155deg, #d9f3ff, #59a3cd 62%, #1c6b9c); }
+.design-app-scene-card__art--recruit-yellow { background: linear-gradient(155deg, #fff4d4, #f1d489 62%, #b8a15c); }
+.design-app-scene-card__art--xiaohongshu-pink { background: linear-gradient(155deg, #fff0ed, #f48e85 60%, #ed3f54); }
+.design-app-scene-card__art--scene-blue { background: linear-gradient(155deg, #d7f3fe, #518ccf 63%, #254caa); }
+.design-app-filter-list { display: flex; gap: 10px; overflow-x: auto; padding: 21px 18px 17px 0; scrollbar-width: none; }
+.design-app-filter-list::-webkit-scrollbar { display: none; }
+.design-app-filter-list button { flex: none; padding: 8px 15px; border: 0; border-radius: 13px; background: #f4f5f9; color: #5c5f6d; font-size: 15px; cursor: pointer; }
+.design-app-filter-list button.is-active { background: #e6f0ff; color: #3479df; }
+.design-app-masonry-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 0 18px 35px 0; }
+.design-app-masonry-list .design-app-home-poster { width: 100%; min-width: 0; height: 228px; border-radius: 12px; }
+.design-app-masonry-list .design-app-home-poster:nth-child(2), .design-app-masonry-list .design-app-home-poster:nth-child(5) { height: 272px; }
+.design-app-masonry-list .design-app-home-poster__art { bottom: 0; }
+.design-app-masonry-list .design-app-home-poster__footer { display: none; }
+.design-app-masonry-list .design-app-home-poster__art strong { top: 38px; left: 9px; max-width: 94%; font-size: 19px; }
+.design-app-masonry-list .design-app-home-poster__subtitle { top: 85px; left: 10px; font-size: 9px; }
+.design-app-masonry-list .design-app-home-poster__sun { top: 120px; right: 22px; width: 54px; height: 54px; }
+.design-app-masonry-list .design-app-home-poster__menu { top: 7px; right: 7px; transform: scale(.86); transform-origin: top right; }
 .design-app-bottom-nav { position: fixed; z-index: 8; right: auto; bottom: 0; left: 50%; width: min(100%, 520px); transform: translateX(-50%); display: grid; grid-template-columns: repeat(5, 1fr); height: 82px; padding: 9px 18px 8px; border-top: 1px solid #f0f1f4; background: rgba(255,255,255,.96); backdrop-filter: blur(14px); }
 .design-app-bottom-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; border-radius: 50px; background: transparent; color: #1e212c; font-size: 14px; cursor: pointer; }
 .design-app-bottom-nav button.is-active { color: #3c76e5; background: #f0f0f0; }
