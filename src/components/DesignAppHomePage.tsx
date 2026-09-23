@@ -507,14 +507,15 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
           </div>
           <div className="design-app-horizontal-list design-app-recent-list">
             {([
-              { variant: 'cream', title: '中秋国庆放假通知', isInfiniteCanvas: true },
-              { variant: 'blue', title: '品牌灵感海报', isInfiniteCanvas: true },
-              { variant: 'blank', title: '秋日活动主视觉', isInfiniteCanvas: false },
-              { variant: 'moon', title: '月满人团圆', isInfiniteCanvas: true },
-              ...recentInfiniteCanvasWorkTitles.map((title) => ({ variant: 'blank' as const, title, isInfiniteCanvas: true })),
-            ] as const).map(({ variant, title, isInfiniteCanvas }) => (
-              <button type="button" className="design-app-recent-card" key={variant} onClick={() => isInfiniteCanvas ? onOpenAiCreate(title) : notify(`打开最近设计：${title}`)} aria-label={`打开${title}`}>
+              ...recentInfiniteCanvasWorkTitles.map((title) => ({ variant: 'blank' as const, title, isInfiniteCanvas: true, isNewDesign: true })),
+              { variant: 'cream', title: '中秋国庆放假通知', isInfiniteCanvas: true, isNewDesign: false },
+              { variant: 'blue', title: '品牌灵感海报', isInfiniteCanvas: true, isNewDesign: false },
+              { variant: 'blank', title: '秋日活动主视觉', isInfiniteCanvas: false, isNewDesign: false },
+              { variant: 'moon', title: '月满人团圆', isInfiniteCanvas: true, isNewDesign: false },
+            ] as const).map(({ variant, title, isInfiniteCanvas, isNewDesign }) => (
+              <button type="button" className={`design-app-recent-card${isNewDesign ? ' is-new' : ''}`} key={`${variant}-${title}`} onClick={() => isInfiniteCanvas ? onOpenAiCreate(title) : notify(`打开最近设计：${title}`)} aria-label={`打开${title}`}>
                 <RecentDesign variant={variant} />
+                {isNewDesign && <span className="design-app-recent-card__new-label">新建无限画布</span>}
                 <span className="design-app-card-menu"><MoreHorizontal size={18} strokeWidth={2.5} /></span>
               </button>
             ))}

@@ -79,7 +79,24 @@ export default function App() {
   const [autoGenerateRequest, setAutoGenerateRequest] = useState<{ requestId: number; prompt: string; attachments: GenerationAttachment[] } | null>(null);
   const [designAppSelectedWork, setDesignAppSelectedWork] = useState<string>();
   const [designAppStartsNew, setDesignAppStartsNew] = useState(false);
-  const [designAppCustomWorkTitles, setDesignAppCustomWorkTitles] = useState<string[]>([]);
+  const [designAppCustomWorkTitles, setDesignAppCustomWorkTitles] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = window.localStorage.getItem('design-app-custom-work-titles');
+      const parsed = stored ? JSON.parse(stored) : [];
+      return Array.isArray(parsed) ? parsed.filter((title): title is string => typeof title === 'string') : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('design-app-custom-work-titles', JSON.stringify(designAppCustomWorkTitles));
+    } catch {
+      // Ignore storage restrictions and keep the in-memory list working.
+    }
+  }, [designAppCustomWorkTitles]);
 
   const navigateTo = (route: AppRoute) => {
     if (typeof window === 'undefined') return;
