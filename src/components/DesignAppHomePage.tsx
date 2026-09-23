@@ -1,20 +1,30 @@
 import { useState } from 'react';
 import {
+  ArrowRight,
+  Bell,
+  Bookmark,
   Camera,
   ChevronRight,
+  ClipboardCheck,
   Crop,
   Eraser,
+  FilePenLine,
   FolderOpen,
   House,
   ImageIcon,
+  Lightbulb,
   LayoutGrid,
+  MessageSquareText,
   MoreHorizontal,
   PanelsTopLeft,
   PenLine,
   Plus,
+  ReceiptText,
   Search,
+  Settings,
   ShoppingBag,
   Sparkles,
+  UserPlus,
   WandSparkles,
   UserRound,
 } from 'lucide-react';
@@ -181,6 +191,166 @@ function SceneCard({ variant, title }: { variant: 'recruit-blue' | 'recruit-yell
   );
 }
 
+function GalleryCard({ variant, title, author, likes }: { variant: 'national' | 'id-card' | 'medical' | 'kindergarten' | 'job' | 'autumn' | 'polaroid' | 'washing'; title: string; author: string; likes: string }) {
+  return (
+    <button type="button" className={`design-app-gallery-card design-app-gallery-card--${variant}`}>
+      <span className="design-app-gallery-art">
+        <span className="design-app-gallery-art__copy">{variant === 'national' ? '77' : variant === 'medical' ? '角膜曲率与\n近视手术' : variant === 'job' ? '诚聘英才' : variant === 'autumn' ? '秋分' : ''}</span>
+        <span className="design-app-gallery-art__subject" />
+        <span className="design-app-gallery-art__badge">{variant === 'id-card' || variant === 'kindergarten' ? '证件照' : ''}</span>
+      </span>
+      <span className="design-app-gallery-title">{title}</span>
+      <span className="design-app-gallery-meta"><span className="design-app-gallery-avatar" />{author}<span className="design-app-gallery-like">♡ {likes}</span></span>
+    </button>
+  );
+}
+
+function TopicPills({ items, active = 0, onSelect }: { items: string[]; active?: number; onSelect: (item: string) => void }) {
+  return (
+    <div className="design-app-topic-pills">
+      {items.map((item, index) => (
+        <button key={item} type="button" className={index === active ? 'is-active' : ''} onClick={() => onSelect(item)}>{item}</button>
+      ))}
+    </div>
+  );
+}
+
+function DesignAppTemplatesPage({ notify }: { notify: (message: string) => void }) {
+  return (
+    <section className="design-app-subpage design-app-templates-page">
+      <div className="design-app-template-toolbar">
+        <div className="design-app-template-tabs"><strong>模板</strong><span>灵感</span></div>
+        <label className="design-app-subpage-search"><Search size={21} /><input placeholder="输入关键词搜索想要的内容" /><Camera size={21} /></label>
+      </div>
+      <div className="design-app-template-topics">
+        <button className="is-active" type="button" onClick={() => notify('已切换到发现')}>发现⌕</button>
+        <button type="button" onClick={() => notify('已切换到AI创意玩法')}>🧑🏻‍🎨 AI创意玩法</button>
+        <button type="button" onClick={() => notify('已切换到电商')}>电商🛍️</button>
+        <button type="button" onClick={() => notify('已切换到海报')}>海报</button>
+        <button type="button" onClick={() => notify('已切换到封面一键换脸')}>🔥封面一键换脸</button>
+      </div>
+      <div className="design-app-template-gallery">
+        <GalleryCard variant="national" title="test" author="进" likes="1" />
+        <GalleryCard variant="id-card" title="小学证件照" author="灵感" likes="2" />
+        <GalleryCard variant="kindergarten" title="幼儿园入园照" author="小美" likes="8" />
+        <GalleryCard variant="medical" title="测试" author="CMER" likes="0" />
+        <GalleryCard variant="job" title="诚聘英才" author="创客贴" likes="3" />
+        <GalleryCard variant="autumn" title="秋日海报" author="小秋" likes="5" />
+      </div>
+    </section>
+  );
+}
+
+function DesignAppAiToolsPage({ notify, onOpenAiCreate }: { notify: (message: string) => void; onOpenAiCreate: () => void }) {
+  const startItems = [
+    { label: '创建设计', icon: Plus, action: () => notify('开始创建新设计') },
+    { label: 'AI创作', icon: PenLine, action: onOpenAiCreate, badge: '全新 2.0' },
+    { label: '智能设计', icon: WandSparkles, action: () => notify('智能设计功能即将上线') },
+    { label: 'AI文案', icon: PenLine, action: () => notify('AI文案功能即将上线'), badge: 'DeepSeek' },
+  ];
+
+  return (
+    <section className="design-app-subpage design-app-ai-tools-page">
+      <div className="design-app-ai-tools-heading">你想要设计什么？</div>
+      <div className="design-app-ai-tools-input"><input placeholder="说说你想要设计什么？" /><button type="button" onClick={() => notify('请输入你的设计需求')}>生成</button></div>
+      <h2>开始创作</h2>
+      <div className="design-app-start-grid">
+        {startItems.map(({ label, icon: Icon, action, badge }) => (
+          <button key={label} type="button" onClick={action} className="design-app-start-item">
+            {badge && <span className="design-app-start-badge">{badge}</span>}
+            <span><Icon size={31} strokeWidth={1.8} /></span>
+            <strong>{label}</strong>
+          </button>
+        ))}
+      </div>
+      <div className="design-app-tool-feed-section">
+        <div className="design-app-section-heading"><h2>百变艺术写真📸</h2><button type="button" onClick={() => notify('更多艺术写真即将上线')} aria-label="查看全部艺术写真"><ChevronRight size={24} /></button></div>
+        <TopicPills items={['全部', '🎞️ 人物写真', '🦌 萌宠特辑', '🎠 趣味玩法']} onSelect={(item) => notify(`已切换到${item}`)} />
+        <div className="design-app-horizontal-list design-app-ai-gallery-list">
+          <GalleryCard variant="id-card" title="AI玩泡泡" author="AI Lab" likes="12" />
+          <GalleryCard variant="polaroid" title="Q版3D黏土风格公仔" author="AI Lab" likes="6" />
+          <GalleryCard variant="washing" title="大象逛洗衣房" author="灵感" likes="4" />
+        </div>
+      </div>
+      <div className="design-app-tool-feed-section">
+        <div className="design-app-section-heading"><h2>AI证件照</h2><button type="button" onClick={() => notify('更多证件照工具即将上线')} aria-label="查看全部证件照工具"><ChevronRight size={24} /></button></div>
+        <TopicPills items={['个人形象照', '女士证件照', '男士证件照', '女童证件照', '男童证件照']} onSelect={(item) => notify(`已切换到${item}`)} />
+        <div className="design-app-horizontal-list design-app-ai-gallery-list">
+          <GalleryCard variant="id-card" title="个人形象照" author="AI Lab" likes="6" />
+          <GalleryCard variant="kindergarten" title="女士证件照" author="灵感" likes="2" />
+          <GalleryCard variant="id-card" title="男士证件照" author="AI Lab" likes="4" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DesignAppResourcesPage({ notify }: { notify: (message: string) => void }) {
+  const resources = [
+    { title: '品牌素材', desc: 'Logo、字体、色板统一管理', icon: Bookmark, className: 'brand' },
+    { title: '图标插画', desc: '精选插画与图标资源', icon: Sparkles, className: 'illustration' },
+    { title: '图片资源', desc: '高清图片和背景素材', icon: ImageIcon, className: 'image' },
+    { title: '我的上传', desc: '管理你上传的全部素材', icon: FolderOpen, className: 'upload' },
+  ];
+
+  return (
+    <section className="design-app-subpage design-app-resources-page">
+      <div className="design-app-resources-heading"><h1>资源</h1><button type="button" onClick={() => notify('资源搜索即将上线')} aria-label="搜索资源"><Search size={24} /></button></div>
+      <label className="design-app-resource-search"><Search size={21} /><input placeholder="搜索图片、插画、字体、图标" /></label>
+      <div className="design-app-resource-banner"><span>灵感素材库</span><strong>为每一次创作<br />准备好灵感</strong><i>✦</i></div>
+      <div className="design-app-resource-grid">
+        {resources.map(({ title, desc, icon: Icon, className }) => (
+          <button key={title} type="button" className={`design-app-resource-card design-app-resource-card--${className}`} onClick={() => notify(`打开${title}`)}>
+            <span><Icon size={27} strokeWidth={1.8} /></span>
+            <strong>{title}</strong>
+            <small>{desc}</small>
+            <ArrowRight size={18} />
+          </button>
+        ))}
+      </div>
+      <div className="design-app-resource-section-title"><h2>最近使用</h2><button type="button" onClick={() => notify('最近使用即将上线')}><ChevronRight size={23} /></button></div>
+      <div className="design-app-resource-recent">
+        {['我的品牌色板', '中秋节背景', '简约线性图标', '节日贴纸'].map((item, index) => (
+          <button type="button" key={item} onClick={() => notify(`打开${item}`)}><span className={`resource-recent-art art-${index + 1}`} /><strong>{item}</strong></button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DesignAppProfilePage({ notify }: { notify: (message: string) => void }) {
+  const profileItems = [
+    { label: '审批管理', icon: ClipboardCheck, badge: '1' },
+    { label: '邀请成员', icon: UserPlus },
+    { label: '营销任务', icon: PresentationIcon },
+    { label: '我的灵感', icon: Lightbulb },
+    { label: '我的订单', icon: ReceiptText },
+    { label: '意见反馈', icon: MessageSquareText },
+    { label: '我的收藏', icon: Bookmark },
+    { label: '提模板需求', icon: FilePenLine },
+  ];
+
+  return (
+    <section className="design-app-subpage design-app-profile-page">
+      <div className="design-app-profile-top-actions"><button type="button" onClick={() => notify('通知中心即将上线')}><Bell size={27} /><i>5</i></button><button type="button" onClick={() => notify('设置即将上线')}><Settings size={27} /></button></div>
+      <div className="design-app-profile-user"><span className="design-app-profile-avatar">🐱</span><div><strong>zww <em>管理员</em></strong><p>北京艺源酷</p></div><button type="button" onClick={() => notify('切换团队即将上线')}>⇄</button></div>
+      <div className="design-app-member-banner"><div><strong>▾ 旗舰版</strong><p>2026-12-31到期</p><button type="button" onClick={() => notify('续费页面即将上线')}>立即续费</button></div><span>✦</span></div>
+      <div className="design-app-member-actions">
+        {['团队概览', '品牌设置', '成员管理', '团队设置'].map((label, index) => <button key={label} type="button" onClick={() => notify(`打开${label}`)}><span>{['▣', '⚙', '♟', '♟'][index]}</span>{label}</button>)}
+      </div>
+      <div className="design-app-profile-list">
+        {profileItems.map(({ label, icon: Icon, badge }) => (
+          <button key={label} type="button" onClick={() => notify(`打开${label}`)}><Icon size={25} strokeWidth={1.8} /><strong>{label}</strong>{badge && <em>{badge}</em>}<ChevronRight size={21} /></button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PresentationIcon({ size, strokeWidth }: { size?: number; strokeWidth?: number }) {
+  return <svg width={size ?? 24} height={size ?? 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth ?? 2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4M7 9h10M7 12h6" /></svg>;
+}
+
 export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignAppHomePageProps) {
   const [searchValue, setSearchValue] = useState('');
   const [activeNav, setActiveNav] = useState('首页');
@@ -208,6 +378,8 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignA
           <span className="design-app-status-icons"><span className="status-signal" /><span className="status-wifi" /><span className="status-battery">90</span></span>
         </div>
 
+        {activeNav === '首页' ? (
+          <>
         <section className="design-app-hero">
           <div className="design-app-search-row">
             <label className="design-app-search-box">
@@ -395,6 +567,17 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignA
             <HomePosterCard variant="national-red" title="月满山河" subtitle="共庆华诞" footer="" onSelect={() => notify('打开模板')} />
           </div>
         </section>
+
+          </>
+        ) : activeNav === '模板' ? (
+          <DesignAppTemplatesPage notify={notify} />
+        ) : activeNav === 'AI工具' ? (
+          <DesignAppAiToolsPage notify={notify} onOpenAiCreate={onOpenAiCreate} />
+        ) : activeNav === '资源' ? (
+          <DesignAppResourcesPage notify={notify} />
+        ) : (
+          <DesignAppProfilePage notify={notify} />
+        )}
 
         <nav className="design-app-bottom-nav" aria-label="主导航">
           {navItems.map(({ label, icon: Icon }) => (

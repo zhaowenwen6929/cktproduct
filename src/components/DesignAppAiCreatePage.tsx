@@ -269,7 +269,9 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
             <div className="design-ai-history-header">
               <h2>{isHistoryOpen ? '历史对话' : '我的作品'}</h2>
               <div>
-                <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
+                {isHistoryOpen && (
+                  <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
+                )}
                 <button type="button" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(false); }} aria-label="关闭侧边列表"><X size={25} strokeWidth={2} /></button>
               </div>
             </div>
