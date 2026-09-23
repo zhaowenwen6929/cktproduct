@@ -5,7 +5,6 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
-  ChevronRight,
   Copy,
   Menu,
   MessageSquarePlus,
@@ -111,7 +110,6 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
   const [isComposerExpanded, setIsComposerExpanded] = useState(false);
   const [isNewConversation, setIsNewConversation] = useState(initialNewConversation);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isWorksOpen, setIsWorksOpen] = useState(false);
   const [activeWorkTitle, setActiveWorkTitle] = useState(initialWork.title);
   const [conversationTitle, setConversationTitle] = useState(initialNewConversation ? '' : initialWorkTitle ?? '中秋快乐');
@@ -140,14 +138,12 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
     setSubmittedPrompt('');
     setInputValue('');
     setIsComposerExpanded(false);
-    setIsHistoryOpen(false);
     setIsWorksOpen(false);
   };
 
   const handleHistorySelect = (title: string) => {
     setConversationTitle(title);
     setIsNewConversation(false);
-    setIsHistoryOpen(false);
     setIsWorksOpen(false);
   };
 
@@ -156,8 +152,6 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
     setConversationTitle(work.title);
     setSubmittedPrompt('');
     setIsNewConversation(false);
-    setIsHistoryOpen(false);
-    setIsWorksOpen(false);
     notify(`已切换到作品：${work.title}`);
   };
 
@@ -187,8 +181,8 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
               </button>
               {isMoreMenuOpen && (
                 <div className="design-ai-more-menu">
-                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsWorksOpen(false); setIsHistoryOpen(true); }}>历史对话</button>
-                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsHistoryOpen(false); setIsWorksOpen(true); }}>我的作品</button>
+                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsWorksOpen(true); }}>历史对话</button>
+                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsWorksOpen(true); }}>我的作品</button>
                   <button type="button" onClick={() => { setIsMoreMenuOpen(false); notify('举报功能即将上线'); }}>举报</button>
                 </div>
               )}
@@ -324,59 +318,50 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
           </>
         )}
       </main>
-      {(isHistoryOpen || isWorksOpen) && (
+      {isWorksOpen && (
         <>
-          <button type="button" className="design-ai-history-backdrop" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(false); }} aria-label="关闭侧边列表" />
-          <aside className="design-ai-history-panel" aria-label={isHistoryOpen ? '历史对话列表' : '我的作品列表'}>
+          <button type="button" className="design-ai-history-backdrop" onClick={() => setIsWorksOpen(false)} aria-label="关闭侧边列表" />
+          <aside className="design-ai-history-panel" aria-label="我的作品与对话列表">
             <div className="design-ai-history-header">
-              <div className="design-ai-history-header__title">
-                {isHistoryOpen && <button type="button" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(true); }} aria-label="返回我的作品"><ChevronLeft size={24} strokeWidth={2.2} /></button>}
-                <div><h2>{isHistoryOpen ? '历史对话' : '我的作品'}</h2>{isHistoryOpen && <p>当前设计：{activeWork.title}</p>}</div>
-              </div>
+              <div className="design-ai-history-header__title"><div><h2>我的作品</h2><p>选择设计后展开对应的对话历史</p></div></div>
               <div>
-                {isHistoryOpen && (
-                  <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
-                )}
-                <button type="button" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(false); }} aria-label="关闭侧边列表"><X size={25} strokeWidth={2} /></button>
+                <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
+                <button type="button" onClick={() => setIsWorksOpen(false)} aria-label="关闭侧边列表"><X size={25} strokeWidth={2} /></button>
               </div>
             </div>
-            {isHistoryOpen ? (
-              <div className="design-ai-history-list">
-                {activeWork.historyGroups.map((group) => (
-                  <section key={group.date}>
-                    <h3>{group.date}</h3>
-                    {group.items.map((item, index) => (
-                      <button
-                        key={`${group.date}-${item}-${index}`}
-                        type="button"
-                        className={item === conversationTitle && !isNewConversation ? 'is-current' : ''}
-                        onClick={() => handleHistorySelect(item)}
-                      >
-                        <span>{item}</span>
-                        <MoreHorizontal size={20} strokeWidth={2.5} />
-                      </button>
-                    ))}
-                  </section>
-                ))}
-              </div>
-            ) : (
-              <div className="design-ai-works-list">
-                <button type="button" className="design-ai-current-work-link" onClick={() => { setIsWorksOpen(false); setIsHistoryOpen(true); }}>
-                  <span><strong>{activeWork.title}</strong><small>查看当前设计的对话历史</small></span>
-                  <ChevronRight size={21} strokeWidth={2.2} />
-                </button>
-                {availableWorkItems.map((work) => (
-                  <button key={work.title} type="button" className={`design-ai-work-item${work.title === activeWork.title ? ' is-current' : ''}`} onClick={() => handleWorkSelect(work)}>
-                    <WorkThumbnail variant={work.variant} />
-                    <span className="design-ai-work-item__meta">
-                      <strong>{work.title}</strong>
-                      <small>{work.date}</small>
-                    </span>
-                    <MoreHorizontal size={20} strokeWidth={2.5} />
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="design-ai-works-list">
+              {availableWorkItems.map((work) => {
+                const isCurrentWork = work.title === activeWork.title;
+                return (
+                  <div key={work.title} className={`design-ai-work-entry${isCurrentWork ? ' is-expanded' : ''}`}>
+                    <button type="button" className={`design-ai-work-item${isCurrentWork ? ' is-current' : ''}`} onClick={() => handleWorkSelect(work)}>
+                      <WorkThumbnail variant={work.variant} />
+                      <span className="design-ai-work-item__meta">
+                        <strong>{work.title}</strong>
+                        <small>{work.date}</small>
+                      </span>
+                      <MoreHorizontal size={20} strokeWidth={2.5} />
+                    </button>
+                    {isCurrentWork && (
+                      <div className="design-ai-work-conversations">
+                        <div className="design-ai-work-conversations__label">对话历史</div>
+                        {work.historyGroups.map((group) => (
+                          <section key={group.date}>
+                            <h3>{group.date}</h3>
+                            {group.items.map((item, index) => (
+                              <button key={`${group.date}-${item}-${index}`} type="button" className={item === conversationTitle && !isNewConversation ? 'is-current' : ''} onClick={() => handleHistorySelect(item)}>
+                                <span>{item}</span>
+                                <MoreHorizontal size={17} strokeWidth={2.4} />
+                              </button>
+                            ))}
+                          </section>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </aside>
         </>
       )}
