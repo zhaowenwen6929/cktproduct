@@ -71,6 +71,56 @@ const workItems: AiWorkItem[] = [
       { date: '03月10日', items: ['麦角硫因精华水介绍'] },
     ],
   },
+  {
+    title: '春日上新活动', date: '03月08日', variant: 'poster', topic: '春日上新活动海报', audience: '店铺顾客',
+    historyGroups: [
+      { date: '03月08日', items: ['春日上新活动'] },
+      { date: '03月07日', items: ['春季新品宣传', '制作上新海报'] },
+    ],
+  },
+  {
+    title: '店铺开业邀请函', date: '03月05日', variant: 'cream', topic: '店铺开业邀请函', audience: '到店客户',
+    historyGroups: [
+      { date: '03月05日', items: ['店铺开业邀请函'] },
+      { date: '03月03日', items: ['开业活动文案'] },
+      { date: '03月01日', items: ['参考门店风格制作'] },
+    ],
+  },
+  {
+    title: '招聘宣传海报', date: '02月28日', variant: 'blue', topic: '招聘宣传海报', audience: '求职者',
+    historyGroups: [
+      { date: '02月28日', items: ['招聘宣传海报'] },
+      { date: '02月26日', items: ['诚聘英才海报', '招聘信息排版'] },
+    ],
+  },
+  {
+    title: '每日早安分享', date: '02月22日', variant: 'moon', topic: '每日早安分享图', audience: '社交媒体粉丝',
+    historyGroups: [
+      { date: '02月22日', items: ['每日早安分享'] },
+      { date: '02月20日', items: ['温暖治愈风早安图'] },
+    ],
+  },
+  {
+    title: '品牌发布会主视觉', date: '02月18日', variant: 'blue', topic: '品牌发布会主视觉', audience: '参会嘉宾',
+    historyGroups: [
+      { date: '02月18日', items: ['品牌发布会主视觉'] },
+      { date: '02月16日', items: ['科技感发布会设计', '品牌主视觉方案'] },
+    ],
+  },
+  {
+    title: '教师节祝福海报', date: '02月12日', variant: 'cream', topic: '教师节祝福海报', audience: '老师与家长',
+    historyGroups: [
+      { date: '02月12日', items: ['教师节祝福海报'] },
+      { date: '02月10日', items: ['感恩教师节文案'] },
+    ],
+  },
+  {
+    title: '年终总结汇报', date: '01月30日', variant: 'blank', topic: '年终总结汇报', audience: '公司团队',
+    historyGroups: [
+      { date: '01月30日', items: ['年终总结汇报'] },
+      { date: '01月28日', items: ['年度数据可视化', '汇报封面设计'] },
+    ],
+  },
 ];
 
 function CompletedStep({ children }: { children: ReactNode }) {
