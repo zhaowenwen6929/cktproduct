@@ -5,6 +5,7 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Copy,
   Menu,
   MessageSquarePlus,
@@ -328,7 +329,10 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
           <button type="button" className="design-ai-history-backdrop" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(false); }} aria-label="关闭侧边列表" />
           <aside className="design-ai-history-panel" aria-label={isHistoryOpen ? '历史对话列表' : '我的作品列表'}>
             <div className="design-ai-history-header">
-              <h2>{isHistoryOpen ? '历史对话' : '我的作品'}</h2>
+              <div className="design-ai-history-header__title">
+                {isHistoryOpen && <button type="button" onClick={() => { setIsHistoryOpen(false); setIsWorksOpen(true); }} aria-label="返回我的作品"><ChevronLeft size={24} strokeWidth={2.2} /></button>}
+                <div><h2>{isHistoryOpen ? '历史对话' : '我的作品'}</h2>{isHistoryOpen && <p>当前设计：{activeWork.title}</p>}</div>
+              </div>
               <div>
                 {isHistoryOpen && (
                   <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
@@ -357,6 +361,10 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
               </div>
             ) : (
               <div className="design-ai-works-list">
+                <button type="button" className="design-ai-current-work-link" onClick={() => { setIsWorksOpen(false); setIsHistoryOpen(true); }}>
+                  <span><strong>{activeWork.title}</strong><small>查看当前设计的对话历史</small></span>
+                  <ChevronRight size={21} strokeWidth={2.2} />
+                </button>
                 {availableWorkItems.map((work) => (
                   <button key={work.title} type="button" className={`design-ai-work-item${work.title === activeWork.title ? ' is-current' : ''}`} onClick={() => handleWorkSelect(work)}>
                     <WorkThumbnail variant={work.variant} />
