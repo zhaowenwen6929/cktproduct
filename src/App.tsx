@@ -1501,7 +1501,7 @@ export default function App() {
           setDesignAppStartsNew(false);
         } else {
           const nextTitle = designAppCustomWorkTitles.length === 0 ? '未命名无限画布' : `未命名无限画布 ${designAppCustomWorkTitles.length + 1}`;
-          setDesignAppCustomWorkTitles((titles) => [...titles, nextTitle]);
+          setDesignAppCustomWorkTitles((titles) => [nextTitle, ...titles]);
           setDesignAppSelectedWork(nextTitle);
           setDesignAppStartsNew(true);
         }

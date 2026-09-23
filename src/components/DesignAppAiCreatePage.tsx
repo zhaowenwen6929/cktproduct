@@ -93,7 +93,6 @@ function WorkThumbnail({ variant }: { variant: string }) {
 
 export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConversation = false, additionalWorkTitles = [] }: DesignAppAiCreatePageProps) {
   const availableWorkItems = [
-    ...workItems,
     ...additionalWorkTitles.map((title): AiWorkItem => ({
       title,
       date: '刚刚',
@@ -102,6 +101,7 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
       audience: '项目团队',
       historyGroups: [{ date: '刚刚', items: [title] }],
     })),
+    ...workItems,
   ];
   const initialWork = availableWorkItems.find((work) => work.title === initialWorkTitle) ?? workItems[0];
   const [inputValue, setInputValue] = useState('');
