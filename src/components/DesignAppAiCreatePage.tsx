@@ -315,7 +315,7 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
           <button type="button" className="design-ai-history-backdrop" onClick={() => setIsWorksOpen(false)} aria-label="关闭侧边列表" />
           <aside className="design-ai-history-panel" aria-label="我的作品与对话列表">
             <div className="design-ai-history-header">
-              <div className="design-ai-history-header__title"><div><h2>我的作品</h2><p>点击设计查看相关内容</p></div></div>
+              <div className="design-ai-history-header__title"><div><h2>我的作品</h2></div></div>
               <div>
                 <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
                 <button type="button" onClick={() => setIsWorksOpen(false)} aria-label="关闭侧边列表"><X size={25} strokeWidth={2} /></button>
