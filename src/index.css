@@ -277,8 +277,8 @@ button {
 .design-app-subpage { min-height: calc(100vh - 58px); padding: 0 18px 110px; background: #fff; }
 .design-app-template-toolbar { display: flex; align-items: center; gap: 18px; padding: 22px 0 13px; }
 .design-app-template-tabs { display: flex; align-items: center; gap: 26px; flex: none; color: #686b78; font-size: 24px; }
-.design-app-template-tabs strong { color: #252833; font-weight: 700; }
-.design-app-template-tabs span { font-weight: 700; }
+.design-app-template-tabs button { padding: 0; border: 0; background: transparent; color: #686b78; font-size: inherit; font-weight: 700; cursor: pointer; }
+.design-app-template-tabs button.is-active { color: #252833; }
 .design-app-subpage-search { display: flex; align-items: center; flex: 1; min-width: 0; height: 54px; padding: 0 13px 0 15px; border-radius: 16px; background: #f5f6fb; color: #20232f; }
 .design-app-subpage-search input { min-width: 0; flex: 1; margin-left: 12px; border: 0; outline: 0; background: transparent; color: #31333d; font-size: 15px; }
 .design-app-subpage-search input::placeholder { color: #8d92a1; }
@@ -321,6 +321,26 @@ button {
 .design-app-gallery-meta { display: flex; align-items: center; gap: 7px; margin: 0 8px; color: #9598a3; font-size: 14px; }
 .design-app-gallery-avatar { width: 23px; height: 23px; border-radius: 50%; background: linear-gradient(135deg, #ccb5a5, #69768e); }
 .design-app-gallery-like { margin-left: auto; color: #252832; }
+.design-app-template-category-row { display: flex; gap: 28px; overflow-x: auto; padding: 17px 0 13px; scrollbar-width: none; white-space: nowrap; }
+.design-app-template-category-row::-webkit-scrollbar { display: none; }
+.design-app-template-category-row button { position: relative; flex: none; padding: 0 0 11px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #626571; font-size: 17px; cursor: pointer; }
+.design-app-template-category-row button.is-active { border-color: #367fe7; color: #252833; font-weight: 700; }
+.design-app-template-filter-row { display: flex; align-items: center; gap: 19px; padding: 3px 0 17px; overflow-x: auto; scrollbar-width: none; }
+.design-app-template-filter-row::-webkit-scrollbar { display: none; }
+.design-app-template-filter-row button { flex: none; padding: 0; border: 0; background: transparent; color: #555966; font-size: 15px; cursor: pointer; }
+.design-app-template-filter-row button:last-child { margin-left: auto; }
+.design-app-template-vip-banner { display: flex; align-items: center; gap: 9px; min-height: 39px; margin: 0 0 18px; padding: 0 9px; border-radius: 12px; background: linear-gradient(90deg, #fff9ec, #fff2df); color: #989397; font-size: 11px; }
+.design-app-template-vip-banner > span { color: #9d8857; font-size: 10px; font-weight: 800; }
+.design-app-template-vip-banner p { flex: 1; margin: 0; }
+.design-app-template-vip-banner button { display: inline-flex; align-items: center; gap: 2px; padding: 0; border: 0; background: transparent; color: #7f7361; font-size: 12px; white-space: nowrap; cursor: pointer; }
+.design-app-template-discovery-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; padding-bottom: 30px; }
+.design-app-template-discovery-grid .design-app-home-poster { width: 100%; min-width: 0; height: 276px; border-radius: 13px; }
+.design-app-template-discovery-grid .design-app-home-poster__art { bottom: 0; }
+.design-app-template-discovery-grid .design-app-home-poster__footer { display: none; }
+.design-app-template-discovery-grid .design-app-home-poster__menu { top: 8px; right: 7px; transform: scale(.8); transform-origin: top right; }
+.design-app-template-discovery-grid .design-app-home-poster__art strong { top: 39px; left: 9px; max-width: 96%; font-size: 19px; }
+.design-app-template-discovery-grid .design-app-home-poster__subtitle { top: 80px; left: 10px; font-size: 9px; }
+.design-app-template-discovery-grid .design-app-home-poster__sun { top: 128px; right: 18px; width: 53px; height: 53px; }
 
 .design-app-ai-tools-page { padding-top: 39px; background: linear-gradient(180deg, #fff 0%, #fff 76%, #f7f9ff 100%); }
 .design-app-ai-tools-heading { margin: 0 0 25px; font-size: 31px; font-weight: 400; letter-spacing: -.06em; }

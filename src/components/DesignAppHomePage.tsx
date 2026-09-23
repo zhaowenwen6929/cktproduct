@@ -216,27 +216,61 @@ function TopicPills({ items, active = 0, onSelect }: { items: string[]; active?:
 }
 
 function DesignAppTemplatesPage({ notify }: { notify: (message: string) => void }) {
+  const [activeTab, setActiveTab] = useState<'模板' | '灵感'>('模板');
+
   return (
     <section className="design-app-subpage design-app-templates-page">
       <div className="design-app-template-toolbar">
-        <div className="design-app-template-tabs"><strong>模板</strong><span>灵感</span></div>
+        <div className="design-app-template-tabs">
+          <button type="button" className={activeTab === '模板' ? 'is-active' : ''} onClick={() => setActiveTab('模板')}>模板</button>
+          <button type="button" className={activeTab === '灵感' ? 'is-active' : ''} onClick={() => setActiveTab('灵感')}>灵感</button>
+        </div>
         <label className="design-app-subpage-search"><Search size={21} /><input placeholder="输入关键词搜索想要的内容" /><Camera size={21} /></label>
       </div>
-      <div className="design-app-template-topics">
-        <button className="is-active" type="button" onClick={() => notify('已切换到发现')}>发现⌕</button>
-        <button type="button" onClick={() => notify('已切换到AI创意玩法')}>🧑🏻‍🎨 AI创意玩法</button>
-        <button type="button" onClick={() => notify('已切换到电商')}>电商🛍️</button>
-        <button type="button" onClick={() => notify('已切换到海报')}>海报</button>
-        <button type="button" onClick={() => notify('已切换到封面一键换脸')}>🔥封面一键换脸</button>
-      </div>
-      <div className="design-app-template-gallery">
-        <GalleryCard variant="national" title="test" author="进" likes="1" />
-        <GalleryCard variant="id-card" title="小学证件照" author="灵感" likes="2" />
-        <GalleryCard variant="kindergarten" title="幼儿园入园照" author="小美" likes="8" />
-        <GalleryCard variant="medical" title="测试" author="CMER" likes="0" />
-        <GalleryCard variant="job" title="诚聘英才" author="创客贴" likes="3" />
-        <GalleryCard variant="autumn" title="秋日海报" author="小秋" likes="5" />
-      </div>
+      {activeTab === '模板' ? (
+        <>
+          <div className="design-app-template-category-row">
+            {['全部', '海报', '社交', '新媒体', '抖音', '电商', '定制品', '印刷'].map((item, index) => (
+              <button key={item} type="button" className={index === 0 ? 'is-active' : ''} onClick={() => notify(`已切换到${item}`)}>{item}</button>
+            ))}
+          </div>
+          <TopicPills items={['热门精选', '手机海报', '全屏海报', '每日一签', '邀请函', '长图海报']} onSelect={(item) => notify(`已切换到${item}`)} />
+          <div className="design-app-template-filter-row">
+            {['行业⌄', '用途⌄', '颜色⌄', '更多⌄'].map((item) => <button key={item} type="button" onClick={() => notify(`${item.replace('⌄', '')}筛选即将上线`)}>{item}</button>)}
+            <button type="button" onClick={() => notify('排序方式即将上线')}>综合⌄</button>
+          </div>
+          <div className="design-app-template-vip-banner"><span>VIP</span><p>升级会员，解锁会员模板免费商用，低至1分钱/天</p><button type="button" onClick={() => notify('会员升级即将上线')}>立即升级 <ChevronRight size={17} /></button></div>
+          <div className="design-app-template-discovery-grid">
+            <HomePosterCard variant="festival-red" title="中秋国庆" subtitle="放假通知" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="autumn-lake" title="秋分" subtitle="AUTUMNAL EQUINOX" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="festival-pink" title="喜迎中秋" subtitle="欢度国庆" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="national-red" title="月满中秋" subtitle="团圆佳节" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="autumn-road" title="秋分" subtitle="AUTUMNAL EQUINOX" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="award-gold" title="喜迎中秋" subtitle="中秋佳节" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="national-red" title="月满山河" subtitle="共庆华诞" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="festival-orange" title="月满中秋" subtitle="MOON FESTIVAL" footer="" onSelect={() => notify('打开模板')} />
+            <HomePosterCard variant="autumn-mountain" title="秋日合集" subtitle="一叶知秋" footer="" onSelect={() => notify('打开模板')} />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="design-app-template-topics">
+            <button className="is-active" type="button" onClick={() => notify('已切换到发现')}>发现⌕</button>
+            <button type="button" onClick={() => notify('已切换到AI创意玩法')}>🧑🏻‍🎨 AI创意玩法</button>
+            <button type="button" onClick={() => notify('已切换到电商')}>电商🛍️</button>
+            <button type="button" onClick={() => notify('已切换到海报')}>海报</button>
+            <button type="button" onClick={() => notify('已切换到封面一键换脸')}>🔥封面一键换脸</button>
+          </div>
+          <div className="design-app-template-gallery">
+            <GalleryCard variant="national" title="test" author="进" likes="1" />
+            <GalleryCard variant="id-card" title="小学证件照" author="灵感" likes="2" />
+            <GalleryCard variant="kindergarten" title="幼儿园入园照" author="小美" likes="8" />
+            <GalleryCard variant="medical" title="测试" author="CMER" likes="0" />
+            <GalleryCard variant="job" title="诚聘英才" author="创客贴" likes="3" />
+            <GalleryCard variant="autumn" title="秋日海报" author="小秋" likes="5" />
+          </div>
+        </>
+      )}
     </section>
   );
 }
