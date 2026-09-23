@@ -6,10 +6,11 @@ import { Canvas } from './components/Canvas';
 import { PluginPrototypePage } from './components/PluginPrototypePage';
 import { ConnectorAuthPrototypePage } from './components/ConnectorAuthPrototypePage';
 import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
+import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app';
 
 type ExportRequest =
   | {
@@ -52,6 +53,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
   if (pathname === '/connector-auth') return '/connector-auth';
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
+  if (pathname === '/design-app') return '/design-app';
   return '/';
 };
 
@@ -1298,6 +1300,10 @@ export default function App() {
         title: 'Agent skills 创作首页',
         description: '创客贴首页原型，展示 Agent skills 入口、技能表单和无限画布生成流程。',
       },
+      '/design-app': {
+        title: '创客贴设计 APP',
+        description: '创客贴设计 APP 首页，提供设计创建、AI 工具和模板推荐入口。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1334,6 +1340,13 @@ export default function App() {
         title: 'Agent skills 首页',
         description: '进入创作首页，浏览技能分类、填写技能参数，并将需求带入无限画布生成。',
         href: '/agent-skills-home' as AppRoute,
+        status: '新增入口',
+        available: true,
+      },
+      {
+        title: '创客贴设计 APP',
+        description: '参考移动端设计首页，提供创建设计、图片编辑、AI 创作、工具和模板推荐入口。',
+        href: '/design-app' as AppRoute,
         status: '新增入口',
         available: true,
       },
@@ -1450,6 +1463,10 @@ export default function App() {
         }}
       />
     );
+  }
+
+  if (currentRoute === '/design-app') {
+    return <DesignAppHomePage onBackToDirectory={() => navigateTo('/')} />;
   }
 
   return (
