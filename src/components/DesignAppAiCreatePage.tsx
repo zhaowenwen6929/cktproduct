@@ -17,24 +17,58 @@ import {
 
 type DesignAppAiCreatePageProps = {
   onBack: () => void;
+  initialWorkTitle?: string;
 };
 
-const historyGroups = [
-  { date: '09月22日', items: ['中秋快乐'] },
-  { date: '09月20日', items: ['制作宣传海报'] },
-  { date: '09月17日', items: ['中秋节海报', '做海报', '制作海报', '做海报'] },
-  { date: '09月08日', items: ['大雪节气海报解析'] },
-  { date: '03月12日', items: ['设计方案示例介绍', '参考模版生成设计', '生成特定早安日签要求'] },
-  { date: '03月11日', items: ['生成同款设计'] },
-  { date: '03月10日', items: ['麦角硫因精华水介绍'] },
-];
+type AiHistoryGroup = { date: string; items: string[] };
 
-const workItems = [
-  { title: '中秋国庆放假通知', date: '09月22日', variant: 'cream' },
-  { title: '品牌灵感海报', date: '09月20日', variant: 'blue' },
-  { title: '秋日活动主视觉', date: '09月17日', variant: 'blank' },
-  { title: '月满人团圆', date: '09月08日', variant: 'moon' },
-  { title: '产品宣传海报', date: '03月12日', variant: 'poster' },
+type AiWorkItem = {
+  title: string;
+  date: string;
+  variant: string;
+  topic: string;
+  audience: string;
+  historyGroups: AiHistoryGroup[];
+};
+
+const workItems: AiWorkItem[] = [
+  {
+    title: '中秋国庆放假通知', date: '09月22日', variant: 'cream', topic: '中秋国庆放假通知海报', audience: '客户/合作伙伴',
+    historyGroups: [
+      { date: '09月22日', items: ['中秋快乐', '中秋国庆放假通知'] },
+      { date: '09月20日', items: ['制作宣传海报'] },
+      { date: '09月17日', items: ['中秋节海报', '做海报'] },
+    ],
+  },
+  {
+    title: '品牌灵感海报', date: '09月20日', variant: 'blue', topic: '品牌灵感主题海报', audience: '品牌客户',
+    historyGroups: [
+      { date: '09月20日', items: ['品牌灵感海报'] },
+      { date: '09月17日', items: ['参考模版生成设计', '生成同款设计'] },
+    ],
+  },
+  {
+    title: '秋日活动主视觉', date: '09月17日', variant: 'blank', topic: '秋日活动主视觉', audience: '活动参与者',
+    historyGroups: [
+      { date: '09月17日', items: ['秋日活动主视觉'] },
+      { date: '09月08日', items: ['秋日活动海报', '做海报'] },
+    ],
+  },
+  {
+    title: '月满人团圆', date: '09月08日', variant: 'moon', topic: '中秋团圆祝福海报', audience: '亲友与客户',
+    historyGroups: [
+      { date: '09月08日', items: ['月满人团圆'] },
+      { date: '03月12日', items: ['中秋节海报'] },
+    ],
+  },
+  {
+    title: '产品宣传海报', date: '03月12日', variant: 'poster', topic: '产品宣传海报', audience: '潜在客户',
+    historyGroups: [
+      { date: '03月12日', items: ['产品宣传海报'] },
+      { date: '03月11日', items: ['生成同款设计'] },
+      { date: '03月10日', items: ['麦角硫因精华水介绍'] },
+    ],
+  },
 ];
 
 function CompletedStep({ children }: { children: ReactNode }) {
@@ -55,7 +89,8 @@ function WorkThumbnail({ variant }: { variant: string }) {
   );
 }
 
-export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
+export function DesignAppAiCreatePage({ onBack, initialWorkTitle }: DesignAppAiCreatePageProps) {
+  const initialWork = workItems.find((work) => work.title === initialWorkTitle) ?? workItems[0];
   const [inputValue, setInputValue] = useState('');
   const [submittedPrompt, setSubmittedPrompt] = useState('');
   const [toast, setToast] = useState('');
@@ -64,7 +99,10 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isWorksOpen, setIsWorksOpen] = useState(false);
-  const [conversationTitle, setConversationTitle] = useState('中秋快乐');
+  const [activeWorkTitle, setActiveWorkTitle] = useState(initialWork.title);
+  const [conversationTitle, setConversationTitle] = useState(initialWorkTitle ?? '中秋快乐');
+
+  const activeWork = workItems.find((work) => work.title === activeWorkTitle) ?? workItems[0];
 
   const notify = (message: string) => {
     setToast(message);
@@ -94,9 +132,19 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
 
   const handleHistorySelect = (title: string) => {
     setConversationTitle(title);
-    setIsNewConversation(title !== '中秋快乐');
+    setIsNewConversation(false);
     setIsHistoryOpen(false);
     setIsWorksOpen(false);
+  };
+
+  const handleWorkSelect = (work: AiWorkItem) => {
+    setActiveWorkTitle(work.title);
+    setConversationTitle(work.title);
+    setSubmittedPrompt('');
+    setIsNewConversation(false);
+    setIsHistoryOpen(false);
+    setIsWorksOpen(false);
+    notify(`已切换到作品：${work.title}`);
   };
 
   return (
@@ -148,9 +196,9 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
           ) : (
             <>
           <div className="design-ai-intro-copy">
-            <p>我想做一张中秋节主题的海报，请帮我完成设计。</p>
-            <p>让我先了解一下海报设计的具体要求，这样才能帮你做出最合适的设计。</p>
-            <p>好的，我来帮你做一张中秋海报。从你刚才说的“中秋快乐”，我理解这是中秋节主题的海报。</p>
+            <p>我想做一张{activeWork.topic}，请帮我完成设计。</p>
+            <p>让我先了解一下设计的具体要求，这样才能帮你做出最合适的设计。</p>
+            <p>好的，我来帮你做一张{activeWork.topic}，从你刚才的描述中，我理解这是一个适合传播的主题设计。</p>
             <p>为了让海报更符合你的需求，我需要了解几个关键信息：</p>
           </div>
 
@@ -166,7 +214,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
             <p>我的补充信息如下：</p>
             <p>海报主要用在哪里？：<strong>微信朋友圈</strong></p>
             <p>海报上需要写什么文案？（如品牌名、祝福语、活动信息等）：<strong>你定</strong></p>
-            <p>海报主要给谁看？：<strong>客户/合作伙伴</strong></p>
+            <p>海报主要给谁看？：<strong>{activeWork.audience}</strong></p>
             <p>需要生成几张？：<strong>1张</strong></p>
           </div>
 
@@ -176,7 +224,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
 
           <div className="design-ai-agent-message">
             <div className="design-ai-agent-label"><span>✦</span><strong>需求规划师</strong></div>
-            <p>信息已确认，我来为你制作一张面向客户/合作伙伴的中秋朋友圈海报。</p>
+            <p>信息已确认，我来为你制作一张面向{activeWork.audience}的{activeWork.topic}。</p>
           </div>
 
           {submittedPrompt && (
@@ -198,7 +246,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
             <div className="design-ai-poster-preview">
               <span className="design-ai-poster-badge">AI 生成</span>
               <span className="design-ai-poster-kicker">花好月圆 · 中秋快乐</span>
-              <strong>愿你<br />月满人团圆</strong>
+              <strong>{activeWork.title === '品牌灵感海报' ? <>品牌<br />灵感</> : activeWork.title === '产品宣传海报' ? <>产品<br />宣传</> : <>愿你<br />月满人团圆</>}</strong>
               <span className="design-ai-poster-moon" />
               <span className="design-ai-poster-cloud design-ai-poster-cloud--left" />
               <span className="design-ai-poster-cloud design-ai-poster-cloud--right" />
@@ -277,7 +325,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
             </div>
             {isHistoryOpen ? (
               <div className="design-ai-history-list">
-                {historyGroups.map((group) => (
+                {activeWork.historyGroups.map((group) => (
                   <section key={group.date}>
                     <h3>{group.date}</h3>
                     {group.items.map((item, index) => (
@@ -297,7 +345,7 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
             ) : (
               <div className="design-ai-works-list">
                 {workItems.map((work) => (
-                  <button key={work.title} type="button" className="design-ai-work-item" onClick={() => notify(`打开作品：${work.title}`)}>
+                  <button key={work.title} type="button" className={`design-ai-work-item${work.title === activeWork.title ? ' is-current' : ''}`} onClick={() => handleWorkSelect(work)}>
                     <WorkThumbnail variant={work.variant} />
                     <span className="design-ai-work-item__meta">
                       <strong>{work.title}</strong>

@@ -77,6 +77,7 @@ export default function App() {
   const [exportSelectedIds, setExportSelectedIds] = useState<string[]>([]);
   const [exportRequest, setExportRequest] = useState<ExportRequest | null>(null);
   const [autoGenerateRequest, setAutoGenerateRequest] = useState<{ requestId: number; prompt: string; attachments: GenerationAttachment[] } | null>(null);
+  const [designAppSelectedWork, setDesignAppSelectedWork] = useState<string>();
 
   const navigateTo = (route: AppRoute) => {
     if (typeof window === 'undefined') return;
@@ -1472,11 +1473,11 @@ export default function App() {
   }
 
   if (currentRoute === '/design-app') {
-    return <DesignAppHomePage onBackToDirectory={() => navigateTo('/')} onOpenAiCreate={() => navigateTo('/design-app/ai-create')} />;
+    return <DesignAppHomePage onBackToDirectory={() => navigateTo('/')} onOpenAiCreate={(workTitle) => { setDesignAppSelectedWork(workTitle); navigateTo('/design-app/ai-create'); }} />;
   }
 
   if (currentRoute === '/design-app/ai-create') {
-    return <DesignAppAiCreatePage onBack={() => navigateTo('/design-app')} />;
+    return <DesignAppAiCreatePage onBack={() => navigateTo('/design-app')} initialWorkTitle={designAppSelectedWork} />;
   }
 
   return (

@@ -31,7 +31,7 @@ import {
 
 type DesignAppHomePageProps = {
   onBackToDirectory: () => void;
-  onOpenAiCreate: () => void;
+  onOpenAiCreate: (workTitle?: string) => void;
 };
 
 type QuickTool = {
@@ -477,7 +477,7 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignA
               <strong>图片编辑</strong>
               <span className="design-app-primary-icon"><Crop size={20} strokeWidth={2.5} /></span>
             </button>
-            <button type="button" className="design-app-primary-card design-app-primary-card--ai" onClick={onOpenAiCreate}>
+          <button type="button" className="design-app-primary-card design-app-primary-card--ai" onClick={() => onOpenAiCreate()}>
               <strong>AI创作</strong>
               <span className="design-app-primary-icon"><PenLine size={20} strokeWidth={2.5} /></span>
               <span className="design-app-ai-preview"><span>创意描述</span><b>人生<br />重启计划</b><i>✦</i></span>
@@ -505,8 +505,13 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignA
             <button type="button" onClick={() => notify('全部设计即将上线')} aria-label="查看全部最近设计"><ChevronRight size={24} /></button>
           </div>
           <div className="design-app-horizontal-list design-app-recent-list">
-            {(['cream', 'blue', 'blank', 'moon'] as const).map((variant) => (
-              <button type="button" className="design-app-recent-card" key={variant} onClick={() => notify('打开最近设计')}>
+            {([
+              { variant: 'cream', title: '中秋国庆放假通知', isInfiniteCanvas: true },
+              { variant: 'blue', title: '品牌灵感海报', isInfiniteCanvas: true },
+              { variant: 'blank', title: '秋日活动主视觉', isInfiniteCanvas: false },
+              { variant: 'moon', title: '月满人团圆', isInfiniteCanvas: true },
+            ] as const).map(({ variant, title, isInfiniteCanvas }) => (
+              <button type="button" className="design-app-recent-card" key={variant} onClick={() => isInfiniteCanvas ? onOpenAiCreate(title) : notify(`打开最近设计：${title}`)} aria-label={`打开${title}`}>
                 <RecentDesign variant={variant} />
                 <span className="design-app-card-menu"><MoreHorizontal size={18} strokeWidth={2.5} /></span>
               </button>
