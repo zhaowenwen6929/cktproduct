@@ -7,10 +7,11 @@ import { PluginPrototypePage } from './components/PluginPrototypePage';
 import { ConnectorAuthPrototypePage } from './components/ConnectorAuthPrototypePage';
 import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
+import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app' | '/design-app/ai-create';
 
 type ExportRequest =
   | {
@@ -54,6 +55,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/connector-auth') return '/connector-auth';
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/design-app') return '/design-app';
+  if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
   return '/';
 };
 
@@ -1304,6 +1306,10 @@ export default function App() {
         title: '创客贴设计 APP',
         description: '创客贴设计 APP 首页，提供设计创建、AI 工具和模板推荐入口。',
       },
+      '/design-app/ai-create': {
+        title: 'AI创作｜创客贴设计',
+        description: '创客贴设计 AI 创作移动端对话页，支持通过对话生成设计。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1466,7 +1472,11 @@ export default function App() {
   }
 
   if (currentRoute === '/design-app') {
-    return <DesignAppHomePage onBackToDirectory={() => navigateTo('/')} />;
+    return <DesignAppHomePage onBackToDirectory={() => navigateTo('/')} onOpenAiCreate={() => navigateTo('/design-app/ai-create')} />;
+  }
+
+  if (currentRoute === '/design-app/ai-create') {
+    return <DesignAppAiCreatePage onBack={() => navigateTo('/design-app')} />;
   }
 
   return (

@@ -21,6 +21,7 @@ import {
 
 type DesignAppHomePageProps = {
   onBackToDirectory: () => void;
+  onOpenAiCreate: () => void;
 };
 
 type QuickTool = {
@@ -86,7 +87,32 @@ function RecommendCard({ kind, title, description }: { kind: 'holiday' | 'festiv
   );
 }
 
-export function DesignAppHomePage({ onBackToDirectory }: DesignAppHomePageProps) {
+function FestivalTemplateCard({
+  variant,
+  title,
+  subtitle,
+  onSelect,
+}: {
+  variant: 'gold' | 'red' | 'blue' | 'purple';
+  title: string;
+  subtitle: string;
+  onSelect: () => void;
+}) {
+  return (
+    <button type="button" className={`design-app-template-card design-app-template-card--${variant}`} onClick={onSelect}>
+      <span className="design-app-template-card__menu"><MoreHorizontal size={17} strokeWidth={2.5} /></span>
+      <span className="design-app-template-card__tag">中秋</span>
+      <span className="design-app-template-card__title">{title}</span>
+      <span className="design-app-template-card__subtitle">{subtitle}</span>
+      <span className="design-app-template-card__moon" />
+      <span className="design-app-template-card__cloud design-app-template-card__cloud--left" />
+      <span className="design-app-template-card__cloud design-app-template-card__cloud--right" />
+      <span className="design-app-template-card__bottom" />
+    </button>
+  );
+}
+
+export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignAppHomePageProps) {
   const [searchValue, setSearchValue] = useState('');
   const [activeNav, setActiveNav] = useState('首页');
   const [toast, setToast] = useState('');
@@ -148,7 +174,7 @@ export function DesignAppHomePage({ onBackToDirectory }: DesignAppHomePageProps)
               <strong>图片编辑</strong>
               <span className="design-app-primary-icon"><Crop size={20} strokeWidth={2.5} /></span>
             </button>
-            <button type="button" className="design-app-primary-card design-app-primary-card--ai" onClick={() => notify('AI创作已为你准备好')}>
+            <button type="button" className="design-app-primary-card design-app-primary-card--ai" onClick={onOpenAiCreate}>
               <strong>AI创作</strong>
               <span className="design-app-primary-icon"><PenLine size={20} strokeWidth={2.5} /></span>
               <span className="design-app-ai-preview"><span>创意描述</span><b>人生<br />重启计划</b><i>✦</i></span>
@@ -196,6 +222,15 @@ export function DesignAppHomePage({ onBackToDirectory }: DesignAppHomePageProps)
         </section>
 
         <div className="design-app-slogan">日满中秋</div>
+
+        <section className="design-app-template-section" aria-label="中秋模板">
+          <div className="design-app-horizontal-list design-app-template-list">
+            <FestivalTemplateCard variant="gold" title="中秋国庆" subtitle="放假通知" onSelect={() => notify('打开中秋国庆模板')} />
+            <FestivalTemplateCard variant="red" title="月满中秋" subtitle="欢度国庆" onSelect={() => notify('打开月满中秋模板')} />
+            <FestivalTemplateCard variant="blue" title="中秋快乐" subtitle="团圆佳节" onSelect={() => notify('打开中秋快乐模板')} />
+            <FestivalTemplateCard variant="purple" title="一轮明月" subtitle="千里相思" onSelect={() => notify('打开一轮明月模板')} />
+          </div>
+        </section>
 
         <nav className="design-app-bottom-nav" aria-label="主导航">
           {navItems.map(({ label, icon: Icon }) => (
