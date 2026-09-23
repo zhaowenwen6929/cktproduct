@@ -24,6 +24,8 @@ import {
   SlidersHorizontal,
   ShoppingBag,
   Sparkles,
+  Pencil,
+  Share2,
   UserPlus,
   WandSparkles,
   UserRound,
@@ -64,7 +66,9 @@ const navItems = [
   { label: '我的', icon: UserRound },
 ];
 
-function RecentDesign({ variant }: { variant: 'cream' | 'blue' | 'blank' | 'moon' }) {
+type RecentDesignVariant = 'cream' | 'blue' | 'blank' | 'moon' | 'quiet';
+
+function RecentDesign({ variant }: { variant: RecentDesignVariant }) {
   return (
     <div className={`design-app-recent-art design-app-recent-art--${variant}`}>
       {variant === 'cream' && (
@@ -82,6 +86,13 @@ function RecentDesign({ variant }: { variant: 'cream' | 'blue' | 'blank' | 'moon
         </>
       )}
       {variant === 'moon' && <span className="recent-art-moon" />}
+      {variant === 'quiet' && (
+        <>
+          <span className="recent-art-quiet-heading">HEAL YOUR INNER SELF</span>
+          <span className="recent-art-quiet-photo" />
+          <span className="recent-art-quiet-copy">寻一处静谧<small>Find a quiet spot<br />and be alone with yourself</small>与自己独处</span>
+        </>
+      )}
     </div>
   );
 }
@@ -418,6 +429,7 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
   const [searchValue, setSearchValue] = useState('');
   const [activeNav, setActiveNav] = useState('首页');
   const [toast, setToast] = useState('');
+  const [detailDesign, setDetailDesign] = useState<{ title: string; variant: RecentDesignVariant } | null>(null);
 
   const notify = (message: string) => {
     setToast(message);
@@ -516,7 +528,14 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
               <button type="button" className={`design-app-recent-card${isNewDesign ? ' is-new' : ''}`} key={`${variant}-${title}`} onClick={() => isInfiniteCanvas ? onOpenAiCreate(title) : notify(`打开最近设计：${title}`)} aria-label={`打开${title}`}>
                 <RecentDesign variant={variant} />
                 {isNewDesign && <span className="design-app-recent-card__new-label">新建无限画布</span>}
-                <span className="design-app-card-menu"><MoreHorizontal size={18} strokeWidth={2.5} /></span>
+                <span
+                  className="design-app-card-menu"
+                  role="button"
+                  tabIndex={0}
+                  onClick={(event) => { event.stopPropagation(); setDetailDesign({ title: isNewDesign ? title : variant === 'blank' ? '治愈金句分享小红书' : title, variant: 'quiet' }); }}
+                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setDetailDesign({ title: isNewDesign ? title : variant === 'blank' ? '治愈金句分享小红书' : title, variant: 'quiet' }); } }}
+                  aria-label={`查看${title}详情`}
+                ><MoreHorizontal size={18} strokeWidth={2.5} /></span>
               </button>
             ))}
           </div>
@@ -658,6 +677,29 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
           ))}
         </nav>
       </main>
+
+      {detailDesign && (
+        <>
+          <button type="button" className="design-app-detail-backdrop" onClick={() => setDetailDesign(null)} aria-label="关闭设计详情" />
+          <section className="design-app-detail-sheet" role="dialog" aria-modal="true" aria-label="设计详情">
+            <button type="button" className="design-app-detail-handle" onClick={() => setDetailDesign(null)} aria-label="收起设计详情"><ChevronDown size={27} strokeWidth={3} /></button>
+            <div className="design-app-detail-content">
+              <div className="design-app-detail-preview">
+                <RecentDesign variant={detailDesign.variant} />
+                <span>设计</span>
+              </div>
+              <div className="design-app-detail-title"><h2>{detailDesign.title}</h2><Pencil size={19} strokeWidth={2.3} /></div>
+              <p className="design-app-detail-time">刚刚</p>
+              <div className="design-app-detail-info"><p>资源尺寸：1242px * 1660px</p><p>资源场景：小红书配图</p></div>
+            </div>
+            <footer className="design-app-detail-actions">
+              <button type="button" onClick={() => notify('更多操作即将上线')}><MoreHorizontal size={28} strokeWidth={2.5} /><span>更多</span></button>
+              <button type="button" onClick={() => notify('分享功能即将上线')}><Share2 size={26} strokeWidth={2.5} /><span>分享</span></button>
+              <button type="button" className="design-app-detail-edit" onClick={() => notify('编辑功能即将上线')}>编辑</button>
+            </footer>
+          </section>
+        </>
+      )}
 
       {toast && <div className="design-app-toast" role="status">{toast}</div>}
     </div>

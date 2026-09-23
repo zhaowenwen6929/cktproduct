@@ -125,6 +125,12 @@ button {
 .design-app-recent-art--blue { background: linear-gradient(140deg, #091332, #162c64 56%, #070d20); }
 .recent-art-blue-copy { position: absolute; left: 20px; top: 41px; color: rgba(255,255,255,.82); font-size: 18px; line-height: 1.2; font-weight: 700; letter-spacing: .12em; }
 .recent-art-blue-panel { position: absolute; right: 0; bottom: 0; width: 49%; height: 80%; background: linear-gradient(145deg, rgba(125, 163, 237, .24), rgba(255,255,255,.06)); border-left: 1px solid rgba(255,255,255,.12); }
+.design-app-recent-art--quiet { background: linear-gradient(145deg, #dbe7d7, #aabfa6 62%, #cdd9c2); color: #727944; }
+.design-app-recent-art--quiet::before { content: ""; position: absolute; top: 14%; right: 16%; bottom: 13%; left: 16%; background: linear-gradient(145deg, #f7f4e8, #ebe8d6); box-shadow: 0 5px 12px rgba(89, 102, 75, .14); }
+.recent-art-quiet-heading { position: absolute; top: 18%; left: 21%; z-index: 1; color: #868b71; font-family: Georgia, serif; font-size: 11px; letter-spacing: .03em; }
+.recent-art-quiet-photo { position: absolute; top: 25%; left: 29%; z-index: 1; width: 48%; height: 22%; background: linear-gradient(135deg, #b6d19c 0 37%, #537554 38% 64%, #d8d1a5 65%); }
+.recent-art-quiet-copy { position: absolute; top: 52%; left: 28%; z-index: 1; color: #727944; font-family: "Songti SC", serif; font-size: 24px; line-height: 1.3; text-align: center; }
+.recent-art-quiet-copy small { display: block; margin: 4px 0; font-family: Georgia, serif; font-size: 8px; line-height: 1.3; }
 .design-app-recent-art--blank { background: linear-gradient(135deg, #fafafa, #f0f1f4); }
 .design-app-recent-art--moon { background: linear-gradient(135deg, #101c44, #1c1e52); }
 .recent-art-moon { position: absolute; left: 28px; top: 35px; width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle at 35% 32%, #fff3b4, #e3a358 65%, #8c5f47); box-shadow: 0 0 24px #e4c57b; }
@@ -486,6 +492,22 @@ button {
 .design-app-bottom-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; border-radius: 50px; background: transparent; color: #1e212c; font-size: 14px; cursor: pointer; }
 .design-app-bottom-nav button.is-active { color: #3c76e5; background: #f0f0f0; }
 .design-app-nav-icon { display: grid; place-items: center; }
+
+.design-app-detail-backdrop { position: fixed; z-index: 20; inset: 0; border: 0; background: rgba(29, 38, 61, .38); cursor: default; }
+.design-app-detail-sheet { position: fixed; z-index: 21; bottom: 0; left: 50%; display: flex; width: min(100%, 520px); max-height: 90vh; transform: translateX(-50%); flex-direction: column; overflow: hidden; border-radius: 24px 24px 0 0; background: #fff; box-shadow: 0 -8px 28px rgba(38, 46, 73, .16); }
+.design-app-detail-handle { position: absolute; z-index: 3; top: 13px; left: 50%; display: grid; place-items: center; width: 72px; height: 45px; transform: translateX(-50%); border: 0; border-radius: 25px; background: #f8f8fc; color: #151925; cursor: pointer; }
+.design-app-detail-content { overflow-y: auto; padding: 56px 18px 118px; scrollbar-width: none; }
+.design-app-detail-content::-webkit-scrollbar { display: none; }
+.design-app-detail-preview { position: relative; width: 100%; aspect-ratio: 1242 / 1660; overflow: hidden; border: 1px solid #e4e6e7; border-radius: 13px; background: #d5e1d2; box-shadow: 0 3px 10px rgba(44, 55, 71, .07); }
+.design-app-detail-preview > span { position: absolute; z-index: 3; top: 24px; right: 19px; padding: 9px 13px; border-radius: 24px; background: rgba(255,255,255,.82); color: #343844; font-size: 16px; font-weight: 600; }
+.design-app-detail-title { display: flex; align-items: center; gap: 8px; margin-top: 20px; color: #20232d; }
+.design-app-detail-title h2 { margin: 0; font-size: 22px; letter-spacing: -.045em; }
+.design-app-detail-time { margin: 9px 0 30px; color: #a1a4ae; font-size: 16px; }
+.design-app-detail-info { padding: 27px 0 0; border-top: 1px solid #f0f1f3; color: #a1a4ae; font-size: 16px; line-height: 1.8; }
+.design-app-detail-info p { margin: 0; }
+.design-app-detail-actions { position: absolute; right: 0; bottom: 0; left: 0; display: flex; align-items: center; gap: 27px; min-height: 93px; padding: 12px 18px 15px; border-top: 1px solid #edf0f3; background: rgba(255,255,255,.98); }
+.design-app-detail-actions > button:not(.design-app-detail-edit) { display: flex; min-width: 44px; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: #262a35; font-size: 14px; cursor: pointer; }
+.design-app-detail-edit { flex: 1; height: 56px; margin-left: 9px; border: 0; border-radius: 5px; background: #1677ef; color: #fff; font-size: 21px; font-weight: 600; cursor: pointer; }
 
 .design-app-directory-button { position: fixed; z-index: 10; top: 18px; left: 22px; padding: 9px 14px; border: 1px solid rgba(159, 169, 196, .45); border-radius: 999px; background: rgba(255,255,255,.75); color: #565e76; font-size: 12px; cursor: pointer; backdrop-filter: blur(10px); }
 .design-app-directory-button:hover { background: #fff; color: #252a3a; }
