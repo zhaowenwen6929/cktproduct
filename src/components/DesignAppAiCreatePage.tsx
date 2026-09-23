@@ -109,7 +109,6 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
   const [toast, setToast] = useState('');
   const [isComposerExpanded, setIsComposerExpanded] = useState(false);
   const [isNewConversation, setIsNewConversation] = useState(initialNewConversation);
-  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isWorksOpen, setIsWorksOpen] = useState(false);
   const [activeWorkTitle, setActiveWorkTitle] = useState(initialWork.title);
   const [conversationTitle, setConversationTitle] = useState(initialNewConversation ? '' : initialWorkTitle ?? '中秋快乐');
@@ -176,16 +175,9 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConv
               <MessageSquarePlus size={26} strokeWidth={2} />
             </button>
             <div className="design-ai-more-wrap">
-              <button type="button" onClick={() => setIsMoreMenuOpen((open) => !open)} aria-label="更多功能" aria-expanded={isMoreMenuOpen}>
+              <button type="button" onClick={() => setIsWorksOpen(true)} aria-label="打开我的作品" aria-expanded={isWorksOpen}>
                 <Menu size={27} strokeWidth={2.2} />
               </button>
-              {isMoreMenuOpen && (
-                <div className="design-ai-more-menu">
-                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsWorksOpen(true); }}>历史对话</button>
-                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsWorksOpen(true); }}>我的作品</button>
-                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); notify('举报功能即将上线'); }}>举报</button>
-                </div>
-              )}
             </div>
           </div>
         </header>
