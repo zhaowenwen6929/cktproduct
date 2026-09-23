@@ -1495,6 +1495,7 @@ export default function App() {
     return <DesignAppHomePage
       onBackToDirectory={() => navigateTo('/')}
       recentInfiniteCanvasWorkTitles={designAppCustomWorkTitles}
+      onDeleteInfiniteCanvasWork={(workTitle) => setDesignAppCustomWorkTitles((titles) => titles.filter((title) => title !== workTitle))}
       onOpenAiCreate={(workTitle) => {
         if (workTitle) {
           setDesignAppSelectedWork(workTitle);

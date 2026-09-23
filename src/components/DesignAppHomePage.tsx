@@ -36,6 +36,7 @@ type DesignAppHomePageProps = {
   onBackToDirectory: () => void;
   onOpenAiCreate: (workTitle?: string) => void;
   recentInfiniteCanvasWorkTitles?: string[];
+  onDeleteInfiniteCanvasWork?: (workTitle: string) => void;
 };
 
 type QuickTool = {
@@ -68,6 +69,13 @@ const navItems = [
 ];
 
 type RecentDesignVariant = 'cream' | 'blue' | 'blank' | 'moon' | 'quiet';
+
+type RecentDesignItem = {
+  variant: RecentDesignVariant;
+  title: string;
+  isInfiniteCanvas: boolean;
+  isNewDesign: boolean;
+};
 
 function RecentDesign({ variant }: { variant: RecentDesignVariant }) {
   return (
@@ -332,8 +340,8 @@ function DesignAppAiToolsPage({ notify, onOpenAiCreate }: { notify: (message: st
   );
 }
 
-function DesignAppResourcesPage({ notify }: { notify: (message: string) => void }) {
-  const ResourceAssetCard = ({ variant, title, action = '设计', className = '' }: { variant: string; title?: string; action?: string; className?: string }) => (
+function DesignAppResourcesPage({ notify, recentInfiniteCanvasWorkTitles = [] }: { notify: (message: string) => void; recentInfiniteCanvasWorkTitles?: string[] }) {
+  const ResourceAssetCard = ({ variant, title, action = '设计', className = '', showTitle = false }: { variant: string; title?: string; action?: string; className?: string; showTitle?: boolean }) => (
     <button type="button" className={`design-app-resource-asset design-app-resource-asset--${variant} ${className}`} onClick={() => notify(title ? `打开${title}` : '打开资源')}>
       <span className="design-app-resource-asset__menu"><MoreHorizontal size={17} strokeWidth={2.7} /></span>
       <span className="design-app-resource-asset__art">
@@ -342,6 +350,7 @@ function DesignAppResourcesPage({ notify }: { notify: (message: string) => void 
         {variant === 'hotpot-dark' && <><b>诚聘英才</b><i>加入我们</i></>}
         {variant === 'jellyfish' && <><b>海洋你好</b><i>北京海洋馆奇妙夜</i></>}
       </span>
+      {showTitle && title && <span className="design-app-resource-asset__title">{title}</span>}
       {action && <span className="design-app-resource-asset__action">{action}</span>}
     </button>
   );
@@ -372,6 +381,7 @@ function DesignAppResourcesPage({ notify }: { notify: (message: string) => void 
         </div>
         <div className="design-app-resource-masonry">
           <div className="design-app-resource-column">
+            {recentInfiniteCanvasWorkTitles.map((title) => <ResourceAssetCard key={title} variant="blank" title={title} action="设计" className="is-short design-app-resource-asset--recent" showTitle />)}
             <button type="button" className="design-app-resource-add" onClick={() => notify('添加新资源')}><Plus size={42} strokeWidth={1.5} /><strong>添加</strong></button>
             <ResourceAssetCard variant="blank" title="未命名设计" action="设计" className="is-short" />
             <ResourceAssetCard variant="window-dark" title="铝合金电动遮阳帘" action="png" />
@@ -426,11 +436,15 @@ function PresentationIcon({ size, strokeWidth }: { size?: number; strokeWidth?: 
   return <svg width={size ?? 24} height={size ?? 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth ?? 2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4M7 9h10M7 12h6" /></svg>;
 }
 
-export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInfiniteCanvasWorkTitles = [] }: DesignAppHomePageProps) {
+export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInfiniteCanvasWorkTitles = [], onDeleteInfiniteCanvasWork }: DesignAppHomePageProps) {
   const [searchValue, setSearchValue] = useState('');
   const [activeNav, setActiveNav] = useState('首页');
   const [toast, setToast] = useState('');
-  const [detailDesign, setDetailDesign] = useState<{ title: string; variant: RecentDesignVariant } | null>(null);
+  const [detailDesign, setDetailDesign] = useState<{ title: string; sourceTitle: string; variant: RecentDesignVariant; isInfiniteCanvas: boolean } | null>(null);
+  const [detailMoreOpen, setDetailMoreOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [removedRecentDesignTitles, setRemovedRecentDesignTitles] = useState<string[]>([]);
+  const [copiedRecentDesigns, setCopiedRecentDesigns] = useState<RecentDesignItem[]>([]);
 
   const notify = (message: string) => {
     setToast(message);
@@ -440,6 +454,35 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
   const handleNavClick = (label: string) => {
     setActiveNav(label);
     if (label !== '首页') notify(`${label}页面即将上线`);
+  };
+
+  const closeDetail = () => {
+    setDetailDesign(null);
+    setDetailMoreOpen(false);
+    setDeleteConfirmOpen(false);
+  };
+
+  const openDetail = (item: RecentDesignItem, displayTitle = item.title) => {
+    setDetailDesign({ title: displayTitle, sourceTitle: item.title, variant: 'quiet', isInfiniteCanvas: item.isInfiniteCanvas });
+    setDetailMoreOpen(false);
+  };
+
+  const handleDuplicateDesign = () => {
+    if (!detailDesign || detailDesign.isInfiniteCanvas) return;
+    const copyTitle = `${detailDesign.title} 副本`;
+    setCopiedRecentDesigns((items) => [{ variant: 'quiet', title: copyTitle, isInfiniteCanvas: false, isNewDesign: false }, ...items]);
+    setDetailDesign({ ...detailDesign, title: copyTitle, sourceTitle: copyTitle });
+    setDetailMoreOpen(false);
+    notify('已创建设计副本');
+  };
+
+  const handleDeleteDesign = () => {
+    if (!detailDesign) return;
+    setRemovedRecentDesignTitles((titles) => titles.includes(detailDesign.sourceTitle) ? titles : [...titles, detailDesign.sourceTitle]);
+    setCopiedRecentDesigns((items) => items.filter((item) => item.title !== detailDesign.sourceTitle));
+    if (detailDesign.isInfiniteCanvas) onDeleteInfiniteCanvasWork?.(detailDesign.sourceTitle);
+    closeDetail();
+    notify('设计已删除');
   };
 
   return (
@@ -520,22 +563,23 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
           </div>
           <div className="design-app-horizontal-list design-app-recent-list">
             {([
+              ...copiedRecentDesigns,
               ...recentInfiniteCanvasWorkTitles.map((title) => ({ variant: 'blank' as const, title, isInfiniteCanvas: true, isNewDesign: true })),
               { variant: 'cream', title: '中秋国庆放假通知', isInfiniteCanvas: true, isNewDesign: false },
               { variant: 'blue', title: '品牌灵感海报', isInfiniteCanvas: true, isNewDesign: false },
               { variant: 'blank', title: '秋日活动主视觉', isInfiniteCanvas: false, isNewDesign: false },
               { variant: 'moon', title: '月满人团圆', isInfiniteCanvas: true, isNewDesign: false },
-            ] as const).map(({ variant, title, isInfiniteCanvas, isNewDesign }) => (
-              <button type="button" className={`design-app-recent-card${isNewDesign ? ' is-new' : ''}`} key={`${variant}-${title}`} onClick={() => isInfiniteCanvas ? onOpenAiCreate(title) : notify(`打开最近设计：${title}`)} aria-label={`打开${title}`}>
-                <RecentDesign variant={variant} />
-                {isNewDesign && <span className="design-app-recent-card__new-label">新建无限画布</span>}
+            ] as RecentDesignItem[]).filter((item) => !removedRecentDesignTitles.includes(item.title)).map((item) => (
+              <button type="button" className={`design-app-recent-card${item.isNewDesign ? ' is-new' : ''}`} key={`${item.variant}-${item.title}`} onClick={() => item.isInfiniteCanvas ? onOpenAiCreate(item.title) : notify(`打开最近设计：${item.title}`)} aria-label={`打开${item.title}`}>
+                <RecentDesign variant={item.variant} />
+                {item.isNewDesign && <span className="design-app-recent-card__new-label">新建无限画布</span>}
                 <span
                   className="design-app-card-menu"
                   role="button"
                   tabIndex={0}
-                  onClick={(event) => { event.stopPropagation(); setDetailDesign({ title: isNewDesign ? title : variant === 'blank' ? '治愈金句分享小红书' : title, variant: 'quiet' }); }}
-                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setDetailDesign({ title: isNewDesign ? title : variant === 'blank' ? '治愈金句分享小红书' : title, variant: 'quiet' }); } }}
-                  aria-label={`查看${title}详情`}
+                  onClick={(event) => { event.stopPropagation(); openDetail(item, item.variant === 'blank' && !item.isInfiniteCanvas ? '治愈金句分享小红书' : item.title); }}
+                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); openDetail(item, item.variant === 'blank' && !item.isInfiniteCanvas ? '治愈金句分享小红书' : item.title); } }}
+                  aria-label={`查看${item.title}详情`}
                 ><MoreHorizontal size={18} strokeWidth={2.5} /></span>
               </button>
             ))}
@@ -664,7 +708,7 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
         ) : activeNav === 'AI工具' ? (
           <DesignAppAiToolsPage notify={notify} onOpenAiCreate={onOpenAiCreate} />
         ) : activeNav === '资源' ? (
-          <DesignAppResourcesPage notify={notify} />
+          <DesignAppResourcesPage notify={notify} recentInfiniteCanvasWorkTitles={recentInfiniteCanvasWorkTitles} />
         ) : (
           <DesignAppProfilePage notify={notify} />
         )}
@@ -681,9 +725,9 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
 
       {detailDesign && (
         <>
-          <button type="button" className="design-app-detail-backdrop" onClick={() => setDetailDesign(null)} aria-label="关闭设计详情" />
+          <button type="button" className="design-app-detail-backdrop" onClick={closeDetail} aria-label="关闭设计详情" />
           <section className="design-app-detail-sheet" role="dialog" aria-modal="true" aria-label="设计详情">
-            <button type="button" className="design-app-detail-handle" onClick={() => setDetailDesign(null)} aria-label="收起设计详情"><ChevronDown size={27} strokeWidth={3} /></button>
+            <button type="button" className="design-app-detail-handle" onClick={closeDetail} aria-label="收起设计详情"><ChevronDown size={27} strokeWidth={3} /></button>
             <div className="design-app-detail-content">
               <div className="design-app-detail-preview">
                 <RecentDesign variant={detailDesign.variant} />
@@ -694,10 +738,30 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
               <div className="design-app-detail-info"><p>资源尺寸：1242px * 1660px</p><p>资源场景：小红书配图</p></div>
             </div>
             <footer className="design-app-detail-actions">
-              <button type="button" onClick={() => notify('更多操作即将上线')}><MoreHorizontal size={28} strokeWidth={2.5} /><span>更多</span></button>
+              {detailMoreOpen && (
+                <div className="design-app-detail-more-menu" role="menu">
+                  {!detailDesign.isInfiniteCanvas && <button type="button" role="menuitem" onClick={handleDuplicateDesign}>创建副本</button>}
+                  <button type="button" className="is-danger" role="menuitem" onClick={() => { setDetailMoreOpen(false); setDeleteConfirmOpen(true); }}>删除</button>
+                </div>
+              )}
+              <button type="button" onClick={() => setDetailMoreOpen((open) => !open)} aria-expanded={detailMoreOpen}><MoreHorizontal size={28} strokeWidth={2.5} /><span>更多</span></button>
               <button type="button" onClick={() => notify('分享功能即将上线')}><Share2 size={26} strokeWidth={2.5} /><span>分享</span></button>
-              <button type="button" className="design-app-detail-edit" onClick={() => notify('编辑功能即将上线')}>编辑</button>
+              <button type="button" className="design-app-detail-edit" onClick={() => detailDesign.isInfiniteCanvas ? (closeDetail(), onOpenAiCreate(detailDesign.sourceTitle)) : notify('设计编辑页面即将上线')}>编辑</button>
             </footer>
+          </section>
+        </>
+      )}
+
+      {deleteConfirmOpen && detailDesign && (
+        <>
+          <button type="button" className="design-app-delete-backdrop" onClick={() => setDeleteConfirmOpen(false)} aria-label="取消删除" />
+          <section className="design-app-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="design-delete-title">
+            <h2 id="design-delete-title">删除设计？</h2>
+            <p>删除后将无法恢复，确定要删除“{detailDesign.title}”吗？</p>
+            <div>
+              <button type="button" onClick={() => setDeleteConfirmOpen(false)}>取消</button>
+              <button type="button" className="is-danger" onClick={handleDeleteDesign}>删除</button>
+            </div>
           </section>
         </>
       )}

@@ -405,13 +405,13 @@ button {
 .resource-recent-art.art-4 { background: linear-gradient(145deg, #f7cfc6, #c77c85); }
 
 .design-app-resources-page { margin: 0 -18px; padding: 0 0 110px; background: #fff; }
-.design-app-resources-topbar { position: relative; height: 110px; padding: 37px 18px 0; background: linear-gradient(125deg, #e7f0ff 0%, #e9e9ff 66%, #ede6ff 100%); }
+.design-app-resources-topbar { position: relative; height: 110px; padding: 37px 26px 0; background: linear-gradient(125deg, #e7f0ff 0%, #e9e9ff 66%, #ede6ff 100%); }
 .design-app-resources-space-tabs { display: flex; align-items: flex-start; gap: 34px; }
 .design-app-resources-space-tabs button { position: relative; padding: 0 0 16px; border: 0; background: transparent; color: #6c7080; font-size: 24px; font-weight: 700; letter-spacing: -.06em; cursor: pointer; }
 .design-app-resources-space-tabs button.is-active { color: #252833; }
 .design-app-resources-space-tabs button.is-active::after { content: ""; position: absolute; right: 5px; bottom: 0; left: 5px; height: 3px; border-radius: 4px; background: #397fe5; }
-.design-app-resources-more { position: absolute; top: 37px; right: 18px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: #20232e; cursor: pointer; }
-.design-app-resources-panel { position: relative; min-height: calc(100vh - 168px); padding: 18px 18px 28px; border-radius: 22px 22px 0 0; background: #fff; box-shadow: 0 -4px 20px rgba(48, 58, 104, .04); }
+.design-app-resources-more { position: absolute; top: 37px; right: 26px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: #20232e; cursor: pointer; }
+.design-app-resources-panel { position: relative; min-height: calc(100vh - 168px); padding: 20px 26px 34px; border-radius: 22px 22px 0 0; background: #fff; box-shadow: 0 -4px 20px rgba(48, 58, 104, .04); }
 .design-app-resource-subtabs { display: flex; align-items: center; gap: 10px; padding-bottom: 28px; }
 .design-app-resource-subtabs button { padding: 9px 15px; border: 1px solid transparent; border-radius: 13px; background: #f5f5f8; color: #5f6370; font-size: 17px; cursor: pointer; }
 .design-app-resource-subtabs button.is-active { border-color: #a8c8f6; background: #edf5ff; color: #397cdf; font-weight: 700; }
@@ -440,6 +440,8 @@ button {
 .design-app-resource-asset__art { position: absolute; inset: 0; display: block; overflow: hidden; }
 .design-app-resource-asset__menu { position: absolute; z-index: 3; top: 9px; right: 8px; display: grid; place-items: center; width: 38px; height: 25px; border-radius: 14px; background: rgba(255,255,255,.83); color: #272a35; box-shadow: 0 2px 8px rgba(33, 37, 59, .08); }
 .design-app-resource-asset__action { position: absolute; z-index: 4; right: 9px; bottom: 10px; padding: 5px 9px; border-radius: 7px; background: rgba(40, 42, 51, .7); color: #fff; font-size: 13px; }
+.design-app-resource-asset__title { position: absolute; z-index: 4; right: 9px; bottom: 10px; left: 9px; overflow: hidden; padding: 5px 8px; border-radius: 7px; background: rgba(255,255,255,.86); color: #303440; font-size: 12px; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.design-app-resource-asset--recent .design-app-resource-asset__action { display: none; }
 .design-app-resource-asset--strip-warm .design-app-resource-asset__art { background: #f4f5f9; }
 .design-app-resource-asset--strip-warm .design-app-resource-asset__art::before { content: ""; position: absolute; top: 50%; right: 9px; left: 9px; height: 13px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, #d9b598 0 19px, #edd2b9 19px 30px, #c6a8ba 30px 41px, #b3c3d6 41px 53px); opacity: .7; }
 .design-app-resource-asset--strip-blue .design-app-resource-asset__art { background: #f5f6fb; }
@@ -509,6 +511,19 @@ button {
 .design-app-detail-actions { position: absolute; right: 0; bottom: 0; left: 0; display: flex; align-items: center; gap: 27px; min-height: 93px; padding: 12px 18px 15px; border-top: 1px solid #edf0f3; background: rgba(255,255,255,.98); }
 .design-app-detail-actions > button:not(.design-app-detail-edit) { display: flex; min-width: 44px; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: #262a35; font-size: 14px; cursor: pointer; }
 .design-app-detail-edit { flex: 1; height: 56px; margin-left: 9px; border: 0; border-radius: 5px; background: #1677ef; color: #fff; font-size: 21px; font-weight: 600; cursor: pointer; }
+.design-app-detail-more-menu { position: absolute; z-index: 4; bottom: 82px; left: 18px; display: flex; width: 145px; flex-direction: column; overflow: hidden; border-radius: 17px; background: rgba(255,255,255,.98); box-shadow: 0 8px 24px rgba(35, 42, 64, .18); }
+.design-app-detail-more-menu button { min-height: 58px; padding: 0 20px; border: 0; border-bottom: 1px solid #f0f1f4; background: transparent; color: #242733; font-size: 17px; text-align: left; cursor: pointer; }
+.design-app-detail-more-menu button:last-child { border-bottom: 0; }
+.design-app-detail-more-menu button:hover { background: #f7f8fc; }
+.design-app-detail-more-menu button.is-danger { color: #292c38; }
+.design-app-delete-backdrop { position: fixed; z-index: 24; inset: 0; border: 0; background: rgba(23, 28, 43, .42); cursor: default; }
+.design-app-delete-dialog { position: fixed; z-index: 25; top: 50%; left: 50%; width: min(calc(100% - 48px), 330px); transform: translate(-50%, -50%); padding: 25px 22px 18px; border-radius: 18px; background: #fff; box-shadow: 0 18px 46px rgba(24, 31, 54, .24); }
+.design-app-delete-dialog h2 { margin: 0; color: #22252f; font-size: 19px; text-align: center; }
+.design-app-delete-dialog p { margin: 13px 4px 21px; color: #777d8c; font-size: 14px; line-height: 1.6; text-align: center; }
+.design-app-delete-dialog > div { display: flex; gap: 10px; }
+.design-app-delete-dialog button { flex: 1; height: 42px; border: 1px solid #e4e6ec; border-radius: 10px; background: #fff; color: #4d5260; font-size: 15px; cursor: pointer; }
+.design-app-delete-dialog button:hover { background: #f7f8fb; }
+.design-app-delete-dialog button.is-danger { border-color: #347cf2; background: #347cf2; color: #fff; }
 
 .design-app-directory-button { position: fixed; z-index: 10; top: 18px; left: 22px; padding: 9px 14px; border: 1px solid rgba(159, 169, 196, .45); border-radius: 999px; background: rgba(255,255,255,.75); color: #565e76; font-size: 12px; cursor: pointer; backdrop-filter: blur(10px); }
 .design-app-directory-button:hover { background: #fff; color: #252a3a; }
