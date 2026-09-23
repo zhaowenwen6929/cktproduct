@@ -731,7 +731,7 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
             <div className="design-app-detail-content">
               <div className="design-app-detail-preview">
                 <RecentDesign variant={detailDesign.variant} />
-                <span>设计</span>
+                <span>{detailDesign.isInfiniteCanvas ? '画布' : '设计'}</span>
               </div>
               <div className="design-app-detail-title"><h2>{detailDesign.title}</h2><Pencil size={19} strokeWidth={2.3} /></div>
               <p className="design-app-detail-time">刚刚</p>
