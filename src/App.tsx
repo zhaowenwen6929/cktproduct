@@ -78,6 +78,8 @@ export default function App() {
   const [exportRequest, setExportRequest] = useState<ExportRequest | null>(null);
   const [autoGenerateRequest, setAutoGenerateRequest] = useState<{ requestId: number; prompt: string; attachments: GenerationAttachment[] } | null>(null);
   const [designAppSelectedWork, setDesignAppSelectedWork] = useState<string>();
+  const [designAppStartsNew, setDesignAppStartsNew] = useState(false);
+  const [designAppCustomWorkTitles, setDesignAppCustomWorkTitles] = useState<string[]>([]);
 
   const navigateTo = (route: AppRoute) => {
     if (typeof window === 'undefined') return;
@@ -1473,11 +1475,31 @@ export default function App() {
   }
 
   if (currentRoute === '/design-app') {
-    return <DesignAppHomePage onBackToDirectory={() => navigateTo('/')} onOpenAiCreate={(workTitle) => { setDesignAppSelectedWork(workTitle); navigateTo('/design-app/ai-create'); }} />;
+    return <DesignAppHomePage
+      onBackToDirectory={() => navigateTo('/')}
+      recentInfiniteCanvasWorkTitles={designAppCustomWorkTitles}
+      onOpenAiCreate={(workTitle) => {
+        if (workTitle) {
+          setDesignAppSelectedWork(workTitle);
+          setDesignAppStartsNew(false);
+        } else {
+          const nextTitle = designAppCustomWorkTitles.length === 0 ? '未命名无限画布' : `未命名无限画布 ${designAppCustomWorkTitles.length + 1}`;
+          setDesignAppCustomWorkTitles((titles) => [...titles, nextTitle]);
+          setDesignAppSelectedWork(nextTitle);
+          setDesignAppStartsNew(true);
+        }
+        navigateTo('/design-app/ai-create');
+      }}
+    />;
   }
 
   if (currentRoute === '/design-app/ai-create') {
-    return <DesignAppAiCreatePage onBack={() => navigateTo('/design-app')} initialWorkTitle={designAppSelectedWork} />;
+    return <DesignAppAiCreatePage
+      onBack={() => navigateTo('/design-app')}
+      initialWorkTitle={designAppSelectedWork}
+      initialNewConversation={designAppStartsNew}
+      additionalWorkTitles={designAppCustomWorkTitles}
+    />;
   }
 
   return (

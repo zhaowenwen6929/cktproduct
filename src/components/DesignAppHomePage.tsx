@@ -32,6 +32,7 @@ import {
 type DesignAppHomePageProps = {
   onBackToDirectory: () => void;
   onOpenAiCreate: (workTitle?: string) => void;
+  recentInfiniteCanvasWorkTitles?: string[];
 };
 
 type QuickTool = {
@@ -413,7 +414,7 @@ function PresentationIcon({ size, strokeWidth }: { size?: number; strokeWidth?: 
   return <svg width={size ?? 24} height={size ?? 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth ?? 2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4M7 9h10M7 12h6" /></svg>;
 }
 
-export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignAppHomePageProps) {
+export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInfiniteCanvasWorkTitles = [] }: DesignAppHomePageProps) {
   const [searchValue, setSearchValue] = useState('');
   const [activeNav, setActiveNav] = useState('首页');
   const [toast, setToast] = useState('');
@@ -510,6 +511,7 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate }: DesignA
               { variant: 'blue', title: '品牌灵感海报', isInfiniteCanvas: true },
               { variant: 'blank', title: '秋日活动主视觉', isInfiniteCanvas: false },
               { variant: 'moon', title: '月满人团圆', isInfiniteCanvas: true },
+              ...recentInfiniteCanvasWorkTitles.map((title) => ({ variant: 'blank' as const, title, isInfiniteCanvas: true })),
             ] as const).map(({ variant, title, isInfiniteCanvas }) => (
               <button type="button" className="design-app-recent-card" key={variant} onClick={() => isInfiniteCanvas ? onOpenAiCreate(title) : notify(`打开最近设计：${title}`)} aria-label={`打开${title}`}>
                 <RecentDesign variant={variant} />

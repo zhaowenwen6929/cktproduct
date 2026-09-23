@@ -18,6 +18,8 @@ import {
 type DesignAppAiCreatePageProps = {
   onBack: () => void;
   initialWorkTitle?: string;
+  initialNewConversation?: boolean;
+  additionalWorkTitles?: string[];
 };
 
 type AiHistoryGroup = { date: string; items: string[] };
@@ -89,20 +91,31 @@ function WorkThumbnail({ variant }: { variant: string }) {
   );
 }
 
-export function DesignAppAiCreatePage({ onBack, initialWorkTitle }: DesignAppAiCreatePageProps) {
-  const initialWork = workItems.find((work) => work.title === initialWorkTitle) ?? workItems[0];
+export function DesignAppAiCreatePage({ onBack, initialWorkTitle, initialNewConversation = false, additionalWorkTitles = [] }: DesignAppAiCreatePageProps) {
+  const availableWorkItems = [
+    ...workItems,
+    ...additionalWorkTitles.map((title): AiWorkItem => ({
+      title,
+      date: '刚刚',
+      variant: 'blank',
+      topic: '无限画布设计',
+      audience: '项目团队',
+      historyGroups: [{ date: '刚刚', items: [title] }],
+    })),
+  ];
+  const initialWork = availableWorkItems.find((work) => work.title === initialWorkTitle) ?? workItems[0];
   const [inputValue, setInputValue] = useState('');
   const [submittedPrompt, setSubmittedPrompt] = useState('');
   const [toast, setToast] = useState('');
   const [isComposerExpanded, setIsComposerExpanded] = useState(false);
-  const [isNewConversation, setIsNewConversation] = useState(false);
+  const [isNewConversation, setIsNewConversation] = useState(initialNewConversation);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isWorksOpen, setIsWorksOpen] = useState(false);
   const [activeWorkTitle, setActiveWorkTitle] = useState(initialWork.title);
-  const [conversationTitle, setConversationTitle] = useState(initialWorkTitle ?? '中秋快乐');
+  const [conversationTitle, setConversationTitle] = useState(initialNewConversation ? '' : initialWorkTitle ?? '中秋快乐');
 
-  const activeWork = workItems.find((work) => work.title === activeWorkTitle) ?? workItems[0];
+  const activeWork = availableWorkItems.find((work) => work.title === activeWorkTitle) ?? workItems[0];
 
   const notify = (message: string) => {
     setToast(message);
@@ -344,7 +357,7 @@ export function DesignAppAiCreatePage({ onBack, initialWorkTitle }: DesignAppAiC
               </div>
             ) : (
               <div className="design-ai-works-list">
-                {workItems.map((work) => (
+                {availableWorkItems.map((work) => (
                   <button key={work.title} type="button" className={`design-ai-work-item${work.title === activeWork.title ? ' is-current' : ''}`} onClick={() => handleWorkSelect(work)}>
                     <WorkThumbnail variant={work.variant} />
                     <span className="design-ai-work-item__meta">
