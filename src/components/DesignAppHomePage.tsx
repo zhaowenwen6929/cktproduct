@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  ArrowRight,
   Bell,
   Bookmark,
   Camera,
@@ -22,6 +21,7 @@ import {
   ReceiptText,
   Search,
   Settings,
+  SlidersHorizontal,
   ShoppingBag,
   Sparkles,
   UserPlus,
@@ -320,33 +320,61 @@ function DesignAppAiToolsPage({ notify, onOpenAiCreate }: { notify: (message: st
 }
 
 function DesignAppResourcesPage({ notify }: { notify: (message: string) => void }) {
-  const resources = [
-    { title: '品牌素材', desc: 'Logo、字体、色板统一管理', icon: Bookmark, className: 'brand' },
-    { title: '图标插画', desc: '精选插画与图标资源', icon: Sparkles, className: 'illustration' },
-    { title: '图片资源', desc: '高清图片和背景素材', icon: ImageIcon, className: 'image' },
-    { title: '我的上传', desc: '管理你上传的全部素材', icon: FolderOpen, className: 'upload' },
-  ];
+  const ResourceAssetCard = ({ variant, title, action = '设计', className = '' }: { variant: string; title?: string; action?: string; className?: string }) => (
+    <button type="button" className={`design-app-resource-asset design-app-resource-asset--${variant} ${className}`} onClick={() => notify(title ? `打开${title}` : '打开资源')}>
+      <span className="design-app-resource-asset__menu"><MoreHorizontal size={17} strokeWidth={2.7} /></span>
+      <span className="design-app-resource-asset__art">
+        {variant === 'moon' && <><b>月圆人团圆</b><i /></>}
+        {variant === 'hotpot' && <><b>诚聘英才</b><i>蜀香火锅</i></>}
+        {variant === 'hotpot-dark' && <><b>诚聘英才</b><i>加入我们</i></>}
+        {variant === 'jellyfish' && <><b>海洋你好</b><i>北京海洋馆奇妙夜</i></>}
+      </span>
+      {action && <span className="design-app-resource-asset__action">{action}</span>}
+    </button>
+  );
 
   return (
     <section className="design-app-subpage design-app-resources-page">
-      <div className="design-app-resources-heading"><h1>资源</h1><button type="button" onClick={() => notify('资源搜索即将上线')} aria-label="搜索资源"><Search size={24} /></button></div>
-      <label className="design-app-resource-search"><Search size={21} /><input placeholder="搜索图片、插画、字体、图标" /></label>
-      <div className="design-app-resource-banner"><span>灵感素材库</span><strong>为每一次创作<br />准备好灵感</strong><i>✦</i></div>
-      <div className="design-app-resource-grid">
-        {resources.map(({ title, desc, icon: Icon, className }) => (
-          <button key={title} type="button" className={`design-app-resource-card design-app-resource-card--${className}`} onClick={() => notify(`打开${title}`)}>
-            <span><Icon size={27} strokeWidth={1.8} /></span>
-            <strong>{title}</strong>
-            <small>{desc}</small>
-            <ArrowRight size={18} />
-          </button>
-        ))}
+      <div className="design-app-resources-topbar">
+        <div className="design-app-resources-space-tabs">
+          <button type="button" className="is-active" onClick={() => notify('当前为我的空间')}>我的空间</button>
+          <button type="button" onClick={() => notify('团队空间即将上线')}>团队空间</button>
+        </div>
+        <button type="button" className="design-app-resources-more" onClick={() => notify('更多空间操作')} aria-label="更多空间操作"><MoreHorizontal size={27} /></button>
       </div>
-      <div className="design-app-resource-section-title"><h2>最近使用</h2><button type="button" onClick={() => notify('最近使用即将上线')}><ChevronRight size={23} /></button></div>
-      <div className="design-app-resource-recent">
-        {['我的品牌色板', '中秋节背景', '简约线性图标', '节日贴纸'].map((item, index) => (
-          <button type="button" key={item} onClick={() => notify(`打开${item}`)}><span className={`resource-recent-art art-${index + 1}`} /><strong>{item}</strong></button>
-        ))}
+      <div className="design-app-resources-panel">
+        <div className="design-app-resource-subtabs">
+          <button type="button" className="is-active" onClick={() => notify('已切换到我的空间')}>我的空间</button>
+          <button type="button" onClick={() => notify('我的收藏即将上线')}>我的收藏</button>
+          <button type="button" className="design-app-resource-search-button" onClick={() => notify('资源搜索即将上线')} aria-label="搜索资源"><Search size={26} /></button>
+        </div>
+        <div className="design-app-resource-filter-row">
+          {['全部⌄', '场景⌄', '标签⌄'].map((item) => <button key={item} type="button" onClick={() => notify(`${item.replace('⌄', '')}筛选即将上线`)}>{item}</button>)}
+          <span />
+          <button type="button" onClick={() => notify('网格视图')} aria-label="网格视图"><LayoutGrid size={25} /></button>
+          <button type="button" onClick={() => notify('筛选资源')} aria-label="筛选资源"><SlidersHorizontal size={26} /></button>
+        </div>
+        <div className="design-app-resource-folders">
+          {['新建看看', '你好北京你好北...', '333(我的素材)'].map((title) => <button type="button" key={title} onClick={() => notify(`打开文件夹${title}`)}><span>📁</span><strong>{title}</strong></button>)}
+        </div>
+        <div className="design-app-resource-masonry">
+          <div className="design-app-resource-column">
+            <button type="button" className="design-app-resource-add" onClick={() => notify('添加新资源')}><Plus size={42} strokeWidth={1.5} /><strong>添加</strong></button>
+            <ResourceAssetCard variant="blank" title="未命名设计" action="设计" className="is-short" />
+            <ResourceAssetCard variant="window-dark" title="铝合金电动遮阳帘" action="png" />
+            <ResourceAssetCard variant="hotpot" title="诚聘英才蜀香火锅" action="" />
+          </div>
+          <div className="design-app-resource-column">
+            <ResourceAssetCard variant="strip-warm" title="中秋节长图" action="设计" />
+            <ResourceAssetCard variant="blank" title="秋日活动主视觉" action="设计" className="is-short" />
+            <ResourceAssetCard variant="hotpot-dark" title="诚聘英才加入我们" action="" />
+          </div>
+          <div className="design-app-resource-column">
+            <ResourceAssetCard variant="strip-blue" title="品牌灵感长图" action="设计" />
+            <ResourceAssetCard variant="moon" title="月圆人团圆" action="png" />
+            <ResourceAssetCard variant="jellyfish" title="海洋你好" action="png" />
+          </div>
+        </div>
       </div>
     </section>
   );

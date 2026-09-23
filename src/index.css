@@ -396,6 +396,63 @@ button {
 .resource-recent-art.art-3 { background: linear-gradient(145deg, #fff, #d5d9e8); }
 .resource-recent-art.art-4 { background: linear-gradient(145deg, #f7cfc6, #c77c85); }
 
+.design-app-resources-page { margin: 0 -18px; padding: 0 0 110px; background: #fff; }
+.design-app-resources-topbar { position: relative; height: 110px; padding: 37px 18px 0; background: linear-gradient(125deg, #e7f0ff 0%, #e9e9ff 66%, #ede6ff 100%); }
+.design-app-resources-space-tabs { display: flex; align-items: flex-start; gap: 34px; }
+.design-app-resources-space-tabs button { position: relative; padding: 0 0 16px; border: 0; background: transparent; color: #6c7080; font-size: 24px; font-weight: 700; letter-spacing: -.06em; cursor: pointer; }
+.design-app-resources-space-tabs button.is-active { color: #252833; }
+.design-app-resources-space-tabs button.is-active::after { content: ""; position: absolute; right: 5px; bottom: 0; left: 5px; height: 3px; border-radius: 4px; background: #397fe5; }
+.design-app-resources-more { position: absolute; top: 37px; right: 18px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: #20232e; cursor: pointer; }
+.design-app-resources-panel { position: relative; min-height: calc(100vh - 168px); padding: 18px 18px 28px; border-radius: 22px 22px 0 0; background: #fff; box-shadow: 0 -4px 20px rgba(48, 58, 104, .04); }
+.design-app-resource-subtabs { display: flex; align-items: center; gap: 10px; padding-bottom: 28px; }
+.design-app-resource-subtabs button { padding: 9px 15px; border: 1px solid transparent; border-radius: 13px; background: #f5f5f8; color: #5f6370; font-size: 17px; cursor: pointer; }
+.design-app-resource-subtabs button.is-active { border-color: #a8c8f6; background: #edf5ff; color: #397cdf; font-weight: 700; }
+.design-app-resource-subtabs .design-app-resource-search-button { display: grid; place-items: center; width: 50px; height: 50px; margin-left: auto; padding: 0; border-radius: 13px; background: #f6f6f8; color: #171a25; }
+.design-app-resource-filter-row { display: flex; align-items: center; gap: 29px; min-height: 53px; border-top: 1px solid #f1f1f4; border-bottom: 1px solid #f1f1f4; color: #343742; }
+.design-app-resource-filter-row button { display: grid; place-items: center; flex: none; padding: 0; border: 0; background: transparent; color: #4f5360; font-size: 17px; cursor: pointer; }
+.design-app-resource-filter-row button:nth-child(-n + 3) { position: relative; }
+.design-app-resource-filter-row button:nth-child(-n + 3)::after { content: ""; position: absolute; right: -17px; top: 50%; width: 1px; height: 19px; transform: translateY(-50%); background: #dedfe5; }
+.design-app-resource-filter-row > span { flex: 1; }
+.design-app-resource-folders { display: flex; gap: 12px; overflow-x: auto; padding: 18px 0 35px; scrollbar-width: none; }
+.design-app-resource-folders::-webkit-scrollbar { display: none; }
+.design-app-resource-folders button { display: flex; align-items: center; flex: 0 0 170px; gap: 12px; height: 68px; overflow: hidden; padding: 0 15px; border: 1px solid #eaebef; border-radius: 12px; background: #f6f7fa; color: #292c37; text-align: left; box-shadow: 0 4px 12px rgba(39, 45, 73, .04); cursor: pointer; }
+.design-app-resource-folders button span { font-size: 31px; line-height: 1; }
+.design-app-resource-folders button strong { overflow: hidden; font-size: 17px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.design-app-resource-masonry { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 10px; }
+.design-app-resource-column { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.design-app-resource-add, .design-app-resource-asset { position: relative; display: block; width: 100%; overflow: hidden; padding: 0; border: 1px solid #e7e8ed; border-radius: 13px; background: #f6f7fa; color: #282b36; box-shadow: 0 3px 10px rgba(33, 40, 71, .04); cursor: pointer; }
+.design-app-resource-add { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 278px; gap: 14px; color: #626573; }
+.design-app-resource-add::before { content: ""; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(255,255,255,.8), transparent 65%); pointer-events: none; }
+.design-app-resource-add strong { position: relative; font-size: 19px; font-weight: 500; }
+.design-app-resource-asset { height: 178px; }
+.design-app-resource-asset.is-short { height: 145px; }
+.design-app-resource-asset--window-dark, .design-app-resource-asset--hotpot, .design-app-resource-asset--hotpot-dark { height: 252px; }
+.design-app-resource-asset--moon { height: 280px; }
+.design-app-resource-asset--jellyfish { height: 270px; }
+.design-app-resource-asset__art { position: absolute; inset: 0; display: block; overflow: hidden; }
+.design-app-resource-asset__menu { position: absolute; z-index: 3; top: 9px; right: 8px; display: grid; place-items: center; width: 38px; height: 25px; border-radius: 14px; background: rgba(255,255,255,.83); color: #272a35; box-shadow: 0 2px 8px rgba(33, 37, 59, .08); }
+.design-app-resource-asset__action { position: absolute; z-index: 4; right: 9px; bottom: 10px; padding: 5px 9px; border-radius: 7px; background: rgba(40, 42, 51, .7); color: #fff; font-size: 13px; }
+.design-app-resource-asset--strip-warm .design-app-resource-asset__art { background: #f4f5f9; }
+.design-app-resource-asset--strip-warm .design-app-resource-asset__art::before { content: ""; position: absolute; top: 50%; right: 9px; left: 9px; height: 13px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, #d9b598 0 19px, #edd2b9 19px 30px, #c6a8ba 30px 41px, #b3c3d6 41px 53px); opacity: .7; }
+.design-app-resource-asset--strip-blue .design-app-resource-asset__art { background: #f5f6fb; }
+.design-app-resource-asset--strip-blue .design-app-resource-asset__art::before { content: ""; position: absolute; top: 50%; right: 9px; left: 9px; height: 15px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, #b9dff3 0 17px, #7195d4 17px 28px, #ece6bb 28px 40px, #556695 40px 52px); opacity: .74; }
+.design-app-resource-asset--blank .design-app-resource-asset__art { background: linear-gradient(145deg, #fafbfc, #f2f3f7); }
+.design-app-resource-asset--window-dark .design-app-resource-asset__art { background: linear-gradient(145deg, #343d49, #1d2830 58%, #6b6e6c); }
+.design-app-resource-asset--window-dark .design-app-resource-asset__art::before { content: ""; position: absolute; inset: 28% 10% 16%; border: 6px solid #949899; background: linear-gradient(145deg, #b4cad3 0 18%, #5b7280 18% 55%, #d7d9d4 55%); box-shadow: inset 0 0 0 2px #323b42; }
+.design-app-resource-asset--window-dark .design-app-resource-asset__art::after { content: "铝合金电动遮阳帘"; position: absolute; top: 14px; left: 9px; color: #fff; font-size: 12px; font-weight: 700; }
+.design-app-resource-asset--moon .design-app-resource-asset__art { background: radial-gradient(circle at 63% 34%, #f5c760 0 10%, transparent 11%), linear-gradient(160deg, #071d47, #173362 52%, #0d1b3a); }
+.design-app-resource-asset--moon .design-app-resource-asset__art::before { content: ""; position: absolute; right: 22px; bottom: 25px; left: 18px; height: 43px; border-radius: 50% 50% 0 0; background: linear-gradient(180deg, rgba(34, 61, 89, .4), rgba(4, 15, 37, .86)); }
+.design-app-resource-asset--moon .design-app-resource-asset__art b { position: absolute; z-index: 2; top: 44px; left: 15px; color: #f5cb62; font-family: Georgia, "Songti SC", serif; font-size: 24px; letter-spacing: .08em; }
+.design-app-resource-asset--moon .design-app-resource-asset__art i { position: absolute; right: 29px; top: 67px; width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff7ba, #e6ab48 67%, #93613e); box-shadow: 0 0 21px rgba(255, 222, 126, .66); }
+.design-app-resource-asset--hotpot .design-app-resource-asset__art { background: radial-gradient(ellipse at 52% 62%, #ed9b3d 0 18%, #a62920 19% 33%, transparent 34%), linear-gradient(145deg, #7b201f, #d64721 57%, #4a171e); }
+.design-app-resource-asset--hotpot-dark .design-app-resource-asset__art { background: radial-gradient(ellipse at 50% 62%, #ed9b3d 0 17%, #a62a21 18% 32%, transparent 33%), linear-gradient(145deg, #9a241d, #501416 70%); }
+.design-app-resource-asset--hotpot .design-app-resource-asset__art b, .design-app-resource-asset--hotpot-dark .design-app-resource-asset__art b { position: absolute; top: 36px; left: 10px; color: #ffe6a0; font-family: Georgia, "Songti SC", serif; font-size: 22px; letter-spacing: .06em; }
+.design-app-resource-asset--hotpot .design-app-resource-asset__art i, .design-app-resource-asset--hotpot-dark .design-app-resource-asset__art i { position: absolute; top: 72px; left: 11px; color: #fff4cb; font-size: 11px; font-style: normal; }
+.design-app-resource-asset--jellyfish .design-app-resource-asset__art { background: radial-gradient(circle at 25% 28%, rgba(101, 213, 255, .55), transparent 15%), radial-gradient(circle at 74% 49%, rgba(86, 148, 255, .48), transparent 24%), linear-gradient(145deg, #071b48, #152e67 63%, #07183b); }
+.design-app-resource-asset--jellyfish .design-app-resource-asset__art::before { content: ""; position: absolute; top: 35%; left: 24%; width: 42px; height: 36px; border-radius: 50% 50% 42% 42%; background: rgba(92, 225, 238, .77); box-shadow: 57px 38px 0 -5px rgba(232, 164, 255, .65), 87px -27px 0 -7px rgba(126, 242, 224, .66); }
+.design-app-resource-asset--jellyfish .design-app-resource-asset__art b { position: absolute; top: 20px; left: 12px; color: #bfe9ff; font-size: 21px; }
+.design-app-resource-asset--jellyfish .design-app-resource-asset__art i { position: absolute; top: 50px; left: 13px; color: #b7d8ff; font-size: 9px; font-style: normal; }
+
 .design-app-profile-page { position: relative; margin: 0 -18px; padding: 25px 18px 110px; background: linear-gradient(145deg, #eef5ff 0, #f5f2ff 36%, #fff 66%); }
 .design-app-profile-top-actions { display: flex; justify-content: flex-end; gap: 18px; padding-right: 5px; }
 .design-app-profile-top-actions button { position: relative; display: grid; place-items: center; border: 0; background: transparent; color: #202534; cursor: pointer; }
