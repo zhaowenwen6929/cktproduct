@@ -3,6 +3,7 @@ import {
   Bell,
   Bookmark,
   Camera,
+  ChevronDown,
   ChevronRight,
   ClipboardCheck,
   Crop,
