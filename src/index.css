@@ -187,9 +187,25 @@ button {
 .design-ai-header__actions { display: flex; align-items: center; gap: 13px; margin-left: auto; }
 .design-ai-header__actions > button:not(.design-ai-credit) { display: grid; place-items: center; width: 28px; height: 30px; padding: 0; }
 .design-ai-credit { display: inline-flex; align-items: center; gap: 7px; height: 35px; padding: 0 16px 0 11px !important; border-radius: 20px !important; background: linear-gradient(105deg, #f0ebff, #e9e5ff); color: #665bd0 !important; font-size: 16px; font-weight: 700; }
+.design-ai-more-wrap { position: relative; }
+.design-ai-more-wrap > button { display: grid; place-items: center; width: 28px; height: 30px; padding: 0; }
+.design-ai-more-menu { position: absolute; top: 40px; right: -8px; z-index: 25; width: 190px; overflow: hidden; padding: 9px 0; border-radius: 0 0 16px 16px; background: #fff; box-shadow: 0 10px 24px rgba(25, 29, 47, .13); }
+.design-ai-more-menu button { display: block; width: 100%; padding: 13px 22px; border: 0; border-bottom: 1px solid #f1f1f3; background: #fff; color: #252833; font-size: 17px; text-align: left; cursor: pointer; }
+.design-ai-more-menu button:last-child { border-bottom: 0; }
+.design-ai-more-menu button:hover { background: #f8f8fc; }
 
 .design-ai-conversation { height: calc(100vh - 128px); overflow-y: auto; padding: 5px 18px 20px; scrollbar-width: none; }
 .design-ai-conversation::-webkit-scrollbar { display: none; }
+.design-ai-empty-state { display: flex; min-height: calc(100vh - 278px); flex-direction: column; align-items: center; justify-content: center; padding: 30px 0 100px; color: #a1a3b0; font-size: 17px; }
+.design-ai-empty-state p { margin: 18px 0 0; }
+.design-ai-empty-state .design-ai-submitted-prompt { width: 100%; margin-top: 28px; color: #35385a; }
+.design-ai-empty-art { position: relative; width: 96px; height: 74px; }
+.design-ai-empty-art__back, .design-ai-empty-art__front { position: absolute; bottom: 3px; width: 53px; height: 67px; overflow: hidden; border: 3px solid #fff; border-radius: 12px; box-shadow: 0 6px 12px rgba(58, 67, 106, .13); }
+.design-ai-empty-art__back { left: 13px; transform: rotate(-10deg); background: linear-gradient(140deg, #e7e2d8, #faf9f3 50%, #c6d0d9); }
+.design-ai-empty-art__back::before { content: ""; position: absolute; right: 9px; bottom: 9px; width: 24px; height: 37px; border-radius: 7px 7px 2px 2px; background: linear-gradient(90deg, #d7dbda 0 36%, #faf9f4 36% 54%, #b7c5ca 54%); }
+.design-ai-empty-art__front { right: 12px; z-index: 1; transform: rotate(5deg); background: linear-gradient(155deg, #55a6db, #6f97d2 62%, #91a8d8); }
+.design-ai-empty-art__front::before { content: ""; position: absolute; left: 20px; bottom: 12px; width: 17px; height: 38px; background: #f8f8ee; clip-path: polygon(0 100%, 18% 42%, 36% 42%, 48% 0, 60% 42%, 82% 42%, 100% 100%); }
+.design-ai-empty-art i { position: absolute; z-index: 2; right: -1px; bottom: 7px; width: 27px; height: 11px; border-top: 3px solid #65dbd0; border-radius: 50%; transform: rotate(-25deg); }
 .design-ai-intro-copy { color: #242631; font-size: 17px; line-height: 1.72; letter-spacing: -.02em; }
 .design-ai-intro-copy p { margin: 0 0 18px; }
 .design-ai-info-status { display: flex; align-items: center; width: 100%; min-height: 74px; margin: 12px 0 20px; padding: 0 20px; border: 1px solid #e8e9ee; border-radius: 22px; background: #fff; color: #262936; box-shadow: 0 3px 13px rgba(29, 34, 60, .04); text-align: left; cursor: pointer; }
@@ -242,6 +258,21 @@ button {
 .design-ai-composer__submit { display: inline-flex; align-items: center; gap: 3px; height: 50px; padding: 0 13px; border: 0; border-radius: 16px; background: linear-gradient(135deg, #e0d7ff, #d3d4ff); color: #fff; font-size: 16px; cursor: pointer; }
 .design-ai-composer__submit:hover { background: linear-gradient(135deg, #cbbcff, #b8baff); }
 .design-ai-toast { position: fixed; z-index: 30; bottom: 104px; left: 50%; transform: translateX(-50%); padding: 10px 17px; border-radius: 999px; background: rgba(30, 33, 45, .9); color: #fff; font-size: 13px; white-space: nowrap; box-shadow: 0 8px 24px rgba(25, 30, 50, .18); }
+.design-ai-history-backdrop { position: fixed; z-index: 22; inset: 52px 0 0; border: 0; background: transparent; cursor: default; }
+.design-ai-history-panel { position: fixed; z-index: 23; top: 52px; right: max(0px, calc((100vw - 520px) / 2)); bottom: 0; width: min(68%, 355px); min-width: 300px; overflow: hidden; border-radius: 27px 0 0 0; background: #fff; box-shadow: -7px 0 28px rgba(22, 28, 53, .12); }
+.design-ai-history-header { display: flex; align-items: center; justify-content: space-between; padding: 22px 20px 12px; }
+.design-ai-history-header h2 { margin: 0; font-size: 22px; letter-spacing: -.04em; }
+.design-ai-history-header > div { display: flex; align-items: center; gap: 18px; }
+.design-ai-history-header button { display: grid; place-items: center; width: 28px; height: 30px; padding: 0; border: 0; background: transparent; color: #171a22; cursor: pointer; }
+.design-ai-history-list { height: calc(100% - 67px); overflow-y: auto; padding: 0 13px 24px; scrollbar-width: none; }
+.design-ai-history-list::-webkit-scrollbar { display: none; }
+.design-ai-history-list section { margin-top: 9px; }
+.design-ai-history-list h3 { margin: 0; padding: 12px 27px 8px; color: #9b9da8; font-size: 15px; font-weight: 500; }
+.design-ai-history-list section:first-child h3 { padding-top: 7px; }
+.design-ai-history-list section > button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 58px; padding: 0 18px 0 26px; border: 0; border-radius: 15px; background: transparent; color: #272a34; font-size: 17px; text-align: left; cursor: pointer; }
+.design-ai-history-list section > button.is-current { background: #f5f5fa; }
+.design-ai-history-list section > button:hover { background: #f7f7fb; }
+.design-ai-history-list section > button svg { color: #1f222b; }
 .design-ai-input-backdrop { position: fixed; z-index: 18; inset: 0; border: 0; background: rgba(18, 20, 28, .68); cursor: default; }
 .design-ai-input-sheet { position: fixed; z-index: 20; bottom: 0; left: 50%; display: flex; flex-direction: column; width: min(100%, 520px); min-height: 285px; transform: translateX(-50%); padding: 36px 18px 15px; border-radius: 30px 30px 0 0; background: #fff; box-shadow: 0 -8px 26px rgba(30, 32, 55, .14); }
 .design-ai-input-sheet__attachment { display: grid; place-items: center; width: 100px; height: 100px; padding: 0; border: 1px solid #e5e7f1; border-radius: 17px; background: linear-gradient(145deg, #fffafd, #f5f7ff); color: #20212a; cursor: pointer; }

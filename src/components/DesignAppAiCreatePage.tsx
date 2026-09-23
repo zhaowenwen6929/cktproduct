@@ -12,11 +12,22 @@ import {
   Paperclip,
   SlidersHorizontal,
   Sparkles,
+  X,
 } from 'lucide-react';
 
 type DesignAppAiCreatePageProps = {
   onBack: () => void;
 };
+
+const historyGroups = [
+  { date: '09月22日', items: ['中秋快乐'] },
+  { date: '09月20日', items: ['制作宣传海报'] },
+  { date: '09月17日', items: ['中秋节海报', '做海报', '制作海报', '做海报'] },
+  { date: '09月08日', items: ['大雪节气海报解析'] },
+  { date: '03月12日', items: ['设计方案示例介绍', '参考模版生成设计', '生成特定早安日签要求'] },
+  { date: '03月11日', items: ['生成同款设计'] },
+  { date: '03月10日', items: ['麦角硫因精华水介绍'] },
+];
 
 function CompletedStep({ children }: { children: ReactNode }) {
   return (
@@ -32,6 +43,10 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
   const [submittedPrompt, setSubmittedPrompt] = useState('');
   const [toast, setToast] = useState('');
   const [isComposerExpanded, setIsComposerExpanded] = useState(false);
+  const [isNewConversation, setIsNewConversation] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [conversationTitle, setConversationTitle] = useState('中秋快乐');
 
   const notify = (message: string) => {
     setToast(message);
@@ -50,6 +65,20 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
     notify('已收到你的设计需求');
   };
 
+  const handleCreateConversation = () => {
+    setIsNewConversation(true);
+    setSubmittedPrompt('');
+    setInputValue('');
+    setIsComposerExpanded(false);
+    setIsHistoryOpen(false);
+  };
+
+  const handleHistorySelect = (title: string) => {
+    setConversationTitle(title);
+    setIsNewConversation(title !== '中秋快乐');
+    setIsHistoryOpen(false);
+  };
+
   return (
     <div className="design-ai-page">
       <main className="design-ai-shell">
@@ -61,22 +90,43 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
           <button type="button" className="design-ai-header__back" onClick={onBack} aria-label="返回创客贴设计首页">
             <ChevronLeft size={28} strokeWidth={2.2} />
           </button>
-          <h1>中秋快乐</h1>
+          <h1>{isNewConversation ? 'AI创作' : conversationTitle}</h1>
           <div className="design-ai-header__actions">
             <button type="button" className="design-ai-credit" onClick={() => notify('积分明细即将上线')}>
               <Sparkles size={16} fill="currentColor" />
               <span>183923</span>
             </button>
-            <button type="button" onClick={() => notify('已新建一轮对话')} aria-label="新建对话">
+            <button type="button" onClick={handleCreateConversation} aria-label="新建对话">
               <MessageSquarePlus size={26} strokeWidth={2} />
             </button>
-            <button type="button" onClick={() => notify('更多功能即将上线')} aria-label="更多功能">
-              <Menu size={27} strokeWidth={2.2} />
-            </button>
+            <div className="design-ai-more-wrap">
+              <button type="button" onClick={() => setIsMoreMenuOpen((open) => !open)} aria-label="更多功能" aria-expanded={isMoreMenuOpen}>
+                <Menu size={27} strokeWidth={2.2} />
+              </button>
+              {isMoreMenuOpen && (
+                <div className="design-ai-more-menu">
+                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); setIsHistoryOpen(true); }}>历史对话</button>
+                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); notify('我的作品即将上线'); }}>我的作品</button>
+                  <button type="button" onClick={() => { setIsMoreMenuOpen(false); notify('举报功能即将上线'); }}>举报</button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
         <section className="design-ai-conversation" aria-label="AI创作对话流">
+          {isNewConversation ? (
+            <div className="design-ai-empty-state">
+              <div className="design-ai-empty-art" aria-hidden="true">
+                <span className="design-ai-empty-art__back" />
+                <span className="design-ai-empty-art__front" />
+                <i />
+              </div>
+              <p>请在下方输入你的设计需求～</p>
+              {submittedPrompt && <div className="design-ai-submitted-prompt">{submittedPrompt}</div>}
+            </div>
+          ) : (
+            <>
           <div className="design-ai-intro-copy">
             <p>我想做一张中秋节主题的海报，请帮我完成设计。</p>
             <p>让我先了解一下海报设计的具体要求，这样才能帮你做出最合适的设计。</p>
@@ -140,6 +190,8 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
               <MoreHorizontal size={18} />
             </div>
           </section>
+            </>
+          )}
           <div className="design-ai-bottom-space" />
         </section>
 
@@ -190,6 +242,38 @@ export function DesignAppAiCreatePage({ onBack }: DesignAppAiCreatePageProps) {
           </>
         )}
       </main>
+      {isHistoryOpen && (
+        <>
+          <button type="button" className="design-ai-history-backdrop" onClick={() => setIsHistoryOpen(false)} aria-label="关闭历史对话" />
+          <aside className="design-ai-history-panel" aria-label="历史对话列表">
+            <div className="design-ai-history-header">
+              <h2>历史对话</h2>
+              <div>
+                <button type="button" onClick={handleCreateConversation} aria-label="新建对话"><MessageSquarePlus size={25} strokeWidth={2} /></button>
+                <button type="button" onClick={() => setIsHistoryOpen(false)} aria-label="关闭历史对话"><X size={25} strokeWidth={2} /></button>
+              </div>
+            </div>
+            <div className="design-ai-history-list">
+              {historyGroups.map((group) => (
+                <section key={group.date}>
+                  <h3>{group.date}</h3>
+                  {group.items.map((item, index) => (
+                    <button
+                      key={`${group.date}-${item}-${index}`}
+                      type="button"
+                      className={item === conversationTitle && !isNewConversation ? 'is-current' : ''}
+                      onClick={() => handleHistorySelect(item)}
+                    >
+                      <span>{item}</span>
+                      <MoreHorizontal size={20} strokeWidth={2.5} />
+                    </button>
+                  ))}
+                </section>
+              ))}
+            </div>
+          </aside>
+        </>
+      )}
       {toast && <div className="design-ai-toast" role="status">{toast}</div>}
     </div>
   );
