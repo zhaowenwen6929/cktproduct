@@ -14,7 +14,6 @@ import {
   ImagePlus,
   LayoutDashboard,
   Menu,
-  MoreHorizontal,
   Pencil,
   PlayCircle,
   Search,
@@ -221,81 +220,81 @@ function SkillPreview({ config, inModal = false }: { config: SkillConfig; inModa
   };
 
   return (
-    <div className={`overflow-hidden rounded-[18px] border border-[#e6e9f3] bg-white shadow-[0_12px_36px_rgba(50,65,105,0.08)] ${inModal ? 'h-full min-h-[610px]' : 'min-h-[620px]'}`}>
-      <div className="flex items-center justify-between border-b border-[#edf0f6] px-5 py-4">
+    <div className={`mx-auto w-full overflow-hidden rounded-[22px] border border-[#e4e7f1] bg-white shadow-[0_18px_42px_rgba(50,65,105,0.12)] ${inModal ? 'h-[560px] max-w-[650px]' : 'h-[560px] max-w-[620px]'}`}>
+      <div className="flex h-[64px] items-center justify-between border-b border-[#edf0f6] px-4 py-3">
         <div>
-          <div className="flex items-center gap-2 text-[15px] font-semibold text-[#202838]">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#eff2ff] text-[#665de8]"><Sparkles className="h-4 w-4" /></span>
+          <div className="flex items-center gap-2 text-[14px] font-semibold text-[#202838]">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#eff2ff] text-[#665de8]"><Sparkles className="h-3.5 w-3.5" /></span>
             {config.name || 'Skill 预览'}
           </div>
-          <p className="mt-1 text-[11px] text-[#9aa3b5]">根据当前 JSON 配置实时生成表单</p>
+          <p className="mt-0.5 text-[10px] text-[#9aa3b5]">根据当前 JSON 配置实时生成表单</p>
         </div>
         <span className="rounded-full bg-[#f0f2ff] px-2.5 py-1 text-[10px] font-medium text-[#6c62d7]">实时预览</span>
       </div>
 
-      <div className="grid min-h-[550px] grid-cols-[40%_60%] bg-[#f3f3ff]">
-        <div className="relative overflow-hidden border-r border-white/70 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,.94),transparent_26%),linear-gradient(145deg,#f0eeff_0%,#e9e7ff_52%,#dfe2ff_100%)] p-5">
+      <div className="grid h-[496px] grid-cols-[42%_58%] bg-[#f3f3ff]">
+        <div className="relative overflow-hidden border-r border-white/70 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,.94),transparent_26%),linear-gradient(145deg,#f0eeff_0%,#e9e7ff_52%,#dfe2ff_100%)] p-4">
           <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(#9b99e7_1px,transparent_1px)] [background-size:20px_20px]" />
-          <div className="relative flex h-full min-h-[400px] flex-col justify-center gap-4">
-            <div className="mx-auto w-[88%] rotate-[-5deg] rounded-[16px] border-[7px] border-white/90 bg-[linear-gradient(145deg,#d5e8ff,#ecf6ff_42%,#8b8fe8)] p-2 shadow-[0_16px_30px_rgba(75,83,160,.2)]">
-              <div className="aspect-[1.1/1] rounded-[9px] bg-[linear-gradient(145deg,#f3f8ff_0%,#bed8f6_44%,#7772c9_45%,#f4d4c9_78%,#faf5e8_100%)] p-3">
+          <div className="relative flex h-full min-h-[360px] flex-col justify-center gap-3">
+            <div className="mx-auto w-[84%] rotate-[-5deg] rounded-[14px] border-[6px] border-white/90 bg-[linear-gradient(145deg,#d5e8ff,#ecf6ff_42%,#8b8fe8)] p-1.5 shadow-[0_14px_26px_rgba(75,83,160,.2)]">
+              <div className="aspect-[1.1/1] rounded-[8px] bg-[linear-gradient(145deg,#f3f8ff_0%,#bed8f6_44%,#7772c9_45%,#f4d4c9_78%,#faf5e8_100%)] p-2.5">
                 <div className="flex h-full flex-col justify-between rounded-[6px] border border-white/70 bg-white/20 p-2">
                   <span className="text-[8px] font-semibold tracking-[.18em] text-[#54618c]">LIVE VISUAL</span>
-                  <span className="text-[19px] font-bold leading-[1.05] text-white drop-shadow-[0_2px_4px_rgba(24,31,77,.25)]">直播<br />视觉物料</span>
+                  <span className="text-[17px] font-bold leading-[1.05] text-white drop-shadow-[0_2px_4px_rgba(24,31,77,.25)]">直播<br />视觉物料</span>
                   <span className="h-1.5 w-16 rounded-full bg-white/80" />
                 </div>
               </div>
             </div>
-            <div className="mx-auto w-[60%] rotate-[6deg] rounded-[13px] border-[6px] border-white/90 bg-[linear-gradient(135deg,#f7e4cf,#becaf5)] p-1.5 opacity-90 shadow-lg">
+            <div className="mx-auto w-[56%] rotate-[6deg] rounded-[12px] border-[5px] border-white/90 bg-[linear-gradient(135deg,#f7e4cf,#becaf5)] p-1.5 opacity-90 shadow-lg">
               <div className="aspect-[1.45/1] rounded-[7px] bg-[linear-gradient(145deg,#fedfba,#ee9a84_50%,#8d91dc)]" />
             </div>
-            <div className="flex justify-center gap-1.5 pt-2"><span className="h-1.5 w-5 rounded-full bg-[#615ee1]" /><span className="h-1.5 w-1.5 rounded-full bg-white/80" /><span className="h-1.5 w-1.5 rounded-full bg-white/80" /></div>
+            <div className="flex justify-center gap-1.5 pt-1"><span className="h-1.5 w-5 rounded-full bg-[#615ee1]" /><span className="h-1.5 w-1.5 rounded-full bg-white/80" /><span className="h-1.5 w-1.5 rounded-full bg-white/80" /></div>
           </div>
         </div>
 
-        <div className="overflow-y-auto bg-white px-5 py-5">
-          <div className="mb-5 flex items-start justify-between gap-3">
+        <div className="overflow-y-auto bg-white px-4 py-4 [scrollbar-width:thin]">
+          <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-[17px] font-semibold text-[#242938]">{config.name || '未命名 Skill'}</h3>
-              <p className="mt-1 text-[11px] leading-5 text-[#8e96a7]">{config.description || '暂无描述'}</p>
+              <h3 className="text-[15px] font-semibold text-[#242938]">{config.name || '未命名 Skill'}</h3>
+              <p className="mt-1 text-[10px] leading-4 text-[#8e96a7]">{config.description || '暂无描述'}</p>
             </div>
-            <button type="button" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f7f8fb] text-[#8991a3]" aria-label="更多操作"><MoreHorizontal className="h-4 w-4" /></button>
+            <button type="button" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#f7f8fb] text-[#8991a3]" aria-label="关闭预览"><X className="h-3.5 w-3.5" /></button>
           </div>
 
           {config.fields.map((field) => {
             const value = values[field.key] ?? '';
             return (
-              <div key={field.key} className="mb-4">
-                <label className="mb-2 flex items-center gap-1 text-[12px] font-medium text-[#49536a]">{field.label}{field.required ? <span className="text-[#ff6060]">*</span> : null}</label>
+              <div key={field.key} className="mb-3.5">
+                <label className="mb-1.5 flex items-center gap-1 text-[11px] font-medium text-[#49536a]">{field.label}{field.required ? <span className="text-[#ff6060]">*</span> : null}</label>
                 {field.type === 'radio' ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {(field.options ?? []).map((option) => (
-                      <button key={option.value} type="button" onClick={() => updateValue(field.key, option.value)} className={`rounded-[8px] border px-3 py-2 text-[11px] transition ${value === option.value ? 'border-[#817cf0] bg-[#efefff] font-medium text-[#5c57cd]' : 'border-[#eef0f6] bg-[#f8f9fb] text-[#697388] hover:border-[#cbc9fa]'}`}>{option.label}</button>
+                      <button key={option.value} type="button" onClick={() => updateValue(field.key, option.value)} className={`rounded-[7px] border px-2.5 py-1.5 text-[10px] transition ${value === option.value ? 'border-[#817cf0] bg-[#efefff] font-medium text-[#5c57cd]' : 'border-[#eef0f6] bg-[#f8f9fb] text-[#697388] hover:border-[#cbc9fa]'}`}>{option.label}</button>
                     ))}
                   </div>
                 ) : null}
                 {field.type === 'ratio' ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {(field.options ?? []).map((option) => (
-                      <button key={option.value} type="button" onClick={() => updateValue(field.key, option.value)} className={`rounded-[8px] px-3 py-2 text-[11px] ${value === option.value ? 'bg-[#dedcff] font-medium text-[#5b56c5]' : 'bg-[#f3f4f8] text-[#667086]'}`}>{option.label}</button>
+                      <button key={option.value} type="button" onClick={() => updateValue(field.key, option.value)} className={`rounded-[7px] px-2.5 py-1.5 text-[10px] ${value === option.value ? 'bg-[#dedcff] font-medium text-[#5b56c5]' : 'bg-[#f3f4f8] text-[#667086]'}`}>{option.label}</button>
                     ))}
                   </div>
                 ) : null}
-                {field.type === 'input' ? <input value={typeof value === 'string' ? value : ''} onChange={(event) => updateValue(field.key, event.currentTarget.value)} placeholder={field.props?.placeholder} maxLength={field.props?.maxLength} className="h-10 w-full rounded-[9px] bg-[#f6f7fa] px-3 text-[11px] text-[#3b4456] outline-none ring-1 ring-transparent placeholder:text-[#b0b6c3] focus:ring-[#bbb8fa]" /> : null}
-                {field.type === 'textarea' ? <textarea value={typeof value === 'string' ? value : ''} onChange={(event) => updateValue(field.key, event.currentTarget.value)} placeholder={field.props?.placeholder} maxLength={field.props?.maxLength} rows={3} className="w-full resize-none rounded-[9px] bg-[#f6f7fa] px-3 py-2.5 text-[11px] leading-5 text-[#3b4456] outline-none ring-1 ring-transparent placeholder:text-[#b0b6c3] focus:ring-[#bbb8fa]" /> : null}
+                {field.type === 'input' ? <input value={typeof value === 'string' ? value : ''} onChange={(event) => updateValue(field.key, event.currentTarget.value)} placeholder={field.props?.placeholder} maxLength={field.props?.maxLength} className="h-9 w-full rounded-[8px] bg-[#f6f7fa] px-2.5 text-[10px] text-[#3b4456] outline-none ring-1 ring-transparent placeholder:text-[#b0b6c3] focus:ring-[#bbb8fa]" /> : null}
+                {field.type === 'textarea' ? <textarea value={typeof value === 'string' ? value : ''} onChange={(event) => updateValue(field.key, event.currentTarget.value)} placeholder={field.props?.placeholder} maxLength={field.props?.maxLength} rows={3} className="w-full resize-none rounded-[8px] bg-[#f6f7fa] px-2.5 py-2 text-[10px] leading-4 text-[#3b4456] outline-none ring-1 ring-transparent placeholder:text-[#b0b6c3] focus:ring-[#bbb8fa]" /> : null}
                 {field.type === 'media-upload' ? (
-                  <button type="button" className="flex h-[76px] w-full flex-col items-center justify-center gap-1 rounded-[9px] border border-dashed border-[#d8dced] bg-[#f8f9fc] text-[#9ba3b5] hover:border-[#a8a4ef] hover:bg-[#f4f3ff]">
-                    <ImagePlus className="h-5 w-5 text-[#8990a6]" /><span className="text-[11px]">点击或拖拽上传</span><span className="text-[9px]">最多 {field.maxCount ?? 10} 张，支持 JPG / PNG / WEBP</span>
+                  <button type="button" className="flex h-[64px] w-full flex-col items-center justify-center gap-0.5 rounded-[8px] border border-dashed border-[#d8dced] bg-[#f8f9fc] text-[#9ba3b5] hover:border-[#a8a4ef] hover:bg-[#f4f3ff]">
+                    <ImagePlus className="h-4 w-4 text-[#8990a6]" /><span className="text-[10px]">点击或拖拽上传</span><span className="text-[9px]">最多 {field.maxCount ?? 10} 张，支持 JPG / PNG / WEBP</span>
                   </button>
                 ) : null}
-                {field.description ? <p className="mt-1 text-[10px] leading-4 text-[#a1a8b6]">{field.description}</p> : null}
+                {field.description ? <p className="mt-1 text-[9px] leading-3.5 text-[#a1a8b6]">{field.description}</p> : null}
               </div>
             );
           })}
 
-          <div className="mt-6 flex gap-2 border-t border-[#f0f1f5] pt-4">
-            {config.actions?.fillPrompt?.enabled !== false ? <button type="button" className="flex-1 rounded-[9px] bg-[#f1f3f8] py-2.5 text-[11px] font-medium text-[#788196]">{config.actions?.fillPrompt?.text || '带入输入框'}</button> : null}
-            {config.actions?.generate?.enabled !== false ? <button type="button" className="flex-[1.5] rounded-[9px] bg-[#615ce6] py-2.5 text-[11px] font-medium text-white shadow-[0_7px_14px_rgba(97,92,230,.2)]">{config.actions?.generate?.text || '开始生成'}</button> : null}
+          <div className="mt-4 flex gap-2 border-t border-[#f0f1f5] pt-3">
+            {config.actions?.fillPrompt?.enabled !== false ? <button type="button" className="flex-1 rounded-[8px] bg-[#f1f3f8] py-2 text-[10px] font-medium text-[#788196]">{config.actions?.fillPrompt?.text || '带入输入框'}</button> : null}
+            {config.actions?.generate?.enabled !== false ? <button type="button" className="flex-[1.5] rounded-[8px] bg-[#615ce6] py-2 text-[10px] font-medium text-white shadow-[0_7px_14px_rgba(97,92,230,.2)]">{config.actions?.generate?.text || '开始生成'}</button> : null}
           </div>
         </div>
       </div>
