@@ -5,7 +5,6 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
   Clipboard,
   Code2,
   Database,
@@ -207,7 +206,7 @@ function getInitialPreviewValue(field: SkillField): string | string[] {
   return field.options?.[0]?.value ?? '';
 }
 
-function SkillPreview({ config, inModal = false }: { config: SkillConfig; inModal?: boolean }) {
+function SkillPreview({ config }: { config: SkillConfig }) {
   const initialValues = useMemo(() => Object.fromEntries(config.fields.map((field) => [field.key, getInitialPreviewValue(field)])), [config]);
   const [values, setValues] = useState<Record<string, string | string[]>>(initialValues);
 
@@ -220,7 +219,7 @@ function SkillPreview({ config, inModal = false }: { config: SkillConfig; inModa
   };
 
   return (
-    <div className={`mx-auto w-full overflow-hidden rounded-[22px] border border-[#e4e7f1] bg-white shadow-[0_18px_42px_rgba(50,65,105,0.12)] ${inModal ? 'h-[560px] max-w-[650px]' : 'h-[560px] max-w-[620px]'}`}>
+    <div className="mx-auto h-[560px] w-full max-w-[620px] overflow-hidden rounded-[22px] border border-[#e4e7f1] bg-white shadow-[0_18px_42px_rgba(50,65,105,0.12)]">
       <div className="flex h-[64px] items-center justify-between border-b border-[#edf0f6] px-4 py-3">
         <div>
           <div className="flex items-center gap-2 text-[14px] font-semibold text-[#202838]">
@@ -373,7 +372,7 @@ export function AdminBackofficePage({ onBackToDirectory }: { onBackToDirectory: 
   const [config, setConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
   const [searchValue, setSearchValue] = useState(DEFAULT_SKILL_CONFIG.skillCode);
   const [queriedCode, setQueriedCode] = useState(DEFAULT_SKILL_CONFIG.skillCode);
-  const [editOpen, setEditOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [draftText, setDraftText] = useState(() => prettyJson(DEFAULT_SKILL_CONFIG));
   const [draftConfig, setDraftConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
@@ -397,7 +396,7 @@ export function AdminBackofficePage({ onBackToDirectory }: { onBackToDirectory: 
     setDraftText(prettyJson(config));
     setDraftConfig(config);
     setJsonError('');
-    setEditOpen(true);
+    setIsEditing(true);
   };
 
   const updateDraft = (value: string) => {
@@ -425,7 +424,7 @@ export function AdminBackofficePage({ onBackToDirectory }: { onBackToDirectory: 
     setSearchValue(draftConfig.skillCode);
     setQueriedCode(draftConfig.skillCode);
     setConfirmOpen(false);
-    setEditOpen(false);
+    setIsEditing(false);
     setSaved(true);
   };
 
@@ -450,28 +449,15 @@ export function AdminBackofficePage({ onBackToDirectory }: { onBackToDirectory: 
             <section className="flex min-h-[440px] items-center justify-center rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="text-center"><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f3f7] text-[#9da7b5]"><Search className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">未找到对应的 Skill 配置</h2><p className="mt-2 text-[12px] text-[#a1a9b5]">请检查 Skill 标识是否正确，或点击重置查看示例配置</p></div></section>
           ) : (
             <section className="rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
-              <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4"><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-[#eef2ff] text-[#615ce6]"><Code2 className="h-[18px] w-[18px]" /></div><div><div className="flex items-center gap-2"><h2 className="text-[15px] font-semibold text-[#263143]">{config.name}</h2><span className="rounded-full bg-[#e9f8ef] px-2 py-0.5 text-[10px] text-[#37a36d]">已启用</span></div><p className="mt-1 text-[11px] text-[#9aa3b1]">{config.skillCode} · 共 {config.fields.length} 个配置字段</p></div></div><div className="flex items-center gap-3"><span className="text-[11px] text-[#a3aab6]">{saved ? '刚刚已保存' : '最后更新：2026-10-21 14:28'}</span><button type="button" onClick={openEditor} className="h-9 rounded-[3px] bg-[#278fee] px-5 text-[12px] text-white hover:bg-[#167fdc]"><Pencil className="mr-1.5 inline-block h-3.5 w-3.5" />修改</button></div></div>
+              <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4"><div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-[#eef2ff] text-[#615ce6]"><Code2 className="h-[18px] w-[18px]" /></div><div><div className="flex items-center gap-2"><h2 className="text-[15px] font-semibold text-[#263143]">{config.name}</h2><span className="rounded-full bg-[#e9f8ef] px-2 py-0.5 text-[10px] text-[#37a36d]">已启用</span></div><p className="mt-1 text-[11px] text-[#9aa3b1]">{config.skillCode} · 共 {config.fields.length} 个配置字段</p></div></div><div className="flex items-center gap-3"><span className="text-[11px] text-[#a3aab6]">{saved ? '刚刚已保存' : isEditing ? '编辑中：修改后实时预览' : '最后更新：2026-10-21 14:28'}</span>{isEditing ? <button type="button" onClick={() => { setIsEditing(false); setJsonError(''); }} className="h-9 rounded-[3px] border border-[#dfe3ea] bg-white px-4 text-[12px] text-[#687386] hover:bg-[#f7f8fa]">取消</button> : null}<button type="button" onClick={isEditing ? confirmSave : openEditor} disabled={isEditing && Boolean(jsonError)} className="h-9 rounded-[3px] bg-[#278fee] px-5 text-[12px] text-white hover:bg-[#167fdc] disabled:cursor-not-allowed disabled:bg-[#b9c8d8]">{isEditing ? <Check className="mr-1.5 inline-block h-3.5 w-3.5" /> : <Pencil className="mr-1.5 inline-block h-3.5 w-3.5" />}{isEditing ? '保存' : '修改'}</button></div></div>
               <div className="grid grid-cols-[minmax(360px,42%)_minmax(540px,58%)] gap-5 p-5">
-                <div className="min-w-0 rounded-[18px] bg-[#172336] p-4 shadow-[0_12px_28px_rgba(22,34,54,.12)]"><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-[12px] font-medium text-white"><span className="h-2 w-2 rounded-full bg-[#60d59b]" />配置 JSON</div><button type="button" onClick={() => navigator.clipboard?.writeText(prettyJson(config))} className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-[#9babbe] hover:bg-white/[.08] hover:text-white"><Clipboard className="h-3 w-3" />复制</button></div><div className="max-h-[630px] min-h-[620px] overflow-auto rounded-[12px] bg-[#101b2c] p-4"><JsonCodeView config={config} /></div></div>
-                <div className="min-w-0"><SkillPreview config={config} /></div>
+                <div className={`min-w-0 rounded-[18px] bg-[#172336] p-4 shadow-[0_12px_28px_rgba(22,34,54,.12)] ${isEditing ? 'ring-2 ring-[#278fee]/30' : ''}`}><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-[12px] font-medium text-white"><span className={`h-2 w-2 rounded-full ${isEditing ? 'bg-[#73baff]' : 'bg-[#60d59b]'}`} />配置 JSON {isEditing ? <span className="rounded-full bg-[#278fee]/20 px-2 py-0.5 text-[10px] font-normal text-[#9fd1ff]">编辑中</span> : null}</div><button type="button" onClick={() => navigator.clipboard?.writeText(isEditing ? draftText : prettyJson(config))} className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-[#9babbe] hover:bg-white/[.08] hover:text-white"><Clipboard className="h-3 w-3" />复制</button></div><div className="max-h-[630px] min-h-[620px] overflow-auto rounded-[12px] bg-[#101b2c] p-4">{isEditing ? <textarea value={draftText} onChange={(event) => updateDraft(event.currentTarget.value)} spellCheck={false} className="min-h-[588px] w-full resize-none bg-transparent font-mono text-[11px] leading-[1.72] text-[#d6deeb] outline-none" /> : <JsonCodeView config={config} />}</div>{isEditing ? (jsonError ? <div className="mt-3 flex gap-2 rounded-[8px] bg-[#44272d] px-3 py-2 text-[11px] leading-5 text-[#ffb4b9]"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />{jsonError}</div> : <div className="mt-3 flex items-center gap-2 text-[10px] text-[#86a0ba]"><Check className="h-3.5 w-3.5 text-[#62d49c]" />JSON 格式正确 · {draftText.length} 个字符</div>) : null}</div>
+                <div className="min-w-0"><SkillPreview config={isEditing ? draftConfig : config} /></div>
               </div>
             </section>
           )}
         </div>
       </main>
-
-      {editOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1830]/45 p-6 backdrop-blur-[2px]">
-          <div className="flex h-[min(850px,calc(100vh-48px))] w-[min(1500px,calc(100vw-48px))] flex-col overflow-hidden rounded-[12px] bg-[#f5f6f9] shadow-[0_24px_80px_rgba(16,27,52,.28)]">
-            <div className="flex h-[64px] shrink-0 items-center justify-between border-b border-[#e6e9ef] bg-white px-6"><div><div className="flex items-center gap-3"><h2 className="text-[17px] font-semibold text-[#273244]">修改 Skill 配置</h2><span className="rounded-full bg-[#edf1ff] px-2.5 py-1 text-[10px] text-[#625cdd]">{config.skillCode}</span></div><p className="mt-1 text-[11px] text-[#9ba4b2]">修改左侧 JSON 后，右侧预览会实时更新</p></div><button type="button" onClick={() => setEditOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full text-[#8b95a5] hover:bg-[#f1f3f7]" aria-label="关闭"><X className="h-5 w-5" /></button></div>
-            <div className="grid min-h-0 flex-1 grid-cols-[minmax(380px,44%)_minmax(620px,56%)] gap-5 overflow-hidden p-5">
-              <div className="flex min-h-0 flex-col rounded-[12px] border border-[#e1e5ec] bg-[#172336] p-4 shadow-[0_8px_22px_rgba(22,34,54,.1)]"><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-[13px] font-medium text-white"><Code2 className="h-4 w-4 text-[#73baff]" />配置 JSON</div><span className="text-[10px] text-[#7f90a6]">可编辑</span></div><textarea value={draftText} onChange={(event) => updateDraft(event.currentTarget.value)} spellCheck={false} className="min-h-0 flex-1 resize-none rounded-[9px] bg-[#101b2c] p-4 font-mono text-[11px] leading-[1.72] text-[#d6deeb] outline-none ring-1 ring-transparent focus:ring-[#559df0]" />{jsonError ? <div className="mt-3 flex gap-2 rounded-[8px] bg-[#44272d] px-3 py-2 text-[11px] leading-5 text-[#ffb4b9]"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />{jsonError}</div> : <div className="mt-3 flex items-center gap-2 text-[10px] text-[#86a0ba]"><Check className="h-3.5 w-3.5 text-[#62d49c]" />JSON 格式正确 · {draftText.length} 个字符</div>}</div>
-              <div className="min-h-0 overflow-y-auto"><SkillPreview config={draftConfig} inModal /></div>
-            </div>
-            <div className="flex h-[68px] shrink-0 items-center justify-between border-t border-[#e6e9ef] bg-white px-6"><div className="flex items-center gap-2 text-[11px] text-[#9aa3b1]"><CircleHelp className="h-4 w-4" />保存后会更新该 Skill 的前台配置</div><div className="flex items-center gap-3"><button type="button" onClick={() => setEditOpen(false)} className="h-9 rounded-[4px] border border-[#dfe3ea] px-5 text-[12px] text-[#687386] hover:bg-[#f7f8fa]">取消</button><button type="button" onClick={confirmSave} disabled={Boolean(jsonError)} className="h-9 rounded-[4px] bg-[#278fee] px-6 text-[12px] text-white hover:bg-[#167fdc] disabled:cursor-not-allowed disabled:bg-[#b9c8d8]">保存</button></div></div>
-          </div>
-        </div>
-      ) : null}
 
       {confirmOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/25 p-5">
