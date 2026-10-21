@@ -176,7 +176,7 @@ const NAV_GROUPS = [
   { label: '企业账号管理（2.0）', icon: Users },
   { label: '灵感社区', icon: Sparkles, expanded: true, children: ['灵感专题', '提示词库', '灵感作品管理', '活动管理', '玩法专题', '玩法管理', 'Skill配置'] },
   { label: '系统管理', icon: Settings2 },
-  { label: '内容运营管理', icon: FileText },
+  { label: '内容运营管理', icon: FileText, expanded: true, children: ['引导式搜索配置'] },
   { label: '设计师工具箱', icon: SlidersHorizontal },
   { label: '创客贴版权资源库', icon: ShieldCheck },
   { label: '创客贴模板库管理', icon: LayoutDashboard },
@@ -301,9 +301,22 @@ function SkillPreview({ config }: { config: SkillConfig }) {
   );
 }
 
-function AdminSidebar({ onBackToDirectory }: { onBackToDirectory: () => void }) {
-  const [expanded, setExpanded] = useState(true);
+type AdminSidebarProps = {
+  onBackToDirectory: () => void;
+  activeItem?: string;
+  onNavigate?: (item: string) => void;
+};
+
+export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'Skill配置', onNavigate }: AdminSidebarProps) {
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    灵感社区: true,
+    内容运营管理: true,
+  });
   const [activeItem, setActiveItem] = useState('Skill配置');
+
+  useEffect(() => {
+    setActiveItem(activeItemProp);
+  }, [activeItemProp]);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[228px] flex-col bg-[#061b2d] text-white">
@@ -317,18 +330,18 @@ function AdminSidebar({ onBackToDirectory }: { onBackToDirectory: () => void }) 
       <div className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV_GROUPS.map((group) => {
           const Icon = group.icon;
-          const isPlay = group.label === '灵感社区';
-          const isActive = group.label === '玩法管理';
+          const hasChildren = Boolean(group.children?.length);
+          const isExpanded = expandedGroups[group.label] ?? Boolean(group.expanded);
           return (
             <div key={group.label}>
-              <button type="button" onClick={() => isPlay && setExpanded((value) => !value)} className={`flex h-[42px] w-full items-center justify-between px-5 text-left text-[13px] transition ${isActive ? 'bg-[#128cf1] text-white' : 'text-[#a8bacb] hover:bg-white/[.06] hover:text-white'}`}>
+              <button type="button" onClick={() => hasChildren && setExpandedGroups((current) => ({ ...current, [group.label]: !isExpanded }))} className="flex h-[42px] w-full items-center justify-between px-5 text-left text-[13px] text-[#a8bacb] transition hover:bg-white/[.06] hover:text-white">
                 <span className="flex min-w-0 items-center gap-3"><Icon className="h-[15px] w-[15px] shrink-0 opacity-85" /><span className="truncate">{group.label}</span></span>
-                {(group.expanded || isPlay) ? <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? '' : '-rotate-90'}`} /> : null}
+                {hasChildren ? <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
               </button>
-              {isPlay && expanded ? (
+              {hasChildren && isExpanded ? (
                 <div className="bg-[#031525] py-1">
                   {group.children?.map((child) => (
-                    <button type="button" key={child} onClick={() => setActiveItem(child)} className={`flex h-[39px] w-full items-center pl-[43px] text-left text-[12px] transition ${child === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
+                    <button type="button" key={child} onClick={() => { setActiveItem(child); onNavigate?.(child); }} className={`flex h-[39px] w-full items-center pl-[43px] text-left text-[12px] transition ${child === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
                       {child === 'Skill配置' ? <Code2 className="mr-2 h-3.5 w-3.5" /> : null}<span className="truncate">{child}</span>
                     </button>
                   ))}
@@ -344,7 +357,7 @@ function AdminSidebar({ onBackToDirectory }: { onBackToDirectory: () => void }) 
   );
 }
 
-function TopHeader() {
+export function TopHeader() {
   return (
     <header className="fixed left-[228px] right-0 top-0 z-20 flex h-[62px] items-center justify-between border-b border-[#e6e9ef] bg-white px-5 shadow-[0_1px_4px_rgba(41,53,77,.03)]">
       <button type="button" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#657084] hover:bg-[#f3f5f8]" aria-label="收起菜单"><Menu className="h-5 w-5" /></button>
@@ -368,7 +381,7 @@ function JsonCodeView({ config }: { config: SkillConfig }) {
   );
 }
 
-export function AdminBackofficePage({ onBackToDirectory }: { onBackToDirectory: () => void }) {
+export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void }) {
   const [config, setConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
   const [searchValue, setSearchValue] = useState(DEFAULT_SKILL_CONFIG.skillCode);
   const [queriedCode, setQueriedCode] = useState(DEFAULT_SKILL_CONFIG.skillCode);
@@ -430,7 +443,7 @@ export function AdminBackofficePage({ onBackToDirectory }: { onBackToDirectory: 
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="Skill配置" onNavigate={(item) => item === '引导式搜索配置' && onNavigateToGuidedSearch?.()} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-6 py-5">

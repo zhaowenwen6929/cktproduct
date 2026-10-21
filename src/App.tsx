@@ -9,10 +9,11 @@ import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
 import { AdminBackofficePage } from './components/AdminBackofficePage';
+import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search';
 
 type ExportRequest =
   | {
@@ -57,6 +58,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/design-app') return '/design-app';
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
+  if (pathname === '/admin-backoffice/guided-search') return '/admin-backoffice/guided-search';
   if (pathname === '/admin-backoffice') return '/admin-backoffice';
   return '/';
 };
@@ -1336,6 +1338,10 @@ export default function App() {
         title: '创客贴管理后台｜Skill配置',
         description: '创客贴管理后台原型，支持 Skill 配置查询、JSON 编辑与动态预览。',
       },
+      '/admin-backoffice/guided-search': {
+        title: '创客贴管理后台｜引导式搜索配置',
+        description: '内容运营管理下的引导词节点、关系和查询映射配置。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1533,8 +1539,18 @@ export default function App() {
     />;
   }
 
+  if (currentRoute === '/admin-backoffice/guided-search') {
+    return <GuidedSearchConfigPage
+      onBackToDirectory={() => navigateTo('/')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice')}
+    />;
+  }
+
   if (currentRoute === '/admin-backoffice') {
-    return <AdminBackofficePage onBackToDirectory={() => navigateTo('/')} />;
+    return <AdminBackofficePage
+      onBackToDirectory={() => navigateTo('/')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+    />;
   }
 
   return (
