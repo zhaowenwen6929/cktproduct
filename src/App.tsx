@@ -8,10 +8,11 @@ import { ConnectorAuthPrototypePage } from './components/ConnectorAuthPrototypeP
 import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
+import { AdminBackofficePage } from './components/AdminBackofficePage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app' | '/design-app/ai-create';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice';
 
 type ExportRequest =
   | {
@@ -56,6 +57,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/design-app') return '/design-app';
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
+  if (pathname === '/admin-backoffice') return '/admin-backoffice';
   return '/';
 };
 
@@ -1330,6 +1332,10 @@ export default function App() {
         title: 'AI创作｜创客贴设计',
         description: '创客贴设计 AI 创作移动端对话页，支持通过对话生成设计。',
       },
+      '/admin-backoffice': {
+        title: '创客贴管理后台｜Skill配置',
+        description: '创客贴管理后台原型，支持 Skill 配置查询、JSON 编辑与动态预览。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1373,6 +1379,13 @@ export default function App() {
         title: '创客贴设计 APP',
         description: '参考移动端设计首页，提供创建设计、图片编辑、AI 创作、工具和模板推荐入口。',
         href: '/design-app' as AppRoute,
+        status: '新增入口',
+        available: true,
+      },
+      {
+        title: '创客贴管理后台',
+        description: '进入管理后台需求目录，查看玩法管理下的 Skill 配置查询、JSON 编辑和实时预览流程。',
+        href: '/admin-backoffice' as AppRoute,
         status: '新增入口',
         available: true,
       },
@@ -1518,6 +1531,10 @@ export default function App() {
       initialNewConversation={designAppStartsNew}
       additionalWorkTitles={designAppCustomWorkTitles}
     />;
+  }
+
+  if (currentRoute === '/admin-backoffice') {
+    return <AdminBackofficePage onBackToDirectory={() => navigateTo('/')} />;
   }
 
   return (
