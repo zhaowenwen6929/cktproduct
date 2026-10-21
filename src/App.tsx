@@ -6,6 +6,7 @@ import { Canvas } from './components/Canvas';
 import { PluginPrototypePage } from './components/PluginPrototypePage';
 import { ConnectorAuthPrototypePage } from './components/ConnectorAuthPrototypePage';
 import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
+import { TemplateCenterPage } from './components/TemplateCenterPage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
 import { AdminBackofficePage } from './components/AdminBackofficePage';
@@ -13,7 +14,7 @@ import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search';
 
 type ExportRequest =
   | {
@@ -55,6 +56,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/canvas') return '/canvas';
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
   if (pathname === '/connector-auth') return '/connector-auth';
+  if (pathname === '/agent-skills-home/templates') return '/agent-skills-home/templates';
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/design-app') return '/design-app';
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
@@ -1326,6 +1328,10 @@ export default function App() {
         title: 'Agent skills 创作首页',
         description: '创客贴首页原型，展示 Agent skills 入口、技能表单和无限画布生成流程。',
       },
+      '/agent-skills-home/templates': {
+        title: '模板中心｜Agent skills',
+        description: '创客贴模板中心，按分类浏览和搜索优质设计模板。',
+      },
       '/design-app': {
         title: '创客贴设计 APP',
         description: '创客贴设计 APP 首页，提供设计创建、AI 工具和模板推荐入口。',
@@ -1496,11 +1502,19 @@ export default function App() {
     return <ConnectorAuthPrototypePage onBack={() => navigateTo('/')} />;
   }
 
+  if (currentRoute === '/agent-skills-home/templates') {
+    return <TemplateCenterPage
+      onBackToDirectory={() => navigateTo('/')}
+      onBackToHome={() => navigateTo('/agent-skills-home')}
+    />;
+  }
+
   if (currentRoute === '/agent-skills-home') {
     return (
       <AgentSkillsHomePage
         onBackToDirectory={() => navigateTo('/')}
         onOpenCanvas={() => navigateTo('/canvas')}
+        onOpenTemplates={() => navigateTo('/agent-skills-home/templates')}
         onStartCanvasGeneration={(prompt, attachments = []) => {
           setAgentInput(prompt);
           setAutoGenerateRequest({ requestId: Date.now(), prompt, attachments });

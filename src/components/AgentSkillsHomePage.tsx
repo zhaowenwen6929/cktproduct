@@ -455,10 +455,11 @@ const navItems = [
 interface AgentSkillsHomePageProps {
   onBackToDirectory: () => void;
   onOpenCanvas: () => void;
+  onOpenTemplates: () => void;
   onStartCanvasGeneration: (prompt: string, attachments?: GenerationAttachment[]) => void;
 }
 
-export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCanvasGeneration }: AgentSkillsHomePageProps) {
+export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTemplates, onStartCanvasGeneration }: AgentSkillsHomePageProps) {
   const [mode, setMode] = useState<HomeMode>('templates');
   const [searchTerm, setSearchTerm] = useState('');
   const [homePrompt, setHomePrompt] = useState('');
@@ -650,7 +651,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onStartCa
         <div className="flex w-full flex-col items-center gap-3">
           {navItems.map((item) => {
             const Icon = item.icon;
-            return <button key={item.label} type="button" className={`flex w-[44px] flex-col items-center gap-1 rounded-[10px] py-2 text-[10px] ${item.active ? 'bg-[#dceaff] text-[#2677ed]' : 'text-[#63708a] hover:bg-white/80'}`}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span></button>;
+            return <button key={item.label} type="button" onClick={() => item.label === '模板' ? onOpenTemplates() : undefined} className={`flex w-[44px] flex-col items-center gap-1 rounded-[10px] py-2 text-[10px] ${item.active ? 'bg-[#dceaff] text-[#2677ed]' : 'text-[#63708a] hover:bg-white/80'}`}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span></button>;
           })}
         </div>
         <div className="mt-auto flex flex-col items-center gap-3 pb-2 text-[10px] text-[#64728b]">
