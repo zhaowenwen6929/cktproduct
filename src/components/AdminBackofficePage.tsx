@@ -176,7 +176,7 @@ const DEFAULT_SKILL_CONFIG: SkillConfig = {
 
 const NAV_GROUPS = [
   { label: '企业账号管理（2.0）', icon: Users },
-  { label: '灵感社区', icon: Sparkles, expanded: true, children: ['灵感专题', '提示词库', '灵感作品管理', '活动管理', '玩法专题', '玩法管理'] },
+  { label: '灵感社区', icon: Sparkles, expanded: true, children: ['灵感专题', '提示词库', '灵感作品管理', '活动管理', '玩法专题', '玩法管理', 'Skill配置'] },
   { label: '系统管理', icon: Settings2 },
   { label: '内容运营管理', icon: FileText },
   { label: '设计师工具箱', icon: SlidersHorizontal },
@@ -305,6 +305,7 @@ function SkillPreview({ config, inModal = false }: { config: SkillConfig; inModa
 
 function AdminSidebar({ onBackToDirectory }: { onBackToDirectory: () => void }) {
   const [expanded, setExpanded] = useState(true);
+  const [activeItem, setActiveItem] = useState('Skill配置');
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[228px] flex-col bg-[#061b2d] text-white">
@@ -329,11 +330,10 @@ function AdminSidebar({ onBackToDirectory }: { onBackToDirectory: () => void }) 
               {isPlay && expanded ? (
                 <div className="bg-[#031525] py-1">
                   {group.children?.map((child) => (
-                    <button type="button" key={child} onClick={() => undefined} className={`flex h-[39px] w-full items-center pl-[43px] text-left text-[12px] transition ${child === '玩法管理' ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
-                      <span className="truncate">{child}</span>
+                    <button type="button" key={child} onClick={() => setActiveItem(child)} className={`flex h-[39px] w-full items-center pl-[43px] text-left text-[12px] transition ${child === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
+                      {child === 'Skill配置' ? <Code2 className="mr-2 h-3.5 w-3.5" /> : null}<span className="truncate">{child}</span>
                     </button>
                   ))}
-                  <button type="button" className="flex h-[38px] w-full items-center gap-2 bg-[#128cf1]/15 pl-[43px] text-left text-[12px] font-medium text-[#72c0ff]"><Code2 className="h-3.5 w-3.5" />Skill配置</button>
                 </div>
               ) : null}
             </div>
