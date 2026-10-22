@@ -283,15 +283,15 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             setActiveItem(label);
             onNavigate?.(label);
           }
-        }} style={{ paddingLeft: `${43 + level * 24}px` }} className={`flex h-[39px] w-full items-center justify-between pr-4 text-left text-[12px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
+        }} style={{ paddingLeft: `${43 + level * 20}px` }} className={`mx-2 flex h-[34px] w-[calc(100%-16px)] items-center justify-between rounded-[5px] pr-3 text-left text-[11px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white shadow-[0_3px_10px_rgba(18,140,241,.2)]' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
           <span className="flex min-w-0 items-center gap-2">
             <span className="truncate">{label}</span>
             {label === 'AI电商配置' ? <NewFeatureBadge title="AI电商配置" requirement="AI电商配置管理" summary="按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。" addedAt="2026-10-22" /> : null}
             {label === '搜索引导管理' ? <NewFeatureBadge title="搜索引导管理" requirement="搜索引导管理" summary="维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
           </span>
-          {hasChildren ? <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
+          {hasChildren ? <ChevronDown className={`h-3 w-3 shrink-0 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
         </button>
-        {hasChildren && isExpanded ? <div className="bg-[#031525]/70 py-1">{renderNavItems(children ?? [], level + 1)}</div> : null}
+        {hasChildren && isExpanded ? <div className="bg-[#031525]/55 py-1">{renderNavItems(children ?? [], level + 1)}</div> : null}
       </div>
     );
   });
@@ -305,19 +305,19 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 overflow-y-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV_GROUPS.map((group) => {
           const Icon = group.icon;
           const hasChildren = Boolean(group.children?.length);
           const isExpanded = expandedGroups[group.label] ?? Boolean(group.expanded);
           return (
             <div key={group.label}>
-              <button type="button" onClick={() => hasChildren && setExpandedGroups((current) => ({ ...current, [group.label]: !isExpanded }))} className="flex h-[42px] w-full items-center justify-between px-5 text-left text-[13px] text-[#a8bacb] transition hover:bg-white/[.06] hover:text-white">
-                <span className="flex min-w-0 items-center gap-3"><Icon className="h-[15px] w-[15px] shrink-0 opacity-85" /><span className="truncate">{group.label}</span></span>
-                {hasChildren ? <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
+              <button type="button" onClick={() => hasChildren && setExpandedGroups((current) => ({ ...current, [group.label]: !isExpanded }))} className="flex h-[38px] w-full items-center justify-between px-5 text-left text-[12px] font-medium tracking-[.01em] text-[#a8bacb] transition hover:bg-white/[.06] hover:text-white">
+                <span className="flex min-w-0 items-center gap-2.5"><Icon className="h-[14px] w-[14px] shrink-0 opacity-80" /><span className="truncate">{group.label}</span></span>
+                {hasChildren ? <ChevronDown className={`h-3 w-3 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
               </button>
               {hasChildren && isExpanded ? (
-                <div className="bg-[#031525] py-1">{renderNavItems(group.children ?? [])}</div>
+                <div className="bg-[#031525]/80 py-1.5">{renderNavItems(group.children ?? [])}</div>
               ) : null}
             </div>
           );
