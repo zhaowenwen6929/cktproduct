@@ -239,7 +239,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
                 <div className="bg-[#031525] py-1">
                   {group.children?.map((child) => (
                     <button type="button" key={child} onClick={() => { setActiveItem(child); onNavigate?.(child); }} className={`flex h-[39px] w-full items-center pl-[43px] text-left text-[12px] transition ${child === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
-                      {child === 'AI电商配置' ? <Code2 className="mr-2 h-3.5 w-3.5" /> : null}<span className="truncate">{child}</span>
+                      <span className="truncate">{child}</span>
                     </button>
                   ))}
                 </div>
@@ -366,12 +366,9 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
           ) : (
             <section className="rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
               <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-[#eef2ff] text-[#615ce6]"><Code2 className="h-[18px] w-[18px]" /></div>
-                  <div>
-                    <div className="flex items-center gap-2"><h2 className="text-[15px] font-semibold text-[#263143]">{config.name}</h2><span className="rounded-full bg-[#e9f8ef] px-2 py-0.5 text-[10px] text-[#37a36d]">已启用</span></div>
-                    <p className="mt-1 text-[11px] text-[#9aa3b1]">{config.skillCode} · 共 {config.fields.length} 个配置字段</p>
-                  </div>
+                <div>
+                  <div className="flex items-center gap-2"><h2 className="text-[15px] font-semibold text-[#263143]">{config.name}</h2><span className="rounded-full bg-[#e9f8ef] px-2 py-0.5 text-[10px] text-[#37a36d]">已启用</span></div>
+                  <p className="mt-1 text-[11px] text-[#9aa3b1]">{config.skillCode} · 共 {config.fields.length} 个配置字段</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] text-[#a3aab6]">{saved ? '刚刚已保存' : isEditing ? '编辑中：修改后保存' : '最后更新：2026-10-21 14:28'}</span>
