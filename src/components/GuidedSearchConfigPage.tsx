@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import {
   AlertTriangle,
   Check,
+  ChevronDown,
   ChevronRight,
   Download,
   FileSpreadsheet,
@@ -178,11 +179,31 @@ function EditModalShell({ title, description, onClose, onSave, children }: { tit
   return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#0b1830]/45 p-5 backdrop-blur-[2px]"><div className="w-[min(700px,calc(100vw-40px))] overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,27,52,.28)]"><div className="flex items-start justify-between border-b border-[#e7eaf0] px-6 py-4"><div><h2 className="text-[17px] font-semibold text-[#273244]">{title}</h2><p className="mt-1 text-[11px] text-[#99a2b0]">{description}</p></div><button type="button" onClick={onClose} className="rounded-full p-1.5 text-[#8d97a6] hover:bg-[#f2f4f7]"><X className="h-5 w-5" /></button></div><div className="max-h-[62vh] overflow-y-auto p-6">{children}</div><div className="flex items-center justify-end gap-3 border-t border-[#e7eaf0] px-6 py-4"><button type="button" onClick={onClose} className="h-9 rounded-[5px] border border-[#dfe3ea] px-5 text-[12px] text-[#687386] hover:border-[#b8c2d0]">取消</button><button type="button" onClick={onSave} className="h-9 rounded-[5px] bg-[#278fee] px-5 text-[12px] text-white shadow-[0_4px_10px_rgba(39,143,238,.16)] hover:bg-[#167fdc]">保存</button></div></div></div>;
 }
 
-function NodeEditDialog({ row, onClose, onSave }: { row: NodeRow; onClose: () => void; onSave: (row: NodeRow) => void }) {
+function SearchableNodeSelect({ nodes, currentNodeId, value, onChange }: { nodes: NodeRow[]; currentNodeId: number; value: number | null; onChange: (value: number | null) => void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const selectedNode = nodes.find((node) => node.node_id === value);
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredNodes = nodes.filter((node) => {
+    if (node.node_id === currentNodeId) return false;
+    if (!normalizedQuery) return true;
+    return `${node.node_id} ${node.keyword} ${node.normalized_key}`.toLowerCase().includes(normalizedQuery);
+  });
+
+  const selectNode = (nodeId: number | null) => {
+    onChange(nodeId);
+    setOpen(false);
+    setQuery('');
+  };
+
+  return <div className="relative"><span className="mb-1.5 block text-[11px] font-medium text-[#5e6b7f]">父节点编号</span><button type="button" onClick={() => setOpen((current) => !current)} className="flex h-9 w-full items-center justify-between rounded-[5px] border border-[#dfe3ea] bg-white px-3 text-left text-[12px] text-[#354154] outline-none transition hover:border-[#aeb9c8] focus:border-[#278fee] focus:ring-2 focus:ring-[#278fee]/10"><span className={selectedNode ? 'text-[#354154]' : 'text-[#9aa4b2]'}>{selectedNode ? `${selectedNode.keyword}（${selectedNode.node_id}）` : value ? `节点 ${value}` : '无父节点'}</span><ChevronDown className={`h-4 w-4 text-[#8b96a6] transition ${open ? 'rotate-180' : ''}`} /></button>{open ? <div className="absolute left-0 right-0 top-[66px] z-20 overflow-hidden rounded-[7px] border border-[#dfe5ee] bg-white shadow-[0_10px_24px_rgba(31,49,80,.16)]"><div className="border-b border-[#edf0f4] p-2"><div className="flex items-center gap-2 rounded-[4px] border border-[#e2e7ee] px-2"><Search className="h-3.5 w-3.5 text-[#9aa5b4]" /><input autoFocus value={query} onChange={(event) => setQuery(event.currentTarget.value)} placeholder="搜索关键词、节点编号或归一化键" className="h-8 min-w-0 flex-1 text-[11px] text-[#354154] outline-none" /></div></div><div className="max-h-[220px] overflow-y-auto p-1"><button type="button" onClick={() => selectNode(null)} className="flex w-full items-center justify-between rounded-[4px] px-3 py-2 text-left text-[11px] text-[#7a8595] hover:bg-[#f3f7fd]"><span>无父节点</span>{value === null ? <span className="text-[#278fee]">已选择</span> : null}</button>{filteredNodes.map((node) => <button type="button" key={node.node_id} onClick={() => selectNode(node.node_id)} className="flex w-full items-center justify-between rounded-[4px] px-3 py-2 text-left hover:bg-[#f3f7fd]"><span><span className="text-[12px] font-medium text-[#354154]">{node.keyword}</span><span className="ml-2 font-mono text-[10px] text-[#8c97a7]">{node.node_id} · {node.normalized_key}</span></span>{value === node.node_id ? <span className="text-[11px] text-[#278fee]">已选择</span> : null}</button>)}{filteredNodes.length === 0 ? <div className="px-3 py-5 text-center text-[11px] text-[#9ca5b2]">未找到匹配节点</div> : null}</div></div> : null}</div>;
+}
+
+function NodeEditDialog({ row, nodeOptions, onClose, onSave }: { row: NodeRow; nodeOptions: NodeRow[]; onClose: () => void; onSave: (row: NodeRow) => void }) {
   const [form, setForm] = useState(row);
   const update = (patch: Partial<NodeRow>) => setForm((current) => ({ ...current, ...patch }));
 
-  return <EditModalShell title="编辑引导词节点" description="节点编号和关键词不可编辑，其余配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="节点编号" value={String(form.node_id)} disabled /><FormInput label="关键词" value={form.keyword} disabled /><FormInput label="归一化键" value={form.normalized_key} onChange={(value) => update({ normalized_key: value })} /><FormSelect label="层级" value={String(form.level)} options={[{ label: '1级', value: '1' }, { label: '2级', value: '2' }, { label: '3级', value: '3' }]} onChange={(value) => update({ level: Number(value) })} /><FormInput label="父节点编号" value={form.parent_id == null ? '' : String(form.parent_id)} placeholder="无父节点可留空" onChange={(value) => update({ parent_id: value.trim() ? Number(value) : null })} /><FormSelect label="引导类型" value={form.guide_type} options={[{ label: '分类', value: 'category' }, { label: '场景', value: 'scene' }, { label: '风格', value: 'style' }, { label: '行业', value: 'industry' }]} onChange={(value) => update({ guide_type: value })} /><FormSelect label="地区" value={form.region} options={[{ label: '中国大陆', value: 'CN' }, { label: '美国', value: 'US' }]} onChange={(value) => update({ region: value })} /><FormSelect label="语言" value={form.language} options={[{ label: '中文', value: 'zh' }, { label: '英文', value: 'en' }]} onChange={(value) => update({ language: value })} /><FormInput label="外部评分" value={form.external_score} onChange={(value) => update({ external_score: value })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '禁用', value: '禁用' }]} onChange={(value) => update({ status: value as NodeRow['status'] })} /><FormSelect label="数据来源" value={form.source} options={sourceOptions} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
+  return <EditModalShell title="编辑引导词节点" description="节点编号和关键词不可编辑，其余配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="节点编号" value={String(form.node_id)} disabled /><FormInput label="关键词" value={form.keyword} disabled /><FormInput label="归一化键" value={form.normalized_key} onChange={(value) => update({ normalized_key: value })} /><FormSelect label="层级" value={String(form.level)} options={[{ label: '1级', value: '1' }, { label: '2级', value: '2' }, { label: '3级', value: '3' }]} onChange={(value) => update({ level: Number(value) })} /><SearchableNodeSelect nodes={nodeOptions} currentNodeId={form.node_id} value={form.parent_id} onChange={(value) => update({ parent_id: value })} /><FormSelect label="引导类型" value={form.guide_type} options={[{ label: '分类', value: 'category' }, { label: '场景', value: 'scene' }, { label: '风格', value: 'style' }, { label: '行业', value: 'industry' }]} onChange={(value) => update({ guide_type: value })} /><FormSelect label="地区" value={form.region} options={[{ label: '中国大陆', value: 'CN' }, { label: '美国', value: 'US' }]} onChange={(value) => update({ region: value })} /><FormSelect label="语言" value={form.language} options={[{ label: '中文', value: 'zh' }, { label: '英文', value: 'en' }]} onChange={(value) => update({ language: value })} /><FormInput label="外部评分" value={form.external_score} onChange={(value) => update({ external_score: value })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '禁用', value: '禁用' }]} onChange={(value) => update({ status: value as NodeRow['status'] })} /><FormSelect label="数据来源" value={form.source} options={sourceOptions} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
 }
 
 function EdgeEditDialog({ row, onClose, onSave }: { row: EdgeRow; onClose: () => void; onSave: (row: EdgeRow) => void }) {
@@ -316,7 +337,7 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
       </main>
       {toast ? <div className="fixed bottom-7 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]"><Check className="h-4 w-4 text-[#65d49b]" />{toast}</div> : null}
       {importKind ? <ImportDialog kind={importKind} onClose={() => setImportKind(null)} onConfirm={handleImportConfirm} /> : null}
-      {editTarget?.kind === 'nodes' ? <NodeEditDialog key={`node-${editTarget.row.node_id}`} row={editTarget.row} onClose={() => setEditTarget(null)} onSave={handleEditSave} /> : null}
+      {editTarget?.kind === 'nodes' ? <NodeEditDialog key={`node-${editTarget.row.node_id}`} row={editTarget.row} nodeOptions={nodes} onClose={() => setEditTarget(null)} onSave={handleEditSave} /> : null}
       {editTarget?.kind === 'edges' ? <EdgeEditDialog key={`edge-${editTarget.row.edge_id}`} row={editTarget.row} onClose={() => setEditTarget(null)} onSave={handleEditSave} /> : null}
       {deleteTarget ? <DeleteConfirmDialog label={deleteTarget.label} onClose={() => setDeleteTarget(null)} onConfirm={handleDeleteConfirm} /> : null}
     </div>
