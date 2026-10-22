@@ -30,7 +30,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '入口与权限',
         description: '页面属于现有创客贴管理后台，沿用后台账号和权限体系。',
         items: [
-          { label: '菜单位置', content: '灵感社区 > 玩法管理 > AI电商配置。入口需要用 NEW 标识突出新功能，并支持悬停查看需求摘要。' },
+          { label: '菜单位置', content: '灵感社区 > 玩法管理 > AI电商配置。' },
           { label: '可见范围', content: 'admin、operator 可以查询、编辑配置和清理缓存；viewer 仅可查看和复制 JSON，不显示修改、保存和清理缓存操作。' },
           { label: '页面返回', content: '通过左侧管理后台 Logo 或页面返回入口回到需求目录，路由变化不影响已有后台页面。' },
         ],
@@ -90,7 +90,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '入口与导航层级',
         description: '入口位于内容运营管理，和实体词典保持同一级。',
         items: [
-          { label: '菜单位置', content: '内容运营管理 > 搜索管理 > 实体词典、搜索引导管理。搜索引导管理紧跟在实体词典下面，使用 NEW 标识提示新增需求。' },
+          { label: '菜单位置', content: '内容运营管理 > 搜索管理 > 实体词典、搜索引导管理。搜索引导管理与实体词典保持同一级。' },
           { label: '权限差异', content: 'admin、operator 可导入、编辑、上下线和导出；viewer 只读，不展示编辑类操作。' },
           { label: '页面形态', content: '三个 Tab 共用页面容器，切换 Tab 不跳转新页面，并保留各自的筛选条件。' },
         ],
@@ -133,7 +133,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
       },
     ],
     acceptance: [
-      '内容运营管理展开后，搜索引导管理与实体词典同级，入口带 NEW 标识且悬停可查看需求说明。',
+      '内容运营管理展开后，搜索引导管理与实体词典同级，能够从菜单正常进入。',
       '节点和关系导入均先预览校验，错误行清晰标识，不允许绕过错误直接入库。',
       '查询映射只读，能够直观看到胶囊顺序、归一化 query_key 和结果排序。',
       '无数据、无结果、加载中和导入失败等状态都有明确反馈，不影响其他 Tab 的筛选条件。',
