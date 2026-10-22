@@ -28,6 +28,7 @@ type PackageDetailRow = {
   segment: string;
   displayTime: string;
   status: '显示' | '隐藏';
+  points?: number;
 };
 
 const initialPackages: PackageRow[] = [
@@ -77,6 +78,7 @@ const blankPackageDetail: PackageDetailRow = {
   segment: '/',
   displayTime: '/',
   status: '显示',
+  points: 0,
 };
 
 type DetailEditValues = {
@@ -99,6 +101,7 @@ type DetailEditValues = {
   segment: string;
   validDays: string;
   remark: string;
+  points: string;
 };
 
 function PackageModal({ mode, row, onClose, onSave }: { mode: 'detail' | 'edit' | 'create'; row: PackageRow; onClose: () => void; onSave: (row: PackageRow) => void }) {
@@ -141,6 +144,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
     maxMembers: isCreate ? '' : '2',
     productId: '',
     downloadCount: isCreate ? '' : '-1',
+    points: isCreate ? '' : String(row.points ?? 0),
     sort: String(row.sort),
     segment: isCreate ? '0' : row.segment === '/' ? '0' : row.segment,
     validDays: '',
@@ -169,6 +173,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>最大成员数量：</span><input disabled={!isCreate} value={form.maxMembers} onChange={(event) => update('maxMembers', event.currentTarget.value)} placeholder={isCreate ? '请输入最大成员数量' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">内购产品ID：</span><input value={form.productId} onChange={(event) => update('productId', event.currentTarget.value)} placeholder="请输入内购产品ID" className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>商用下载次数：</span><input disabled={!isCreate} value={form.downloadCount} onChange={(event) => update('downloadCount', event.currentTarget.value)} placeholder={isCreate ? '请输入商用下载次数' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
+          {isCreate ? <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">积分量：</span><input type="number" min="0" step="1" value={form.points} onChange={(event) => update('points', event.currentTarget.value.replace(/\D/g, ''))} placeholder="请输入积分量" className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label> : null}
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>排序：</span><input value={form.sort} onChange={(event) => update('sort', event.currentTarget.value)} className={inputClass} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">指定分群：</span><select value={form.segment} onChange={(event) => update('segment', event.currentTarget.value)} className={inputClass}><option value="0">0</option><option value="109">109</option><option value="110">110</option></select></label>
           <label className="mb-1 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">有效期：</span><input value={form.validDays} onChange={(event) => update('validDays', event.currentTarget.value)} className="h-8 w-[90px] rounded-[1px] border border-[#d7d7d7] px-3 text-[13px] outline-none focus:border-[#278fee]" /></label>
@@ -195,7 +200,7 @@ function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, o
     setDetails((current) => {
       if (values.id === 0) {
         const nextId = Math.max(...current.map((row) => row.id), 0) + 1;
-        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示' }, ...current];
+        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: Number(values.points) || 0 }, ...current];
       }
       return current.map((row) => row.id === values.id ? { ...row, name: values.name, discount: Number(values.discount) || row.discount, sort: Number(values.sort) || 0, segment: values.segment || '/' } : row);
     });
