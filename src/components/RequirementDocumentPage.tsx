@@ -98,7 +98,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         description: '入口位于内容运营管理，和实体词典保持同一级。',
         items: [
           { label: '菜单位置', content: '内容运营管理 > 搜索管理 > 实体词典、搜索引导管理。搜索引导管理与实体词典保持同一级。' },
-          { label: '权限差异', content: 'admin、operator 可导入、编辑、上下线和导出；viewer 只读，不展示编辑类操作。' },
+          { label: '权限差异', content: 'admin、operator 可导入、编辑、上下线；viewer 只读，不展示编辑类操作。' },
           { label: '页面形态', content: '三个 Tab 共用页面容器，切换 Tab 不跳转新页面，并保留各自的筛选条件。' },
         ],
       },
@@ -106,7 +106,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '引导词节点 Tab',
         description: '管理 guided_search_node 表，维护引导词的基础信息和层级关系。',
         items: [
-          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持关键词、归一化键、层级、类型、状态、地区、语言筛选，筛选项后提供“筛选”按钮，右侧只保留“导入数据”和“导出当前筛选结果”，不在操作区展示数据总数。' },
+          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持关键词、归一化键、层级、类型、状态、地区、语言筛选，筛选项后提供蓝色“查询”按钮，右侧只保留“导入数据”，不在操作区展示数据总数。' },
           { label: '表格内容', content: '展示节点编号、关键词、归一化键、层级、父节点编号、引导类型、外部评分、状态、数据来源、更新时间和操作列。默认示例包含手机海报、简历、招聘、极简风、互联网、餐饮。' },
           { label: '导入预览', content: '上传 CSV/Excel 后先预览，展示行号、关键词、归一化键、层级、父节点和校验结果；错误行标红，可下载错误行，仅当存在通过行时允许确认导入。' },
         ],
@@ -115,7 +115,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '引导词关系 Tab',
         description: '管理 guided_search_edge 表，支持多父挂载和关系数据校验。',
         items: [
-          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持父/子节点编号或关键词、关系类型、状态、权重范围筛选，筛选项后提供“筛选”按钮，右侧只保留“导入数据”和“导出当前筛选结果”，不在操作区展示数据总数。' },
+          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持父/子节点编号或关键词、关系类型、状态、权重范围筛选，筛选项后提供蓝色“查询”按钮，右侧只保留“导入数据”，不在操作区展示数据总数。' },
           { label: '校验规则', content: '预览时校验两端节点是否存在、是否自环、是否重复、父子关系是否跳级（警告）以及是否成环（错误）。' },
           { label: '示例关系', content: '默认展示手机海报(1001)到招聘(1010)、极简风(1020)，以及简历(1003)到招聘(1010)，体现招聘节点可被多个父节点挂载。' },
         ],
@@ -133,8 +133,8 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '接口与数据依赖',
         description: '页面不新定义数据库结构，依赖现有或待补齐的服务能力。',
         items: [
-          { label: '节点能力', content: '节点列表、导入预览、导入、导出、模板下载，以及节点启用/下线和编辑能力。' },
-          { label: '关系能力', content: '关系列表、导入预览、导入、导出、模板下载和关系校验能力。' },
+          { label: '节点能力', content: '节点列表、导入预览、导入，以及节点启用/下线和编辑能力。' },
+          { label: '关系能力', content: '关系列表、导入预览、导入和关系校验能力。' },
           { label: '映射能力', content: '按 query_key + region + language 查询 guided_search_mapping，并返回排序与统计字段。' },
         ],
       },
@@ -144,6 +144,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
       '节点和关系导入均先预览校验，错误行清晰标识，不允许绕过错误直接入库。',
       '查询映射只读，能够直观看到胶囊顺序、归一化查询键和结果排序，业务可见字段使用中文名称。',
       '无数据、无结果、加载中和导入失败等状态都有明确反馈，不影响其他 Tab 的筛选条件。',
+      '节点和关系筛选通过蓝色“查询”按钮提交，列表操作只保留编辑和上下线，不提供查看和导出操作。',
     ],
   },
 };
