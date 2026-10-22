@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Check, ChevronRight, Crown, Gift, Sparkles, X } from 'lucide-react';
-import { readMembershipPageConfig, type MembershipPageContent, type MembershipPlanConfig } from './membershipPageConfig';
+import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
+import { readMembershipPageConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 
 type MembershipCenterModalProps = {
   onClose: () => void;
 };
 
-type MembershipPlan = MembershipPlanConfig;
+type MembershipPlan = MembershipPlanDisplayConfig & MembershipPlanData;
+
+function hydratePlan(plan: MembershipPlanDisplayConfig): MembershipPlan {
+  const data = REAL_MEMBERSHIP_PLAN_DATA[plan.planKey] ?? REAL_MEMBERSHIP_PLAN_DATA.basic;
+  return { ...data, ...plan };
+}
 
 const promotionDurationMs = (((4 * 24 + 1) * 60 + 51) * 60 + 59) * 1000;
 
@@ -93,7 +99,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const personalTab = pageConfig.plans.tabs.find((tab) => tab.key === 'personal');
   const enterpriseTab = pageConfig.plans.tabs.find((tab) => tab.key === 'enterprise');
   const activeTab = pageConfig.plans.tabs.find((tab) => tab.key === membershipType) ?? pageConfig.plans.tabs[0];
-  const visiblePlans = activeTab?.plans ?? [];
+  const visiblePlans = activeTab?.plans.map(hydratePlan) ?? [];
   const cycleOptions = activeTab?.options ?? [];
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
 

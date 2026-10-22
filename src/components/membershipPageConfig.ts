@@ -8,29 +8,13 @@ export type MembershipCycleConfig = {
   highlighted?: boolean;
 };
 
-export type MembershipTierOptionConfig = {
-  quotaLabel: string;
-  price: string;
-  originalPrice: string;
-  points: string;
-  pointsNote: string;
-  monthlyPrice: string;
-};
-
-export type MembershipPlanConfig = {
+export type MembershipPlanDisplayConfig = {
+  planKey: string;
   name: string;
   subtitle: string;
-  price: string;
-  originalPrice?: string;
-  period: string;
-  points: string;
-  pointsNote: string;
-  monthlyPrice: string;
-  discount: string;
   color: 'neutral' | 'blue' | 'orange';
   tag?: string;
   features: string[];
-  tierOptions?: MembershipTierOptionConfig[];
 };
 
 export type MembershipTabConfig = {
@@ -38,7 +22,7 @@ export type MembershipTabConfig = {
   name: string;
   memberLevel: { level: string };
   options: MembershipCycleConfig[];
-  plans: MembershipPlanConfig[];
+  plans: MembershipPlanDisplayConfig[];
 };
 
 export type MembershipPlansConfig = {
@@ -85,67 +69,37 @@ export type MembershipPageContent = {
 
 export const MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY = 'admin-membership-page-config';
 
-const personalPlans: MembershipPlanConfig[] = [
+const personalPlans: MembershipPlanDisplayConfig[] = [
   {
+    planKey: 'basic',
     name: '基础版',
     subtitle: '适合初次探索 AI 创作',
-    price: '393',
-    originalPrice: '659',
-    period: '每年',
-    points: '725 积分每月',
-    pointsNote: '换算约 1 = 22 分',
-    monthlyPrice: '33',
-    discount: '6',
     color: 'neutral',
     features: ['Seedance 2.0 VIP', '标准生成通道', '生成作品去除品牌水印'],
   },
   {
+    planKey: 'advanced',
     name: '高级版',
     subtitle: '适合高频创作与持续产出',
-    price: '1099',
-    originalPrice: '1889',
-    period: '每年',
-    points: '2210 积分每月',
-    pointsNote: '换算约 1 = 24 分',
-    monthlyPrice: '92',
-    discount: '5.8',
     color: 'neutral',
     features: ['Seedance 2.0 VIP', '标准生成通道', '生成作品去除品牌水印'],
   },
   {
+    planKey: 'professional',
     name: '专业版',
     subtitle: '适合大批量稳定产出与交付',
-    price: '5199',
-    originalPrice: '10398',
-    period: '每年',
-    points: '12320 积分每月',
-    pointsNote: '换算约 1 = 28 分',
-    monthlyPrice: '434',
-    discount: '5',
     color: 'blue',
     tag: '限时5折',
-    tierOptions: [
-      { quotaLabel: '6.2K', price: '2599', originalPrice: '5199', points: '6160', pointsNote: '换算约 1 = 28 分', monthlyPrice: '217' },
-      { quotaLabel: '12.3K', price: '5199', originalPrice: '10398', points: '12320', pointsNote: '换算约 1 = 28 分', monthlyPrice: '434' },
-      { quotaLabel: '18.5K', price: '7799', originalPrice: '15598', points: '18500', pointsNote: '换算约 1 = 28 分', monthlyPrice: '650' },
-      { quotaLabel: '27.7K', price: '10999', originalPrice: '21998', points: '27700', pointsNote: '换算约 1 = 28 分', monthlyPrice: '917' },
-    ],
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印'],
   },
 ];
 
-const enterprisePlans: MembershipPlanConfig[] = [
+const enterprisePlans: MembershipPlanDisplayConfig[] = [
   ...personalPlans,
   {
+    planKey: 'flagship',
     name: '旗舰版',
     subtitle: '为极限产出而生',
-    price: '19656',
-    originalPrice: '43680',
-    period: '每年',
-    points: '54600 积分每月',
-    pointsNote: '换算约 1 = 33 分',
-    monthlyPrice: '1,638',
-    discount: '4.5',
     color: 'orange',
     tag: '加赠2个月会员',
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印', 'API 服务购买'],
@@ -241,7 +195,19 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
         ...rawTab,
         memberLevel: { ...fallbackTab.memberLevel, ...(rawTab.memberLevel ?? {}) },
         options: Array.isArray(rawTab.options) ? rawTab.options : fallbackTab.options,
-        plans: rawPlans.map((plan, index) => ({ ...(fallbackTab.plans[index] ?? fallbackTab.plans[0]), ...(plan as Partial<MembershipPlanConfig>) })),
+        plans: rawPlans.map((plan, index) => {
+          const fallbackPlan = fallbackTab.plans[index] ?? fallbackTab.plans[0];
+          const rawPlan = plan as Partial<MembershipPlanDisplayConfig>;
+          return {
+            ...fallbackPlan,
+            planKey: rawPlan.planKey ?? fallbackPlan.planKey,
+            name: rawPlan.name ?? fallbackPlan.name,
+            subtitle: rawPlan.subtitle ?? fallbackPlan.subtitle,
+            color: rawPlan.color ?? fallbackPlan.color,
+            tag: rawPlan.tag ?? fallbackPlan.tag,
+            features: Array.isArray(rawPlan.features) ? rawPlan.features : fallbackPlan.features,
+          };
+        }),
       };
     }),
   };
