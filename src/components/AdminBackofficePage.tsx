@@ -234,7 +234,21 @@ const NAV_GROUPS: NavGroup[] = [
   { label: 'AI创作管理', icon: Sparkles },
   { label: '功能管理', icon: Settings2 },
   { label: '智能设计管理', icon: Code2 },
-  { label: '会员中心', icon: Users },
+  {
+    label: '会员中心',
+    icon: Users,
+    expanded: true,
+    children: [
+      '开通会员',
+      '会员退款',
+      '销售线索',
+      '企业版数据-功能停用不…',
+      '企业团队列表',
+      '团队销售线索',
+      'IOS丢失订单找回处理',
+      '会员套餐管理',
+    ],
+  },
 ];
 
 const prettyJson = (config: SkillConfig) => JSON.stringify(config, null, 2);
