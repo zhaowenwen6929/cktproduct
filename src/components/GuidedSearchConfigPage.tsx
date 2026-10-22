@@ -10,8 +10,8 @@ import {
   Pencil,
   Power,
   Search,
-  SlidersHorizontal,
   Table2,
+  Trash2,
   Upload,
   X,
 } from 'lucide-react';
@@ -31,6 +31,7 @@ type NodeRow = {
   status: '启用' | '下线';
   source: string;
   updated_at: string;
+  updated_by: string;
 };
 
 type EdgeRow = {
@@ -43,6 +44,7 @@ type EdgeRow = {
   source: string;
   status: '启用' | '下线';
   updated_at: string;
+  updated_by: string;
 };
 
 type MappingRow = {
@@ -59,20 +61,20 @@ type MappingRow = {
 };
 
 const nodeRows: NodeRow[] = [
-  { node_id: 1001, keyword: '手机海报', normalized_key: 'shouji_haibao', level: 1, parent_id: null, guide_type: 'category', external_score: '1.00', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:28' },
-  { node_id: 1003, keyword: '简历', normalized_key: 'jianli', level: 1, parent_id: null, guide_type: 'category', external_score: '0.33', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:27' },
-  { node_id: 1010, keyword: '招聘', normalized_key: 'zhaopin', level: 2, parent_id: 1001, guide_type: 'scene', external_score: '0.90', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:26' },
-  { node_id: 1020, keyword: '极简风', normalized_key: 'jijianfeng', level: 2, parent_id: 1001, guide_type: 'style', external_score: '0.80', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:25' },
-  { node_id: 1030, keyword: '互联网', normalized_key: 'hulianwang', level: 3, parent_id: 1010, guide_type: 'industry', external_score: '0.70', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:24' },
-  { node_id: 1031, keyword: '餐饮', normalized_key: 'canyin', level: 3, parent_id: 1010, guide_type: 'industry', external_score: '0.49', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:23' },
+  { node_id: 1001, keyword: '手机海报', normalized_key: 'shouji_haibao', level: 1, parent_id: null, guide_type: 'category', external_score: '1.00', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:28', updated_by: '管理员' },
+  { node_id: 1003, keyword: '简历', normalized_key: 'jianli', level: 1, parent_id: null, guide_type: 'category', external_score: '0.33', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:27', updated_by: '管理员' },
+  { node_id: 1010, keyword: '招聘', normalized_key: 'zhaopin', level: 2, parent_id: 1001, guide_type: 'scene', external_score: '0.90', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:26', updated_by: '管理员' },
+  { node_id: 1020, keyword: '极简风', normalized_key: 'jijianfeng', level: 2, parent_id: 1001, guide_type: 'style', external_score: '0.80', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:25', updated_by: '管理员' },
+  { node_id: 1030, keyword: '互联网', normalized_key: 'hulianwang', level: 3, parent_id: 1010, guide_type: 'industry', external_score: '0.70', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:24', updated_by: '管理员' },
+  { node_id: 1031, keyword: '餐饮', normalized_key: 'canyin', level: 3, parent_id: 1010, guide_type: 'industry', external_score: '0.49', status: '启用', source: 'template_tag', updated_at: '2026-10-21 14:23', updated_by: '管理员' },
 ];
 
 const edgeRows: EdgeRow[] = [
-  { edge_id: 2002, parent: '手机海报(1001)', child: '招聘(1010)', edge_type: 'parent_child', weight: '0.88', cooccur_cnt: 12000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:20' },
-  { edge_id: 2005, parent: '手机海报(1001)', child: '极简风(1020)', edge_type: 'parent_child', weight: '0.95', cooccur_cnt: 15000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:19' },
-  { edge_id: 2014, parent: '简历(1003)', child: '招聘(1010)', edge_type: 'parent_child', weight: '0.95', cooccur_cnt: 8000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:18' },
-  { edge_id: 2023, parent: '招聘(1010)', child: '互联网(1030)', edge_type: 'parent_child', weight: '0.95', cooccur_cnt: 5000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:17' },
-  { edge_id: 2024, parent: '招聘(1010)', child: '餐饮(1031)', edge_type: 'parent_child', weight: '0.81', cooccur_cnt: 3000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:16' },
+  { edge_id: 2002, parent: '手机海报(1001)', child: '招聘(1010)', edge_type: 'parent_child', weight: '0.88', cooccur_cnt: 12000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:20', updated_by: '管理员' },
+  { edge_id: 2005, parent: '手机海报(1001)', child: '极简风(1020)', edge_type: 'parent_child', weight: '0.95', cooccur_cnt: 15000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:19', updated_by: '管理员' },
+  { edge_id: 2014, parent: '简历(1003)', child: '招聘(1010)', edge_type: 'parent_child', weight: '0.95', cooccur_cnt: 8000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:18', updated_by: '管理员' },
+  { edge_id: 2023, parent: '招聘(1010)', child: '互联网(1030)', edge_type: 'parent_child', weight: '0.95', cooccur_cnt: 5000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:17', updated_by: '管理员' },
+  { edge_id: 2024, parent: '招聘(1010)', child: '餐饮(1031)', edge_type: 'parent_child', weight: '0.81', cooccur_cnt: 3000, source: 'co_occur', status: '启用', updated_at: '2026-10-21 14:16', updated_by: '管理员' },
 ];
 
 const mappingRows: MappingRow[] = [
@@ -142,8 +144,48 @@ function ImportDialog({ kind, onClose, onConfirm }: { kind: ImportKind; onClose:
   );
 }
 
+function FormInput({ label, value, onChange, disabled = false, type = 'text', placeholder }: { label: string; value: string; onChange?: (value: string) => void; disabled?: boolean; type?: string; placeholder?: string }) {
+  return <label className="flex flex-col gap-1.5"><span className="text-[11px] font-medium text-[#5e6b7f]">{label}</span><input type={type} value={value} disabled={disabled} placeholder={placeholder} onChange={(event) => onChange?.(event.currentTarget.value)} className={`h-9 rounded-[5px] border px-3 text-[12px] outline-none transition ${disabled ? 'cursor-not-allowed border-[#edf0f4] bg-[#f5f7fa] text-[#9aa4b2]' : 'border-[#dfe3ea] bg-white text-[#354154] focus:border-[#278fee] focus:ring-2 focus:ring-[#278fee]/10'}`} /></label>;
+}
+
+function FormSelect({ label, value, options, onChange }: { label: string; value: string; options: Array<{ label: string; value: string }>; onChange: (value: string) => void }) {
+  return <label className="flex flex-col gap-1.5"><span className="text-[11px] font-medium text-[#5e6b7f]">{label}</span><select value={value} onChange={(event) => onChange(event.currentTarget.value)} className="h-9 rounded-[5px] border border-[#dfe3ea] bg-white px-3 text-[12px] text-[#354154] outline-none transition focus:border-[#278fee] focus:ring-2 focus:ring-[#278fee]/10">{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>;
+}
+
+function EditModalShell({ title, description, onClose, onSave, children }: { title: string; description: string; onClose: () => void; onSave: () => void; children: ReactNode }) {
+  return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#0b1830]/45 p-5 backdrop-blur-[2px]"><div className="w-[min(700px,calc(100vw-40px))] overflow-hidden rounded-[12px] bg-white shadow-[0_24px_80px_rgba(16,27,52,.28)]"><div className="flex items-start justify-between border-b border-[#e7eaf0] px-6 py-4"><div><h2 className="text-[17px] font-semibold text-[#273244]">{title}</h2><p className="mt-1 text-[11px] text-[#99a2b0]">{description}</p></div><button type="button" onClick={onClose} className="rounded-full p-1.5 text-[#8d97a6] hover:bg-[#f2f4f7]"><X className="h-5 w-5" /></button></div><div className="max-h-[62vh] overflow-y-auto p-6">{children}</div><div className="flex items-center justify-end gap-3 border-t border-[#e7eaf0] px-6 py-4"><button type="button" onClick={onClose} className="h-9 rounded-[5px] border border-[#dfe3ea] px-5 text-[12px] text-[#687386] hover:border-[#b8c2d0]">取消</button><button type="button" onClick={onSave} className="h-9 rounded-[5px] bg-[#278fee] px-5 text-[12px] text-white shadow-[0_4px_10px_rgba(39,143,238,.16)] hover:bg-[#167fdc]">保存</button></div></div></div>;
+}
+
+function NodeEditDialog({ row, onClose, onSave }: { row: NodeRow; onClose: () => void; onSave: (row: NodeRow) => void }) {
+  const [form, setForm] = useState(row);
+  const update = (patch: Partial<NodeRow>) => setForm((current) => ({ ...current, ...patch }));
+
+  return <EditModalShell title="编辑引导词节点" description="节点编号和关键词不可编辑，其余配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="节点编号" value={String(form.node_id)} disabled /><FormInput label="关键词" value={form.keyword} disabled /><FormInput label="归一化键" value={form.normalized_key} onChange={(value) => update({ normalized_key: value })} /><FormSelect label="层级" value={String(form.level)} options={[{ label: '1级', value: '1' }, { label: '2级', value: '2' }, { label: '3级', value: '3' }]} onChange={(value) => update({ level: Number(value) })} /><FormInput label="父节点编号" value={form.parent_id == null ? '' : String(form.parent_id)} placeholder="无父节点可留空" onChange={(value) => update({ parent_id: value.trim() ? Number(value) : null })} /><FormSelect label="引导类型" value={form.guide_type} options={[{ label: '分类', value: 'category' }, { label: '场景', value: 'scene' }, { label: '风格', value: 'style' }, { label: '行业', value: 'industry' }]} onChange={(value) => update({ guide_type: value })} /><FormInput label="外部评分" value={form.external_score} onChange={(value) => update({ external_score: value })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '下线', value: '下线' }]} onChange={(value) => update({ status: value as NodeRow['status'] })} /><FormInput label="数据来源" value={form.source} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
+}
+
+function EdgeEditDialog({ row, onClose, onSave }: { row: EdgeRow; onClose: () => void; onSave: (row: EdgeRow) => void }) {
+  const [form, setForm] = useState(row);
+  const update = (patch: Partial<EdgeRow>) => setForm((current) => ({ ...current, ...patch }));
+
+  return <EditModalShell title="编辑引导词关系" description="关系编号不可编辑，其余关系配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="关系编号" value={String(form.edge_id)} disabled /><FormInput label="父节点" value={form.parent} onChange={(value) => update({ parent: value })} /><FormInput label="子节点" value={form.child} onChange={(value) => update({ child: value })} /><FormSelect label="关系类型" value={form.edge_type} options={[{ label: '父子关系', value: 'parent_child' }, { label: '同义关系', value: 'synonym' }, { label: '相关关系', value: 'related' }]} onChange={(value) => update({ edge_type: value })} /><FormInput label="权重" value={form.weight} onChange={(value) => update({ weight: value })} /><FormInput label="共现次数" value={String(form.cooccur_cnt)} onChange={(value) => update({ cooccur_cnt: Number(value) || 0 })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '下线', value: '下线' }]} onChange={(value) => update({ status: value as EdgeRow['status'] })} /><FormInput label="数据来源" value={form.source} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
+}
+
+type EditTarget = { kind: 'nodes'; row: NodeRow } | { kind: 'edges'; row: EdgeRow };
+
+function DeleteConfirmDialog({ label, onClose, onConfirm }: { label: string; onClose: () => void; onConfirm: () => void }) {
+  return <div className="fixed inset-0 z-[85] flex items-center justify-center bg-[#0b1830]/45 p-5 backdrop-blur-[2px]"><div className="w-[min(440px,calc(100vw-40px))] rounded-[12px] bg-white p-6 shadow-[0_24px_80px_rgba(16,27,52,.28)]"><div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff5e8] text-[#e8a234]"><AlertTriangle className="h-5 w-5" /></div><div><h2 className="text-[16px] font-semibold text-[#273244]">确认删除</h2><p className="mt-2 text-[12px] leading-5 text-[#6e798a]">确定要删除“{label}”吗？删除后数据将从当前列表中移除，且无法恢复。</p></div></div><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={onClose} className="h-9 rounded-[5px] border border-[#dfe3ea] px-5 text-[12px] text-[#687386] hover:border-[#b8c2d0]">取消</button><button type="button" onClick={onConfirm} className="h-9 rounded-[5px] bg-[#e85a5a] px-5 text-[12px] text-white hover:bg-[#d94747]">确认删除</button></div></div></div>;
+}
+
+function formatUpdatedAt() {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
 export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillConfig, onOpenRequirement }: { onBackToDirectory: () => void; onNavigateToSkillConfig: () => void; onOpenRequirement?: () => void }) {
   const [activeTab, setActiveTab] = useState<TabKey>('nodes');
+  const [nodes, setNodes] = useState(nodeRows);
+  const [edges, setEdges] = useState(edgeRows);
   const [nodeFilters, setNodeFilters] = useState({ keyword: '', normalizedKey: '', level: '', guideType: '', status: '', region: 'CN', language: 'zh' });
   const [appliedNodeFilters, setAppliedNodeFilters] = useState(nodeFilters);
   const [edgeFilters, setEdgeFilters] = useState({ parent: '', child: '', edgeType: '', status: '', weight: '' });
@@ -155,6 +197,8 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
   const [mappingType, setMappingType] = useState('');
   const [mappingSource, setMappingSource] = useState('');
   const [importKind, setImportKind] = useState<ImportKind | null>(null);
+  const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ kind: ImportKind; id: number; label: string } | null>(null);
   const [toast, setToast] = useState('');
 
   const notify = (message: string) => {
@@ -162,14 +206,36 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
     window.setTimeout(() => setToast(''), 2200);
   };
 
-  const filteredNodes = useMemo(() => nodeRows.filter((row) => (!appliedNodeFilters.keyword || row.keyword.includes(appliedNodeFilters.keyword)) && (!appliedNodeFilters.normalizedKey || row.normalized_key.includes(appliedNodeFilters.normalizedKey)) && (!appliedNodeFilters.level || String(row.level) === appliedNodeFilters.level) && (!appliedNodeFilters.guideType || row.guide_type === appliedNodeFilters.guideType) && (!appliedNodeFilters.status || row.status === appliedNodeFilters.status)), [appliedNodeFilters]);
-  const filteredEdges = useMemo(() => edgeRows.filter((row) => (!appliedEdgeFilters.parent || row.parent.includes(appliedEdgeFilters.parent)) && (!appliedEdgeFilters.child || row.child.includes(appliedEdgeFilters.child)) && (!appliedEdgeFilters.edgeType || row.edge_type === appliedEdgeFilters.edgeType) && (!appliedEdgeFilters.status || row.status === appliedEdgeFilters.status)), [appliedEdgeFilters]);
+  const filteredNodes = useMemo(() => nodes.filter((row) => (!appliedNodeFilters.keyword || row.keyword.includes(appliedNodeFilters.keyword)) && (!appliedNodeFilters.normalizedKey || row.normalized_key.includes(appliedNodeFilters.normalizedKey)) && (!appliedNodeFilters.level || String(row.level) === appliedNodeFilters.level) && (!appliedNodeFilters.guideType || row.guide_type === appliedNodeFilters.guideType) && (!appliedNodeFilters.status || row.status === appliedNodeFilters.status)), [appliedNodeFilters, nodes]);
+  const filteredEdges = useMemo(() => edges.filter((row) => (!appliedEdgeFilters.parent || row.parent.includes(appliedEdgeFilters.parent)) && (!appliedEdgeFilters.child || row.child.includes(appliedEdgeFilters.child)) && (!appliedEdgeFilters.edgeType || row.edge_type === appliedEdgeFilters.edgeType) && (!appliedEdgeFilters.status || row.status === appliedEdgeFilters.status)), [appliedEdgeFilters, edges]);
   const filteredMappings = useMemo(() => mappingRows.filter((row) => (!mappingType || row.guide_type === mappingType) && (!mappingSource || row.recall_source === mappingSource)), [mappingSource, mappingType]);
   const queryKey = normalizeQuery(mappingQuery);
 
   const handleImportConfirm = (successCount: number, errorCount: number) => {
     setImportKind(null);
     notify(`导入完成：成功 ${successCount} 条，失败 ${errorCount} 条`);
+  };
+
+  const handleEditSave = (updatedRow: NodeRow | EdgeRow) => {
+    if ('node_id' in updatedRow) {
+      setNodes((current) => current.map((row) => row.node_id === updatedRow.node_id ? updatedRow : row));
+      notify(`节点“${updatedRow.keyword}”已保存`);
+    } else {
+      setEdges((current) => current.map((row) => row.edge_id === updatedRow.edge_id ? updatedRow : row));
+      notify(`关系 ${updatedRow.edge_id} 已保存`);
+    }
+    setEditTarget(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget) return;
+    if (deleteTarget.kind === 'nodes') {
+      setNodes((current) => current.filter((row) => row.node_id !== deleteTarget.id));
+    } else {
+      setEdges((current) => current.filter((row) => row.edge_id !== deleteTarget.id));
+    }
+    notify(`“${deleteTarget.label}”已删除`);
+    setDeleteTarget(null);
   };
 
   const applyNodeFilters = () => {
@@ -185,7 +251,7 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
   const renderNodeTab = () => (
     <>
       <div className="flex flex-wrap items-center gap-3 rounded-[8px] border border-[#edf0f4] bg-[#fafbfc] p-3"><div className="flex min-w-0 flex-1 flex-wrap items-center gap-2"><input value={nodeFilters.keyword} onChange={(event) => setNodeFilters((current) => ({ ...current, keyword: event.currentTarget.value }))} placeholder="关键词" className="h-8 w-[150px] rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] outline-none focus:border-[#278fee]" /><input value={nodeFilters.normalizedKey} onChange={(event) => setNodeFilters((current) => ({ ...current, normalizedKey: event.currentTarget.value }))} placeholder="归一化键" className="h-8 w-[150px] rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] outline-none focus:border-[#278fee]" /><select value={nodeFilters.level} onChange={(event) => setNodeFilters((current) => ({ ...current, level: event.currentTarget.value }))} className="h-8 rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] text-[#657184] outline-none"><option value="">层级</option><option value="1">1级</option><option value="2">2级</option><option value="3">3级</option></select><select value={nodeFilters.guideType} onChange={(event) => setNodeFilters((current) => ({ ...current, guideType: event.currentTarget.value }))} className="h-8 rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] text-[#657184] outline-none"><option value="">类型</option><option value="category">分类</option><option value="scene">场景</option><option value="style">风格</option><option value="industry">行业</option></select><select value={nodeFilters.status} onChange={(event) => setNodeFilters((current) => ({ ...current, status: event.currentTarget.value }))} className="h-8 rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] text-[#657184] outline-none"><option value="">状态</option><option value="启用">启用</option><option value="下线">下线</option></select><select value={nodeFilters.region} onChange={(event) => setNodeFilters((current) => ({ ...current, region: event.currentTarget.value }))} className="h-8 rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] text-[#657184] outline-none"><option value="CN">中国大陆</option><option value="US">美国</option></select><select value={nodeFilters.language} onChange={(event) => setNodeFilters((current) => ({ ...current, language: event.currentTarget.value }))} className="h-8 rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] text-[#657184] outline-none"><option value="zh">中文</option><option value="en">英文</option></select><ActionButton icon={Search} variant="primary" onClick={applyNodeFilters}>查询</ActionButton></div><div className="ml-auto flex shrink-0 items-center gap-2"><ActionButton icon={Upload} variant="primary" onClick={() => setImportKind('nodes')}>导入数据</ActionButton></div></div>
-      <div className="mt-4 overflow-x-auto rounded-[8px] border border-[#e7eaf0]"><table className="w-full min-w-[1120px] text-left text-[11px]"><thead className="bg-[#f8fafc] text-[#7b8697]"><tr>{['节点编号', '关键词', '归一化键', '层级', '父节点编号', '引导类型', '外部评分', '状态', '数据来源', '更新时间', '操作'].map((label) => <th key={label} className="px-4 py-3 font-medium">{label}</th>)}</tr></thead><tbody>{filteredNodes.map((row) => <tr key={row.node_id} className="border-t border-[#edf0f4] text-[#536073] hover:bg-[#fafcff]"><td className="px-4 py-3 font-medium text-[#344155]">{row.node_id}</td><td className="px-4 py-3 font-medium text-[#344155]">{row.keyword}</td><td className="px-4 py-3 font-mono text-[#6c7890]">{row.normalized_key}</td><td className="px-4 py-3">{row.level}级</td><td className="px-4 py-3">{row.parent_id ?? '无'}</td><td className="px-4 py-3"><span className="rounded bg-[#f1f4fb] px-2 py-1 text-[10px] text-[#637089]">{displayValue(row.guide_type)}</span></td><td className="px-4 py-3">{row.external_score}</td><td className="px-4 py-3"><StatusTag status={row.status} /></td><td className="px-4 py-3">{displayValue(row.source)}</td><td className="px-4 py-3 whitespace-nowrap text-[#8d97a7]">{row.updated_at}</td><td className="px-4 py-3"><div className="flex items-center gap-2"><button type="button" onClick={() => notify(`编辑节点 ${row.node_id}`)} className="text-[#278fee] hover:underline"><Pencil className="mr-1 inline h-3.5 w-3.5" />编辑</button><button type="button" onClick={() => notify(`${row.keyword} 已切换状态`)} className="text-[#7f8999] hover:text-[#278fee]"><Power className="mr-1 inline h-3.5 w-3.5" />上下线</button></div></td></tr>)}</tbody></table>{filteredNodes.length === 0 ? <div className="p-12 text-center text-[12px] text-[#9ca5b2]">暂无引导词节点，可导入数据或手动新增</div> : null}</div>
+      <div className="mt-4 overflow-x-auto rounded-[8px] border border-[#e7eaf0]"><table className="w-full min-w-[1260px] text-left text-[11px]"><thead className="bg-[#f8fafc] text-[#7b8697]"><tr>{['节点编号', '关键词', '归一化键', '层级', '父节点编号', '引导类型', '外部评分', '状态', '数据来源', '更新时间', '更新人', '操作'].map((label) => <th key={label} className="px-4 py-3 font-medium">{label}</th>)}</tr></thead><tbody>{filteredNodes.map((row) => <tr key={row.node_id} className="border-t border-[#edf0f4] text-[#536073] hover:bg-[#fafcff]"><td className="px-4 py-3 font-medium text-[#344155]">{row.node_id}</td><td className="px-4 py-3 font-medium text-[#344155]">{row.keyword}</td><td className="px-4 py-3 font-mono text-[#6c7890]">{row.normalized_key}</td><td className="px-4 py-3">{row.level}级</td><td className="px-4 py-3">{row.parent_id ?? '无'}</td><td className="px-4 py-3"><span className="rounded bg-[#f1f4fb] px-2 py-1 text-[10px] text-[#637089]">{displayValue(row.guide_type)}</span></td><td className="px-4 py-3">{row.external_score}</td><td className="px-4 py-3"><StatusTag status={row.status} /></td><td className="px-4 py-3">{displayValue(row.source)}</td><td className="px-4 py-3 whitespace-nowrap text-[#8d97a7]">{row.updated_at}</td><td className="px-4 py-3 whitespace-nowrap text-[#667286]">{row.updated_by}</td><td className="px-4 py-3"><div className="flex items-center gap-2 whitespace-nowrap"><button type="button" onClick={() => setEditTarget({ kind: 'nodes', row })} className="text-[#278fee] hover:underline"><Pencil className="mr-1 inline h-3.5 w-3.5" />编辑</button><button type="button" onClick={() => notify(`${row.keyword} 已切换状态`)} className="text-[#7f8999] hover:text-[#278fee]"><Power className="mr-1 inline h-3.5 w-3.5" />上下线</button><button type="button" onClick={() => setDeleteTarget({ kind: 'nodes', id: row.node_id, label: row.keyword })} className="text-[#e05d62] hover:underline"><Trash2 className="mr-1 inline h-3.5 w-3.5" />删除</button></div></td></tr>)}</tbody></table>{filteredNodes.length === 0 ? <div className="p-12 text-center text-[12px] text-[#9ca5b2]">暂无引导词节点，可导入数据或手动新增</div> : null}</div>
       <Pagination total={filteredNodes.length} />
     </>
   );
@@ -193,7 +259,7 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
   const renderEdgeTab = () => (
     <>
       <div className="flex flex-wrap items-center gap-3 rounded-[8px] border border-[#edf0f4] bg-[#fafbfc] p-3"><div className="flex min-w-0 flex-1 flex-wrap items-center gap-2"><input value={edgeFilters.parent} onChange={(event) => setEdgeFilters((current) => ({ ...current, parent: event.currentTarget.value }))} placeholder="父节点编号 / 关键词" className="h-8 w-[180px] rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] outline-none focus:border-[#278fee]" /><input value={edgeFilters.child} onChange={(event) => setEdgeFilters((current) => ({ ...current, child: event.currentTarget.value }))} placeholder="子节点编号 / 关键词" className="h-8 w-[180px] rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] outline-none focus:border-[#278fee]" /><select value={edgeFilters.edgeType} onChange={(event) => setEdgeFilters((current) => ({ ...current, edgeType: event.currentTarget.value }))} className="h-8 rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] text-[#657184] outline-none"><option value="">关系类型</option><option value="parent_child">父子关系</option><option value="synonym">同义关系</option><option value="related">相关关系</option></select><select value={edgeFilters.status} onChange={(event) => setEdgeFilters((current) => ({ ...current, status: event.currentTarget.value }))} className="h-8 rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] text-[#657184] outline-none"><option value="">状态</option><option value="启用">启用</option><option value="下线">下线</option></select><input value={edgeFilters.weight} onChange={(event) => setEdgeFilters((current) => ({ ...current, weight: event.currentTarget.value }))} placeholder="权重范围，如 0.8-1" className="h-8 w-[150px] rounded-[4px] border border-[#dfe3ea] bg-white px-2.5 text-[11px] outline-none focus:border-[#278fee]" /><ActionButton icon={Search} variant="primary" onClick={applyEdgeFilters}>查询</ActionButton></div><div className="ml-auto flex shrink-0 items-center gap-2"><ActionButton icon={Upload} variant="primary" onClick={() => setImportKind('edges')}>导入数据</ActionButton></div></div>
-      <div className="mt-4 overflow-x-auto rounded-[8px] border border-[#e7eaf0]"><table className="w-full min-w-[1060px] text-left text-[11px]"><thead className="bg-[#f8fafc] text-[#7b8697]"><tr>{['关系编号', '父节点', '子节点', '关系类型', '权重', '共现次数', '数据来源', '状态', '更新时间', '操作'].map((label) => <th key={label} className="px-4 py-3 font-medium">{label}</th>)}</tr></thead><tbody>{filteredEdges.map((row) => <tr key={row.edge_id} className="border-t border-[#edf0f4] text-[#536073] hover:bg-[#fafcff]"><td className="px-4 py-3 font-medium text-[#344155]">{row.edge_id}</td><td className="px-4 py-3 font-medium text-[#344155]">{row.parent}</td><td className="px-4 py-3 font-medium text-[#344155]">{row.child}</td><td className="px-4 py-3"><span className="rounded bg-[#f1f4fb] px-2 py-1 text-[10px] text-[#637089]">{displayValue(row.edge_type)}</span></td><td className="px-4 py-3">{row.weight}</td><td className="px-4 py-3">{row.cooccur_cnt.toLocaleString()}</td><td className="px-4 py-3">{displayValue(row.source)}</td><td className="px-4 py-3"><StatusTag status={row.status} /></td><td className="px-4 py-3 whitespace-nowrap text-[#8d97a7]">{row.updated_at}</td><td className="px-4 py-3"><div className="flex items-center gap-2"><button type="button" onClick={() => notify(`编辑关系 ${row.edge_id}`)} className="text-[#278fee] hover:underline"><Pencil className="mr-1 inline h-3.5 w-3.5" />编辑</button><button type="button" onClick={() => notify(`${row.edge_id} 已切换状态`)} className="text-[#7f8999] hover:text-[#278fee]"><Power className="mr-1 inline h-3.5 w-3.5" />上下线</button></div></td></tr>)}</tbody></table>{filteredEdges.length === 0 ? <div className="p-12 text-center text-[12px] text-[#9ca5b2]">暂无关系数据，可导入或先维护节点</div> : null}</div>
+      <div className="mt-4 overflow-x-auto rounded-[8px] border border-[#e7eaf0]"><table className="w-full min-w-[1200px] text-left text-[11px]"><thead className="bg-[#f8fafc] text-[#7b8697]"><tr>{['关系编号', '父节点', '子节点', '关系类型', '权重', '共现次数', '数据来源', '状态', '更新时间', '更新人', '操作'].map((label) => <th key={label} className="px-4 py-3 font-medium">{label}</th>)}</tr></thead><tbody>{filteredEdges.map((row) => <tr key={row.edge_id} className="border-t border-[#edf0f4] text-[#536073] hover:bg-[#fafcff]"><td className="px-4 py-3 font-medium text-[#344155]">{row.edge_id}</td><td className="px-4 py-3 font-medium text-[#344155]">{row.parent}</td><td className="px-4 py-3 font-medium text-[#344155]">{row.child}</td><td className="px-4 py-3"><span className="rounded bg-[#f1f4fb] px-2 py-1 text-[10px] text-[#637089]">{displayValue(row.edge_type)}</span></td><td className="px-4 py-3">{row.weight}</td><td className="px-4 py-3">{row.cooccur_cnt.toLocaleString()}</td><td className="px-4 py-3">{displayValue(row.source)}</td><td className="px-4 py-3"><StatusTag status={row.status} /></td><td className="px-4 py-3 whitespace-nowrap text-[#8d97a7]">{row.updated_at}</td><td className="px-4 py-3 whitespace-nowrap text-[#667286]">{row.updated_by}</td><td className="px-4 py-3"><div className="flex items-center gap-2 whitespace-nowrap"><button type="button" onClick={() => setEditTarget({ kind: 'edges', row })} className="text-[#278fee] hover:underline"><Pencil className="mr-1 inline h-3.5 w-3.5" />编辑</button><button type="button" onClick={() => notify(`${row.edge_id} 已切换状态`)} className="text-[#7f8999] hover:text-[#278fee]"><Power className="mr-1 inline h-3.5 w-3.5" />上下线</button><button type="button" onClick={() => setDeleteTarget({ kind: 'edges', id: row.edge_id, label: `${row.parent} → ${row.child}` })} className="text-[#e05d62] hover:underline"><Trash2 className="mr-1 inline h-3.5 w-3.5" />删除</button></div></td></tr>)}</tbody></table>{filteredEdges.length === 0 ? <div className="p-12 text-center text-[12px] text-[#9ca5b2]">暂无关系数据，可导入或先维护节点</div> : null}</div>
       <Pagination total={filteredEdges.length} />
     </>
   );
@@ -216,6 +282,9 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
       </main>
       {toast ? <div className="fixed bottom-7 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]"><Check className="h-4 w-4 text-[#65d49b]" />{toast}</div> : null}
       {importKind ? <ImportDialog kind={importKind} onClose={() => setImportKind(null)} onConfirm={handleImportConfirm} /> : null}
+      {editTarget?.kind === 'nodes' ? <NodeEditDialog key={`node-${editTarget.row.node_id}`} row={editTarget.row} onClose={() => setEditTarget(null)} onSave={handleEditSave} /> : null}
+      {editTarget?.kind === 'edges' ? <EdgeEditDialog key={`edge-${editTarget.row.edge_id}`} row={editTarget.row} onClose={() => setEditTarget(null)} onSave={handleEditSave} /> : null}
+      {deleteTarget ? <DeleteConfirmDialog label={deleteTarget.label} onClose={() => setDeleteTarget(null)} onConfirm={handleDeleteConfirm} /> : null}
     </div>
   );
 }
