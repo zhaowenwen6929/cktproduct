@@ -27,6 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { GenerationAttachment } from '../types';
+import { MembershipCenterModal } from './MembershipCenterModal';
 
 type SkillField =
   | { id: string; label: string; type: 'upload'; required?: boolean; max?: number; description?: string }
@@ -468,6 +469,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   const [activeCategory, setActiveCategory] = useState('最近使用');
   const [activeHomeSkillCategory, setActiveHomeSkillCategory] = useState('电商设计');
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
+  const [membershipOpen, setMembershipOpen] = useState(false);
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, FieldValue>>>({});
   const skillsRailRef = useRef<HTMLDivElement>(null);
 
@@ -663,6 +665,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
       <header className="fixed left-[56px] right-0 top-0 z-20 flex h-[56px] items-center justify-between bg-white/95 px-6 backdrop-blur">
         <button type="button" onClick={onBackToDirectory} className="flex items-center"><img src={cktAiEcomLogo} alt="创客贴" className="h-[30px] w-auto" /></button>
         <div className="flex items-center gap-5 text-[#5e6679]">
+          <button type="button" onClick={() => setMembershipOpen(true)} className="text-[12px] transition hover:text-[#2677ed]">会员中心</button>
           <button type="button" className="text-[12px]">印刷店</button>
           <Grid2x2 className="h-[17px] w-[17px]" />
           <span className="relative"><Bell className="h-[18px] w-[18px]" /><i className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ff4c48] text-[9px] not-italic text-white">4</i></span>
@@ -898,6 +901,8 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
           </div>
         </div>
       ) : null}
+
+      {membershipOpen ? <MembershipCenterModal onClose={() => setMembershipOpen(false)} /> : null}
 
       {selectedSkill ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1b2335]/40 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>
