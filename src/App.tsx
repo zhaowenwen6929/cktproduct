@@ -1341,8 +1341,8 @@ export default function App() {
         description: '创客贴设计 AI 创作移动端对话页，支持通过对话生成设计。',
       },
       '/admin-backoffice': {
-        title: '创客贴管理后台｜Skill配置',
-        description: '创客贴管理后台原型，支持 Skill 配置查询、JSON 编辑与动态预览。',
+        title: '创客贴管理后台｜AI电商配置',
+        description: '创客贴管理后台原型，支持 AI 电商配置查询与 JSON 编辑。',
       },
       '/admin-backoffice/guided-search': {
         title: '创客贴管理后台｜引导式搜索配置',
@@ -1381,7 +1381,7 @@ export default function App() {
         available: true,
       },
       {
-        title: 'Agent skills 首页',
+        title: '创客贴网站',
         description: '进入创作首页，浏览技能分类、填写技能参数，并将需求带入无限画布生成。',
         href: '/agent-skills-home' as AppRoute,
         status: '新增入口',
@@ -1396,7 +1396,7 @@ export default function App() {
       },
       {
         title: '创客贴管理后台',
-        description: '进入管理后台需求目录，查看玩法管理下的 Skill 配置查询、JSON 编辑和实时预览流程。',
+        description: '进入管理后台需求目录，查看玩法管理下的 AI 电商配置查询与 JSON 编辑流程。',
         href: '/admin-backoffice' as AppRoute,
         status: '新增入口',
         available: true,
