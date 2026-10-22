@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, Save } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
+import { DEFAULT_MEMBERSHIP_PAGE_CONFIG, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
 
 type PlatformKey = 'web' | 'mobile';
 type ModuleKey = 'plans' | 'overview' | 'details' | 'model-consumption' | 'commercial-license' | 'faq';
@@ -23,85 +24,38 @@ const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
 
 const createDefaultConfig = (): PlatformConfig => ({
   json: {
-    plans: JSON.stringify({
-      tabs: [
-        {
-          key: 'personal',
-          name: '个人使用',
-          memberLevel: {
-            level: 'personal',
-          },
-          options: [
-            { key: 'yearly', name: '连续包年', guideText: '限时4.5折', duration: '365天', highlighted: true },
-            { key: 'monthly', name: '连续包月', guideText: '4.8折', duration: '30天' },
-            { key: 'quarterly', name: '连续包季', guideText: '限时4.3折', duration: '90天' },
-            { key: 'single', name: '单月购买', guideText: '', duration: '30天' },
-          ],
-        },
-        {
-          key: 'enterprise',
-          name: '企业使用',
-          memberLevel: {
-            level: 'enterprise',
-          },
-          options: [
-            { key: 'team-yearly', name: '团队包年', guideText: '多人协作更优惠', duration: '365天' },
-            { key: 'team-monthly', name: '团队包月', guideText: '灵活开通', duration: '30天' },
-          ],
-        },
-      ],
-    }, null, 2),
-    overview: JSON.stringify({
-      title: '会员权益概览',
-      subtitle: '升级会员，解锁更多创作能力',
-      items: [
-        { title: '海量模板', description: '解锁更多优质模板资源' },
-        { title: 'AI 创作', description: '享受更多 AI 生成权益' },
-      ],
-    }, null, 2),
-    details: JSON.stringify({
-      sections: [
-        { title: '模板权益', items: ['全量模板', '高级模板', '商用模板'] },
-        { title: '创作权益', items: ['高清导出', '去除水印', '团队协作'] },
-      ],
-    }, null, 2),
-    'model-consumption': JSON.stringify({
-      title: 'AI 模型消耗',
-      description: '不同会员等级对应不同的 AI 生成额度',
-      models: [{ name: 'AI 图片生成', unit: '次', quota: 100 }],
-    }, null, 2),
-    'commercial-license': JSON.stringify({
-      title: '商用授权',
-      description: '会员生成内容可用于商业场景',
-      enabled: true,
-      scopes: ['商品宣传', '营销推广', '社交媒体'],
-    }, null, 2),
-    faq: JSON.stringify({
-      title: '常见问题',
-      items: [
-        { question: '会员权益什么时候生效？', answer: '购买成功后立即生效。' },
-        { question: '会员到期后还能使用已生成内容吗？', answer: '已生成内容不受影响。' },
-      ],
-    }, null, 2),
+    plans: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.plans, null, 2),
+    overview: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.overview, null, 2),
+    details: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.details, null, 2),
+    'model-consumption': JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.modelConsumption, null, 2),
+    'commercial-license': JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.commercialLicense, null, 2),
+    faq: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.faq, null, 2),
   },
 });
 
 const createDefaultState = (): ConfigState => ({ web: createDefaultConfig(), mobile: createDefaultConfig() });
-const STORAGE_KEY = 'admin-membership-page-config';
+const STORAGE_KEY = MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY;
 
 const migratePlansJson = (value: unknown, fallback: string) => {
   if (typeof value !== 'string') return fallback;
   try {
     const parsed = JSON.parse(value) as { tabs?: Array<Record<string, unknown>> };
+    const fallbackConfig = JSON.parse(fallback) as { tabs: Array<Record<string, unknown>> };
     if (!Array.isArray(parsed.tabs)) return value;
-    const tabs = parsed.tabs.map((tab, index) => {
+    const tabs = fallbackConfig.tabs.map((fallbackTab, index) => {
+      const tab = parsed.tabs?.find((item) => item.key === fallbackTab.key)
+        ?? parsed.tabs?.[index]
+        ?? {};
       const isPersonal = tab.key === 'personal' || tab.name === '个人订阅';
       const isEnterprise = tab.key === 'team' || tab.name === '团队订阅';
       return {
+        ...fallbackTab,
         ...tab,
         ...(isPersonal ? { key: 'personal', name: '个人使用' } : {}),
         ...(isEnterprise ? { key: 'enterprise', name: '企业使用' } : {}),
-        memberLevel: tab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
+        memberLevel: tab.memberLevel ?? fallbackTab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
+        options: Array.isArray(tab.options) ? tab.options : fallbackTab.options,
+        plans: Array.isArray(tab.plans) ? tab.plans : fallbackTab.plans,
       };
     });
     return JSON.stringify({ ...parsed, tabs }, null, 2);
@@ -180,6 +134,7 @@ export function MembershipPageConfigPage({
 
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+      window.dispatchEvent(new Event('membership-page-config-updated'));
     } catch {
       // Keep the prototype usable when browser storage is unavailable.
     }
