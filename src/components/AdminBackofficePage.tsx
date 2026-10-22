@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   AlertTriangle,
   Bell,
@@ -170,11 +170,49 @@ const DEFAULT_SKILL_CONFIG: SkillConfig = {
   },
 };
 
-const NAV_GROUPS = [
+type NavItem = string | {
+  label: string;
+  expanded?: boolean;
+  children?: NavItem[];
+};
+
+type NavGroup = {
+  label: string;
+  icon: typeof Users;
+  expanded?: boolean;
+  children?: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
   { label: '企业账号管理（2.0）', icon: Users },
   { label: '灵感社区', icon: Sparkles, expanded: true, children: ['灵感专题', '提示词库', '灵感作品管理', '活动管理', '玩法专题', '玩法管理', 'AI电商配置'] },
   { label: '系统管理', icon: Settings2 },
-  { label: '内容运营管理', icon: FileText, expanded: true, children: ['引导式搜索配置'] },
+  {
+    label: '内容运营管理',
+    icon: FileText,
+    expanded: true,
+    children: [
+      '模板数据统计',
+      {
+        label: '内容运营基础设施',
+        expanded: true,
+        children: ['模板搜索结果排序', '模板管理', '模板搜索结果排序(新版)', '模板解决方案', '套装管理', '营销日历'],
+      },
+      {
+        label: '搜索管理',
+        expanded: true,
+        children: [
+          '向量搜索黑名单',
+          '关键词多路召回干预',
+          {
+            label: '实体词典',
+            expanded: true,
+            children: ['引导式搜索配置'],
+          },
+        ],
+      },
+    ],
+  },
   { label: '设计师工具箱', icon: SlidersHorizontal },
   { label: '创客贴版权资源库', icon: ShieldCheck },
   { label: '创客贴模板库管理', icon: LayoutDashboard },
@@ -204,16 +242,62 @@ type AdminSidebarProps = {
   onNavigate?: (item: string) => void;
 };
 
+function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: string; requirement: string; summary: string; addedAt: string }) {
+  const [tipTop, setTipTop] = useState<number | null>(null);
+
+  return (
+    <span className="group relative inline-flex shrink-0" onMouseEnter={(event) => setTipTop(event.currentTarget.getBoundingClientRect().top)} onMouseLeave={() => setTipTop(null)} aria-label={`新功能：${title}`} title={`新功能：${summary}`}>
+      <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.04em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">NEW</span>
+      {tipTop !== null ? <span style={{ top: tipTop, left: 238 }} className="pointer-events-none fixed z-50 w-[280px] rounded-[9px] bg-[#172336] px-4 py-3 text-[12px] font-normal leading-5 text-white shadow-[0_10px_24px_rgba(0,0,0,.28)]">
+        <span className="mb-2 block text-[13px] font-semibold text-white">{title}</span>
+        <span className="block"><span className="text-[#a9b9cd]">需求：</span>{requirement}</span>
+        <span className="mt-1 block"><span className="text-[#a9b9cd]">概述：</span>{summary}</span>
+        <span className="mt-1 block"><span className="text-[#a9b9cd]">新增时间：</span>{addedAt}</span>
+      </span> : null}
+    </span>
+  );
+}
+
 export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate }: AdminSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     灵感社区: true,
     内容运营管理: true,
   });
   const [activeItem, setActiveItem] = useState('AI电商配置');
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setActiveItem(activeItemProp);
   }, [activeItemProp]);
+
+  const renderNavItems = (items: NavItem[], level = 0): ReactNode => items.map((item, index) => {
+    const label = typeof item === 'string' ? item : item.label;
+    const children = typeof item === 'string' ? undefined : item.children;
+    const hasChildren = Boolean(children?.length);
+    const defaultExpanded = typeof item === 'string' ? false : item.expanded ?? true;
+    const isExpanded = hasChildren && (expandedItems[label] ?? defaultExpanded);
+
+    return (
+      <div key={`${label}-${level}-${index}`}>
+        <button type="button" onClick={() => {
+          if (hasChildren) {
+            setExpandedItems((current) => ({ ...current, [label]: !isExpanded }));
+          } else {
+            setActiveItem(label);
+            onNavigate?.(label);
+          }
+        }} style={{ paddingLeft: `${43 + level * 24}px` }} className={`flex h-[39px] w-full items-center justify-between pr-4 text-left text-[12px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="truncate">{label}</span>
+            {label === 'AI电商配置' ? <NewFeatureBadge title="AI电商配置" requirement="AI电商配置管理" summary="按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。" addedAt="2026-10-22" /> : null}
+            {label === '引导式搜索配置' ? <NewFeatureBadge title="引导式搜索配置" requirement="引导式搜索配置" summary="在实体词典下维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
+          </span>
+          {hasChildren ? <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
+        </button>
+        {hasChildren && isExpanded ? <div className="bg-[#031525]/70 py-1">{renderNavItems(children ?? [], level + 1)}</div> : null}
+      </div>
+    );
+  });
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[228px] flex-col bg-[#061b2d] text-white">
@@ -236,26 +320,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
                 {hasChildren ? <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
               </button>
               {hasChildren && isExpanded ? (
-                <div className="bg-[#031525] py-1">
-                  {group.children?.map((child) => (
-                    <button type="button" key={child} onClick={() => { setActiveItem(child); onNavigate?.(child); }} className={`flex h-[39px] w-full items-center pl-[43px] text-left text-[12px] transition ${child === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span className="truncate">{child}</span>
-                        {child === 'AI电商配置' ? (
-                          <span className="group relative inline-flex shrink-0" aria-label="新功能：AI电商配置" title="新功能：按 function_code 和 scene 查询 AI 电商配置，支持 JSON 编辑与缓存清理">
-                            <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.04em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">NEW</span>
-                            <span className="pointer-events-none absolute right-0 top-1/2 z-50 w-[280px] -translate-y-1/2 rounded-[9px] bg-[#172336] px-4 py-3 text-[12px] font-normal leading-5 text-white opacity-0 shadow-[0_10px_24px_rgba(0,0,0,.28)] transition-opacity group-hover:opacity-100">
-                              <span className="mb-2 block text-[13px] font-semibold text-white">AI电商配置</span>
-                              <span className="block"><span className="text-[#a9b9cd]">需求：</span>AI电商配置管理</span>
-                              <span className="mt-1 block"><span className="text-[#a9b9cd]">概述：</span>按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。</span>
-                              <span className="mt-1 block"><span className="text-[#a9b9cd]">新增时间：</span>2026-10-22</span>
-                            </span>
-                          </span>
-                        ) : null}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                <div className="bg-[#031525] py-1">{renderNavItems(group.children ?? [])}</div>
               ) : null}
             </div>
           );
