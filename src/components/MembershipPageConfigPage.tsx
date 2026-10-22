@@ -1,28 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ChevronRight, ChevronDown, Plus, Save, Trash2 } from 'lucide-react';
+import { ChevronRight, Save } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 
 type PlatformKey = 'web' | 'mobile';
 type ModuleKey = 'plans' | 'overview' | 'details' | 'model-consumption' | 'commercial-license' | 'faq';
-type JsonModuleKey = Exclude<ModuleKey, 'plans'>;
-
-type PlanItem = {
-  id: string;
-  name: string;
-  guideText: string;
-  duration: string;
-};
-
-type PlanGroup = {
-  id: string;
-  name: string;
-  guideText: string;
-  memberLevel: string;
-  items: PlanItem[];
-};
+type JsonModuleKey = ModuleKey;
 
 type PlatformConfig = {
-  plans: PlanGroup[];
   json: Record<JsonModuleKey, string>;
 };
 
@@ -37,31 +21,30 @@ const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
   { key: 'faq', label: '常见问题', description: '配置会员页常见问题及答案' },
 ];
 
-const MEMBER_LEVELS = ['基础版（个人）', '高级版（个人）', '高级版（团队）', '企业版'];
-
-const createDefaultConfig = (platform: PlatformKey): PlatformConfig => ({
-  plans: [
-    {
-      id: `${platform}-recommended`,
-      name: '推荐套餐',
-      guideText: '适合大多数用户的会员方案',
-      memberLevel: '高级版（个人）',
-      items: [
-        { id: `${platform}-recommended-month`, name: '月度会员', guideText: '灵活订阅，随时可用', duration: '30天' },
-        { id: `${platform}-recommended-year`, name: '年度会员', guideText: '年度订阅，更优惠', duration: '365天' },
-      ],
-    },
-    {
-      id: `${platform}-team`,
-      name: '团队套餐',
-      guideText: '面向团队协作和企业使用',
-      memberLevel: '高级版（团队）',
-      items: [
-        { id: `${platform}-team-year`, name: '团队年度会员', guideText: '多人协作，统一管理', duration: '365天' },
-      ],
-    },
-  ],
+const createDefaultConfig = (): PlatformConfig => ({
   json: {
+    plans: JSON.stringify({
+      tabs: [
+        {
+          key: 'personal',
+          name: '个人订阅',
+          options: [
+            { key: 'yearly', name: '连续包年', guideText: '限时4.5折', duration: '365天', highlighted: true },
+            { key: 'monthly', name: '连续包月', guideText: '4.8折', duration: '30天' },
+            { key: 'quarterly', name: '连续包季', guideText: '限时4.3折', duration: '90天' },
+            { key: 'single', name: '单月购买', guideText: '', duration: '30天' },
+          ],
+        },
+        {
+          key: 'team',
+          name: '团队订阅',
+          options: [
+            { key: 'team-yearly', name: '团队包年', guideText: '多人协作更优惠', duration: '365天' },
+            { key: 'team-monthly', name: '团队包月', guideText: '灵活开通', duration: '30天' },
+          ],
+        },
+      ],
+    }, null, 2),
     overview: JSON.stringify({
       title: '会员权益概览',
       subtitle: '升级会员，解锁更多创作能力',
@@ -97,7 +80,7 @@ const createDefaultConfig = (platform: PlatformKey): PlatformConfig => ({
   },
 });
 
-const createDefaultState = (): ConfigState => ({ web: createDefaultConfig('web'), mobile: createDefaultConfig('mobile') });
+const createDefaultState = (): ConfigState => ({ web: createDefaultConfig(), mobile: createDefaultConfig() });
 const STORAGE_KEY = 'admin-membership-page-config';
 
 const readStoredState = (): ConfigState => {
@@ -115,8 +98,6 @@ const readStoredState = (): ConfigState => {
     return createDefaultState();
   }
 };
-
-const newId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 export function MembershipPageConfigPage({
   onBackToDirectory,
@@ -147,21 +128,7 @@ export function MembershipPageConfigPage({
     setSaved(false);
   };
 
-  const updatePlanGroup = (groupId: string, updater: (group: PlanGroup) => PlanGroup) => {
-    updatePlatformConfig((config) => ({
-      ...config,
-      plans: config.plans.map((group) => group.id === groupId ? updater(group) : group),
-    }));
-  };
-
-  const updatePlanItem = (groupId: string, itemId: string, updater: (item: PlanItem) => PlanItem) => {
-    updatePlanGroup(groupId, (group) => ({
-      ...group,
-      items: group.items.map((item) => item.id === itemId ? updater(item) : item),
-    }));
-  };
-
-  const updateJson = (key: JsonModuleKey, value: string) => {
+  const updateJson = (key: ModuleKey, value: string) => {
     updatePlatformConfig((config) => ({ ...config, json: { ...config.json, [key]: value } }));
     setJsonErrors((current) => ({ ...current, [key]: undefined }));
   };
@@ -190,36 +157,10 @@ export function MembershipPageConfigPage({
     setSaved(true);
   };
 
-  const renderPlanEditor = () => (
-    <div className="space-y-4">
-      {currentConfig.plans.map((group, groupIndex) => (
-        <section key={group.id} className="rounded-[8px] border border-[#e3e8f0] bg-white">
-          <div className="flex items-center justify-between border-b border-[#edf0f4] bg-[#fafbfd] px-4 py-3">
-            <div className="flex items-center gap-2 text-[13px] font-semibold text-[#27344a]"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#e9f3ff] text-[11px] text-[#278fee]">{groupIndex + 1}</span>一级套餐配置</div>
-            <button type="button" onClick={() => updatePlatformConfig((config) => ({ ...config, plans: config.plans.filter((item) => item.id !== group.id) }))} className="inline-flex items-center gap-1 text-[12px] text-[#e65a5a] hover:text-[#c93d3d]"><Trash2 className="h-3.5 w-3.5" />删除一级</button>
-          </div>
-          <div className="grid grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-[1fr_1.4fr_1fr]">
-            <label className="block text-[12px] text-[#69758a]"><span className="mb-1.5 block">名字</span><input value={group.name} onChange={(event) => updatePlanGroup(group.id, (item) => ({ ...item, name: event.currentTarget.value }))} className="h-9 w-full rounded-[4px] border border-[#dce3ed] px-3 text-[13px] text-[#27344a] outline-none focus:border-[#278fee]" /></label>
-            <label className="block text-[12px] text-[#69758a]"><span className="mb-1.5 block">引导文案</span><input value={group.guideText} onChange={(event) => updatePlanGroup(group.id, (item) => ({ ...item, guideText: event.currentTarget.value }))} className="h-9 w-full rounded-[4px] border border-[#dce3ed] px-3 text-[13px] text-[#27344a] outline-none focus:border-[#278fee]" /></label>
-            <label className="block text-[12px] text-[#69758a]"><span className="mb-1.5 block">关联会员等级</span><select value={group.memberLevel} onChange={(event) => updatePlanGroup(group.id, (item) => ({ ...item, memberLevel: event.currentTarget.value }))} className="h-9 w-full rounded-[4px] border border-[#dce3ed] bg-white px-3 text-[13px] text-[#27344a] outline-none focus:border-[#278fee]">{MEMBER_LEVELS.map((level) => <option key={level}>{level}</option>)}</select></label>
-          </div>
-          <div className="mx-4 mb-4 rounded-[6px] border border-[#edf0f4] bg-[#fbfcfe] p-3">
-            <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-1.5 text-[12px] font-medium text-[#53627a]"><ChevronDown className="h-3.5 w-3.5 text-[#8da1ba]" />二级套餐配置</div><button type="button" onClick={() => updatePlanGroup(group.id, (item) => ({ ...item, items: [...item.items, { id: newId('item'), name: '', guideText: '', duration: '' }] }))} className="inline-flex items-center gap-1 rounded-[4px] border border-[#bcdcff] bg-white px-2.5 py-1.5 text-[12px] text-[#278fee] hover:bg-[#eef7ff]"><Plus className="h-3.5 w-3.5" />新增二级套餐</button></div>
-            <div className="space-y-2">
-              {group.items.map((item, itemIndex) => <div key={item.id} className="grid grid-cols-1 items-end gap-3 rounded-[5px] border border-[#edf0f4] bg-white p-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_150px_auto]"><label className="block text-[11px] text-[#8994a6]"><span className="mb-1 block">名称 {itemIndex + 1}</span><input value={item.name} onChange={(event) => updatePlanItem(group.id, item.id, (current) => ({ ...current, name: event.currentTarget.value }))} placeholder="如年度会员" className="h-8 w-full rounded-[4px] border border-[#dce3ed] px-2.5 text-[12px] text-[#27344a] outline-none focus:border-[#278fee]" /></label><label className="block text-[11px] text-[#8994a6]"><span className="mb-1 block">引导文案</span><input value={item.guideText} onChange={(event) => updatePlanItem(group.id, item.id, (current) => ({ ...current, guideText: event.currentTarget.value }))} placeholder="如年度订阅，更优惠" className="h-8 w-full rounded-[4px] border border-[#dce3ed] px-2.5 text-[12px] text-[#27344a] outline-none focus:border-[#278fee]" /></label><label className="block text-[11px] text-[#8994a6]"><span className="mb-1 block">时长</span><input value={item.duration} onChange={(event) => updatePlanItem(group.id, item.id, (current) => ({ ...current, duration: event.currentTarget.value }))} placeholder="如 365天" className="h-8 w-full rounded-[4px] border border-[#dce3ed] px-2.5 text-[12px] text-[#27344a] outline-none focus:border-[#278fee]" /></label><button type="button" onClick={() => updatePlanGroup(group.id, (current) => ({ ...current, items: current.items.filter((child) => child.id !== item.id) }))} className="mb-1 inline-flex h-8 items-center justify-center rounded-[4px] px-2 text-[#a1adbd] hover:bg-[#fff2f1] hover:text-[#e65a5a]" title="删除二级套餐"><Trash2 className="h-3.5 w-3.5" /></button></div>)}
-              {group.items.length === 0 ? <div className="py-5 text-center text-[12px] text-[#a5afbd]">暂无二级套餐，请点击右上角新增</div> : null}
-            </div>
-          </div>
-        </section>
-      ))}
-      <button type="button" onClick={() => updatePlatformConfig((config) => ({ ...config, plans: [...config.plans, { id: newId('group'), name: '', guideText: '', memberLevel: MEMBER_LEVELS[0], items: [] }] }))} className="inline-flex h-9 items-center gap-1.5 rounded-[4px] border border-dashed border-[#b9d8f7] bg-[#f7fbff] px-4 text-[12px] text-[#278fee] hover:bg-[#eef7ff]"><Plus className="h-4 w-4" />新增一级套餐</button>
-    </div>
-  );
-
-  const renderJsonEditor = (key: JsonModuleKey) => {
+  const renderJsonEditor = (key: ModuleKey) => {
     const error = jsonErrors[key];
     return <div className="rounded-[8px] border border-[#e3e8f0] bg-white p-4"><div className="mb-3 flex items-center justify-between"><div><h3 className="text-[14px] font-semibold text-[#27344a]">{activeModuleMeta.label} JSON</h3><p className="mt-1 text-[12px] text-[#9aa5b5]">请使用合法 JSON 配置当前模块，保存前会自动校验格式。</p></div><span className="rounded-full bg-[#f1f5fb] px-2.5 py-1 text-[11px] text-[#7a879a]">{platform === 'web' ? '网页版' : '移动端'}</span></div><textarea value={currentConfig.json[key]} onChange={(event) => updateJson(key, event.currentTarget.value)} spellCheck={false} className={`min-h-[480px] w-full resize-y rounded-[6px] border bg-[#101b2d] px-4 py-4 font-mono text-[12px] leading-6 text-[#dbe7f7] outline-none placeholder:text-[#74839a] ${error ? 'border-[#ff6e6e]' : 'border-[#22334d] focus:border-[#4c9fff]'}`} />{error ? <p className="mt-2 text-[12px] text-[#e04b4b]">{error}</p> : <p className="mt-2 text-[11px] text-[#a5afbd]">支持直接粘贴完整 JSON；当前配置仅保存在本地原型中。</p>}</div>;
   };
 
-  return <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]"><AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员页面配置" onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} /><TopHeader /><main className="ml-[228px] min-h-screen pt-[62px]"><div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>会员中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">会员页面配置</span></div><section className="rounded-[4px] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">会员页面配置</h1><p className="mt-1 text-[12px] text-[#9aa5b5]">配置不同端会员页面的套餐、权益和说明内容。</p></div><div className="rounded-[5px] bg-[#f3f7fc] px-3 py-2 text-[12px] text-[#6e7d93]">当前端：<span className="font-medium text-[#278fee]">{platform === 'web' ? '网页版' : '移动端'}</span></div></div><div className="mt-5 flex border-b border-[#e8edf3]"><button type="button" onClick={() => setPlatform('web')} className={`relative px-5 py-3 text-[13px] ${platform === 'web' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>网页版{platform === 'web' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button><button type="button" onClick={() => setPlatform('mobile')} className={`relative px-5 py-3 text-[13px] ${platform === 'mobile' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>移动端{platform === 'mobile' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button></div></section><section className="mt-4 rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="border-b border-[#e8edf3] px-5 pt-2"><div className="flex flex-wrap gap-1">{MODULES.map((module) => <button type="button" key={module.key} onClick={() => setActiveModule(module.key)} className={`relative rounded-t-[5px] px-4 py-3 text-[13px] transition ${activeModule === module.key ? 'bg-[#eef6ff] font-medium text-[#278fee]' : 'text-[#69768a] hover:bg-[#f7f9fc] hover:text-[#278fee]'}`}>{module.label}{activeModule === module.key ? <span className="absolute inset-x-4 bottom-0 h-0.5 bg-[#278fee]" /> : null}</button>)}</div></div><div className="min-h-[590px] px-5 py-5"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-[15px] font-semibold text-[#27344a]">{activeModuleMeta.label}</h2><p className="mt-1 text-[12px] text-[#98a2b2]">{activeModuleMeta.description}</p></div><span className="rounded-[4px] border border-[#e2e8f0] px-2.5 py-1 text-[11px] text-[#8a96a8]">{platform === 'web' ? '网页版配置' : '移动端配置'}</span></div>{activeModule === 'plans' ? renderPlanEditor() : renderJsonEditor(activeModule as JsonModuleKey)}</div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-5 py-4"><span className={`mr-auto text-[12px] ${saved ? 'text-[#2a9a66]' : 'text-[#9ba5b4]'}`}>{saved ? '已保存当前配置' : '修改后请点击保存'}</span><button type="button" onClick={save} className="inline-flex h-9 items-center gap-1.5 rounded-[4px] bg-[#278fee] px-5 text-[13px] text-white shadow-[0_4px_10px_rgba(39,143,238,.18)] hover:bg-[#167fdc]"><Save className="h-4 w-4" />保存</button></div></section></div></main></div>;
+  return <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]"><AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员页面配置" onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} /><TopHeader /><main className="ml-[228px] min-h-screen pt-[62px]"><div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>会员中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">会员页面配置</span></div><section className="rounded-[4px] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">会员页面配置</h1><p className="mt-1 text-[12px] text-[#9aa5b5]">配置不同端会员页面的套餐、权益和说明内容。</p></div><div className="rounded-[5px] bg-[#f3f7fc] px-3 py-2 text-[12px] text-[#6e7d93]">当前端：<span className="font-medium text-[#278fee]">{platform === 'web' ? '网页版' : '移动端'}</span></div></div><div className="mt-5 flex border-b border-[#e8edf3]"><button type="button" onClick={() => setPlatform('web')} className={`relative px-5 py-3 text-[13px] ${platform === 'web' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>网页版{platform === 'web' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button><button type="button" onClick={() => setPlatform('mobile')} className={`relative px-5 py-3 text-[13px] ${platform === 'mobile' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>移动端{platform === 'mobile' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button></div></section><section className="mt-4 rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="border-b border-[#e8edf3] px-5 pt-2"><div className="flex flex-wrap gap-1">{MODULES.map((module) => <button type="button" key={module.key} onClick={() => setActiveModule(module.key)} className={`relative rounded-t-[5px] px-4 py-3 text-[13px] transition ${activeModule === module.key ? 'bg-[#eef6ff] font-medium text-[#278fee]' : 'text-[#69768a] hover:bg-[#f7f9fc] hover:text-[#278fee]'}`}>{module.label}{activeModule === module.key ? <span className="absolute inset-x-4 bottom-0 h-0.5 bg-[#278fee]" /> : null}</button>)}</div></div><div className="min-h-[590px] px-5 py-5"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-[15px] font-semibold text-[#27344a]">{activeModuleMeta.label}</h2><p className="mt-1 text-[12px] text-[#98a2b2]">{activeModuleMeta.description}</p></div><span className="rounded-[4px] border border-[#e2e8f0] px-2.5 py-1 text-[11px] text-[#8a96a8]">{platform === 'web' ? '网页版配置' : '移动端配置'}</span></div>{renderJsonEditor(activeModule)}</div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-5 py-4"><span className={`mr-auto text-[12px] ${saved ? 'text-[#2a9a66]' : 'text-[#9ba5b4]'}`}>{saved ? '已保存当前配置' : '修改后请点击保存'}</span><button type="button" onClick={save} className="inline-flex h-9 items-center gap-1.5 rounded-[4px] bg-[#278fee] px-5 text-[13px] text-white shadow-[0_4px_10px_rgba(39,143,238,.18)] hover:bg-[#167fdc]"><Save className="h-4 w-4" />保存</button></div></section></div></main></div>;
 }
