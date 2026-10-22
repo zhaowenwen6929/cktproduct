@@ -204,11 +204,8 @@ const NAV_GROUPS: NavGroup[] = [
         children: [
           '向量搜索黑名单',
           '关键词多路召回干预',
-          {
-            label: '实体词典',
-            expanded: true,
-            children: ['引导式搜索配置'],
-          },
+          '实体词典',
+          '搜索引导管理',
         ],
       },
     ],
@@ -290,7 +287,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
           <span className="flex min-w-0 items-center gap-2">
             <span className="truncate">{label}</span>
             {label === 'AI电商配置' ? <NewFeatureBadge title="AI电商配置" requirement="AI电商配置管理" summary="按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。" addedAt="2026-10-22" /> : null}
-            {label === '引导式搜索配置' ? <NewFeatureBadge title="引导式搜索配置" requirement="引导式搜索配置" summary="在实体词典下维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
+            {label === '搜索引导管理' ? <NewFeatureBadge title="搜索引导管理" requirement="搜索引导管理" summary="维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
           </span>
           {hasChildren ? <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
         </button>
@@ -439,7 +436,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="AI电商配置" onNavigate={(item) => item === '引导式搜索配置' && onNavigateToGuidedSearch?.()} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="AI电商配置" onNavigate={(item) => item === '搜索引导管理' && onNavigateToGuidedSearch?.()} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-6 py-5">

@@ -1345,7 +1345,7 @@ export default function App() {
         description: '创客贴管理后台原型，支持 AI 电商配置查询与 JSON 编辑。',
       },
       '/admin-backoffice/guided-search': {
-        title: '创客贴管理后台｜引导式搜索配置',
+        title: '创客贴管理后台｜搜索引导管理',
         description: '内容运营管理下的引导词节点、关系和查询映射配置。',
       },
     };
