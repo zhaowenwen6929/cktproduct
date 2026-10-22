@@ -1,119 +1,221 @@
 import { useMemo, useState } from 'react';
 import {
   Bell,
-  BriefcaseBusiness,
   Camera,
-  ChevronLeft,
-  ChevronRight,
+  ChevronDown,
   Grid2x2,
-  Heart,
   Home,
   LayoutTemplate,
+  Menu,
   Search,
   Settings2,
   SlidersHorizontal,
   Sparkles,
+  SquarePlus,
   UserRound,
+  UsersRound,
 } from 'lucide-react';
 import cktAiEcomLogo from '../assets/ckt-ai-ecom-logo.svg';
 
-type TemplateCategory = '全部' | '海报' | '社交媒体' | '新媒体' | '电商' | '办公' | '教育' | '印刷';
+type TemplateCategory = '全部' | '海报' | '电商/直播' | 'PPT' | '印刷/办公' | '小红书';
+type CardVariant = 'ad' | 'red' | 'placeholder' | 'sunset' | 'wall' | 'frost' | 'frostBlue' | 'fruit' | 'suite' | 'landscape';
 
 type TemplateCard = {
+  id: string;
   title: string;
-  category: Exclude<TemplateCategory, '全部'>;
-  format: string;
-  author: string;
-  likes: string;
-  tone: string;
-  foreground: string;
-  label: string;
-  layout: 'center' | 'split' | 'photo' | 'type';
+  category: TemplateCategory;
+  tags: string[];
+  variant: CardVariant;
+  aspect: number;
+  badge?: 'NEW' | '套装';
 };
 
 const navItems = [
   { label: '首页', icon: Home },
   { label: '模板', icon: LayoutTemplate },
   { label: 'AI工具', icon: Sparkles },
-  { label: '创建', icon: Grid2x2 },
+  { label: '创建', icon: SquarePlus },
   { label: '我的', icon: UserRound },
-  { label: '团队', icon: BriefcaseBusiness },
+  { label: '团队', icon: UsersRound },
 ];
 
-const categories: TemplateCategory[] = ['全部', '海报', '社交媒体', '新媒体', '电商', '办公', '教育', '印刷'];
-const hotKeywords = ['招聘', '喜报', '邀请函', '小红书', '开学季', '商品主图'];
-const subCategories = ['热门精选', '手机海报', '全屏海报', '每日一签', '邀请函', '长图海报', '名片', 'PPT'];
+const filterGroups = [
+  { label: '分类：', items: ['全部', '海报', '抖音/小红书', '微信', '电商/直播', 'PPT', '印刷/办公', 'H5', '社交生活', '饭圈应援', '视频', '趣玩物料', '插画元素'], active: '全部' },
+  { label: '场景：', items: ['推荐', '手机海报', '全屏海报', '小红书配图', '公众号首图', '长图海报', '每日一签', '邀请函', '小红书套装', 'PPT16:9', '商品主图', '简历', '直播间背景', '横版海报', '名片', '长页H5', '宣传单'], active: '推荐', more: true },
+  { label: '行业：', items: ['全部', '通用', '教育培训', '餐饮美食', '金融理财', '地产家居', '精神文明', '科技互联网', '医疗保健', '休闲娱乐', '旅游出行', '文体娱乐', '美容美发', '电商', '零售行业', '生活服务', '商业服务', '文化建设'], active: '全部', more: true },
+] as const;
 
-const templateCards: TemplateCard[] = [
-  { title: '秋日上新活动海报', category: '海报', format: '手机海报', author: '创客贴精选', likes: '2.4k', tone: 'from-[#f6b58e] via-[#e97859] to-[#6d2933]', foreground: 'text-white', label: 'AUTUMN SALE', layout: 'center' },
-  { title: '小红书生活方式封面', category: '社交媒体', format: '小红书封面', author: '灵感研究所', likes: '1.8k', tone: 'from-[#f8e6cc] via-[#efb694] to-[#d8787d]', foreground: 'text-[#6a3d3e]', label: '生活提案', layout: 'photo' },
-  { title: '品牌春季新品发布', category: '新媒体', format: '公众号首图', author: '设计师小周', likes: '986', tone: 'from-[#c5e9e2] via-[#75c0be] to-[#397f9a]', foreground: 'text-white', label: 'NEW SEASON', layout: 'split' },
-  { title: '轻食低脂餐商品主图', category: '电商', format: '电商主图', author: '电商设计馆', likes: '1.2k', tone: 'from-[#f8e8c3] via-[#e9b774] to-[#bb6d4c]', foreground: 'text-[#613e2f]', label: 'HEALTHY DAY', layout: 'photo' },
-  { title: '简约风格个人名片', category: '印刷', format: '名片', author: '商务设计', likes: '723', tone: 'from-[#e9edf2] via-[#bdc9d6] to-[#6d7e93]', foreground: 'text-[#33465d]', label: 'STUDIO', layout: 'type' },
-  { title: '开学季招生宣传', category: '教育', format: '招生海报', author: '校园视觉', likes: '1.1k', tone: 'from-[#f7dd6c] via-[#f1a747] to-[#e66b53]', foreground: 'text-white', label: 'BACK TO SCHOOL', layout: 'center' },
-  { title: '夏日饮品促销海报', category: '海报', format: '促销海报', author: '商业美学', likes: '845', tone: 'from-[#c1f2e3] via-[#6bc7c4] to-[#2f91ac]', foreground: 'text-white', label: 'SUMMER DRINK', layout: 'split' },
-  { title: '企业周报数据简报', category: '办公', format: 'PPT模板', author: '效率办公', likes: '512', tone: 'from-[#e3eaff] via-[#b5c5f2] to-[#737ad1]', foreground: 'text-[#303d73]', label: 'WEEKLY REPORT', layout: 'type' },
-  { title: '复古唱片音乐节', category: '新媒体', format: '活动海报', author: '海报实验室', likes: '1.5k', tone: 'from-[#efc98d] via-[#b5684f] to-[#3e304e]', foreground: 'text-[#fff1c9]', label: 'MUSIC FEST', layout: 'center' },
-  { title: '春日旅行攻略', category: '社交媒体', format: '长图海报', author: '旅拍日记', likes: '2.1k', tone: 'from-[#c8ecf1] via-[#78bdd0] to-[#48789b]', foreground: 'text-white', label: 'TRAVEL NOTES', layout: 'photo' },
-  { title: '新品护肤礼盒', category: '电商', format: '商品详情页', author: '电商设计馆', likes: '937', tone: 'from-[#fae5dc] via-[#e8b2aa] to-[#a8799c]', foreground: 'text-[#6e4967]', label: 'BEAUTY EDIT', layout: 'split' },
-  { title: '企业招聘人才招募', category: '办公', format: '招聘海报', author: '职场视觉', likes: '668', tone: 'from-[#d9f0ea] via-[#90c5a8] to-[#397b82]', foreground: 'text-white', label: 'JOIN US', layout: 'center' },
-  { title: '周末市集邀请函', category: '印刷', format: '邀请函', author: '城市生活家', likes: '786', tone: 'from-[#f2dac5] via-[#cf9c7f] to-[#8b5e65]', foreground: 'text-white', label: 'WEEKEND MARKET', layout: 'type' },
-  { title: '国潮节日促销', category: '海报', format: '节日海报', author: '东方美学', likes: '1.7k', tone: 'from-[#c71f37] via-[#e35843] to-[#f3ba63]', foreground: 'text-[#fff1bd]', label: '喜迎佳节', layout: 'center' },
-  { title: '咖啡店会员日', category: '新媒体', format: '社群海报', author: '品牌灵感', likes: '602', tone: 'from-[#eee1ca] via-[#c49c78] to-[#654b4c]', foreground: 'text-white', label: 'COFFEE CLUB', layout: 'photo' },
-  { title: '教师节感谢卡', category: '教育', format: '节日卡片', author: '校园视觉', likes: '479', tone: 'from-[#d9e8d0] via-[#a9c88c] to-[#6c8e74]', foreground: 'text-[#355b49]', label: 'THANK YOU', layout: 'type' },
+const templateColumns: TemplateCard[][] = [
+  [
+    { id: 'ai-suite', title: 'AI商品套图批量制作', category: '电商/直播', tags: ['商品主图', '推荐'], variant: 'ad', aspect: 0.56 },
+    { id: 'frost-mountain', title: '霜降', category: '海报', tags: ['每日一签', '推荐'], variant: 'landscape', aspect: 0.47 },
+  ],
+  [
+    { id: 'long-march', title: '长征胜利90周年', category: '海报', tags: ['手机海报', '推荐'], variant: 'red', aspect: 0.465, badge: 'NEW' },
+    { id: 'frost-branch', title: '霜降', category: '海报', tags: ['每日一签'], variant: 'frost', aspect: 0.47 },
+  ],
+  [
+    { id: 'loading-card', title: '模板加载中', category: '海报', tags: ['推荐'], variant: 'placeholder', aspect: 0.465, badge: 'NEW' },
+    { id: 'frost-blue', title: 'FROST DESCENT', category: '海报', tags: ['每日一签'], variant: 'frostBlue', aspect: 0.47 },
+  ],
+  [
+    { id: 'long-march-sunrise', title: '信仰如炬', category: '海报', tags: ['全屏海报', '推荐'], variant: 'sunset', aspect: 0.465, badge: 'NEW' },
+    { id: 'orange-bird', title: '霜降', category: '海报', tags: ['每日一签'], variant: 'fruit', aspect: 0.47 },
+  ],
+  [
+    { id: 'great-wall', title: '长征胜利90周年', category: '海报', tags: ['全屏海报', '推荐'], variant: 'wall', aspect: 0.465, badge: 'NEW' },
+    { id: 'frost-suite-1', title: '霜降套装', category: '海报', tags: ['小红书套装'], variant: 'suite', aspect: 2.3, badge: '套装' },
+    { id: 'frost-suite-2', title: '霜降套装2', category: '海报', tags: ['小红书套装'], variant: 'suite', aspect: 2.3 },
+  ],
+  [
+    { id: 'frost-orange', title: '霜降', category: '海报', tags: ['每日一签', '推荐'], variant: 'frost', aspect: 0.465, badge: '套装' },
+    { id: 'frost-cream', title: 'FROST DESCENT', category: '海报', tags: ['每日一签'], variant: 'landscape', aspect: 0.47 },
+  ],
 ];
 
-function TemplateArtwork({ card }: { card: TemplateCard }) {
-  return (
-    <div className={`relative aspect-[3/4] overflow-hidden rounded-[10px] bg-gradient-to-br ${card.tone} ${card.foreground}`}>
-      <span className="absolute -right-6 -top-8 h-24 w-24 rounded-full border-[14px] border-white/20" />
-      <span className="absolute -bottom-10 -left-5 h-28 w-28 rounded-full bg-white/10 blur-sm" />
-      {card.layout === 'photo' ? <span className="absolute bottom-0 left-0 right-0 top-[38%] bg-[linear-gradient(150deg,rgba(255,255,255,.55),rgba(255,255,255,0)_48%),linear-gradient(25deg,rgba(25,40,52,.3),transparent)]" /> : null}
-      {card.layout === 'split' ? <span className="absolute bottom-0 right-0 top-0 w-[39%] bg-white/20" /> : null}
-      {card.layout === 'type' ? <span className="absolute inset-x-4 top-[38%] h-px bg-current opacity-40" /> : null}
-      <div className={`absolute inset-x-4 top-5 ${card.layout === 'center' ? 'text-center' : 'text-left'}`}>
-        <div className="text-[8px] font-semibold tracking-[0.18em] opacity-80">{card.label}</div>
-        <div className="mt-4 text-[20px] font-black leading-[1.04] tracking-tight">{card.title}</div>
-        <div className="mt-3 max-w-[110px] text-[9px] leading-4 opacity-80">精选设计模板 · 编辑文字即可使用</div>
+function PosterBadge({ badge }: { badge?: TemplateCard['badge'] }) {
+  if (!badge) return null;
+  return <span className={`absolute left-0 top-0 z-10 rounded-br-[9px] px-2 py-1 text-[10px] font-semibold text-white ${badge === 'NEW' ? 'bg-[#ff4348]' : 'bg-[#227bf0]'}`}>{badge}</span>;
+}
+
+function PosterArt({ card }: { card: TemplateCard }) {
+  if (card.variant === 'placeholder') return <div className="h-full w-full bg-[#f1f4fa]" />;
+
+  if (card.variant === 'ad') {
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-[#dff7f3]">
+        <div className="absolute left-[19%] top-[8%] h-[31%] w-[62%] rounded-[14%] bg-[#f7ffff] shadow-[0_10px_20px_rgba(79,164,163,.12)]" />
+        <div className="absolute left-[29%] top-[12%] h-[22%] w-[23%] rotate-[-12deg] rounded-[12%] bg-[linear-gradient(135deg,#d6eff1,#7fa9a3)]" />
+        <div className="absolute left-[54%] top-[16%] h-[19%] w-[21%] rotate-[9deg] rounded-[13%] bg-[linear-gradient(135deg,#e4f8f5,#80ab9f)]" />
+        <div className="absolute left-[12%] top-[35%] h-[16%] w-[28%] rotate-[11deg] rounded-[12%] bg-[linear-gradient(135deg,#e4f8f5,#8cafa5)]" />
+        <div className="absolute right-[9%] top-[37%] h-[23%] w-[25%] rounded-[11%] bg-[#c3e9e0] shadow-[0_9px_18px_rgba(55,140,137,.14)]" />
+        <div className="absolute left-[40%] top-[38%] h-[11%] w-[25%] rounded-full border-[8px] border-[#9ce3d5] border-l-transparent border-b-transparent rotate-[38deg]" />
+        <div className="absolute inset-x-0 bottom-[17%] text-center text-[clamp(22px,2.3vw,38px)] font-black leading-[1.08] tracking-[-0.06em] text-[#1b2734]">AI商品套图<br />批量制作</div>
+        <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 rounded-full bg-[#70cdb6] px-5 py-2 text-[clamp(9px,0.8vw,14px)] font-semibold text-white shadow-[0_6px_10px_rgba(63,163,139,.2)]">✦ 立即制作 ›</div>
       </div>
-      <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between text-[8px] font-medium opacity-85"><span>CHUANGKIT</span><span>2026</span></div>
+    );
+  }
+
+  if (card.variant === 'red' || card.variant === 'wall') {
+    const isWall = card.variant === 'wall';
+    return (
+      <div className={`relative h-full w-full overflow-hidden ${isWall ? 'bg-[linear-gradient(145deg,#8f1b21_0%,#dc633c_42%,#f4c075_100%)]' : 'bg-[linear-gradient(145deg,#cb3c19_0%,#e86e39_58%,#ffc871_100%)]'}`}>
+        <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(255,255,255,.5)_1px,transparent_1px)] [background-size:6px_6px]" />
+        <div className="absolute left-[10%] top-[12%] text-[clamp(26px,2.8vw,46px)] font-black leading-[.9] tracking-[-0.13em] text-[#fff3d0] [font-family:STKaiti,KaiTi,serif]">长征<br />胜利</div>
+        <div className="absolute right-[10%] top-[10%] rounded-full border border-white/60 px-1 text-[7px] text-white/80">YOUR LOGO</div>
+        <div className="absolute left-[35%] top-[38%] h-[17%] w-[30%] rounded-full bg-[#fff0a9] shadow-[0_0_36px_rgba(255,230,149,.8)]" />
+        <div className="absolute bottom-[-5%] left-[-10%] h-[39%] w-[78%] rotate-[-10deg] rounded-[50%_50%_0_0] bg-[#a82e2b] shadow-[55px_-20px_0_8px_rgba(207,74,43,.95)]" />
+        <div className="absolute bottom-[18%] right-[5%] h-[22%] w-[52%] rotate-[13deg] rounded-[50%_50%_0_0] bg-[#ca4c37]" />
+        {isWall ? <div className="absolute bottom-[25%] left-[25%] h-1.5 w-[58%] rotate-[-12deg] bg-[#f9d69b] shadow-[0_14px_0_2px_rgba(248,207,143,.8),0_28px_0_4px_rgba(248,207,143,.7)]" /> : null}
+        <div className="absolute inset-x-0 bottom-[6%] text-center text-[clamp(9px,0.8vw,14px)] font-medium text-[#fff2cb]">1936—2026<br /><span className="text-[8px] tracking-[.08em]">纪念红军长征胜利90周年</span></div>
+      </div>
+    );
+  }
+
+  if (card.variant === 'sunset') {
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-[linear-gradient(160deg,#fff3df_0%,#f6c49b_49%,#bb543e_100%)]">
+        <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(164,87,45,.45)_1px,transparent_1px)] [background-size:7px_7px]" />
+        <div className="absolute left-[7%] top-[9%] text-[clamp(24px,2.7vw,43px)] font-black leading-[.9] tracking-[-0.1em] text-[#9c322a] [font-family:STKaiti,KaiTi,serif]">信仰如炬</div>
+        <div className="absolute left-[10%] top-[22%] text-[8px] tracking-[.12em] text-[#9c5540]">延续红色血脉 · 走进时代征程</div>
+        <div className="absolute left-[39%] top-[40%] h-[17%] w-[30%] rounded-full bg-[#ffcc6f] shadow-[0_0_32px_rgba(255,195,96,.75)]" />
+        <div className="absolute bottom-[-3%] left-[-8%] h-[49%] w-[72%] rotate-[11deg] rounded-[50%_50%_0_0] bg-[#c45439] shadow-[40px_-19px_0_4px_rgba(228,116,61,.9)]" />
+        <div className="absolute bottom-[8%] right-[8%] h-[25%] w-[48%] rotate-[-19deg] rounded-[50%_50%_0_0] bg-[#d76543]" />
+        <div className="absolute inset-x-0 bottom-[6%] text-center text-[8px] font-medium text-[#fff3d2]">1936—2026<br /><span className="tracking-[.08em]">纪念红军长征胜利90周年</span></div>
+      </div>
+    );
+  }
+
+  if (card.variant === 'frostBlue') {
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-[linear-gradient(160deg,#c4efff_0%,#6bb7db_58%,#356b95_100%)]">
+        <div className="absolute inset-x-[10%] top-[9%] text-center text-[clamp(11px,1vw,18px)] font-light tracking-[.12em] text-white">FROST'S DESCENT</div>
+        <div className="absolute inset-x-0 top-[18%] text-center text-[clamp(9px,.7vw,13px)] text-white/85">霜降 · 秋深露重</div>
+        <div className="absolute left-[37%] top-[33%] text-[clamp(31px,3vw,49px)] font-black text-[#102b3c] [font-family:STKaiti,KaiTi,serif]">霜降</div>
+        <div className="absolute bottom-[-10%] left-[-5%] h-[42%] w-[110%] rotate-[-4deg] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(229,249,255,.72))]" />
+        <div className="absolute bottom-[8%] right-[7%] text-[7px] tracking-[.18em] text-white/80">三十四节气 · SOLAR TERM</div>
+      </div>
+    );
+  }
+
+  if (card.variant === 'fruit' || card.variant === 'frost') {
+    return (
+      <div className={`relative h-full w-full overflow-hidden ${card.variant === 'fruit' ? 'bg-[linear-gradient(155deg,#fffdf0,#f3dfb4)]' : 'bg-[linear-gradient(155deg,#fffef9,#e8e7e4)]'}`}>
+        <div className="absolute -right-[5%] top-[12%] h-[10%] w-[70%] rotate-[28deg] rounded-full border-[3px] border-[#6b6556] border-b-transparent border-l-transparent" />
+        <div className="absolute right-[20%] top-[23%] h-[14%] w-[14%] rounded-full bg-[#ea7b2a] shadow-[inset_-8px_-4px_0_rgba(158,72,31,.25)]" />
+        <div className="absolute right-[37%] top-[31%] h-[11%] w-[12%] rounded-full bg-[#f19a3b] shadow-[inset_-6px_-3px_0_rgba(158,72,31,.2)]" />
+        <div className="absolute right-[9%] top-[35%] h-[12%] w-[13%] rounded-full bg-[#dc6b25]" />
+        <div className="absolute left-[11%] top-[8%] text-[clamp(25px,2.7vw,43px)] font-black leading-[.86] text-[#1f2528] [font-family:STKaiti,KaiTi,serif]">霜降</div>
+        <div className="absolute bottom-[11%] left-[9%] text-[8px] leading-4 text-[#4e514e]">岁岁平安 · 柿柿如意<br />霜林染红，鸟鸣清秋</div>
+        <div className="absolute bottom-[6%] right-[9%] h-[9%] w-[8%] rounded-[50%_50%_50%_10%] bg-[#d68a45] rotate-[-12deg]" />
+      </div>
+    );
+  }
+
+  if (card.variant === 'suite') {
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-[linear-gradient(160deg,#fffdf5,#e8ded3)]">
+        <div className="absolute left-[7%] top-[25%] text-[clamp(10px,1vw,18px)] font-light tracking-[.08em] text-[#dfb490]">FROST DESCENT</div>
+        <div className="absolute right-[8%] top-[20%] text-[clamp(9px,.8vw,14px)] italic text-[#2f2d2c]">Solar Term</div>
+        <div className="absolute bottom-[18%] left-[45%] text-[clamp(16px,1.4vw,24px)] font-black text-[#272425] [font-family:STKaiti,KaiTi,serif]">霜降</div>
+        <div className="absolute bottom-[-45%] right-[-3%] h-[120%] w-[42%] rounded-full border border-[#d1c2ad] opacity-60" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-[linear-gradient(160deg,#f7f5ed,#d3d8d8_54%,#82939c)]">
+      <div className="absolute left-[12%] top-[13%] text-[clamp(28px,2.8vw,44px)] font-black leading-[.86] text-[#1f2428] [font-family:STKaiti,KaiTi,serif]">霜降</div>
+      <div className="absolute bottom-[9%] left-[12%] h-[22%] w-[75%] rotate-[-5deg] rounded-[55%_55%_0_0] bg-[linear-gradient(180deg,#d8ddda,#88979a)]" />
+      <div className="absolute bottom-[22%] left-[38%] h-[13%] w-[35%] rotate-[-15deg] rounded-[50%] bg-[#bec8c6]" />
+      <div className="absolute bottom-[8%] right-[10%] text-[7px] tracking-[.12em] text-[#51585c]">THE SOLAR TERM</div>
     </div>
   );
 }
 
 function SideNav({ onBackToDirectory, onBackToHome }: { onBackToDirectory: () => void; onBackToHome: () => void }) {
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 flex w-[56px] flex-col items-center border-r border-[#e8edf7] bg-[#f3f7ff] py-3">
-      <button type="button" onClick={onBackToDirectory} className="mb-7 flex h-8 w-8 items-center justify-center rounded-lg text-[#75839e] hover:bg-white" title="返回目录"><ChevronLeft className="h-4 w-4" /></button>
-      <div className="flex w-full flex-col items-center gap-3">
+    <aside className="fixed inset-y-0 left-0 z-30 flex w-[68px] flex-col items-center border-r border-[#e6ebf5] bg-[#f3f7ff] pt-5">
+      <button type="button" onClick={onBackToDirectory} className="mb-7 text-[#67758d]" title="返回目录"><Menu className="h-[18px] w-[18px]" /></button>
+      <div className="flex w-full flex-col items-center gap-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = item.label === '模板';
-          return <button key={item.label} type="button" onClick={() => item.label === '首页' ? onBackToHome() : undefined} className={`flex w-[44px] flex-col items-center gap-1 rounded-[10px] py-2 text-[10px] ${active ? 'bg-[#dceaff] text-[#2677ed]' : 'text-[#63708a] hover:bg-white/80'}`}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span></button>;
+          return <button key={item.label} type="button" onClick={() => item.label === '首页' ? onBackToHome() : undefined} className={`flex w-[48px] flex-col items-center gap-1 rounded-[10px] py-2 text-[12px] ${active ? 'bg-[#dceaff] font-medium text-[#1974eb]' : 'text-[#34435d] hover:bg-white/80'}`}><Icon className={`h-[20px] w-[20px] ${active ? 'fill-[#1974eb]/20' : ''}`} /><span>{item.label}</span></button>;
         })}
       </div>
-      <div className="mt-auto flex flex-col items-center gap-3 pb-2 text-[10px] text-[#64728b]"><button type="button" className="flex flex-col items-center gap-1"><UserRound className="h-[18px] w-[18px]" />成员</button><button type="button" className="flex flex-col items-center gap-1"><Settings2 className="h-[18px] w-[18px]" />管理</button></div>
+      <div className="mt-auto flex w-full flex-col items-center gap-1.5 pb-3 text-[12px] text-[#34435d]"><button type="button" className="flex w-[48px] flex-col items-center gap-1 rounded-[10px] py-2"><UserRound className="h-5 w-5" />成员</button><button type="button" className="flex w-[48px] flex-col items-center gap-1 rounded-[10px] py-2"><Settings2 className="h-5 w-5" />管理</button></div>
     </aside>
   );
 }
 
 export function TemplateCenterPage({ onBackToDirectory, onBackToHome }: { onBackToDirectory: () => void; onBackToHome: () => void }) {
-  const [activeCategory, setActiveCategory] = useState<TemplateCategory>('全部');
-  const [activeSubCategory, setActiveSubCategory] = useState('热门精选');
+  const [templateMode, setTemplateMode] = useState<'设计模板' | 'AI模板'>('设计模板');
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>({ 分类: '全部', 场景: '推荐', 行业: '全部' });
   const [searchInput, setSearchInput] = useState('');
   const [query, setQuery] = useState('');
+  const [sort, setSort] = useState('热门推荐');
   const [notice, setNotice] = useState('');
-
-  const filteredCards = useMemo(() => templateCards.filter((card) => {
-    const matchesCategory = activeCategory === '全部' || card.category === activeCategory;
-    const normalizedQuery = query.trim();
-    const matchesQuery = !normalizedQuery || `${card.title}${card.category}${card.format}${card.author}`.includes(normalizedQuery);
-    return matchesCategory && matchesQuery;
-  }), [activeCategory, query]);
 
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 1800);
+  };
+
+  const visibleColumns = useMemo(() => templateColumns.map((column) => column.filter((card) => {
+    const categoryFilter = selectedFilters['分类'];
+    const sceneFilter = selectedFilters['场景'];
+    const keyword = query.trim();
+    const matchesCategory = categoryFilter === '全部' || card.category === categoryFilter || (categoryFilter === '抖音/小红书' && card.category === '小红书');
+    const matchesScene = sceneFilter === '推荐' || card.tags.includes(sceneFilter);
+    const matchesQuery = !keyword || `${card.title}${card.category}${card.tags.join('')}`.includes(keyword);
+    return matchesCategory && matchesScene && matchesQuery;
+  })), [query, selectedFilters]);
+  const visibleCount = visibleColumns.reduce((count, column) => count + column.length, 0);
+
+  const selectFilter = (label: string, item: string) => {
+    setSelectedFilters((current) => ({ ...current, [label.replace('：', '')]: item }));
+    showNotice(`已切换${item}`);
   };
 
   const submitSearch = () => {
@@ -122,31 +224,34 @@ export function TemplateCenterPage({ onBackToDirectory, onBackToHome }: { onBack
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f7f8fc] font-sans text-[#20263a]">
+    <div className="min-h-screen overflow-x-hidden bg-white font-sans text-[#242b3d]">
       <SideNav onBackToDirectory={onBackToDirectory} onBackToHome={onBackToHome} />
-      <header className="fixed left-[56px] right-0 top-0 z-20 flex h-[56px] items-center justify-between border-b border-[#edf0f6] bg-white/95 px-6 backdrop-blur">
-        <button type="button" onClick={onBackToHome} className="flex items-center"><img src={cktAiEcomLogo} alt="创客贴" className="h-[30px] w-auto" /></button>
-        <div className="flex items-center gap-5 text-[#5e6679]"><button type="button" className="text-[12px]" onClick={() => showNotice('印刷店即将上线')}>印刷店</button><Grid2x2 className="h-[17px] w-[17px]" /><span className="relative"><Bell className="h-[18px] w-[18px]" /><i className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ff4c48] text-[9px] not-italic text-white">4</i></span><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[linear-gradient(135deg,#e9c6aa,#8ba6bb)] text-white"><UserRound className="h-4 w-4" /></span></div>
+      <header className="fixed left-[68px] right-0 top-0 z-20 flex h-[68px] items-center border-b border-[#edf0f5] bg-white px-[31px]">
+        <button type="button" onClick={onBackToHome} className="flex h-[31px] w-[110px] shrink-0 items-center"><img src={cktAiEcomLogo} alt="创客贴" className="h-[31px] w-auto" /></button>
+        <div className="ml-[30px] flex h-[45px] min-w-0 max-w-[900px] flex-1 items-center rounded-[13px] border border-[#e2e6ed] bg-white px-3 text-[#a1aaba] focus-within:border-[#cfd6e3]"><Search className="h-[18px] w-[18px] shrink-0 text-[#aeb6c4]" /><input value={searchInput} onChange={(event) => setSearchInput(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === 'Enter') submitSearch(); }} placeholder="输入关键词搜索你想要的模板或素材" className="min-w-0 flex-1 bg-transparent px-2 text-[14px] text-[#343d51] outline-none placeholder:text-[#9ca7b8]" /><button type="button" onClick={() => showNotice('图片搜索即将上线')} className="p-1 text-[#a0aab9]" aria-label="图片搜索"><Camera className="h-[18px] w-[18px]" /></button></div>
+        <div className="ml-auto flex items-center gap-6 pl-6 text-[#202b41]"><Grid2x2 className="h-[19px] w-[19px]" /><span className="relative"><Bell className="h-[19px] w-[19px]" /><i className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#ff4c45] text-[10px] not-italic text-white">4</i></span><span className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[#e2e4e7] bg-[linear-gradient(135deg,#f5dfcc,#8ba0b6)] text-white shadow-sm"><UserRound className="h-5 w-5" /></span></div>
       </header>
 
-      <main className="ml-[56px] min-h-screen pt-[56px]">
-        <section className="relative overflow-hidden bg-[radial-gradient(ellipse_at_50%_5%,#edf3ff_0%,#f7f8fc_56%,#f7f8fc_100%)] px-6 pb-5 pt-9">
-          <div className="pointer-events-none absolute left-[16%] top-0 h-40 w-40 rounded-full bg-[#dce8ff]/70 blur-3xl" /><div className="pointer-events-none absolute right-[18%] top-2 h-44 w-44 rounded-full bg-[#eee5ff]/80 blur-3xl" />
-          <div className="relative mx-auto max-w-[1180px] text-center"><p className="text-[11px] font-semibold tracking-[0.22em] text-[#8292b3]">TEMPLATE CENTER</p><h1 className="mt-2 text-[27px] font-semibold tracking-[0.03em] text-[#30384c]">发现适合你的设计模板</h1><p className="mt-2 text-[12px] text-[#8b95aa]">海量优质模板，编辑文字和图片即可快速完成设计</p>
-            <div className="mx-auto mt-6 flex h-12 max-w-[720px] items-center gap-3 rounded-[16px] border-2 border-[#6e8eff] bg-white px-4 shadow-[0_12px_30px_rgba(98,119,201,.14)]"><Search className="h-5 w-5 text-[#8291b3]" /><input value={searchInput} onChange={(event) => setSearchInput(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === 'Enter') submitSearch(); }} placeholder="搜索模板，如：海报、名片、PPT、邀请函" className="min-w-0 flex-1 text-[13px] text-[#30384c] outline-none placeholder:text-[#a4adbf]" /><button type="button" onClick={submitSearch} className="rounded-[10px] bg-[#5e78f3] px-5 py-2 text-[12px] font-medium text-white hover:bg-[#5069df]">搜索</button><Camera className="h-[18px] w-[18px] text-[#8995aa]" /></div>
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] text-[#8b95aa]"><span>热门搜索</span>{hotKeywords.map((keyword) => <button key={keyword} type="button" onClick={() => { setSearchInput(keyword); setQuery(keyword); }} className="rounded-full bg-white/75 px-3 py-1 text-[#64718c] hover:bg-white hover:text-[#5069df]">{keyword}</button>)}</div>
+      <main className="ml-[68px] min-h-screen pt-[68px]">
+        <section className="px-[32px] pt-[12px]">
+          <div className="inline-flex rounded-[10px] border border-[#e1e5ed] bg-white p-1"><button type="button" onClick={() => setTemplateMode('设计模板')} className={`rounded-[7px] px-[15px] py-[7px] text-[14px] ${templateMode === '设计模板' ? 'bg-[#f0f3f8] font-semibold text-[#303849]' : 'text-[#303849]'}`}>设计模板</button><button type="button" onClick={() => { setTemplateMode('AI模板'); showNotice('AI模板频道即将上线'); }} className={`rounded-[7px] px-[15px] py-[7px] text-[14px] ${templateMode === 'AI模板' ? 'bg-[#f0f3f8] font-semibold text-[#303849]' : 'text-[#303849]'}`}>AI模板</button></div>
+          <div className="mt-[11px] border-b border-[#e5e9f0] pb-[10px]">
+            {filterGroups.map((group) => <div key={group.label} className="flex min-h-[43px] items-start gap-3 py-[4px] text-[14px]"><span className="w-[48px] shrink-0 pt-[7px] text-[#8a98b1]">{group.label}</span><div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-[8px] gap-y-[3px]">{group.items.map((item) => { const selected = selectedFilters[group.label.replace('：', '')] === item; return <button key={item} type="button" onClick={() => selectFilter(group.label, item)} className={`rounded-[7px] px-[11px] py-[6px] whitespace-nowrap ${selected ? 'bg-[#f0f3f8] font-semibold text-[#283346]' : 'text-[#2f3748] hover:bg-[#f7f8fb]'}`}>{item}</button>; })}{group.more ? <button type="button" onClick={() => showNotice(`${group.label}更多筛选即将展开`)} className="ml-auto flex shrink-0 items-center gap-1 rounded-[7px] px-3 py-[6px] text-[#2f3748]">更多<ChevronDown className="h-3 w-3" /></button> : null}</div></div>)}
           </div>
         </section>
 
-        <section className="border-y border-[#edf0f5] bg-white px-6 py-3"><div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-center gap-1.5">{categories.map((category) => <button key={category} type="button" onClick={() => { setActiveCategory(category); setActiveSubCategory('热门精选'); }} className={`rounded-[9px] px-5 py-2 text-[12px] transition ${activeCategory === category ? 'bg-[#eaf0ff] font-semibold text-[#5473e9]' : 'text-[#737f95] hover:bg-[#f5f7fb] hover:text-[#42516e]'}`}>{category}</button>)}</div></section>
+        <section className="px-[32px]">
+          <div className="flex min-h-[73px] items-center justify-between gap-5 border-b border-[#e9edf3]">
+            <div className="flex items-center gap-[25px] text-[14px]"><button type="button" onClick={() => setSort('热门推荐')} className={`${sort === '热门推荐' ? 'font-semibold text-[#222b3c]' : 'text-[#69758b]'}`}>热门推荐</button><button type="button" onClick={() => setSort('最新上传')} className={`${sort === '最新上传' ? 'font-semibold text-[#222b3c]' : 'text-[#69758b]'}`}>最新上传</button><button type="button" onClick={() => setSort('最多使用')} className={`${sort === '最多使用' ? 'font-semibold text-[#222b3c]' : 'text-[#69758b]'}`}>最多使用</button></div>
+            <div className="flex shrink-0 items-center gap-[28px] text-[14px] text-[#30394d]"><button type="button" onClick={() => showNotice('颜色筛选即将展开')} className="flex items-center gap-2"><span className="h-[19px] w-[19px] rounded-full bg-[conic-gradient(#ff6957,#ffc64d,#43cb77,#4b8eff,#b868f5,#ff6957)]" />颜色<ChevronDown className="h-3 w-3 text-[#8c98aa]" /></button>{['用途', '风格', '版式', '价格', '类型'].map((item) => <button type="button" key={item} onClick={() => showNotice(`${item}筛选即将展开`)} className="flex items-center gap-1">{item}<ChevronDown className="h-3 w-3 text-[#8c98aa]" /></button>)}<button type="button" onClick={() => showNotice('已切换套装筛选')} className="flex items-center gap-2 text-[#68758a]">只看套装<span className="relative h-[16px] w-[29px] rounded-full bg-[#e8edf5]"><span className="absolute left-[2px] top-[2px] h-3 w-3 rounded-full bg-white shadow-sm" /></span></button><button type="button" onClick={() => showNotice('更多筛选即将上线')} aria-label="更多筛选"><SlidersHorizontal className="h-[18px] w-[18px]" /></button></div>
+          </div>
+        </section>
 
-        <section className="mx-auto max-w-[1440px] px-6 pb-16 pt-6">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2">{subCategories.map((item) => <button key={item} type="button" onClick={() => { setActiveSubCategory(item); showNotice(`已切换到${item}`); }} className={`rounded-full px-3.5 py-1.5 text-[11px] ${activeSubCategory === item ? 'bg-[#30394e] text-white' : 'bg-white text-[#7b879c] hover:bg-[#eef2ff] hover:text-[#526bdd]'}`}>{item}</button>)}</div><div className="flex items-center gap-2"><button type="button" onClick={() => showNotice('筛选面板即将上线')} className="flex items-center gap-1.5 rounded-[8px] border border-[#e6eaf2] bg-white px-3 py-2 text-[11px] text-[#768298]"><SlidersHorizontal className="h-3.5 w-3.5" />筛选</button><button type="button" onClick={() => showNotice('已切换为综合排序')} className="flex items-center gap-1.5 rounded-[8px] border border-[#e6eaf2] bg-white px-3 py-2 text-[11px] text-[#768298]">综合排序<ChevronRight className="h-3.5 w-3.5 rotate-90" /></button></div></div>
-          <div className="mb-6 flex items-center justify-between"><div><h2 className="text-[18px] font-semibold text-[#30384c]">{activeSubCategory}</h2><p className="mt-1 text-[11px] text-[#98a2b5]">精选可编辑模板，快速找到你的设计灵感</p></div><span className="text-[11px] text-[#9aa4b6]">共 {filteredCards.length} 个模板</span></div>
-          {filteredCards.length ? <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">{filteredCards.map((card) => <div key={card.title} className="group overflow-hidden rounded-[13px] border border-[#e9edf4] bg-white p-2 shadow-[0_2px_8px_rgba(71,86,121,.035)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(71,86,121,.12)]"><button type="button" onClick={() => showNotice(`打开模板：${card.title}`)} className="block w-full text-left"><TemplateArtwork card={card} /><div className="px-1 pb-1 pt-3"><div className="truncate text-[12px] font-semibold text-[#3a4357]">{card.title}</div><div className="mt-1 flex items-center justify-between text-[10px] text-[#9aa4b5]"><span>{card.format}</span><span>{card.author}</span></div></div></button><div className="flex items-center justify-between border-t border-[#f0f2f6] px-1 pt-2 text-[10px] text-[#a0a8b6]"><span>♡ {card.likes}</span><button type="button" onClick={() => showNotice(`已收藏${card.title}`)} className="rounded-full p-1.5 hover:bg-[#f2f5ff] hover:text-[#5872e7]" aria-label={`收藏${card.title}`}><Heart className="h-3.5 w-3.5" /></button></div></div>)}</div> : <div className="rounded-[16px] bg-white py-24 text-center text-[13px] text-[#9aa4b6]">没有找到相关模板，试试搜索“海报”或“邀请函”</div>}
+        <section className="px-[32px] pb-10 pt-[17px]">
+          {visibleCount ? <div className="grid grid-cols-2 gap-x-[17px] gap-y-0 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">{visibleColumns.map((column, columnIndex) => <div key={`template-column-${columnIndex}`} className="flex min-w-0 flex-col gap-[17px]">{column.map((card) => <button key={card.id} type="button" onClick={() => showNotice(`打开模板：${card.title}`)} className="group relative block w-full overflow-hidden rounded-[9px] bg-white text-left shadow-[0_1px_4px_rgba(39,50,75,.04)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(65,76,106,.16)]"><PosterBadge badge={card.badge} /><div style={{ aspectRatio: card.aspect }}><PosterArt card={card} /></div></button>)}</div>)}</div> : <div className="flex min-h-[360px] items-center justify-center text-[14px] text-[#94a0b3]">没有找到相关模板，试试搜索“海报”或“邀请函”</div>}
         </section>
       </main>
-      {notice ? <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#29334a] px-5 py-2.5 text-[12px] text-white shadow-[0_12px_30px_rgba(31,42,65,.2)]">{notice}</div> : null}
+      {notice ? <div className="fixed bottom-7 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#29334a] px-5 py-2.5 text-[12px] text-white shadow-[0_12px_30px_rgba(31,42,65,.2)]">{notice}</div> : null}
     </div>
   );
 }
