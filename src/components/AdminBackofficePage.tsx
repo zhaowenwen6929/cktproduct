@@ -286,16 +286,20 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
   const [queriedScene, setQueriedScene] = useState('live-stream');
   const [isEditing, setIsEditing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [cacheConfirmOpen, setCacheConfirmOpen] = useState(false);
+  const [cacheCleared, setCacheCleared] = useState(false);
   const [draftText, setDraftText] = useState(() => prettyJson(DEFAULT_SKILL_CONFIG));
   const [draftConfig, setDraftConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
   const [jsonError, setJsonError] = useState('');
   const [saved, setSaved] = useState(false);
 
   const isFound = queriedFunctionCode.trim() === config.skillCode && queriedScene.trim() === 'live-stream';
+  const canClearCache = functionCode.trim().length > 0;
 
   const runQuery = () => {
     setQueriedFunctionCode(functionCode.trim());
     setQueriedScene(scene.trim());
+    setCacheCleared(false);
     setSaved(false);
   };
 
@@ -304,7 +308,19 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
     setScene('live-stream');
     setQueriedFunctionCode(config.skillCode);
     setQueriedScene('live-stream');
+    setCacheCleared(false);
     setSaved(false);
+  };
+
+  const openCacheConfirm = () => {
+    if (!canClearCache) return;
+    setCacheCleared(false);
+    setCacheConfirmOpen(true);
+  };
+
+  const clearCache = () => {
+    setCacheConfirmOpen(false);
+    setCacheCleared(true);
   };
 
   const openEditor = () => {
@@ -357,7 +373,9 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
               <label className="flex h-10 w-[360px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">功能标识（function_code）</span><input value={functionCode} onChange={(event) => setFunctionCode(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入功能标识" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
               <label className="flex h-10 w-[280px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">场景（scene）</span><input value={scene} onChange={(event) => setScene(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入场景" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
               <button type="button" onClick={runQuery} className="h-10 rounded-[3px] bg-[#278fee] px-6 text-[12px] text-white shadow-[0_4px_10px_rgba(39,143,238,.16)] hover:bg-[#167fdc]"><Search className="mr-1.5 inline-block h-3.5 w-3.5" />查询</button>
+              <button type="button" onClick={openCacheConfirm} disabled={!canClearCache} className="h-10 rounded-[3px] border border-[#f0b44d] bg-[#fffaf0] px-5 text-[12px] text-[#c4821e] hover:bg-[#fff3d8] disabled:cursor-not-allowed disabled:border-[#e5e8ed] disabled:bg-[#f7f8fa] disabled:text-[#b9c0ca]">清理缓存</button>
               <button type="button" onClick={resetQuery} className="h-10 rounded-[3px] border border-[#dfe3ea] bg-white px-5 text-[12px] text-[#697487] hover:border-[#b9c2d0]">重置</button>
+              {cacheCleared ? <span className="text-[11px] text-[#35a16b]">已提交清理：{functionCode.trim()}</span> : null}
             </div>
           </section>
 
@@ -387,6 +405,25 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
       {confirmOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/25 p-5">
           <div className="w-[390px] rounded-[12px] bg-white p-6 shadow-[0_18px_50px_rgba(18,34,62,.22)]"><div className="flex items-start gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff4df] text-[#e9a63e]"><AlertTriangle className="h-5 w-5" /></div><div><h3 className="text-[16px] font-semibold text-[#293344]">确认保存配置？</h3><p className="mt-2 text-[12px] leading-5 text-[#8590a1]">保存后将更新「{draftConfig.name}」的 JSON 配置，前台表单会按新配置展示。</p></div></div><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setConfirmOpen(false)} className="h-9 rounded-[4px] border border-[#dfe3ea] px-5 text-[12px] text-[#6c7789]">返回修改</button><button type="button" onClick={saveConfig} className="h-9 rounded-[4px] bg-[#278fee] px-5 text-[12px] text-white">确认保存</button></div></div>
+        </div>
+      ) : null}
+
+      {cacheConfirmOpen ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/25 p-5">
+          <div className="w-[420px] rounded-[12px] bg-white p-6 shadow-[0_18px_50px_rgba(18,34,62,.22)]">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff4df] text-[#e9a63e]"><AlertTriangle className="h-5 w-5" /></div>
+              <div>
+                <h3 className="text-[16px] font-semibold text-[#293344]">确认清理缓存？</h3>
+                <p className="mt-2 text-[12px] leading-5 text-[#657084]">缓存清理后更新的配置将会立即生效，是否继续操作？</p>
+                <p className="mt-2 text-[11px] text-[#a1a9b5]">功能标识：{functionCode.trim()}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setCacheConfirmOpen(false)} className="h-9 rounded-[4px] border border-[#dfe3ea] px-5 text-[12px] text-[#6c7789]">取消</button>
+              <button type="button" onClick={clearCache} className="h-9 rounded-[4px] bg-[#278fee] px-5 text-[12px] text-white">继续清理</button>
+            </div>
+          </div>
         </div>
       ) : null}
     </div>
