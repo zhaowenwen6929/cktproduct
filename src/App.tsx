@@ -11,10 +11,11 @@ import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
 import { AdminBackofficePage } from './components/AdminBackofficePage';
 import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
+import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
 type ExportRequest =
   | {
@@ -60,6 +61,8 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/design-app') return '/design-app';
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
+  if (pathname === '/admin-backoffice/requirements/ai-ecommerce') return '/admin-backoffice/requirements/ai-ecommerce';
+  if (pathname === '/admin-backoffice/requirements/search-guide') return '/admin-backoffice/requirements/search-guide';
   if (pathname === '/admin-backoffice/guided-search') return '/admin-backoffice/guided-search';
   if (pathname === '/admin-backoffice') return '/admin-backoffice';
   return '/';
@@ -1348,6 +1351,14 @@ export default function App() {
         title: '创客贴管理后台｜搜索引导管理',
         description: '内容运营管理下的引导词节点、关系和查询映射配置。',
       },
+      '/admin-backoffice/requirements/ai-ecommerce': {
+        title: 'AI电商配置｜需求说明',
+        description: 'AI电商配置的需求背景、功能说明、交互流程和验收标准。',
+      },
+      '/admin-backoffice/requirements/search-guide': {
+        title: '搜索引导管理｜需求说明',
+        description: '搜索引导管理的需求背景、节点关系、查询映射和验收标准。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1553,10 +1564,25 @@ export default function App() {
     />;
   }
 
+  if (currentRoute === '/admin-backoffice/requirements/ai-ecommerce') {
+    return <RequirementDocumentPage
+      kind="ai-ecommerce"
+      onBack={() => navigateTo('/admin-backoffice')}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/requirements/search-guide') {
+    return <RequirementDocumentPage
+      kind="search-guide"
+      onBack={() => navigateTo('/admin-backoffice/guided-search')}
+    />;
+  }
+
   if (currentRoute === '/admin-backoffice/guided-search') {
     return <GuidedSearchConfigPage
       onBackToDirectory={() => navigateTo('/')}
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice')}
+      onOpenRequirement={() => navigateTo('/admin-backoffice/requirements/search-guide')}
     />;
   }
 
@@ -1564,6 +1590,7 @@ export default function App() {
     return <AdminBackofficePage
       onBackToDirectory={() => navigateTo('/')}
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onOpenRequirement={() => navigateTo('/admin-backoffice/requirements/ai-ecommerce')}
     />;
   }
 
