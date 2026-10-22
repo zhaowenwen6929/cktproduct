@@ -244,8 +244,11 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
                         {child === 'AI电商配置' ? (
                           <span className="group relative inline-flex shrink-0" aria-label="新功能：AI电商配置" title="新功能：按 function_code 和 scene 查询 AI 电商配置，支持 JSON 编辑与缓存清理">
                             <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.04em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">NEW</span>
-                            <span className="pointer-events-none absolute right-0 top-1/2 z-50 w-[210px] -translate-y-1/2 rounded-[7px] bg-[#172336] px-3 py-2 text-[11px] font-normal leading-5 text-white opacity-0 shadow-[0_8px_20px_rgba(0,0,0,.24)] transition-opacity group-hover:opacity-100">
-                              新功能：按 function_code 和 scene 查询 AI 电商配置，支持 JSON 编辑与缓存清理。
+                            <span className="pointer-events-none absolute right-0 top-1/2 z-50 w-[280px] -translate-y-1/2 rounded-[9px] bg-[#172336] px-4 py-3 text-[12px] font-normal leading-5 text-white opacity-0 shadow-[0_10px_24px_rgba(0,0,0,.28)] transition-opacity group-hover:opacity-100">
+                              <span className="mb-2 block text-[13px] font-semibold text-white">AI电商配置</span>
+                              <span className="block"><span className="text-[#a9b9cd]">需求：</span>AI电商配置管理</span>
+                              <span className="mt-1 block"><span className="text-[#a9b9cd]">概述：</span>按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。</span>
+                              <span className="mt-1 block"><span className="text-[#a9b9cd]">新增时间：</span>2026-10-22</span>
                             </span>
                           </span>
                         ) : null}
