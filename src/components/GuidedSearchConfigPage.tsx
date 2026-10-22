@@ -93,7 +93,12 @@ const displayValueMap: Record<string, string> = {
   parent_child: '父子关系',
   synonym: '同义关系',
   related: '相关关系',
+  template_category_tree: '模板类目树',
   template_tag: '模板标签',
+  asset_tag: '素材标签',
+  search_log: '搜索日志',
+  operation_seed: '运营种子',
+  llm_candidate: 'LLM 候选',
   co_occur: '共现数据',
   graph: '图谱',
   rule: '规则',
@@ -102,6 +107,16 @@ const displayValueMap: Record<string, string> = {
 };
 
 const displayValue = (value: string) => displayValueMap[value] ?? value;
+
+const sourceOptions = [
+  { label: '模板类目树', value: 'template_category_tree' },
+  { label: '模板标签', value: 'template_tag' },
+  { label: '素材标签', value: 'asset_tag' },
+  { label: '搜索日志', value: 'search_log' },
+  { label: '运营种子', value: 'operation_seed' },
+  { label: 'LLM 候选', value: 'llm_candidate' },
+  { label: '共现数据', value: 'co_occur' },
+];
 
 const normalizeQuery = (value: string) => {
   const trimmed = value.trim();
@@ -160,14 +175,14 @@ function NodeEditDialog({ row, onClose, onSave }: { row: NodeRow; onClose: () =>
   const [form, setForm] = useState(row);
   const update = (patch: Partial<NodeRow>) => setForm((current) => ({ ...current, ...patch }));
 
-  return <EditModalShell title="编辑引导词节点" description="节点编号和关键词不可编辑，其余配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="节点编号" value={String(form.node_id)} disabled /><FormInput label="关键词" value={form.keyword} disabled /><FormInput label="归一化键" value={form.normalized_key} onChange={(value) => update({ normalized_key: value })} /><FormSelect label="层级" value={String(form.level)} options={[{ label: '1级', value: '1' }, { label: '2级', value: '2' }, { label: '3级', value: '3' }]} onChange={(value) => update({ level: Number(value) })} /><FormInput label="父节点编号" value={form.parent_id == null ? '' : String(form.parent_id)} placeholder="无父节点可留空" onChange={(value) => update({ parent_id: value.trim() ? Number(value) : null })} /><FormSelect label="引导类型" value={form.guide_type} options={[{ label: '分类', value: 'category' }, { label: '场景', value: 'scene' }, { label: '风格', value: 'style' }, { label: '行业', value: 'industry' }]} onChange={(value) => update({ guide_type: value })} /><FormInput label="外部评分" value={form.external_score} onChange={(value) => update({ external_score: value })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '禁用', value: '禁用' }]} onChange={(value) => update({ status: value as NodeRow['status'] })} /><FormInput label="数据来源" value={form.source} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
+  return <EditModalShell title="编辑引导词节点" description="节点编号和关键词不可编辑，其余配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="节点编号" value={String(form.node_id)} disabled /><FormInput label="关键词" value={form.keyword} disabled /><FormInput label="归一化键" value={form.normalized_key} onChange={(value) => update({ normalized_key: value })} /><FormSelect label="层级" value={String(form.level)} options={[{ label: '1级', value: '1' }, { label: '2级', value: '2' }, { label: '3级', value: '3' }]} onChange={(value) => update({ level: Number(value) })} /><FormInput label="父节点编号" value={form.parent_id == null ? '' : String(form.parent_id)} placeholder="无父节点可留空" onChange={(value) => update({ parent_id: value.trim() ? Number(value) : null })} /><FormSelect label="引导类型" value={form.guide_type} options={[{ label: '分类', value: 'category' }, { label: '场景', value: 'scene' }, { label: '风格', value: 'style' }, { label: '行业', value: 'industry' }]} onChange={(value) => update({ guide_type: value })} /><FormInput label="外部评分" value={form.external_score} onChange={(value) => update({ external_score: value })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '禁用', value: '禁用' }]} onChange={(value) => update({ status: value as NodeRow['status'] })} /><FormSelect label="数据来源" value={form.source} options={sourceOptions} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
 }
 
 function EdgeEditDialog({ row, onClose, onSave }: { row: EdgeRow; onClose: () => void; onSave: (row: EdgeRow) => void }) {
   const [form, setForm] = useState(row);
   const update = (patch: Partial<EdgeRow>) => setForm((current) => ({ ...current, ...patch }));
 
-  return <EditModalShell title="编辑引导词关系" description="关系编号不可编辑，其余关系配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="关系编号" value={String(form.edge_id)} disabled /><FormInput label="父节点" value={form.parent} onChange={(value) => update({ parent: value })} /><FormInput label="子节点" value={form.child} onChange={(value) => update({ child: value })} /><FormSelect label="关系类型" value={form.edge_type} options={[{ label: '父子关系', value: 'parent_child' }, { label: '同义关系', value: 'synonym' }, { label: '相关关系', value: 'related' }]} onChange={(value) => update({ edge_type: value })} /><FormInput label="权重" value={form.weight} onChange={(value) => update({ weight: value })} /><FormInput label="共现次数" value={String(form.cooccur_cnt)} onChange={(value) => update({ cooccur_cnt: Number(value) || 0 })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '禁用', value: '禁用' }]} onChange={(value) => update({ status: value as EdgeRow['status'] })} /><FormInput label="数据来源" value={form.source} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
+  return <EditModalShell title="编辑引导词关系" description="关系编号不可编辑，其余关系配置可以修改。保存后会更新当前列表数据。" onClose={onClose} onSave={() => onSave({ ...form, updated_at: formatUpdatedAt(), updated_by: '管理员' })}><div className="grid grid-cols-2 gap-4"><FormInput label="关系编号" value={String(form.edge_id)} disabled /><FormInput label="父节点" value={form.parent} onChange={(value) => update({ parent: value })} /><FormInput label="子节点" value={form.child} onChange={(value) => update({ child: value })} /><FormSelect label="关系类型" value={form.edge_type} options={[{ label: '父子关系', value: 'parent_child' }, { label: '同义关系', value: 'synonym' }, { label: '相关关系', value: 'related' }]} onChange={(value) => update({ edge_type: value })} /><FormInput label="权重" value={form.weight} onChange={(value) => update({ weight: value })} /><FormInput label="共现次数" value={String(form.cooccur_cnt)} onChange={(value) => update({ cooccur_cnt: Number(value) || 0 })} /><FormSelect label="状态" value={form.status} options={[{ label: '启用', value: '启用' }, { label: '禁用', value: '禁用' }]} onChange={(value) => update({ status: value as EdgeRow['status'] })} /><FormSelect label="数据来源" value={form.source} options={sourceOptions} onChange={(value) => update({ source: value })} /><FormInput label="更新人" value="管理员（保存后自动记录）" disabled /></div></EditModalShell>;
 }
 
 type EditTarget = { kind: 'nodes'; row: NodeRow } | { kind: 'edges'; row: EdgeRow };
