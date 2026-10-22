@@ -27,7 +27,10 @@ const createDefaultConfig = (): PlatformConfig => ({
       tabs: [
         {
           key: 'personal',
-          name: '个人订阅',
+          name: '个人使用',
+          memberLevel: {
+            level: 'personal',
+          },
           options: [
             { key: 'yearly', name: '连续包年', guideText: '限时4.5折', duration: '365天', highlighted: true },
             { key: 'monthly', name: '连续包月', guideText: '4.8折', duration: '30天' },
@@ -36,8 +39,11 @@ const createDefaultConfig = (): PlatformConfig => ({
           ],
         },
         {
-          key: 'team',
-          name: '团队订阅',
+          key: 'enterprise',
+          name: '企业使用',
+          memberLevel: {
+            level: 'enterprise',
+          },
           options: [
             { key: 'team-yearly', name: '团队包年', guideText: '多人协作更优惠', duration: '365天' },
             { key: 'team-monthly', name: '团队包月', guideText: '灵活开通', duration: '30天' },
@@ -83,6 +89,27 @@ const createDefaultConfig = (): PlatformConfig => ({
 const createDefaultState = (): ConfigState => ({ web: createDefaultConfig(), mobile: createDefaultConfig() });
 const STORAGE_KEY = 'admin-membership-page-config';
 
+const migratePlansJson = (value: unknown, fallback: string) => {
+  if (typeof value !== 'string') return fallback;
+  try {
+    const parsed = JSON.parse(value) as { tabs?: Array<Record<string, unknown>> };
+    if (!Array.isArray(parsed.tabs)) return value;
+    const tabs = parsed.tabs.map((tab, index) => {
+      const isPersonal = tab.key === 'personal' || tab.name === '个人订阅';
+      const isEnterprise = tab.key === 'team' || tab.name === '团队订阅';
+      return {
+        ...tab,
+        ...(isPersonal ? { key: 'personal', name: '个人使用' } : {}),
+        ...(isEnterprise ? { key: 'enterprise', name: '企业使用' } : {}),
+        memberLevel: tab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
+      };
+    });
+    return JSON.stringify({ ...parsed, tabs }, null, 2);
+  } catch {
+    return value;
+  }
+};
+
 const readStoredState = (): ConfigState => {
   if (typeof window === 'undefined') return createDefaultState();
   try {
@@ -90,9 +117,12 @@ const readStoredState = (): ConfigState => {
     if (!stored) return createDefaultState();
     const parsed = JSON.parse(stored) as Partial<ConfigState>;
     const defaults = createDefaultState();
+    const mergePlatform = (storedConfig: PlatformConfig | undefined, defaultConfig: PlatformConfig) => storedConfig
+      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans) } }
+      : defaultConfig;
     return {
-      web: parsed.web ? { ...defaults.web, ...parsed.web, json: { ...defaults.web.json, ...parsed.web.json } } : defaults.web,
-      mobile: parsed.mobile ? { ...defaults.mobile, ...parsed.mobile, json: { ...defaults.mobile.json, ...parsed.mobile.json } } : defaults.mobile,
+      web: mergePlatform(parsed.web, defaults.web),
+      mobile: mergePlatform(parsed.mobile, defaults.mobile),
     };
   } catch {
     return createDefaultState();
