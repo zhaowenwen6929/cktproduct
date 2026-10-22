@@ -112,30 +112,32 @@ function CountdownBox({ value, label }: { value: string; label: string }) {
 function PlanCard({ plan, selected, tierIndex = 0, onTierChange }: { plan: MembershipPlan; selected: boolean; tierIndex?: number; onTierChange?: (index: number) => void }) {
   const isBlue = plan.color === 'blue';
   const isOrange = plan.color === 'orange';
+  const isFeatured = isBlue || isOrange;
   const activeTier = plan.tierOptions?.[tierIndex] ?? plan.tierOptions?.[0];
   const displayPrice = activeTier?.price ?? plan.price;
   const displayOriginalPrice = activeTier?.originalPrice ?? plan.originalPrice;
   const displayPoints = activeTier ? `${activeTier.points} 积分每月` : plan.points;
   const displayPointsNote = activeTier?.pointsNote ?? plan.pointsNote;
   const displayMonthlyPrice = activeTier?.monthlyPrice ?? (isBlue ? '434' : isOrange ? '1,638' : plan.name === '标准会员' ? '92' : '33');
-  const shell = selected
-    ? isOrange
-      ? 'border-[#ff7b12] bg-[#fffaf4] shadow-[0_18px_40px_rgba(255,123,18,.15)]'
-      : 'border-[#168ff2] bg-[#f7fbff] shadow-[0_18px_40px_rgba(22,143,242,.14)]'
-    : 'border-[#e8ebf0] bg-white shadow-[0_12px_28px_rgba(41,57,83,.06)]';
+  const shell = isOrange
+    ? `border-[#ff7b12] bg-[#fffaf4] ${selected ? 'shadow-[0_18px_40px_rgba(255,123,18,.18)]' : 'shadow-[0_12px_28px_rgba(255,123,18,.1)]'}`
+    : isBlue
+      ? `border-[#168ff2] bg-[#f7fbff] ${selected ? 'shadow-[0_18px_40px_rgba(22,143,242,.18)]' : 'shadow-[0_12px_28px_rgba(22,143,242,.1)]'}`
+      : 'border-[#e8ebf0] bg-white shadow-[0_12px_28px_rgba(41,57,83,.06)]';
   const accent = isOrange ? '#ff7910' : '#168ff2';
+  const emphasized = selected || isFeatured;
 
   return <article className={`relative flex min-h-[650px] flex-col overflow-visible rounded-[18px] border ${shell}`}>
-    {selected ? <div className={`absolute -top-7 left-[-1px] right-[-1px] z-[1] h-7 rounded-t-[18px] px-4 text-center text-[10px] font-medium leading-7 text-white ${isOrange ? 'bg-[#ff7910]' : 'bg-[#168ff2]'}`}>Seedance 2.5 720P限时低至 {isOrange ? '¥0.19' : '¥0.43'}/秒</div> : null}
+    {isFeatured ? <div className={`absolute -top-7 left-[-1px] right-[-1px] z-[1] h-7 rounded-t-[18px] px-4 text-center text-[10px] font-medium leading-7 text-white ${isOrange ? 'bg-[#ff7910]' : 'bg-[#168ff2]'}`}>Seedance 2.5 720P限时低至 {isOrange ? '¥0.19' : '¥0.43'}/秒</div> : null}
     <div className="px-5 pb-4 pt-5">
       <div className="flex items-start justify-between gap-2"><div><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 text-[11px] text-[#8590a0]">{plan.subtitle}</p></div>{plan.tag ? <span className={`rounded-[5px] px-1.5 py-1 text-[9px] font-medium text-white ${isOrange ? 'bg-[#ff7910]' : 'bg-[#168ff2]'}`}>{plan.tag}</span> : null}</div>
       <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><strong className="text-[33px] font-semibold leading-none tracking-[-.05em]">{displayPrice}</strong><span className="mb-1 text-[10px] text-[#7f8999]">{plan.period}</span>{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
       <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">首年{displayPrice} · 次年续费金额按当前价格计算 · 包年可随时取消</p>
     </div>
     {plan.tierOptions ? <div className="mx-5 mt-1 h-[64px] px-0"><div className="mb-1.5 flex items-center justify-between text-[10px] text-[#586474]">{plan.tierOptions.map((tier, index) => <button type="button" key={tier.quotaLabel} onClick={() => onTierChange?.(index)} className={`cursor-pointer ${index === tierIndex ? 'font-semibold text-[#202938]' : 'hover:text-[#168ff2]'}`}>{tier.quotaLabel}</button>)}</div><input type="range" min={0} max={plan.tierOptions.length - 1} step={1} value={tierIndex} onChange={(event) => onTierChange?.(Number(event.currentTarget.value))} aria-label="高级会员积分档位" className="h-2 w-full cursor-pointer accent-[#168ff2]" /></div> : <div className="mx-5 mt-1 h-[64px]" aria-hidden="true" />}
-    <div className={`mx-4 rounded-[12px] px-4 py-3 ${selected ? isOrange ? 'bg-[#fff0dc]' : 'bg-[#eaf4ff]' : 'bg-[#f7f8fa]'}`}><div className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: selected ? accent : '#3e4858' }}><Sparkles className="h-3.5 w-3.5" />{displayPoints}</div><p className="mt-1 text-[10px] text-[#8e98a7]">{displayPointsNote}</p></div>
-    <div className="px-4 pt-4"><button type="button" className={`h-9 w-full rounded-full text-[12px] font-medium transition ${selected ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'border border-[#dfe3e9] bg-white text-[#404955] hover:border-[#168ff2] hover:text-[#168ff2]'}`}>{selected ? `¥${displayPrice} 首年${isOrange ? '4.5' : '5'}折` : `¥${displayPrice} 首年${plan.name === '标准会员' ? '5.8' : '6'}折`}</button><p className="mt-2 text-center text-[10px] text-[#9aa2ae]">折算 ¥{displayMonthlyPrice}/月 · 较单月优惠</p></div>
-    <div className="mt-5 flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5"><div className="mb-4 text-[12px] font-semibold text-[#394355]">专享权益</div><ul className="space-y-3">{plan.features.map((feature) => <li key={feature} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 shrink-0" style={{ color: selected ? accent : '#8c96a5' }} />{feature}<span className="ml-auto rounded-[4px] bg-[#f1f3f6] px-1.5 py-0.5 text-[9px] text-[#929baa]">专属通道</span></li>)}</ul></div>
+    <div className={`mx-4 rounded-[12px] px-4 py-3 ${emphasized ? isOrange ? 'bg-[#fff0dc]' : isBlue ? 'bg-[#eaf4ff]' : 'bg-[#eef1f5]' : 'bg-[#f7f8fa]'}`}><div className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: emphasized ? accent : '#3e4858' }}><Sparkles className="h-3.5 w-3.5" />{displayPoints}</div><p className="mt-1 text-[10px] text-[#8e98a7]">{displayPointsNote}</p></div>
+    <div className="px-4 pt-4"><button type="button" className={`h-9 w-full rounded-full text-[12px] font-medium transition ${emphasized ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'border border-[#dfe3e9] bg-white text-[#404955] hover:border-[#168ff2] hover:text-[#168ff2]'}`}>{isFeatured || selected ? `¥${displayPrice} 首年${isOrange ? '4.5' : '5'}折` : `¥${displayPrice} 首年${plan.name === '标准会员' ? '5.8' : '6'}折`}</button><p className="mt-2 text-center text-[10px] text-[#9aa2ae]">折算 ¥{displayMonthlyPrice}/月 · 较单月优惠</p></div>
+    <div className="mt-5 flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5"><div className="mb-4 text-[12px] font-semibold text-[#394355]">专享权益</div><ul className="space-y-3">{plan.features.map((feature) => <li key={feature} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 shrink-0" style={{ color: isFeatured || selected ? accent : '#8c96a5' }} />{feature}<span className="ml-auto rounded-[4px] bg-[#f1f3f6] px-1.5 py-0.5 text-[9px] text-[#929baa]">专属通道</span></li>)}</ul></div>
   </article>;
 }
 
