@@ -22,9 +22,9 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
   'ai-ecommerce': {
     title: 'AI电商配置',
     eyebrow: 'AI E-COMMERCE CONFIGURATION',
-    summary: '在管理后台统一维护 AI 电商功能配置，支持按功能标识和场景查询、在线编辑 JSON，并在清理缓存后让新配置立即生效。',
+    summary: '在管理后台统一查询和维护 AI 电商功能配置，支持从 moni 读取预置 JSON、在线编辑配置，并在清理缓存后让新配置立即生效。',
     background: 'AI 电商能力持续增加后，功能配置分散在数据和服务侧，运营同学缺少一个可视化入口来确认当前配置、快速修改参数和验证配置是否已经生效。',
-    goal: '提供一个低学习成本的配置管理入口，降低配置变更和缓存处理的沟通成本，同时保留 JSON 原始结构，方便研发与运营协作。',
+    goal: '提供一个低学习成本的配置管理入口，降低配置查询、变更和缓存处理的沟通成本；完整保留服务端 JSON 原始结构，方便研发与运营协作。',
     sections: [
       {
         title: '入口与权限',
@@ -37,19 +37,22 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
       },
       {
         title: '配置查询',
-        description: '通过业务侧真实使用的两个维度定位配置。',
+        description: '通过业务侧真实使用的功能标识定位 moni 中的预置配置，场景根据实际配置可选。',
         items: [
-          { label: '查询项', content: '功能标识（function_code）和场景（scene），例如 function_code=ags-live-visual-material、scene=live-stream。' },
-          { label: '查询动作', content: '点击查询后再展示对应配置；输入未提交时不改变当前结果。点击重置恢复示例配置。' },
-          { label: '无结果状态', content: '展示“未找到对应的 AI 电商配置”，提示检查功能标识和场景是否正确。' },
+          { label: '查询项', content: '功能标识（function_code）必填，场景（scene）可选。例如 ags-live-visual-material 可按具体场景查询；ags-aplus-detail 的实际配置 scene 为空，允许只填写功能标识查询。' },
+          { label: '数据来源', content: '查询 moni 的 Agent Skill 配置接口，读取返回的 config、skill_code、scene 和 update_time；页面以服务端返回的预置 JSON 为准，不使用本地示例数据替代查询结果。' },
+          { label: '初始与重置', content: '首次进入页面时查询项和结果区域均为空，不主动展示任何配置。重置清空功能标识、场景、查询结果和状态。' },
+          { label: '最近查询', content: '查询成功后记住最近 5 次功能标识与场景组合；再次聚焦查询输入框时展示历史记录，点击记录可直接回填并重新查询。场景为空的记录显示为默认场景。' },
+          { label: '无结果与错误', content: '功能标识为空时提示补充查询条件；接口无数据时展示“未找到对应的 AI 电商配置”，并显示当前查询的 function_code 和 scene；接口请求失败时展示失败原因和重试引导。' },
         ],
       },
       {
         title: 'JSON 配置查看与编辑',
-        description: '完整保留配置 JSON，支持原地修改，不再额外打开编辑弹框。',
+        description: '完整保留服务端返回的配置 JSON，支持原地修改，不再额外打开编辑弹框。',
         items: [
-          { label: '查看区域', content: '以深色代码区域展示完整 JSON，提供复制按钮；代码框高度根据可视区域自适应，内容过长时在框内滚动。' },
-          { label: '修改流程', content: '点击修改后直接在 JSON 框内编辑，实时校验 JSON 格式和必要字段；格式错误时禁用保存并展示错误原因。' },
+          { label: '查看区域', content: '以深色代码区域展示完整 JSON，提供复制按钮；代码框高度根据可视区域自适应，内容过长时在框内滚动。头部只展示当前 function_code 和 scene，不展示字段数量、配置中心/启用状态绿标或预览图。' },
+          { label: '结构兼容', content: '不根据固定字段数量统计配置，也不要求必须符合某一套 fields 结构；只要接口返回合法 JSON，就完整展示其原始内容，支持不同 Agent Skill 配置结构共用页面。' },
+          { label: '修改流程', content: '点击修改后直接在 JSON 框内编辑，实时校验 JSON 格式；格式错误时禁用保存并展示错误原因，不因字段数量或预览结构不同而误判。' },
           { label: '保存确认', content: '点击保存后弹出二次确认，确认后更新当前配置并提示保存成功；取消则回到编辑状态。' },
         ],
       },
@@ -64,18 +67,19 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
       },
       {
         title: '接口与数据依赖',
-        description: '页面原型需要预留真实接口接入位置。',
+        description: '页面依赖 moni 配置服务和后台权限体系，查询结果必须与实际预置配置保持一致。',
         items: [
-          { label: '配置查询', content: '按 function_code + scene 查询配置详情，返回 JSON、更新时间、启用状态等信息。' },
+          { label: '配置查询', content: '调用 moni Agent Skill 配置查询能力，按 skill_code 查询；scene 有值时作为查询条件，scene 为空时按空场景配置查询，返回 JSON、实际 scene 和更新时间。' },
           { label: '配置更新', content: '提交校验通过的 JSON，服务端需要做结构校验、权限校验和更新记录。' },
           { label: '缓存清理', content: '按 function_code 清理对应功能缓存，返回成功、失败及失败原因。' },
         ],
       },
     ],
     acceptance: [
-      '进入 AI电商配置后默认展示查询区、JSON 配置区和当前 function_code / scene 信息。',
-      'function_code 或 scene 不匹配时不会误展示其他配置，查询结果状态清晰。',
-      'JSON 编辑支持格式校验、取消、二次确认保存和复制，长 JSON 不撑破页面布局。',
+      '首次进入 AI电商配置时页面为空；输入有效 function_code 后能够查询并展示 moni 中对应的预置 JSON。',
+      'scene 可为空；scene 有值或为空时都不会误展示其他配置，页面展示服务端返回的实际 function_code / scene。',
+      '查询成功后能保留最近 5 次查询，聚焦查询框可回填并再次查询；无结果、参数不完整和接口失败状态提示清晰。',
+      'JSON 编辑支持任意合法配置结构、格式校验、取消、二次确认保存和复制，长 JSON 不撑破页面布局。',
       '未填写 function_code 时不能清理缓存，确认后能明确反馈对应功能标识。',
     ],
   },
