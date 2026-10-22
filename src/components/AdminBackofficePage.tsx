@@ -239,7 +239,17 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
                 <div className="bg-[#031525] py-1">
                   {group.children?.map((child) => (
                     <button type="button" key={child} onClick={() => { setActiveItem(child); onNavigate?.(child); }} className={`flex h-[39px] w-full items-center pl-[43px] text-left text-[12px] transition ${child === activeItem ? 'bg-[#128cf1] font-medium text-white' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
-                      <span className="truncate">{child}</span>
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="truncate">{child}</span>
+                        {child === 'AI电商配置' ? (
+                          <span className="group relative inline-flex shrink-0" aria-label="新功能：AI电商配置" title="新功能：按 function_code 和 scene 查询 AI 电商配置，支持 JSON 编辑与缓存清理">
+                            <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.04em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">NEW</span>
+                            <span className="pointer-events-none absolute right-0 top-1/2 z-50 w-[210px] -translate-y-1/2 rounded-[7px] bg-[#172336] px-3 py-2 text-[11px] font-normal leading-5 text-white opacity-0 shadow-[0_8px_20px_rgba(0,0,0,.24)] transition-opacity group-hover:opacity-100">
+                              新功能：按 function_code 和 scene 查询 AI 电商配置，支持 JSON 编辑与缓存清理。
+                            </span>
+                          </span>
+                        ) : null}
+                      </span>
                     </button>
                   ))}
                 </div>
