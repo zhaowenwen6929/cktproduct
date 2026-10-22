@@ -127,8 +127,8 @@ function PlanCard({ plan, selected, tierIndex = 0, onTierChange }: { plan: Membe
   const accent = isOrange ? '#ff7910' : '#168ff2';
   const emphasized = selected || isFeatured;
 
-  return <article className={`relative flex min-h-[650px] flex-col overflow-visible rounded-[18px] border ${shell}`}>
-    {isFeatured ? <div className={`absolute -top-7 left-[-1px] right-[-1px] z-[1] h-7 rounded-t-[18px] px-4 text-center text-[10px] font-medium leading-7 text-white ${isOrange ? 'bg-[#ff7910]' : 'bg-[#168ff2]'}`}>Seedance 2.5 720P限时低至 {isOrange ? '¥0.19' : '¥0.43'}/秒</div> : null}
+  return <article className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`}>
+    {isFeatured ? <div className={`h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7 text-white ${isOrange ? 'bg-[#ff7910]' : 'bg-[#168ff2]'}`}>Seedance 2.5 720P限时低至 {isOrange ? '¥0.19' : '¥0.43'}/秒</div> : null}
     <div className="px-5 pb-4 pt-5">
       <div className="flex items-start justify-between gap-2"><div><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 text-[11px] text-[#8590a0]">{plan.subtitle}</p></div>{plan.tag ? <span className={`rounded-[5px] px-1.5 py-1 text-[9px] font-medium text-white ${isOrange ? 'bg-[#ff7910]' : 'bg-[#168ff2]'}`}>{plan.tag}</span> : null}</div>
       <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><strong className="text-[33px] font-semibold leading-none tracking-[-.05em]">{displayPrice}</strong><span className="mb-1 text-[10px] text-[#7f8999]">{plan.period}</span>{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
