@@ -61,6 +61,28 @@ const initialPackageDetails: PackageDetailRow[] = [
   { id: 3381, name: 'web-高级版（团队）-2年会员', displayName: '2年', duration: 730, originalPrice: 1138, discount: 100, currentPrice: 1138, contractPrice: '-', packageType: '普通套餐', member: '高级版（团队）', sort: 1, trialDays: 0, segment: '/', displayTime: '/', status: '隐藏' },
 ];
 
+type DetailEditValues = {
+  id: number;
+  name: string;
+  displayName: string;
+  saleDescription: string;
+  member: string;
+  packageType: string;
+  duration: string;
+  originalPrice: string;
+  discount: string;
+  currentPrice: string;
+  dailyPrice: string;
+  yearlyPrice: string;
+  maxMembers: string;
+  productId: string;
+  downloadCount: string;
+  sort: string;
+  segment: string;
+  validDays: string;
+  remark: string;
+};
+
 function PackageModal({ mode, row, onClose, onSave }: { mode: 'detail' | 'edit' | 'create'; row: PackageRow; onClose: () => void; onSave: (row: PackageRow) => void }) {
   const [form, setForm] = useState(row);
   const isDetail = mode === 'detail';
@@ -83,15 +105,77 @@ function PackageModal({ mode, row, onClose, onSave }: { mode: 'detail' | 'edit' 
   );
 }
 
+function DetailEditModal({ row, onClose, onSave }: { row: PackageDetailRow; onClose: () => void; onSave: (values: DetailEditValues) => void }) {
+  const [form, setForm] = useState<DetailEditValues>({
+    id: row.id,
+    name: row.name,
+    displayName: row.displayName,
+    saleDescription: '限时加赠1年~低至￥0.54元/人',
+    member: row.member,
+    packageType: row.packageType,
+    duration: String(row.duration),
+    originalPrice: String(row.originalPrice),
+    discount: String(row.discount),
+    currentPrice: String(row.currentPrice),
+    dailyPrice: '0.54',
+    yearlyPrice: '789',
+    maxMembers: '2',
+    productId: '',
+    downloadCount: '-1',
+    sort: String(row.sort),
+    segment: row.segment === '/' ? '0' : row.segment,
+    validDays: '',
+    remark: '',
+  });
+  const update = (key: keyof DetailEditValues, value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const inputClass = 'h-8 w-full rounded-[1px] border border-[#d7d7d7] bg-white px-3 text-[13px] text-[#333] outline-none focus:border-[#278fee] disabled:bg-[#f5f5f5] disabled:text-[#bcbcbc]';
+  const disabledClass = `${inputClass} cursor-not-allowed`;
+
+  return (
+    <div className="fixed inset-0 z-[70] overflow-y-auto bg-black/45 p-[9px]">
+      <div className="mx-auto flex min-h-[calc(100vh-18px)] w-full max-w-[1020px] flex-col bg-white shadow-[0_8px_28px_rgba(0,0,0,.28)]">
+        <div className="flex h-[54px] shrink-0 items-center justify-between border-b border-[#e8e8e8] px-6"><h2 className="text-[16px] font-medium text-[#222]">编辑套餐</h2><button type="button" onClick={onClose} className="text-[22px] leading-none text-[#999] hover:text-[#333]" aria-label="关闭">×</button></div>
+        <div className="flex-1 overflow-y-auto px-6 py-6"><div className="mx-auto w-full max-w-[720px]">
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>名称：</span><input value={form.name} onChange={(event) => update('name', event.currentTarget.value)} className={inputClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>显示名称：</span><input disabled value={form.displayName} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>售卖描述：</span><input value={form.saleDescription} onChange={(event) => update('saleDescription', event.currentTarget.value)} className={inputClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>所属会员：</span><select disabled value={form.member} className={`${disabledClass} appearance-none`}><option>{form.member}</option></select></label>
+          <div className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐类型：</span><div className="flex items-center gap-5 text-[13px] text-[#c1c1c1]"><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '普通套餐'} readOnly disabled />普通套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '订阅套餐'} readOnly disabled />订阅套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '低价试用且订阅套餐'} readOnly disabled />低价试用且订阅套餐</label><span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#c7c7c7] text-[10px] font-bold text-white">?</span></div></div>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐时长(天)：</span><input disabled value={form.duration} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐价格原价（元）：</span><input disabled value={form.originalPrice} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐折扣率：</span><input value={form.discount} onChange={(event) => update('discount', event.currentTarget.value)} className={inputClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐现价（元）：</span><input disabled value={form.currentPrice} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>日费用/成员（元）：</span><input disabled value={form.dailyPrice} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>年费用/成员（元）：</span><input disabled value={form.yearlyPrice} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>最大成员数量：</span><input disabled value={form.maxMembers} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">内购产品ID：</span><input value={form.productId} onChange={(event) => update('productId', event.currentTarget.value)} placeholder="请输入内购产品ID" className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>商用下载次数：</span><input disabled value={form.downloadCount} className={disabledClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>排序：</span><input value={form.sort} onChange={(event) => update('sort', event.currentTarget.value)} className={inputClass} /></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">指定分群：</span><select value={form.segment} onChange={(event) => update('segment', event.currentTarget.value)} className={inputClass}><option value="0">0</option><option value="109">109</option><option value="110">110</option></select></label>
+          <label className="mb-1 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">有效期：</span><input value={form.validDays} onChange={(event) => update('validDays', event.currentTarget.value)} className="h-8 w-[90px] rounded-[1px] border border-[#d7d7d7] px-3 text-[13px] outline-none focus:border-[#278fee]" /></label>
+          <div className="mb-2 ml-[158px] text-[13px] leading-6 text-[#555]">用户注册后的小时数，可输入1~9999的整数</div><div className="mb-1 ml-[158px] text-[13px] leading-5 text-[#ff4d4f]">仅在套餐显示状态下，有效期才会生效，剩余时间小于48小时前端显示倒计时</div>
+          <label className="grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">备注：</span><input value={form.remark} onChange={(event) => update('remark', event.currentTarget.value)} placeholder="添加备注" className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
+        </div></div>
+        <div className="flex h-[54px] shrink-0 items-center justify-end gap-2 border-t border-[#e8e8e8] px-4"><button type="button" onClick={onClose} className="h-8 rounded-[2px] border border-[#d8d8d8] bg-white px-4 text-[13px] text-[#555] hover:border-[#278fee] hover:text-[#278fee]">取消</button><button type="button" onClick={() => onSave(form)} className="h-8 rounded-[2px] bg-[#278fee] px-5 text-[13px] text-white hover:bg-[#167fdc]">生成</button></div>
+      </div>
+    </div>
+  );
+}
+
 function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch }: { packageName: string; onBack: () => void; onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void }) {
   const [details, setDetails] = useState(initialPackageDetails);
   const [nameQuery, setNameQuery] = useState('');
   const [memberType, setMemberType] = useState('');
   const [submittedName, setSubmittedName] = useState('');
   const [submittedMemberType, setSubmittedMemberType] = useState('');
+  const [editingDetail, setEditingDetail] = useState<PackageDetailRow | null>(null);
   const filteredDetails = useMemo(() => details.filter((row) => (!submittedName.trim() || row.name.includes(submittedName.trim())) && (!submittedMemberType || row.member === submittedMemberType)), [details, submittedMemberType, submittedName]);
 
   const toggleDisplay = (id: number) => setDetails((current) => current.map((row) => row.id === id ? { ...row, status: row.status === '显示' ? '隐藏' : '显示' } : row));
+  const saveDetail = (values: DetailEditValues) => {
+    setDetails((current) => current.map((row) => row.id === values.id ? { ...row, name: values.name, discount: Number(values.discount) || row.discount, sort: Number(values.sort) || 0, segment: values.segment || '/' } : row));
+    setEditingDetail(null);
+  };
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] font-sans text-[#30343b]">
@@ -101,10 +185,11 @@ function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, o
         <div className="px-[25px] pt-[25px]"><div className="flex items-center gap-2 text-[13px] text-[#8b9199]"><button type="button" onClick={onBack} className="hover:text-[#278fee]">会员套餐管理</button><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#2d2d2d]">{packageName}</span></div>
           <section className="mt-[25px] min-h-[calc(100vh-130px)] bg-white px-[25px] pb-8">
             <div className="flex items-center justify-end gap-5 border-b border-[#f0f0f0] py-4"><button type="button" className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">推荐套餐配置</button><input value={nameQuery} onChange={(event) => setNameQuery(event.currentTarget.value)} placeholder="名称" className="h-[33px] w-[240px] rounded-[2px] border border-[#d9d9d9] px-3 text-[12px] outline-none focus:border-[#278fee]" /><select value={memberType} onChange={(event) => setMemberType(event.currentTarget.value)} className="h-[33px] w-[240px] rounded-[2px] border border-[#d9d9d9] bg-white px-3 text-[12px] text-[#b6bbc1] outline-none focus:border-[#278fee]"><option value="">请选择会员类型</option><option value="高级版（团队）">高级版（团队）</option><option value="高级版（单人）">高级版（单人）</option><option value="基础版（单人）">基础版（单人）</option></select><button type="button" onClick={() => { setSubmittedName(nameQuery); setSubmittedMemberType(memberType); }} className="h-[33px] rounded-[2px] bg-[#278fee] px-5 text-[12px] text-white hover:bg-[#167fdc]">查询</button><button type="button" className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">＋ 新增套餐</button><button type="button" onClick={() => setDetails((current) => [...current])} className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">刷新缓存</button></div>
-            <div className="mt-[23px] overflow-x-auto"><table className="w-full min-w-[1420px] table-fixed border-collapse text-center text-[13px]"><colgroup><col className="w-[5%]" /><col className="w-[13%]" /><col className="w-[8%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[7%]" /><col className="w-[8%]" /><col className="w-[5%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[5%]" /><col className="w-[11%]" /></colgroup><thead className="h-[76px] bg-[#fafafa] text-[#222]"><tr>{['ID', '名称', '显示名称', '时长\n(天)', '原价', '套餐折\n扣率', '现价', '签约价\n格', '套餐\n类型', '所属会员', '排\n序', '试用\n天数', '显示分\n群', '显示\n时间', '状\n态', '操作'].map((label) => <th key={label} className="whitespace-pre-line px-2 font-normal leading-5">{label}</th>)}</tr></thead><tbody>{filteredDetails.map((row) => <tr key={row.id} className="h-[97px] border-b border-[#ededed] text-[#3b3b3b] hover:bg-[#fcfdff]"><td className="px-2">{row.id}</td><td className="px-2 leading-5">{row.name}</td><td className="px-2 leading-5">{row.displayName}</td><td className="px-2">{row.duration}</td><td className="px-2">{row.originalPrice}</td><td className="px-2">{row.discount}</td><td className="px-2">{row.currentPrice}</td><td className="px-2">{row.contractPrice}</td><td className="px-2 leading-5">{row.packageType}</td><td className="px-2 leading-5">{row.member}</td><td className="px-2">{row.sort}</td><td className="px-2">{row.trialDays}</td><td className="px-2">{row.segment}</td><td className="px-2">{row.displayTime}</td><td className="px-2 leading-5">{row.status}</td><td className="px-2"><div className="flex flex-wrap items-center justify-center gap-2"><button type="button" className="h-[33px] rounded-[2px] border border-[#d8dce1] bg-white px-4 text-[12px] text-[#333] hover:border-[#278fee] hover:text-[#278fee]">编辑</button><button type="button" onClick={() => toggleDisplay(row.id)} className={`h-[33px] rounded-[2px] px-4 text-[12px] text-white ${row.status === '显示' ? 'bg-[#ff4b55] hover:bg-[#ed3b45]' : 'bg-[#278fee] hover:bg-[#167fdc]'}`}>{row.status === '显示' ? '隐藏' : '显示'}</button><button type="button" className="h-[33px] rounded-[2px] bg-[#ff4b55] px-4 text-[12px] text-white hover:bg-[#ed3b45]">关闭</button></div></td></tr>)}</tbody></table>{filteredDetails.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无匹配的套餐</div> : null}</div>
+            <div className="mt-[23px] overflow-x-auto"><table className="w-full min-w-[1420px] table-fixed border-collapse text-center text-[13px]"><colgroup><col className="w-[5%]" /><col className="w-[13%]" /><col className="w-[8%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[7%]" /><col className="w-[8%]" /><col className="w-[5%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[5%]" /><col className="w-[11%]" /></colgroup><thead className="h-[76px] bg-[#fafafa] text-[#222]"><tr>{['ID', '名称', '显示名称', '时长\n(天)', '原价', '套餐折\n扣率', '现价', '签约价\n格', '套餐\n类型', '所属会员', '排\n序', '试用\n天数', '显示分\n群', '显示\n时间', '状\n态', '操作'].map((label) => <th key={label} className="whitespace-pre-line px-2 font-normal leading-5">{label}</th>)}</tr></thead><tbody>{filteredDetails.map((row) => <tr key={row.id} className="h-[97px] border-b border-[#ededed] text-[#3b3b3b] hover:bg-[#fcfdff]"><td className="px-2">{row.id}</td><td className="px-2 leading-5">{row.name}</td><td className="px-2 leading-5">{row.displayName}</td><td className="px-2">{row.duration}</td><td className="px-2">{row.originalPrice}</td><td className="px-2">{row.discount}</td><td className="px-2">{row.currentPrice}</td><td className="px-2">{row.contractPrice}</td><td className="px-2 leading-5">{row.packageType}</td><td className="px-2 leading-5">{row.member}</td><td className="px-2">{row.sort}</td><td className="px-2">{row.trialDays}</td><td className="px-2">{row.segment}</td><td className="px-2">{row.displayTime}</td><td className="px-2 leading-5">{row.status}</td><td className="px-2"><div className="flex flex-wrap items-center justify-center gap-2"><button type="button" onClick={() => setEditingDetail(row)} className="h-[33px] rounded-[2px] border border-[#d8dce1] bg-white px-4 text-[12px] text-[#333] hover:border-[#278fee] hover:text-[#278fee]">编辑</button><button type="button" onClick={() => toggleDisplay(row.id)} className={`h-[33px] rounded-[2px] px-4 text-[12px] text-white ${row.status === '显示' ? 'bg-[#ff4b55] hover:bg-[#ed3b45]' : 'bg-[#278fee] hover:bg-[#167fdc]'}`}>{row.status === '显示' ? '隐藏' : '显示'}</button><button type="button" className="h-[33px] rounded-[2px] bg-[#ff4b55] px-4 text-[12px] text-white hover:bg-[#ed3b45]">关闭</button></div></td></tr>)}</tbody></table>{filteredDetails.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无匹配的套餐</div> : null}</div>
           </section>
         </div>
       </main>
+      {editingDetail ? <DetailEditModal row={editingDetail} onClose={() => setEditingDetail(null)} onSave={saveDetail} /> : null}
     </div>
   );
 }
