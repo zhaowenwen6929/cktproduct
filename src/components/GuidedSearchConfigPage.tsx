@@ -247,7 +247,7 @@ function formatUpdatedAt() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 }
 
-export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillConfig, onOpenRequirement }: { onBackToDirectory: () => void; onNavigateToSkillConfig: () => void; onOpenRequirement?: () => void }) {
+export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToMembershipPageConfig, onOpenRequirement }: { onBackToDirectory: () => void; onNavigateToSkillConfig: () => void; onNavigateToMembershipPageConfig?: () => void; onOpenRequirement?: () => void }) {
   const [activeTab, setActiveTab] = useState<TabKey>('nodes');
   const [nodes, setNodes] = useState(nodeRows);
   const [edges, setEdges] = useState(edgeRows);
@@ -352,7 +352,7 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="搜索引导管理" onNavigate={(item) => item === 'AI电商配置' && onNavigateToSkillConfig()} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="搜索引导管理" onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#9aa3b1]"><span>内容运营管理</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4f5b6f]">搜索引导管理</span></div><section className="rounded-[3px] bg-white p-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-[20px] font-semibold text-[#283244]">搜索引导管理</h1><p className="mt-1.5 text-[12px] text-[#8e98a8]">维护引导词节点、节点关系，并按业务搜索词查询实际映射配置</p></div><button type="button" onClick={onOpenRequirement} className="inline-flex h-9 shrink-0 items-center rounded-[5px] border border-[#ff8b83] bg-[#fff0ee] px-4 text-[12px] font-semibold text-[#e84b43] shadow-[0_3px_10px_rgba(232,75,67,.12)] transition hover:border-[#f05b53] hover:bg-[#ffe2df] hover:text-[#d9362e]">需求说明</button></div><div className="mt-5 flex items-center gap-1 border-b border-[#e9edf3]"><TabButton active={activeTab === 'nodes'} onClick={() => setActiveTab('nodes')} icon={Table2}>引导词节点</TabButton><TabButton active={activeTab === 'edges'} onClick={() => setActiveTab('edges')} icon={Network}>引导词关系</TabButton><TabButton active={activeTab === 'mapping'} onClick={() => setActiveTab('mapping')} icon={Search}>查询映射</TabButton></div><div className="pt-5">{activeTab === 'nodes' ? renderNodeTab() : activeTab === 'edges' ? renderEdgeTab() : renderMappingTab()}</div></section></div>
