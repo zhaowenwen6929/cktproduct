@@ -106,8 +106,8 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '引导词节点 Tab',
         description: '管理 guided_search_node 表，维护引导词的基础信息和层级关系。',
         items: [
-          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持关键词、归一化键、层级、类型、状态、地区、语言筛选，右侧只保留“导入数据”和“导出当前筛选结果”。' },
-          { label: '表格内容', content: '展示 node_id、keyword、normalized_key、level、parent_id、guide_type、external_score、status、source、updated_at 和操作列。默认示例包含手机海报、简历、招聘、极简风、互联网、餐饮。' },
+          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持关键词、归一化键、层级、类型、状态、地区、语言筛选，筛选项后提供“筛选”按钮，右侧只保留“导入数据”和“导出当前筛选结果”，不在操作区展示数据总数。' },
+          { label: '表格内容', content: '展示节点编号、关键词、归一化键、层级、父节点编号、引导类型、外部评分、状态、数据来源、更新时间和操作列。默认示例包含手机海报、简历、招聘、极简风、互联网、餐饮。' },
           { label: '导入预览', content: '上传 CSV/Excel 后先预览，展示行号、关键词、归一化键、层级、父节点和校验结果；错误行标红，可下载错误行，仅当存在通过行时允许确认导入。' },
         ],
       },
@@ -115,8 +115,8 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '引导词关系 Tab',
         description: '管理 guided_search_edge 表，支持多父挂载和关系数据校验。',
         items: [
-          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持父/子节点 ID 或关键词、关系类型、状态、权重区间筛选，右侧只保留“导入数据”和“导出当前筛选结果”。' },
-          { label: '校验规则', content: '预览时校验两端节点是否存在、是否自环、是否重复、parent_child 是否跳级（警告）以及是否成环（错误）。' },
+          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持父/子节点编号或关键词、关系类型、状态、权重范围筛选，筛选项后提供“筛选”按钮，右侧只保留“导入数据”和“导出当前筛选结果”，不在操作区展示数据总数。' },
+          { label: '校验规则', content: '预览时校验两端节点是否存在、是否自环、是否重复、父子关系是否跳级（警告）以及是否成环（错误）。' },
           { label: '示例关系', content: '默认展示手机海报(1001)到招聘(1010)、极简风(1020)，以及简历(1003)到招聘(1010)，体现招聘节点可被多个父节点挂载。' },
         ],
       },
@@ -124,8 +124,8 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '查询映射 Tab',
         description: '只读查看真实搜索词对应的引导胶囊和排序结果。',
         items: [
-          { label: '查询区', content: '输入业务搜索词，选择地区和语言后查询；可查看归一化后的 query_key，并支持按 guide_type、recall_source 二次筛选。' },
-          { label: '查询结果', content: '展示原始输入、query_key、地区、语言、命中条数和胶囊预览；结果表按 rank_position 升序展示 guide_node_id、keyword、分数、召回来源、用户分群、CTR 和过期时间。' },
+          { label: '查询区', content: '输入业务搜索词，选择地区和语言后查询；可查看归一化查询键，并支持按引导类型、召回来源二次筛选。' },
+          { label: '查询结果', content: '展示原始输入、归一化查询键、地区、语言、命中条数和胶囊预览；结果表按排序位置升序展示引导节点编号、关键词、分数、召回来源、用户分群、近7日点击率和过期时间。' },
           { label: '空态', content: '未输入时提示输入业务搜索词；无结果时展示“该查询词暂无映射配置”，并提示检查节点/关系或等待离线任务。' },
         ],
       },
@@ -142,7 +142,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
     acceptance: [
       '内容运营管理展开后，搜索引导管理与实体词典同级，能够从菜单正常进入。',
       '节点和关系导入均先预览校验，错误行清晰标识，不允许绕过错误直接入库。',
-      '查询映射只读，能够直观看到胶囊顺序、归一化 query_key 和结果排序。',
+      '查询映射只读，能够直观看到胶囊顺序、归一化查询键和结果排序，业务可见字段使用中文名称。',
       '无数据、无结果、加载中和导入失败等状态都有明确反馈，不影响其他 Tab 的筛选条件。',
     ],
   },
