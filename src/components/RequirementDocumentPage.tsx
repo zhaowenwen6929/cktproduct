@@ -106,7 +106,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '引导词节点 Tab',
         description: '管理 guided_search_node 表，维护引导词的基础信息和层级关系。',
         items: [
-          { label: '操作区', content: '提供导入数据、下载导入模板、导出当前筛选结果、刷新；支持关键词、归一化键、层级、类型、状态、地区、语言筛选。' },
+          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持关键词、归一化键、层级、类型、状态、地区、语言筛选，右侧只保留“导入数据”和“导出当前筛选结果”。' },
           { label: '表格内容', content: '展示 node_id、keyword、normalized_key、level、parent_id、guide_type、external_score、status、source、updated_at 和操作列。默认示例包含手机海报、简历、招聘、极简风、互联网、餐饮。' },
           { label: '导入预览', content: '上传 CSV/Excel 后先预览，展示行号、关键词、归一化键、层级、父节点和校验结果；错误行标红，可下载错误行，仅当存在通过行时允许确认导入。' },
         ],
@@ -115,7 +115,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '引导词关系 Tab',
         description: '管理 guided_search_edge 表，支持多父挂载和关系数据校验。',
         items: [
-          { label: '筛选与表格', content: '支持父/子节点 ID 或关键词、关系类型、状态、权重区间筛选；表格展示 edge_id、父节点、子节点、edge_type、weight、cooccur_cnt、source、status、updated_at。' },
+          { label: '筛选与操作区', content: '筛选项与操作按钮保持同一行，左侧支持父/子节点 ID 或关键词、关系类型、状态、权重区间筛选，右侧只保留“导入数据”和“导出当前筛选结果”。' },
           { label: '校验规则', content: '预览时校验两端节点是否存在、是否自环、是否重复、parent_child 是否跳级（警告）以及是否成环（错误）。' },
           { label: '示例关系', content: '默认展示手机海报(1001)到招聘(1010)、极简风(1020)，以及简历(1003)到招聘(1010)，体现招聘节点可被多个父节点挂载。' },
         ],
