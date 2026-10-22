@@ -256,6 +256,7 @@ type MoniSkillConfigResponse = {
     msg?: string;
     data?: {
       skill_code?: string;
+      scene?: string;
       config?: unknown;
       update_time?: string;
     };
@@ -445,7 +446,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
     setQueriedFunctionCode(nextFunctionCode);
     setQueriedScene(nextScene);
     setHasQueried(true);
-    if (nextFunctionCode && nextScene) {
+    if (nextFunctionCode) {
       rememberQuery({ functionCode: nextFunctionCode, scene: nextScene });
     }
     setHistoryOpen(false);
@@ -454,14 +455,16 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
     setQueryError('');
     setLastUpdated('');
 
-    if (!nextFunctionCode || !nextScene) {
+    if (!nextFunctionCode) {
       setQueryStatus('empty');
       return;
     }
 
     setQueryStatus('loading');
     try {
-      const response = await fetch(`${MONI_AGENT_SKILL_CONFIG_ENDPOINT}?skill_code=${encodeURIComponent(nextFunctionCode)}&scene=${encodeURIComponent(nextScene)}`, {
+      const query = new URLSearchParams({ skill_code: nextFunctionCode });
+      if (nextScene) query.set('scene', nextScene);
+      const response = await fetch(`${MONI_AGENT_SKILL_CONFIG_ENDPOINT}?${query.toString()}`, {
         headers: { Accept: 'application/json' },
       });
       if (!response.ok) {
@@ -478,6 +481,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
       }
 
       setConfig(remoteConfig);
+      setQueriedScene(typeof data?.scene === 'string' ? data.scene : nextScene);
       setLastUpdated(data?.update_time || '');
       setQueryStatus('success');
     } catch (error) {
@@ -565,8 +569,8 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
             <div className="mb-4 flex items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">AI电商配置</h1><p className="mt-1 text-[12px] text-[#a1a9b5]">按功能标识（function_code）和场景（scene）查询并管理 AI 电商配置</p></div>{onOpenRequirement ? <button type="button" onClick={onOpenRequirement} className="inline-flex h-9 shrink-0 items-center rounded-[5px] border border-[#ff8b83] bg-[#fff0ee] px-4 text-[12px] font-semibold text-[#e84b43] shadow-[0_3px_10px_rgba(232,75,67,.12)] transition hover:border-[#f05b53] hover:bg-[#ffe2df] hover:text-[#d9362e]">需求说明</button> : null}</div>
             <div className="relative flex flex-wrap items-center gap-3">
               <label className="flex h-10 w-[360px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">功能标识（function_code）</span><input value={functionCode} onFocus={() => setHistoryOpen(true)} onChange={(event) => setFunctionCode(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === 'Enter') void runQuery(); }} placeholder="请输入功能标识" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
-              <label className="flex h-10 w-[280px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">场景（scene）</span><input value={scene} onFocus={() => setHistoryOpen(true)} onChange={(event) => setScene(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === 'Enter') void runQuery(); }} placeholder="请输入场景" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
-              {historyOpen && recentQueries.length > 0 ? <div className="absolute left-0 top-[46px] z-30 w-[640px] overflow-hidden rounded-[8px] border border-[#e2e8f0] bg-white shadow-[0_12px_28px_rgba(31,46,73,.16)]"><div className="border-b border-[#edf0f4] px-3 py-2 text-[11px] text-[#8b96a7]">最近查询</div>{recentQueries.map((query) => <button key={`${query.functionCode}-${query.scene}`} type="button" onClick={() => applyRecentQuery(query)} className="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left transition hover:bg-[#f5f9ff]"><span className="min-w-0 truncate text-[12px] text-[#354052]">{query.functionCode}</span><span className="shrink-0 rounded-[4px] bg-[#f1f4fa] px-2 py-1 text-[11px] text-[#68768b]">{query.scene}</span></button>)}</div> : null}
+              <label className="flex h-10 w-[280px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">场景（scene）</span><input value={scene} onFocus={() => setHistoryOpen(true)} onChange={(event) => setScene(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === 'Enter') void runQuery(); }} placeholder="可留空（默认场景）" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
+              {historyOpen && recentQueries.length > 0 ? <div className="absolute left-0 top-[46px] z-30 w-[640px] overflow-hidden rounded-[8px] border border-[#e2e8f0] bg-white shadow-[0_12px_28px_rgba(31,46,73,.16)]"><div className="border-b border-[#edf0f4] px-3 py-2 text-[11px] text-[#8b96a7]">最近查询</div>{recentQueries.map((query) => <button key={`${query.functionCode}-${query.scene}`} type="button" onClick={() => applyRecentQuery(query)} className="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left transition hover:bg-[#f5f9ff]"><span className="min-w-0 truncate text-[12px] text-[#354052]">{query.functionCode}</span><span className="shrink-0 rounded-[4px] bg-[#f1f4fa] px-2 py-1 text-[11px] text-[#68768b]">{query.scene || '默认场景'}</span></button>)}</div> : null}
               <button type="button" onClick={() => void runQuery()} disabled={queryStatus === 'loading'} className="h-10 rounded-[3px] bg-[#278fee] px-6 text-[12px] text-white shadow-[0_4px_10px_rgba(39,143,238,.16)] hover:bg-[#167fdc] disabled:cursor-wait disabled:bg-[#8dbff0]"><Search className="mr-1.5 inline-block h-3.5 w-3.5" />{queryStatus === 'loading' ? '查询中' : '查询'}</button>
               <button type="button" onClick={openCacheConfirm} disabled={!canClearCache} className="h-10 rounded-[3px] border border-[#f0b44d] bg-[#fffaf0] px-5 text-[12px] text-[#c4821e] hover:bg-[#fff3d8] disabled:cursor-not-allowed disabled:border-[#e5e8ed] disabled:bg-[#f7f8fa] disabled:text-[#b9c0ca]">清理缓存</button>
               <button type="button" onClick={resetQuery} className="h-10 rounded-[3px] border border-[#dfe3ea] bg-white px-5 text-[12px] text-[#697487] hover:border-[#b9c2d0]">重置</button>
@@ -575,7 +579,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
           </section>
 
           {!isFound ? (
-            <section className="flex min-h-[440px] items-center justify-center rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="max-w-[500px] px-6 text-center">{queryStatus === 'loading' ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#eef6ff] text-[#4d9ae8]"><Search className="h-6 w-6 animate-pulse" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">正在从 moni 查询配置</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">正在查询 function_code = {queriedFunctionCode}，请稍候。</p></> : queryStatus === 'idle' || !hasQueried ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f3f7] text-[#9da7b5]"><Search className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">请输入查询条件</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">输入功能标识（function_code）和场景（scene）后点击查询，查看 moni 中的预置配置。</p></> : queryStatus === 'empty' || !queriedFunctionCode || !queriedScene ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff7e8] text-[#d99a35]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">查询条件未填写完整</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">请同时填写功能标识（function_code）和场景（scene）后再查询。</p></> : queryStatus === 'error' ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f0] text-[#e36b63]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">moni 配置查询失败</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">{queryError || '请检查网络或稍后重试。'}</p></> : <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f0] text-[#e36b63]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">未找到对应的 AI 电商配置</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">当前查询：function_code = {queriedFunctionCode}，scene = {queriedScene}</p><p className="mt-1 text-[12px] leading-5 text-[#a1a9b5]">{queryError || 'moni 中没有返回对应的预置 JSON，请检查功能标识是否正确。'}</p></>}</div></section>
+            <section className="flex min-h-[440px] items-center justify-center rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="max-w-[500px] px-6 text-center">{queryStatus === 'loading' ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#eef6ff] text-[#4d9ae8]"><Search className="h-6 w-6 animate-pulse" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">正在从 moni 查询配置</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">正在查询 function_code = {queriedFunctionCode}，请稍候。</p></> : queryStatus === 'idle' || !hasQueried ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f3f7] text-[#9da7b5]"><Search className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">请输入查询条件</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">输入功能标识（function_code），场景（scene）可选，然后点击查询。</p></> : queryStatus === 'empty' || !queriedFunctionCode ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff7e8] text-[#d99a35]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">请填写功能标识</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">功能标识（function_code）不能为空，场景（scene）可以留空。</p></> : queryStatus === 'error' ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f0] text-[#e36b63]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">moni 配置查询失败</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">{queryError || '请检查网络或稍后重试。'}</p></> : <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f0] text-[#e36b63]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">未找到对应的 AI 电商配置</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">当前查询：function_code = {queriedFunctionCode}，scene = {queriedScene || '（空）'}</p><p className="mt-1 text-[12px] leading-5 text-[#a1a9b5]">{queryError || 'moni 中没有返回对应的预置 JSON，请检查功能标识是否正确。'}</p></>}</div></section>
           ) : (
             <section className="rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
               <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4">
@@ -583,7 +587,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
                   <h2 className="text-[16px] font-semibold text-[#263143]">{config.name || 'AI电商配置'}</h2>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
                     <span className="inline-flex items-center gap-1.5 rounded-[5px] bg-[#eef5ff] px-2.5 py-1 text-[#5f6f88]"><span className="font-medium text-[#7890b4]">function_code</span><span className="font-semibold text-[#315b91]">{queriedFunctionCode}</span></span>
-                    <span className="inline-flex items-center gap-1.5 rounded-[5px] bg-[#f2f0ff] px-2.5 py-1 text-[#665f9b]"><span className="font-medium text-[#8a82c4]">scene</span><span className="font-semibold text-[#51479a]">{queriedScene}</span></span>
+                    <span className="inline-flex items-center gap-1.5 rounded-[5px] bg-[#f2f0ff] px-2.5 py-1 text-[#665f9b]"><span className="font-medium text-[#8a82c4]">scene</span><span className="font-semibold text-[#51479a]">{queriedScene || '（空）'}</span></span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
