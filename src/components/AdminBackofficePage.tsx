@@ -368,7 +368,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
           <div className="mb-4 flex items-center gap-2 text-[12px] text-[#9aa3b1]"><span>灵感社区</span><ChevronRight className="h-3.5 w-3.5" /><span>玩法管理</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4f5b6f]">AI电商配置</span></div>
 
           <section className="mb-4 rounded-[3px] bg-white p-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]">
-            <div className="mb-4 flex items-center justify-between"><div><h1 className="text-[18px] font-semibold text-[#283244]">AI电商配置</h1><p className="mt-1 text-[12px] text-[#a1a9b5]">按功能标识（function_code）和场景（scene）查询并管理 AI 电商配置</p></div><span className="rounded-full bg-[#edf8f2] px-3 py-1 text-[11px] text-[#35a16b]">配置中心</span></div>
+            <div className="mb-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">AI电商配置</h1><p className="mt-1 text-[12px] text-[#a1a9b5]">按功能标识（function_code）和场景（scene）查询并管理 AI 电商配置</p></div></div>
             <div className="flex flex-wrap items-center gap-3">
               <label className="flex h-10 w-[360px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">功能标识（function_code）</span><input value={functionCode} onChange={(event) => setFunctionCode(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入功能标识" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
               <label className="flex h-10 w-[280px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">场景（scene）</span><input value={scene} onChange={(event) => setScene(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入场景" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
@@ -385,8 +385,8 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
             <section className="rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
               <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4">
                 <div>
-                  <div className="flex items-center gap-2"><h2 className="text-[15px] font-semibold text-[#263143]">{config.name}</h2><span className="rounded-full bg-[#e9f8ef] px-2 py-0.5 text-[10px] text-[#37a36d]">已启用</span></div>
-                  <p className="mt-1 text-[11px] text-[#9aa3b1]">{config.skillCode} · 共 {config.fields.length} 个配置字段</p>
+                  <div className="flex items-center gap-2"><h2 className="text-[15px] font-semibold text-[#263143]">{config.name}</h2></div>
+                  <p className="mt-1 text-[11px] text-[#9aa3b1]">function_code：{queriedFunctionCode} · scene：{queriedScene}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] text-[#a3aab6]">{saved ? '刚刚已保存' : isEditing ? '编辑中：修改后保存' : '最后更新：2026-10-21 14:28'}</span>
