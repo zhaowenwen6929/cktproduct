@@ -16,7 +16,7 @@ import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-packages' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
 type ExportRequest =
   | {
@@ -65,6 +65,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/admin-backoffice/requirements/ai-ecommerce') return '/admin-backoffice/requirements/ai-ecommerce';
   if (pathname === '/admin-backoffice/requirements/search-guide') return '/admin-backoffice/requirements/search-guide';
   if (pathname === '/admin-backoffice/guided-search') return '/admin-backoffice/guided-search';
+  if (pathname === '/admin-backoffice/membership-packages') return '/admin-backoffice/membership-packages';
   if (pathname === '/admin-backoffice') return '/admin-backoffice';
   return '/';
 };
@@ -1351,6 +1352,10 @@ export default function App() {
       '/admin-backoffice/guided-search': {
         title: '创客贴管理后台｜搜索引导管理',
         description: '内容运营管理下的引导词节点、关系和查询映射配置。',
+      },
+      '/admin-backoffice/membership-packages': {
+        title: '创客贴管理后台｜会员套餐管理',
+        description: '会员中心下的会员套餐组管理页面。',
       },
       '/admin-backoffice/requirements/ai-ecommerce': {
         title: 'AI电商配置｜需求说明',
