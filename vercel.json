@@ -3,6 +3,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/moni-agent-skill-config",
+      "destination": "https://moni-gw.chuangkit.com/aigc/api/agent_skill/config.do"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

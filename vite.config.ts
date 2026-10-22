@@ -197,6 +197,13 @@ export default defineConfig(({mode}) => {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      proxy: {
+        '/api/moni-agent-skill-config': {
+          target: 'https://moni-gw.chuangkit.com',
+          changeOrigin: true,
+          rewrite: (requestPath) => requestPath.replace(/^\/api\/moni-agent-skill-config/, '/aigc/api/agent_skill/config.do'),
+        },
+      },
     },
   };
 });
