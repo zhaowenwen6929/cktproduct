@@ -11,6 +11,7 @@ import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
 import { AdminBackofficePage } from './components/AdminBackofficePage';
 import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
+import { MembershipPackagePage } from './components/MembershipPackagePage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
@@ -1586,10 +1587,19 @@ export default function App() {
     />;
   }
 
+  if (currentRoute === '/admin-backoffice/membership-packages') {
+    return <MembershipPackagePage
+      onBackToDirectory={() => navigateTo('/')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+    />;
+  }
+
   if (currentRoute === '/admin-backoffice') {
     return <AdminBackofficePage
       onBackToDirectory={() => navigateTo('/')}
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
       onOpenRequirement={() => navigateTo('/admin-backoffice/requirements/ai-ecommerce')}
     />;
   }

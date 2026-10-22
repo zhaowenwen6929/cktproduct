@@ -403,7 +403,7 @@ function JsonCodeView({ config }: { config: SkillConfig }) {
   );
 }
 
-export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch, onOpenRequirement }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void; onOpenRequirement?: () => void }) {
+export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onOpenRequirement }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPackages?: () => void; onOpenRequirement?: () => void }) {
   const [config, setConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
   const [functionCode, setFunctionCode] = useState('');
   const [scene, setScene] = useState('');
@@ -577,7 +577,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="AI电商配置" onNavigate={(item) => item === '搜索引导管理' && onNavigateToGuidedSearch?.()} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="AI电商配置" onNavigate={(item) => { if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-6 py-5">
