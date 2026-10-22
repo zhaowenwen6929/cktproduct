@@ -192,9 +192,6 @@ export function MembershipPageConfigPage({
 
   const renderPlanEditor = () => (
     <div className="space-y-4">
-      <div className="rounded-[8px] border border-[#e8edf4] bg-[#f8fafc] px-4 py-3 text-[12px] leading-5 text-[#778398]">
-        套餐配置支持两级结构：一级配置套餐分组和关联会员等级，二级配置具体套餐名称、引导文案与时长。
-      </div>
       {currentConfig.plans.map((group, groupIndex) => (
         <section key={group.id} className="rounded-[8px] border border-[#e3e8f0] bg-white">
           <div className="flex items-center justify-between border-b border-[#edf0f4] bg-[#fafbfd] px-4 py-3">
