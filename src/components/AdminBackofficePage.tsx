@@ -79,6 +79,13 @@ type SkillConfig = {
   };
 };
 
+type RecentAiEcommerceQuery = {
+  functionCode: string;
+  scene: string;
+};
+
+const RECENT_AI_ECOMMERCE_QUERIES_KEY = 'admin-ai-ecommerce-recent-queries';
+
 const DEFAULT_SKILL_CONFIG: SkillConfig = {
   skillCode: 'ags-live-visual-material',
   name: '直播视觉物料',
@@ -355,10 +362,27 @@ function JsonCodeView({ config }: { config: SkillConfig }) {
 
 export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch, onOpenRequirement }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void; onOpenRequirement?: () => void }) {
   const [config, setConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
-  const [functionCode, setFunctionCode] = useState(DEFAULT_SKILL_CONFIG.skillCode);
-  const [scene, setScene] = useState('live-stream');
-  const [queriedFunctionCode, setQueriedFunctionCode] = useState(DEFAULT_SKILL_CONFIG.skillCode);
-  const [queriedScene, setQueriedScene] = useState('live-stream');
+  const [functionCode, setFunctionCode] = useState('');
+  const [scene, setScene] = useState('');
+  const [queriedFunctionCode, setQueriedFunctionCode] = useState('');
+  const [queriedScene, setQueriedScene] = useState('');
+  const [hasQueried, setHasQueried] = useState(false);
+  const [recentQueries, setRecentQueries] = useState<RecentAiEcommerceQuery[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = window.localStorage.getItem(RECENT_AI_ECOMMERCE_QUERIES_KEY);
+      const parsed: unknown = stored ? JSON.parse(stored) : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((item): item is RecentAiEcommerceQuery => (
+        Boolean(item) && typeof item === 'object' &&
+        typeof (item as RecentAiEcommerceQuery).functionCode === 'string' &&
+        typeof (item as RecentAiEcommerceQuery).scene === 'string'
+      )).slice(0, 5);
+    } catch {
+      return [];
+    }
+  });
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cacheConfirmOpen, setCacheConfirmOpen] = useState(false);
@@ -368,21 +392,56 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
   const [jsonError, setJsonError] = useState('');
   const [saved, setSaved] = useState(false);
 
-  const isFound = queriedFunctionCode.trim() === config.skillCode && queriedScene.trim() === 'live-stream';
+  const isFound = hasQueried && queriedFunctionCode.trim() === config.skillCode && queriedScene.trim() === 'live-stream';
   const canClearCache = functionCode.trim().length > 0;
 
+  const rememberQuery = (nextQuery: RecentAiEcommerceQuery) => {
+    setRecentQueries((previous) => {
+      const next = [
+        nextQuery,
+        ...previous.filter((item) => item.functionCode !== nextQuery.functionCode || item.scene !== nextQuery.scene),
+      ].slice(0, 5);
+      try {
+        window.localStorage.setItem(RECENT_AI_ECOMMERCE_QUERIES_KEY, JSON.stringify(next));
+      } catch {
+        // Keep the recent query list working for browsers that block storage.
+      }
+      return next;
+    });
+  };
+
   const runQuery = () => {
-    setQueriedFunctionCode(functionCode.trim());
-    setQueriedScene(scene.trim());
+    const nextFunctionCode = functionCode.trim();
+    const nextScene = scene.trim();
+    setQueriedFunctionCode(nextFunctionCode);
+    setQueriedScene(nextScene);
+    setHasQueried(true);
+    if (nextFunctionCode && nextScene) {
+      rememberQuery({ functionCode: nextFunctionCode, scene: nextScene });
+    }
+    setHistoryOpen(false);
     setCacheCleared(false);
     setSaved(false);
   };
 
   const resetQuery = () => {
-    setFunctionCode(config.skillCode);
-    setScene('live-stream');
-    setQueriedFunctionCode(config.skillCode);
-    setQueriedScene('live-stream');
+    setFunctionCode('');
+    setScene('');
+    setQueriedFunctionCode('');
+    setQueriedScene('');
+    setHasQueried(false);
+    setHistoryOpen(false);
+    setCacheCleared(false);
+    setSaved(false);
+  };
+
+  const applyRecentQuery = (query: RecentAiEcommerceQuery) => {
+    setFunctionCode(query.functionCode);
+    setScene(query.scene);
+    setQueriedFunctionCode(query.functionCode);
+    setQueriedScene(query.scene);
+    setHasQueried(true);
+    setHistoryOpen(false);
     setCacheCleared(false);
     setSaved(false);
   };
@@ -444,9 +503,10 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
 
           <section className="mb-4 rounded-[3px] bg-white p-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]">
             <div className="mb-4 flex items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">AI电商配置</h1><p className="mt-1 text-[12px] text-[#a1a9b5]">按功能标识（function_code）和场景（scene）查询并管理 AI 电商配置</p></div>{onOpenRequirement ? <button type="button" onClick={onOpenRequirement} className="inline-flex h-9 shrink-0 items-center rounded-[5px] border border-[#ff8b83] bg-[#fff0ee] px-4 text-[12px] font-semibold text-[#e84b43] shadow-[0_3px_10px_rgba(232,75,67,.12)] transition hover:border-[#f05b53] hover:bg-[#ffe2df] hover:text-[#d9362e]">需求说明</button> : null}</div>
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="flex h-10 w-[360px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">功能标识（function_code）</span><input value={functionCode} onChange={(event) => setFunctionCode(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入功能标识" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
-              <label className="flex h-10 w-[280px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">场景（scene）</span><input value={scene} onChange={(event) => setScene(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入场景" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
+            <div className="relative flex flex-wrap items-center gap-3">
+              <label className="flex h-10 w-[360px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">功能标识（function_code）</span><input value={functionCode} onFocus={() => setHistoryOpen(true)} onChange={(event) => setFunctionCode(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入功能标识" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
+              <label className="flex h-10 w-[280px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">场景（scene）</span><input value={scene} onFocus={() => setHistoryOpen(true)} onChange={(event) => setScene(event.currentTarget.value)} onKeyDown={(event) => event.key === 'Enter' && runQuery()} placeholder="请输入场景" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
+              {historyOpen && recentQueries.length > 0 ? <div className="absolute left-0 top-[46px] z-30 w-[640px] overflow-hidden rounded-[8px] border border-[#e2e8f0] bg-white shadow-[0_12px_28px_rgba(31,46,73,.16)]"><div className="border-b border-[#edf0f4] px-3 py-2 text-[11px] text-[#8b96a7]">最近查询</div>{recentQueries.map((query) => <button key={`${query.functionCode}-${query.scene}`} type="button" onClick={() => applyRecentQuery(query)} className="flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left transition hover:bg-[#f5f9ff]"><span className="min-w-0 truncate text-[12px] text-[#354052]">{query.functionCode}</span><span className="shrink-0 rounded-[4px] bg-[#f1f4fa] px-2 py-1 text-[11px] text-[#68768b]">{query.scene}</span></button>)}</div> : null}
               <button type="button" onClick={runQuery} className="h-10 rounded-[3px] bg-[#278fee] px-6 text-[12px] text-white shadow-[0_4px_10px_rgba(39,143,238,.16)] hover:bg-[#167fdc]"><Search className="mr-1.5 inline-block h-3.5 w-3.5" />查询</button>
               <button type="button" onClick={openCacheConfirm} disabled={!canClearCache} className="h-10 rounded-[3px] border border-[#f0b44d] bg-[#fffaf0] px-5 text-[12px] text-[#c4821e] hover:bg-[#fff3d8] disabled:cursor-not-allowed disabled:border-[#e5e8ed] disabled:bg-[#f7f8fa] disabled:text-[#b9c0ca]">清理缓存</button>
               <button type="button" onClick={resetQuery} className="h-10 rounded-[3px] border border-[#dfe3ea] bg-white px-5 text-[12px] text-[#697487] hover:border-[#b9c2d0]">重置</button>
@@ -455,7 +515,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
           </section>
 
           {!isFound ? (
-            <section className="flex min-h-[440px] items-center justify-center rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="text-center"><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f3f7] text-[#9da7b5]"><Search className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">未找到对应的 AI 电商配置</h2><p className="mt-2 text-[12px] text-[#a1a9b5]">请检查功能标识（function_code）和场景（scene）是否正确，或点击重置查看示例配置</p></div></section>
+            <section className="flex min-h-[440px] items-center justify-center rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="max-w-[440px] px-6 text-center">{!hasQueried ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0f3f7] text-[#9da7b5]"><Search className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">请输入查询条件</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">输入功能标识（function_code）和场景（scene）后点击查询，查看对应的 AI 电商配置。</p></> : !queriedFunctionCode || !queriedScene ? <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff7e8] text-[#d99a35]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">查询条件未填写完整</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">请同时填写功能标识（function_code）和场景（scene）后再查询。</p></> : <><div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f0] text-[#e36b63]"><AlertTriangle className="h-6 w-6" /></div><h2 className="text-[15px] font-medium text-[#4d596c]">未找到对应的 AI 电商配置</h2><p className="mt-2 text-[12px] leading-5 text-[#a1a9b5]">当前查询：function_code = {queriedFunctionCode}，scene = {queriedScene}</p><p className="mt-1 text-[12px] leading-5 text-[#a1a9b5]">请检查功能标识和场景是否正确，或从最近查询中选择已查询过的配置。</p></>}</div></section>
           ) : (
             <section className="rounded-[3px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
               <div className="flex items-center justify-between border-b border-[#edf0f4] px-5 py-4">
