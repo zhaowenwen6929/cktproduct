@@ -1,4 +1,5 @@
-import { ArrowLeft, CheckCircle2, ClipboardList, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Check, CheckCircle2, Clipboard, ClipboardList, FileText } from 'lucide-react';
 
 type RequirementKind = 'ai-ecommerce' | 'search-guide';
 
@@ -42,6 +43,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
           { label: '查询项', content: '功能标识（function_code）必填，场景（scene）可选。例如 ags-live-visual-material 可按具体场景查询；ags-aplus-detail 的实际配置 scene 为空，允许只填写功能标识查询。' },
           { label: '数据来源', content: '查询 moni 的 Agent Skill 配置接口，读取返回的 config、skill_code、scene 和 update_time；页面以服务端返回的预置 JSON 为准，不使用本地示例数据替代查询结果。' },
           { label: '初始与重置', content: '首次进入页面时查询项和结果区域均为空，不主动展示任何配置。重置清空功能标识、场景、查询结果和状态。' },
+          { label: '首次使用示例', content: '空状态下提供可操作的示例“ags-aplus-detail”，并说明 scene 可留空；点击“使用示例”后只回填功能标识和场景，用户确认输入无误后再点击查询。' },
           { label: '最近查询', content: '查询成功后记住最近 5 次功能标识与场景组合；再次聚焦查询输入框时展示历史记录，点击记录可直接回填并重新查询。场景为空的记录显示为默认场景。' },
           { label: '无结果与错误', content: '功能标识为空时提示补充查询条件；接口无数据时展示“未找到对应的 AI 电商配置”，并显示当前查询的 function_code 和 scene；接口请求失败时展示失败原因和重试引导。' },
         ],
@@ -78,6 +80,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
     acceptance: [
       '首次进入 AI电商配置时页面为空；输入有效 function_code 后能够查询并展示 moni 中对应的预置 JSON。',
       'scene 可为空；scene 有值或为空时都不会误展示其他配置，页面展示服务端返回的实际 function_code / scene。',
+      '空状态提供可点击的首次使用示例，点击后能正确回填 ags-aplus-detail 和空 scene，并由用户点击查询完成查询。',
       '查询成功后能保留最近 5 次查询，聚焦查询框可回填并再次查询；无结果、参数不完整和接口失败状态提示清晰。',
       'JSON 编辑支持任意合法配置结构、格式校验、取消、二次确认保存和复制，长 JSON 不撑破页面布局。',
       '未填写 function_code 时不能清理缓存，确认后能明确反馈对应功能标识。',
@@ -145,8 +148,36 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
   },
 };
 
+function buildAiPrompt(spec: RequirementSpec) {
+  const sections = spec.sections.map((section, index) => {
+    const items = section.items.map((item) => `- ${item.label}：${item.content}`).join('\n');
+    return `### ${index + 1}. ${section.title}\n${section.description}\n${items}`;
+  }).join('\n\n');
+
+  return `你是一名资深后台产品经理、交互设计师和前端开发者。请严格根据下面的需求说明，设计并实现“${spec.title}”功能，不要擅自扩展业务范围。\n\n## 需求概述\n${spec.summary}\n\n## 需求背景\n${spec.background}\n\n## 需求目标\n${spec.goal}\n\n## 具体需求\n${sections}\n\n## 验收标准\n${spec.acceptance.map((item) => `- ${item}`).join('\n')}\n\n## 输出要求\n请先梳理页面信息架构、组件划分、交互流程、接口依赖、权限差异、空态、加载态和错误态，再给出实现方案。保持现有项目的视觉风格和路由结构；涉及接口时说明请求参数、返回数据和异常处理，不要编造未确认的后端能力。`;
+}
+
 export function RequirementDocumentPage({ kind, onBack }: { kind: RequirementKind; onBack: () => void }) {
   const spec = requirementSpecs[kind];
+  const [copied, setCopied] = useState(false);
+
+  const copyAiPrompt = async () => {
+    const prompt = buildAiPrompt(spec);
+    try {
+      await navigator.clipboard.writeText(prompt);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = prompt;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
@@ -166,7 +197,7 @@ export function RequirementDocumentPage({ kind, onBack }: { kind: RequirementKin
                 <h1 className="mt-4 text-[30px] font-semibold tracking-[-.03em] text-[#243149]">{spec.title} · 需求说明</h1>
                 <p className="mt-3 text-[14px] leading-7 text-[#647187]">{spec.summary}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#eaf3ff] text-[#4f8fe5]"><ClipboardList className="h-6 w-6" /></div>
+              <div className="flex items-center gap-3"><button type="button" onClick={() => void copyAiPrompt()} className={`inline-flex h-10 items-center gap-2 rounded-[7px] border px-4 text-[12px] font-medium transition ${copied ? 'border-[#b9e5ce] bg-[#effaf4] text-[#2f9564]' : 'border-[#cfe0f8] bg-white text-[#3f78bf] hover:border-[#8eb8ed] hover:bg-[#f5f9ff]'}`}>{copied ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}{copied ? '已复制 AI 提示词' : '复制 AI 提示词'}</button><div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#eaf3ff] text-[#4f8fe5]"><ClipboardList className="h-6 w-6" /></div></div>
             </div>
           </div>
 
