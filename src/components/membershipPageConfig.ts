@@ -15,6 +15,26 @@ export type MembershipPlanDisplayConfig = {
   color: 'neutral' | 'blue' | 'orange';
   tag?: string;
   features: string[];
+  benefitSections?: MembershipBenefitSection[];
+};
+
+export type MembershipBenefitItem = {
+  label: string;
+  enabled?: boolean;
+  badge?: string;
+  detail?: string;
+};
+
+export type MembershipBenefitSection = {
+  title: string;
+  badge?: string;
+  actionLabel?: string;
+  items: MembershipBenefitItem[];
+  highlight?: {
+    title: string;
+    items: Array<{ label: string; badge?: string }>;
+    tone: 'blue' | 'orange';
+  };
 };
 
 export type MembershipTabConfig = {
@@ -69,6 +89,136 @@ export type MembershipPageContent = {
 
 export const MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY = 'admin-membership-page-config';
 
+const benefitItem = (label: string, enabled = true, badge?: string, detail?: string): MembershipBenefitItem => ({
+  label,
+  enabled,
+  badge,
+  detail,
+});
+
+const modelHighlight = (tone: 'blue' | 'orange'): NonNullable<MembershipBenefitSection['highlight']> => ({
+  title: '🎉 备战双11·专属福利',
+  tone,
+  items: [
+    { label: 'Seedance 2.5', badge: '最高限时 6 折' },
+    { label: 'Seedance 2.0 Fast', badge: '最高限时 6 折' },
+    { label: '万相 3.0', badge: '最高限时 6 折' },
+    { label: '灵动图像 2.5 Fast（2K·中质量）', badge: '最高限免5次 / 每日' },
+    { label: '全能图像 2.1（2K）', badge: '最高限免5次 / 每日' },
+  ],
+});
+
+const personalBasicBenefits: MembershipBenefitSection[] = [
+  {
+    title: '模板创作权益',
+    items: [
+      benefitItem('个人商用授权'),
+      benefitItem('模板作品高清无水印下载'),
+      benefitItem('模板作品 PSD 导出', false),
+      benefitItem('海量海报、PPT、视频、H5 等 VIP 模板', true, '持续更新'),
+      benefitItem('高级工具功能：尺寸延展、PSD 转模板等'),
+      benefitItem('随时随地在线编辑'),
+    ],
+  },
+  {
+    title: 'AI 创作权益',
+    items: [
+      benefitItem('50 豆/月'),
+      benefitItem('访问所有 AI 模型'),
+      benefitItem('加购豆享折扣', false),
+      benefitItem('AI 作品高清下载（可设置多倍数尺寸）', false),
+      benefitItem('模型限时优惠', false),
+    ],
+  },
+  {
+    title: '精选素材组合包',
+    items: [
+      benefitItem('无官方自营素材下载次数', false),
+      benefitItem('无第三方合作素材下载次数', false),
+    ],
+  },
+  {
+    title: '通用权益',
+    items: [benefitItem('50 GB 存储空间')],
+  },
+];
+
+const personalAdvancedBenefits: MembershipBenefitSection[] = [
+  {
+    title: '模板创作权益',
+    items: [
+      benefitItem('无个人商用授权', false),
+      benefitItem('无高清无水印下载权限', false),
+      benefitItem('模板作品 PSD 导出', false),
+      benefitItem('海量海报、PPT、视频、H5 等 VIP 模板', false, '持续更新'),
+      benefitItem('高级工具功能：尺寸延展、PSD 转模板等', false),
+      benefitItem('随时随地在线编辑'),
+    ],
+  },
+  {
+    title: 'AI 创作权益',
+    items: [
+      benefitItem('300~5000 豆/席位/月'),
+      benefitItem('访问所有 AI 模型'),
+      benefitItem('加购豆享折扣'),
+      benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
+      benefitItem('团队共享豆'),
+      benefitItem('模型限时优惠'),
+    ],
+  },
+  {
+    title: '精选素材组合包',
+    items: [
+      benefitItem('无官方自营素材下载次数', false),
+      benefitItem('无第三方合作素材下载次数', false),
+    ],
+  },
+  {
+    title: '通用权益',
+    items: [benefitItem('存储空间 500 GB'), benefitItem('团队内容共享与复用')],
+    highlight: modelHighlight('blue'),
+  },
+];
+
+const personalProfessionalBenefits: MembershipBenefitSection[] = [
+  {
+    title: '模板创作权益',
+    items: [
+      benefitItem('个人商用授权'),
+      benefitItem('模板作品高清无水印下载'),
+      benefitItem('模板作品 PSD 导出 10次/月', true, '限时加赠'),
+      benefitItem('海量海报、PPT、视频、H5 等 VIP 模板', true, '持续更新'),
+      benefitItem('高级工具功能：尺寸延展、PSD 转模板等'),
+      benefitItem('随时随地在线编辑'),
+    ],
+  },
+  {
+    title: 'AI 创作权益',
+    items: [
+      benefitItem('300~5000 豆/月'),
+      benefitItem('访问所有 AI 模型'),
+      benefitItem('加购豆享折扣'),
+      benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
+      benefitItem('团队共享豆'),
+      benefitItem('模型限时优惠'),
+    ],
+  },
+  {
+    title: '精选素材组合包',
+    badge: '限时赠送',
+    actionLabel: '单独购买  ›',
+    items: [
+      benefitItem('限时加送官方自营素材下载', true, undefined, '每月 100 次，共赠送 3 个月'),
+      benefitItem('限时加送第三方合作下载次数', true, undefined, '每月 20 次，共赠送 3 个月'),
+    ],
+  },
+  {
+    title: '通用权益',
+    items: [benefitItem('存储空间 500 GB'), benefitItem('团队资产共享与复用')],
+    highlight: modelHighlight('orange'),
+  },
+];
+
 const personalPlans: MembershipPlanDisplayConfig[] = [
   {
     planKey: 'basic',
@@ -76,6 +226,7 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
     subtitle: '适合初次探索 AI 创作',
     color: 'neutral',
     features: ['Seedance 2.0 VIP', '标准生成通道', '生成作品去除品牌水印'],
+    benefitSections: personalBasicBenefits,
   },
   {
     planKey: 'advanced',
@@ -83,6 +234,7 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
     subtitle: '适合高频创作与持续产出',
     color: 'neutral',
     features: ['Seedance 2.0 VIP', '标准生成通道', '生成作品去除品牌水印'],
+    benefitSections: personalAdvancedBenefits,
   },
   {
     planKey: 'professional',
@@ -91,11 +243,102 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
     color: 'blue',
     tag: '限时5折',
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印'],
+    benefitSections: personalProfessionalBenefits,
+  },
+];
+
+const enterpriseCommonBenefits: MembershipBenefitSection[] = [
+  {
+    title: '模板创作权益',
+    items: [
+      benefitItem('中小企业或大型企业商用授权'),
+      benefitItem('支持线上线下授权'),
+      benefitItem('支持海外/全球范围授权', true, '可选购'),
+      benefitItem('支持敏感行业定制', true, '可选购'),
+      benefitItem('支持更多扩展用途定制'),
+    ],
+  },
+  {
+    title: 'AI 创作权益',
+    items: [
+      benefitItem('300~5000 豆/席位/月'),
+      benefitItem('访问所有 AI 模型'),
+      benefitItem('加购豆享折扣'),
+      benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
+      benefitItem('团队共享豆'),
+      benefitItem('模型限时优惠'),
+    ],
+  },
+  {
+    title: '精选素材组合包',
+    items: [benefitItem('官方自营素材下载'), benefitItem('第三方合作素材下载')],
+  },
+  {
+    title: '通用权益',
+    items: [
+      benefitItem('存储空间 10 TB/团队'),
+      benefitItem('无限团队空间数量'),
+      benefitItem('无限企业资源库数量'),
+      benefitItem('内容审批管理，保障合规安全'),
+      benefitItem('人员离职无缝交接，内容资产完整保留'),
+      benefitItem('自定义企业品牌界面/导航栏/内容推送等'),
+      benefitItem('支持私有化部署与内容定制'),
+      benefitItem('支持企业微信、自有系统、NAS 接入'),
+    ],
+  },
+];
+
+const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
+  {
+    title: '商用授权主体及范围',
+    items: [
+      benefitItem('中小企业或大型企业商用授权'),
+      benefitItem('支持线上线下授权'),
+      benefitItem('支持海外/全球范围授权', true, '可选购'),
+      benefitItem('支持敏感行业定制', true, '可选购'),
+      benefitItem('支持更多扩展用途定制'),
+    ],
+  },
+  {
+    title: '企业版专属权益',
+    items: [
+      benefitItem('存储空间 10 TB/团队'),
+      benefitItem('无限团队空间数量'),
+      benefitItem('无限企业资源库数量'),
+      benefitItem('内容审批管理，保障合规安全'),
+      benefitItem('人员离职无缝交接，内容资产完整保留'),
+      benefitItem('自定义企业品牌界面/导航栏/内容推送等'),
+      benefitItem('支持私有化部署与内容定制'),
+      benefitItem('支持企业微信、自有系统、NAS 接入'),
+    ],
+  },
+  {
+    title: '模板创作权益',
+    items: [
+      benefitItem('拥有「团队版」所有权益'),
+      benefitItem('模板作品 PSD 导出 30~80次/团队/月', true, '限时加赠'),
+      benefitItem('敏感词检测，营销更安全'),
+      benefitItem('提供专业培训与定期数据报告'),
+    ],
+  },
+  {
+    title: '素材下载权益',
+    items: [
+      benefitItem('海量版权图片、免版权素材、PSD 源文件可下载，自由创作'),
+      benefitItem('官方/第三方合作素材下载次数：按需定制'),
+    ],
+  },
+  {
+    title: 'AI 创作权益',
+    items: [benefitItem('拥有 AI 创作会员（团队版）所有权益'), benefitItem('豆额度灵活定制')],
   },
 ];
 
 const enterprisePlans: MembershipPlanDisplayConfig[] = [
-  ...personalPlans,
+  ...personalPlans.map((plan) => ({
+    ...plan,
+    benefitSections: plan.planKey === 'flagship' ? enterpriseFlagshipBenefits : enterpriseCommonBenefits,
+  })),
   {
     planKey: 'flagship',
     name: '旗舰版',
@@ -103,6 +346,7 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
     color: 'orange',
     tag: '加赠2个月会员',
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印', 'API 服务购买'],
+    benefitSections: enterpriseFlagshipBenefits,
   },
 ];
 
@@ -206,6 +450,7 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
             color: rawPlan.color ?? fallbackPlan.color,
             tag: rawPlan.tag ?? fallbackPlan.tag,
             features: Array.isArray(rawPlan.features) ? rawPlan.features : fallbackPlan.features,
+            benefitSections: Array.isArray(rawPlan.benefitSections) ? rawPlan.benefitSections : fallbackPlan.benefitSections,
           };
         }),
       };

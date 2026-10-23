@@ -55,8 +55,9 @@ const migratePlansJson = (value: unknown, fallback: string) => {
         ...(isEnterprise ? { key: 'enterprise', name: '企业使用' } : {}),
         memberLevel: tab.memberLevel ?? fallbackTab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
         options: Array.isArray(tab.options) ? tab.options : fallbackTab.options,
-        plans: (Array.isArray(tab.plans) ? tab.plans : fallbackTab.plans).map((plan, planIndex) => {
-          const fallbackPlan = (fallbackTab.plans as Array<Record<string, unknown>>)[planIndex] ?? (fallbackTab.plans as Array<Record<string, unknown>>)[0] ?? {};
+        plans: ((Array.isArray(tab.plans) ? tab.plans : Array.isArray(fallbackTab.plans) ? fallbackTab.plans : []) as Array<Record<string, unknown>>).map((plan, planIndex) => {
+          const fallbackPlans = Array.isArray(fallbackTab.plans) ? fallbackTab.plans as Array<Record<string, unknown>> : [];
+          const fallbackPlan = fallbackPlans[planIndex] ?? fallbackPlans[0] ?? {};
           const rawPlan = plan as Record<string, unknown>;
           return {
             ...fallbackPlan,
@@ -66,6 +67,7 @@ const migratePlansJson = (value: unknown, fallback: string) => {
             color: rawPlan.color ?? fallbackPlan.color,
             tag: rawPlan.tag ?? fallbackPlan.tag,
             features: Array.isArray(rawPlan.features) ? rawPlan.features : fallbackPlan.features,
+            benefitSections: Array.isArray(rawPlan.benefitSections) ? rawPlan.benefitSections : fallbackPlan.benefitSections,
           };
         }),
       };

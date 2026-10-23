@@ -61,6 +61,7 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
       : 'border-[#e8ebf0] bg-white shadow-[0_12px_28px_rgba(41,57,83,.06)]';
   const accent = isOrange ? '#ff7910' : '#168ff2';
   const emphasized = selected || isFeatured;
+  const benefitSections = plan.benefitSections ?? [{ title: '专享权益', items: plan.features.map((feature) => ({ label: feature, enabled: true, badge: '专属通道' })) }];
 
   return <article className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`}>
     {isFeatured ? <div className={`h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7 text-white ${isOrange ? 'bg-[#ff7910]' : 'bg-[#168ff2]'}`}>Seedance 2.5 720P限时低至 {isOrange ? '¥0.19' : '¥0.43'}/秒</div> : null}
@@ -73,7 +74,40 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
     {cycleData.tierOptions ? <div className="mx-5 mt-1 h-[64px] px-0"><div className="mb-1.5 flex items-center justify-between text-[10px] text-[#586474]">{cycleData.tierOptions.map((tier, index) => <button type="button" key={tier.quotaLabel} onClick={() => onTierChange?.(index)} className={`cursor-pointer ${index === tierIndex ? 'font-semibold text-[#202938]' : 'hover:text-[#168ff2]'}`}>{tier.quotaLabel}</button>)}</div><div className="relative h-5"><div className="absolute left-0 right-0 top-2 h-[4px] rounded-full bg-[#4b4f55]" /><span className="pointer-events-none absolute top-0 h-4 w-4 -translate-x-1/2 rounded-full border border-[#6f747b] bg-white shadow-[0_1px_3px_rgba(31,41,55,.16)]" style={{ left: `${tierProgress}%` }} /><input type="range" min={0} max={cycleData.tierOptions.length - 1} step={1} value={tierIndex} onChange={(event) => onTierChange?.(Number(event.currentTarget.value))} aria-label="高级会员积分档位" className="absolute inset-0 h-5 w-full cursor-pointer opacity-0" /></div></div> : <div className="mx-5 mt-1 h-[64px]" aria-hidden="true" />}
     <div className={`mx-4 rounded-[12px] px-4 py-3 ${emphasized ? isOrange ? 'bg-[#fff0dc]' : isBlue ? 'bg-[#eaf4ff]' : 'bg-[#eef1f5]' : 'bg-[#f7f8fa]'}`}><div className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: emphasized ? accent : '#3e4858' }}><Sparkles className="h-3.5 w-3.5" />{enterprise ? `${displayPoints.replace('积分每月', '积分/席/月')}` : displayPoints}</div><p className="mt-1 text-[10px] text-[#8e98a7]">{displayPointsNote}</p></div>
     <div className="px-4 pt-4"><button type="button" className={`h-9 w-full rounded-full text-[12px] font-medium transition ${emphasized ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'bg-[#202938] text-white shadow-[0_5px_12px_rgba(32,41,56,.16)] hover:bg-[#111827]'}`}>立即开通</button><p className="mt-2 text-center text-[10px] text-[#9aa2ae]">折算 ¥{enterprise ? totalMonthlyPrice : displayMonthlyPrice}/月{enterprise ? ' · 多席位按人数计算' : ` · 首年${cycleData.discount}折`}</p></div>
-    <div className="mt-5 flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5"><div className="mb-4 text-[12px] font-semibold text-[#394355]">专享权益</div><ul className="space-y-3">{plan.features.map((feature) => <li key={feature} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 shrink-0" style={{ color: isFeatured || selected ? accent : '#8c96a5' }} />{feature}<span className="ml-auto rounded-[4px] bg-[#f1f3f6] px-1.5 py-0.5 text-[9px] text-[#929baa]">专属通道</span></li>)}</ul></div>
+    <div className="mt-5 flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5">
+      {benefitSections.map((section, sectionIndex) => <section key={`${section.title}-${sectionIndex}`} className={sectionIndex > 0 ? 'mt-5' : ''}>
+        <div className="flex items-center justify-between gap-2">
+          <h4 className="text-[12px] font-semibold text-[#273143]">{section.title}</h4>
+          <div className="flex items-center gap-2">
+            {section.badge ? <span className="rounded-[4px] bg-[#f1f3f6] px-1.5 py-0.5 text-[9px] text-[#929baa]">{section.badge}</span> : null}
+            {section.actionLabel ? <button type="button" className={`text-[11px] font-medium ${isOrange ? 'text-[#ff6f2a]' : 'text-[#168ff2]'}`}>{section.actionLabel}</button> : null}
+          </div>
+        </div>
+        <ul className="mt-3 space-y-2.5">
+          {section.items.map((item, itemIndex) => {
+            const enabled = item.enabled !== false;
+            return <li key={`${item.label}-${itemIndex}`} className={`flex items-start gap-2 text-[11px] leading-4 ${enabled ? 'text-[#5d6878]' : 'text-[#a6afbc]'}`}>
+              {enabled ? <Check className="mt-[2px] h-3.5 w-3.5 shrink-0" style={{ color: isFeatured || selected ? accent : '#697789' }} /> : <X className="mt-[2px] h-3.5 w-3.5 shrink-0 text-[#b9c0ca]" />}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-start gap-1.5">
+                  <span>{item.label}</span>
+                  {item.badge ? <span className="rounded-[4px] bg-[#f1f3f6] px-1 py-0.5 text-[9px] leading-3 text-[#929baa]">{item.badge}</span> : null}
+                </div>
+                {item.detail ? <div className="mt-0.5 text-[10px] leading-4 text-[#ff6f4a]">{item.detail}</div> : null}
+              </div>
+            </li>;
+          })}
+        </ul>
+        {section.highlight ? <div className={`mt-3 rounded-[14px] border p-3 ${section.highlight.tone === 'orange' ? 'border-[#ff6f3d] bg-[#fff2ec]' : 'border-[#2c73ff] bg-[#edf5ff]'}`}>
+          <div className={`text-[12px] font-semibold ${section.highlight.tone === 'orange' ? 'text-[#ff6f3d]' : 'text-[#145cff]'}`}>{section.highlight.title}</div>
+          <ul className="mt-2 space-y-2">
+            {section.highlight.items.map((item, itemIndex) => <li key={`${item.label}-${itemIndex}`} className="flex items-center gap-2 text-[11px] text-[#5d6878]">
+              <span className="shrink-0 text-[#9aa3af]">▥</span><span className="min-w-0 flex-1 truncate">{item.label}</span>{item.badge ? <span className={`shrink-0 rounded-[4px] px-1 py-0.5 text-[9px] ${section.highlight?.tone === 'orange' ? 'bg-[#ffe0d5] text-[#ff6f3d]' : 'bg-[#dceaff] text-[#145cff]'}`}>{item.badge}</span> : null}
+            </li>)}
+          </ul>
+        </div> : null}
+      </section>)}
+    </div>
   </article>;
 }
 
