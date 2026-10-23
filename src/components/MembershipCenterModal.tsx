@@ -54,7 +54,7 @@ function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionC
   return <div className="mt-4 overflow-x-auto rounded-[14px] border border-[#edf0f4] bg-white">
     <div className="min-w-[820px]">
       <div className="grid items-center gap-0 bg-[#f5f7fa] px-4 py-4" style={gridStyle}>
-        <div className="text-[12px] font-semibold leading-5 text-[#202938]">AI 创作会员 / AI大会员<br /><span className="font-normal text-[#4d596a]">豆额度档位</span></div>
+        <div className="text-[12px] font-semibold leading-5 text-[#202938]">AI 创作会员 / AI大会员<br /><span className="font-normal text-[#4d596a]">积分额度档位</span></div>
         {columns.map((column) => <div key={`${column.label}-${column.subLabel}`} className="text-center"><div className="text-[16px] font-semibold leading-5 text-[#202938]">{column.label} <span className="text-[10px] font-normal text-[#7e8998]">{column.subLabel}</span></div><div className="mt-1 text-[10px] text-[#7e8998]">最多生成数量 ⓘ</div></div>)}
       </div>
       {groups.map((group) => {

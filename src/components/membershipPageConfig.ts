@@ -135,9 +135,9 @@ const personalBasicBenefits: MembershipBenefitSection[] = [
   {
     title: 'AI 创作权益',
     items: [
-      benefitItem('50 豆/月'),
+      benefitItem('50 积分/月'),
       benefitItem('访问所有 AI 模型'),
-      benefitItem('加购豆享折扣', false),
+      benefitItem('加购积分享折扣', false),
       benefitItem('AI 作品高清下载（可设置多倍数尺寸）', false),
       benefitItem('模型限时优惠', false),
     ],
@@ -170,11 +170,11 @@ const personalAdvancedBenefits: MembershipBenefitSection[] = [
   {
     title: 'AI 创作权益',
     items: [
-      benefitItem('300~5000 豆/席位/月'),
+      benefitItem('300~5000 积分/席位/月'),
       benefitItem('访问所有 AI 模型'),
-      benefitItem('加购豆享折扣'),
+      benefitItem('加购积分享折扣'),
       benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
-      benefitItem('团队共享豆'),
+      benefitItem('团队共享积分'),
       benefitItem('模型限时优惠'),
     ],
   },
@@ -207,11 +207,11 @@ const personalProfessionalBenefits: MembershipBenefitSection[] = [
   {
     title: 'AI 创作权益',
     items: [
-      benefitItem('300~5000 豆/月'),
+      benefitItem('300~5000 积分/月'),
       benefitItem('访问所有 AI 模型'),
-      benefitItem('加购豆享折扣'),
+      benefitItem('加购积分享折扣'),
       benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
-      benefitItem('团队共享豆'),
+      benefitItem('团队共享积分'),
       benefitItem('模型限时优惠'),
     ],
   },
@@ -273,11 +273,11 @@ const enterpriseCommonBenefits: MembershipBenefitSection[] = [
   {
     title: 'AI 创作权益',
     items: [
-      benefitItem('300~5000 豆/席位/月'),
+      benefitItem('300~5000 积分/席位/月'),
       benefitItem('访问所有 AI 模型'),
-      benefitItem('加购豆享折扣'),
+      benefitItem('加购积分享折扣'),
       benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
-      benefitItem('团队共享豆'),
+      benefitItem('团队共享积分'),
       benefitItem('模型限时优惠'),
     ],
   },
@@ -342,7 +342,7 @@ const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
   },
   {
     title: 'AI 创作权益',
-    items: [benefitItem('拥有 AI 创作会员（团队版）所有权益'), benefitItem('豆额度灵活定制')],
+    items: [benefitItem('拥有 AI 创作会员（团队版）所有权益'), benefitItem('积分额度灵活定制')],
   },
 ];
 
@@ -407,37 +407,37 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
   },
   modelConsumption: {
     title: 'AI 模型消耗',
-    description: 'AI 创作会员 / AI 大会员豆额度档位对应的模型生成数量',
+    description: 'AI 创作会员 / AI 大会员积分额度档位对应的模型生成数量',
     columns: [
-      { label: '300', subLabel: '豆/月' },
-      { label: '500', subLabel: '豆/月' },
-      { label: '1,000', subLabel: '豆/月' },
-      { label: '2,000', subLabel: '豆/月' },
-      { label: '3,000', subLabel: '豆/月' },
+      { label: '300', subLabel: '积分/月' },
+      { label: '500', subLabel: '积分/月' },
+      { label: '1,000', subLabel: '积分/月' },
+      { label: '2,000', subLabel: '积分/月' },
+      { label: '3,000', subLabel: '积分/月' },
     ],
     groups: [
       {
         key: 'image',
         title: '图片模型',
         rows: [
-          { name: '智能图像 2K', cost: '3豆/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
-          { name: '智能图像 4K', cost: '4豆/次', unit: '张图片', quotas: [75, 125, 250, 500, 750] },
-          { name: '全能图像 2.1 1K', cost: '2豆/次', unit: '张图片', quotas: [150, 250, 500, '1,000', '1,500'] },
-          { name: '全能图像 2.1 2K', cost: '3豆/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
-          { name: '全能图像 2.1 4K', cost: '7豆/次', unit: '张图片', quotas: [42, 71, 142, 285, 428] },
-          { name: '灵动图像 2.5 Fast 2K', cost: '8豆/次', unit: '张图片', quotas: [37, 62, 125, 250, 375] },
+          { name: '智能图像 2K', cost: '3积分/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
+          { name: '智能图像 4K', cost: '4积分/次', unit: '张图片', quotas: [75, 125, 250, 500, 750] },
+          { name: '全能图像 2.1 1K', cost: '2积分/次', unit: '张图片', quotas: [150, 250, 500, '1,000', '1,500'] },
+          { name: '全能图像 2.1 2K', cost: '3积分/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
+          { name: '全能图像 2.1 4K', cost: '7积分/次', unit: '张图片', quotas: [42, 71, 142, 285, 428] },
+          { name: '灵动图像 2.5 Fast 2K', cost: '8积分/次', unit: '张图片', quotas: [37, 62, 125, 250, 375] },
         ],
       },
       {
         key: 'video',
         title: '视频模型',
         rows: [
-          { name: 'Seedance 2.0 Fast 480P', cost: '8豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [37, 62, 125, 250, 375] },
-          { name: 'Seedance 2.0 Fast 720P', cost: '12豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [25, 41, 83, 166, 250] },
-          { name: '万相 3.0 480P', cost: '6~135豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [50, 83, 166, 333, 500] },
-          { name: '万相 3.0 720P', cost: '10~225豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [30, 50, 100, 200, 300] },
-          { name: '万相 3.0 1080P', cost: '18~405豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [16, 27, 55, 111, 166] },
-          { name: 'Seedance 2.5 720P', cost: '18豆/次', unit: '个视频', badge: '限时福利', quotas: [16, 27, 55, 111, 166] },
+          { name: 'Seedance 2.0 Fast 480P', cost: '8积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [37, 62, 125, 250, 375] },
+          { name: 'Seedance 2.0 Fast 720P', cost: '12积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [25, 41, 83, 166, 250] },
+          { name: '万相 3.0 480P', cost: '6~135积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [50, 83, 166, 333, 500] },
+          { name: '万相 3.0 720P', cost: '10~225积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [30, 50, 100, 200, 300] },
+          { name: '万相 3.0 1080P', cost: '18~405积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [16, 27, 55, 111, 166] },
+          { name: 'Seedance 2.5 720P', cost: '18积分/次', unit: '个视频', badge: '限时福利', quotas: [16, 27, 55, 111, 166] },
         ],
       },
     ],
@@ -466,6 +466,24 @@ const parseJson = <T,>(value: unknown, fallback: T): T => {
   } catch {
     return clone(fallback);
   }
+};
+
+const normalizeModelConsumption = (value: unknown, fallback: MembershipModelConsumptionConfig): MembershipModelConsumptionConfig => {
+  if (!value || typeof value !== 'object') return clone(fallback);
+  const raw = value as Partial<MembershipModelConsumptionConfig>;
+  if (!Array.isArray(raw.groups)) {
+    return {
+      ...clone(fallback),
+      title: typeof raw.title === 'string' ? raw.title : fallback.title,
+      description: typeof raw.description === 'string' ? raw.description : fallback.description,
+    };
+  }
+  return {
+    ...clone(fallback),
+    ...raw,
+    columns: Array.isArray(raw.columns) ? raw.columns : fallback.columns,
+    groups: raw.groups,
+  };
 };
 
 const normalizePlans = (value: unknown): MembershipPlansConfig => {
@@ -513,7 +531,7 @@ export function readMembershipPageConfig(platform: PlatformKey = 'web'): Members
       plans: normalizePlans(parseJson(json.plans, fallback.plans)),
       overview: parseJson(json.overview, fallback.overview),
       details: parseJson(json.details, fallback.details),
-      modelConsumption: parseJson(json['model-consumption'], fallback.modelConsumption),
+      modelConsumption: normalizeModelConsumption(parseJson(json['model-consumption'], fallback.modelConsumption), fallback.modelConsumption),
       commercialLicense: parseJson(json['commercial-license'], fallback.commercialLicense),
       faq: parseJson(json.faq, fallback.faq),
     };

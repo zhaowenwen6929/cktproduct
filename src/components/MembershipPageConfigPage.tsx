@@ -78,6 +78,22 @@ const migratePlansJson = (value: unknown, fallback: string) => {
   }
 };
 
+const migrateModelConsumptionJson = (value: unknown, fallback: string) => {
+  if (typeof value !== 'string') return fallback;
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    if (Array.isArray(parsed.groups)) return value;
+    const fallbackConfig = JSON.parse(fallback) as Record<string, unknown>;
+    return JSON.stringify({
+      ...fallbackConfig,
+      title: typeof parsed.title === 'string' ? parsed.title : fallbackConfig.title,
+      description: typeof parsed.description === 'string' ? parsed.description : fallbackConfig.description,
+    }, null, 2);
+  } catch {
+    return value;
+  }
+};
+
 const readStoredState = (): ConfigState => {
   if (typeof window === 'undefined') return createDefaultState();
   try {
@@ -86,7 +102,7 @@ const readStoredState = (): ConfigState => {
     const parsed = JSON.parse(stored) as Partial<ConfigState>;
     const defaults = createDefaultState();
     const mergePlatform = (storedConfig: PlatformConfig | undefined, defaultConfig: PlatformConfig) => storedConfig
-      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans) } }
+      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']) } }
       : defaultConfig;
     return {
       web: mergePlatform(parsed.web, defaults.web),
