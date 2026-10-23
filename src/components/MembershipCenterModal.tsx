@@ -66,7 +66,7 @@ function StickyPurchaseBar({ plans, cycleKey, membershipType }: { plans: Members
 }
 
 function FaqCard({ item, index }: { item: MembershipPageContent['faq']['items'][number]; index: number }) {
-  return <details open={item.openByDefault ?? index < 2} className="group self-start overflow-hidden rounded-[16px] border border-[#e6ebf1] bg-white shadow-[0_2px_8px_rgba(31,50,81,.02)]"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-[14px] font-semibold leading-5 text-[#202938] marker:hidden [&::-webkit-details-marker]:hidden"><span>{item.question}</span><ChevronDown className="h-5 w-5 shrink-0 text-[#aeb8c7] transition-transform group-open:rotate-180" /></summary><div className="border-t border-[#edf0f4] bg-[#f1f4fa] px-5 py-5 text-[12px] leading-6 text-[#66738a] whitespace-pre-line">{item.answer}</div></details>;
+  return <details open={item.openByDefault ?? index < 2} className="group w-full overflow-hidden rounded-[16px] border border-[#e6ebf1] bg-white shadow-[0_2px_8px_rgba(31,50,81,.02)]"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-[14px] font-semibold leading-5 text-[#202938] marker:hidden [&::-webkit-details-marker]:hidden"><span>{item.question}</span><ChevronDown className="h-5 w-5 shrink-0 text-[#aeb8c7] transition-transform group-open:rotate-180" /></summary><div className="border-t border-[#edf0f4] bg-[#f1f4fa] px-5 py-5 text-[12px] leading-6 text-[#66738a] whitespace-pre-line">{item.answer}</div></details>;
 }
 
 function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionConfig }) {
