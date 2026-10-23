@@ -63,7 +63,19 @@ export type MembershipDetailsConfig = {
 export type MembershipModelConsumptionConfig = {
   title: string;
   description: string;
-  models: Array<{ name: string; unit: string; quota: string | number }>;
+  columns?: Array<{ label: string; subLabel: string }>;
+  groups?: Array<{
+    key: string;
+    title: string;
+    rows: Array<{
+      name: string;
+      cost: string;
+      unit: string;
+      badge?: string;
+      quotas: Array<string | number>;
+    }>;
+  }>;
+  models?: Array<{ name: string; unit: string; quota: string | number }>;
 };
 
 export type MembershipCommercialLicenseConfig = {
@@ -395,8 +407,40 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
   },
   modelConsumption: {
     title: 'AI 模型消耗',
-    description: '不同会员等级对应不同的 AI 生成额度',
-    models: [{ name: 'AI 图片生成', unit: '次', quota: 100 }],
+    description: 'AI 创作会员 / AI 大会员豆额度档位对应的模型生成数量',
+    columns: [
+      { label: '300', subLabel: '豆/月' },
+      { label: '500', subLabel: '豆/月' },
+      { label: '1,000', subLabel: '豆/月' },
+      { label: '2,000', subLabel: '豆/月' },
+      { label: '3,000', subLabel: '豆/月' },
+    ],
+    groups: [
+      {
+        key: 'image',
+        title: '图片模型',
+        rows: [
+          { name: '智能图像 2K', cost: '3豆/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
+          { name: '智能图像 4K', cost: '4豆/次', unit: '张图片', quotas: [75, 125, 250, 500, 750] },
+          { name: '全能图像 2.1 1K', cost: '2豆/次', unit: '张图片', quotas: [150, 250, 500, '1,000', '1,500'] },
+          { name: '全能图像 2.1 2K', cost: '3豆/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
+          { name: '全能图像 2.1 4K', cost: '7豆/次', unit: '张图片', quotas: [42, 71, 142, 285, 428] },
+          { name: '灵动图像 2.5 Fast 2K', cost: '8豆/次', unit: '张图片', quotas: [37, 62, 125, 250, 375] },
+        ],
+      },
+      {
+        key: 'video',
+        title: '视频模型',
+        rows: [
+          { name: 'Seedance 2.0 Fast 480P', cost: '8豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [37, 62, 125, 250, 375] },
+          { name: 'Seedance 2.0 Fast 720P', cost: '12豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [25, 41, 83, 166, 250] },
+          { name: '万相 3.0 480P', cost: '6~135豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [50, 83, 166, 333, 500] },
+          { name: '万相 3.0 720P', cost: '10~225豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [30, 50, 100, 200, 300] },
+          { name: '万相 3.0 1080P', cost: '18~405豆/次', unit: '个视频', badge: '最高限时 6 折', quotas: [16, 27, 55, 111, 166] },
+          { name: 'Seedance 2.5 720P', cost: '18豆/次', unit: '个视频', badge: '限时福利', quotas: [16, 27, 55, 111, 166] },
+        ],
+      },
+    ],
   },
   commercialLicense: {
     title: '商用授权',

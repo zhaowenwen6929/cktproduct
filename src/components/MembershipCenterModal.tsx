@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, ChevronRight, Crown, Gift, Sparkles, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
-import { readMembershipPageConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
+import { readMembershipPageConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 
 type MembershipCenterModalProps = {
   onClose: () => void;
@@ -38,6 +38,39 @@ function CountdownBox({ value, label }: { value: string; label: string }) {
 function multiplyMoney(value: string, quantity: number) {
   const amount = Number(value.replace(/,/g, '')) || 0;
   return (amount * quantity).toLocaleString('en-US');
+}
+
+function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionConfig }) {
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const columns = config.columns ?? [];
+  const groups = config.groups ?? [];
+  const columnCount = Math.max(columns.length, 1);
+  const gridStyle = { gridTemplateColumns: `minmax(260px,1.45fr) repeat(${columnCount}, minmax(96px,1fr))` };
+
+  if (!groups.length) {
+    return <div className="mt-4 divide-y divide-[#edf0f4] overflow-hidden rounded-[12px] border border-[#edf0f4]">{(config.models ?? []).map((model, index) => <div key={`${model.name}-${index}`} className="flex items-center justify-between px-4 py-3 text-[12px]"><span className="text-[#4b5667]">{model.name}</span><span className="font-medium text-[#273144]">{model.quota} {model.unit}</span></div>)}</div>;
+  }
+
+  return <div className="mt-4 overflow-x-auto rounded-[14px] border border-[#edf0f4] bg-white">
+    <div className="min-w-[820px]">
+      <div className="grid items-center gap-0 bg-[#f5f7fa] px-4 py-4" style={gridStyle}>
+        <div className="text-[12px] font-semibold leading-5 text-[#202938]">AI 创作会员 / AI大会员<br /><span className="font-normal text-[#4d596a]">豆额度档位</span></div>
+        {columns.map((column) => <div key={`${column.label}-${column.subLabel}`} className="text-center"><div className="text-[16px] font-semibold leading-5 text-[#202938]">{column.label} <span className="text-[10px] font-normal text-[#7e8998]">{column.subLabel}</span></div><div className="mt-1 text-[10px] text-[#7e8998]">最多生成数量 ⓘ</div></div>)}
+      </div>
+      {groups.map((group) => {
+        const expanded = Boolean(expandedGroups[group.key]);
+        const visibleRows = expanded ? group.rows : group.rows.slice(0, 5);
+        return <section key={group.key}>
+          <div className="flex items-center gap-3 border-t border-[#edf0f4] bg-white px-4 py-3"><span className="h-4 w-1 rounded-full bg-[#202938]" /><h3 className="text-[14px] font-semibold text-[#202938]">{group.title}</h3></div>
+          {visibleRows.map((row, rowIndex) => <div key={`${row.name}-${rowIndex}`} className="grid items-center border-t border-[#edf0f4] px-4 py-3.5" style={gridStyle}>
+            <div className="flex min-w-0 items-center gap-3 pl-2"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#dce1e8] text-[11px] text-[#7e8998]">✣</span><div className="min-w-0"><div className="truncate text-[12px] font-medium text-[#273144]">{row.name}</div><div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-[#8994a3]"><span>{row.cost}</span>{row.badge ? <span className="rounded-[3px] bg-[#eaf1ff] px-1 py-0.5 text-[9px] text-[#266dff]">{row.badge} ⓘ</span> : null}</div></div></div>
+            {columns.map((column, columnIndex) => <div key={`${column.label}-${columnIndex}`} className="text-center text-[13px] font-medium text-[#273144]">{row.quotas[columnIndex] ?? '—'} <span className="text-[11px] font-normal text-[#5e6979]">{row.unit}</span></div>)}
+          </div>)}
+          <div className="border-t border-[#edf0f4] px-4 py-3"><button type="button" onClick={() => setExpandedGroups((current) => ({ ...current, [group.key]: !expanded }))} className="flex items-center gap-1 text-[12px] font-medium text-[#7b8797] transition hover:text-[#168ff2]">{expanded ? '收起' : '查看更多'}<span className="text-[14px] leading-none">{expanded ? '⌃' : '⌄'}</span></button></div>
+        </section>;
+      })}
+    </div>
+  </div>;
 }
 
 function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enterprise = false, seats = 1, onSeatChange }: { plan: MembershipPlan; selected: boolean; cycleKey: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; onSeatChange?: (delta: number) => void }) {
@@ -159,7 +192,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
         <section className={`mt-[68px] grid grid-cols-1 gap-4 sm:grid-cols-2 ${visiblePlans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}>{visiblePlans.map((plan, index) => <PlanCard key={`${plan.name}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={(membershipType === 'personal' && index === 2) || (membershipType === 'enterprise' && index === 3)} tierIndex={plan.color === 'blue' ? advancedTier : 0} onTierChange={plan.color === 'blue' ? setAdvancedTier : undefined} enterprise={membershipType === 'enterprise'} seats={enterpriseSeats[plan.planKey] ?? 1} onSeatChange={membershipType === 'enterprise' ? (delta) => setEnterpriseSeats((current) => ({ ...current, [plan.planKey]: Math.max(1, (current[plan.planKey] ?? 1) + delta) })) : undefined} />)}</section>
         <section className="mt-16 text-center"><h2 className="text-[20px] font-semibold text-[#273144]">{pageConfig.overview.title}</h2><p className="mt-2 text-[12px] text-[#9aa4b2]">{pageConfig.overview.subtitle}</p><div className="mx-auto mt-7 grid max-w-[780px] grid-cols-1 gap-3 text-left md:grid-cols-3">{pageConfig.overview.items.map((item, index) => { const Icon = [Gift, Crown, Sparkles][index % 3]; return <div key={`${item.title}-${index}`} className="rounded-[14px] border border-[#e9edf3] bg-white p-4"><Icon className={`h-5 w-5 ${index % 3 === 0 ? 'text-[#168ff2]' : index % 3 === 1 ? 'text-[#ff9b2f]' : 'text-[#7a6cf0]'}`} /><h3 className="mt-3 text-[13px] font-semibold">{item.title}</h3><p className="mt-1 text-[11px] leading-5 text-[#8a94a4]">{item.description}</p></div>; })}</div></section>
         <section className="mx-auto mt-12 max-w-[980px] rounded-[16px] border border-[#e9edf3] bg-white p-6"><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.details.title}</h2><div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">{pageConfig.details.sections.map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-[#f7f9fc] p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div></section>
-        <section className="mx-auto mt-4 max-w-[980px] rounded-[16px] border border-[#e9edf3] bg-white p-6"><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.modelConsumption.title}</h2><p className="mt-2 text-[12px] text-[#8a94a4]">{pageConfig.modelConsumption.description}</p><div className="mt-4 divide-y divide-[#edf0f4] rounded-[10px] border border-[#edf0f4]">{pageConfig.modelConsumption.models.map((model, index) => <div key={`${model.name}-${index}`} className="flex items-center justify-between px-4 py-3 text-[12px]"><span className="text-[#4b5667]">{model.name}</span><span className="font-medium text-[#273144]">{model.quota} {model.unit}</span></div>)}</div></section>
+        <section className="mx-auto mt-4 max-w-[1120px] rounded-[16px] border border-[#e9edf3] bg-[#f7f8fa] p-6"><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.modelConsumption.title}</h2><p className="mt-2 text-[12px] text-[#8a94a4]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section>
         <section className="mx-auto mt-4 max-w-[980px] rounded-[16px] border border-[#e9edf3] bg-white p-6"><div className="flex items-center justify-between gap-4"><div><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.commercialLicense.title}</h2><p className="mt-2 text-[12px] text-[#8a94a4]">{pageConfig.commercialLicense.description}</p></div><span className={`rounded-full px-3 py-1 text-[11px] ${pageConfig.commercialLicense.enabled ? 'bg-[#e9f8f0] text-[#2a9a66]' : 'bg-[#f1f3f6] text-[#929baa]'}`}>{pageConfig.commercialLicense.enabled ? '已开启' : '未开启'}</span></div><div className="mt-4 flex flex-wrap gap-2">{pageConfig.commercialLicense.scopes.map((scope) => <span key={scope} className="rounded-full bg-[#f4f7fb] px-3 py-1.5 text-[11px] text-[#687588]">{scope}</span>)}</div></section>
         <section className="mx-auto mt-4 max-w-[980px] rounded-[16px] border border-[#e9edf3] bg-white p-6"><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.faq.title}</h2><div className="mt-4 divide-y divide-[#edf0f4]">{pageConfig.faq.items.map((item, index) => <details key={`${item.question}-${index}`} className="py-3"><summary className="cursor-pointer text-[13px] font-medium text-[#394355]">{item.question}</summary><p className="mt-2 text-[12px] leading-5 text-[#8a94a4]">{item.answer}</p></details>)}</div></section>
       </main>
