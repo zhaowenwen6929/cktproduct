@@ -124,7 +124,7 @@ export type MembershipCommercialLicenseConfig = {
 
 export type MembershipFaqConfig = {
   title: string;
-  items: Array<{ question: string; answer: string }>;
+  items: Array<{ question: string; answer: string; openByDefault?: boolean }>;
 };
 
 export type MembershipPageContent = {
@@ -646,8 +646,26 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
   faq: {
     title: '常见问题',
     items: [
-      { question: '会员权益什么时候生效？', answer: '购买成功后立即生效。' },
-      { question: '会员到期后还能使用已生成内容吗？', answer: '已生成内容不受影响。' },
+      {
+        question: '01.单人版各版本、团队版各版本之间的区别是什么？',
+        openByDefault: true,
+        answer: '单人版：适合个人使用，均包含商用授权、海量可商用模板素材、高清无水印下载等基础权益，按需选择以下版本：\n\n基础版（单人）：同原通用版（个人）权益，适用于使用设计模板、同时用 AI 提效的用户，授权主体为个人商用授权，赠送 600 积分/月 AI 生成算力，60GB 云空间满足日常存储需求。\n\n高级版（单人）：适用于 AI 生成辅助设计的高级 AI Agent 使用用户，提供全面的主体商业授权，包括个人、企业或组织，赠送 1500 积分/月 AI 生成算力，100GB 云空间让素材管理更从容。\n\n专业版（单人）：适合追求创意与高效的深度 AI Agent 使用用户，提供全面的主体商业授权，包括个人、企业或组织，赠送 3800 积分/月 AI 生成算力，200GB 云空间承载更多创作灵感。\n\n团队版：适合 2-20 人团队使用，均包含企业授权、批量设计、内容标签化管理、实时协作批注等团队专属功能，按需选择以下版本：\n\n高级版（团队）：适用于 AI 生成辅助设计的高级 AI Agent 使用团队，每席位每月赠送 1500 积分 AI 生成算力，600GB 团队云空间。\n\n专业版（团队）：适合追求创意与高效、需要更高 AI 产能的团队，每席位每月赠送 3800 积分 AI 生成算力，800GB 团队云空间。\n\n至尊版（团队）：适合对 AI 算力和存储空间有极致追求的团队，每席位每月赠送 8000 积分 AI 生成算力，1TB 团队云空间。\n\n20 人以上的团队，欢迎联系专属顾问 >',
+      },
+      {
+        question: '02.我是企业员工，我自己使用可以购买基础版吗？',
+        openByDefault: true,
+        answer: '如果使用者是企业中的员工，购买的是基础版（单人）（此版本为个人商用授权），作为企业宣传用途，那是不合规的，超出了授权的使用范围。虽然直接使用人是员工，但本质上是以企业身份宣传使用，所以要根据企业类型选择高级版、专业版或至尊版的企业商用授权，以避免版权风险。\n\n若未能正确使用创客贴会员版本或未经创客贴授权使用创客贴平台模板、元素、字体，视为侵权。侵权方应依据侵权行为严重程度给予赔偿（单个模板/元素赔偿额为 5000-10000 元，单款字体赔偿额为 10000-30000 元），并承担全部法律责任以及不利后果。',
+      },
+      { question: '03.生图积分有效期是多久？', answer: '会员套餐赠送的生图积分在对应会员有效期内按月发放，当月积分优先使用当月额度，未使用完的积分不顺延。具体以会员中心和账户实际展示为准。' },
+      { question: '04.如何获取积分？', answer: '购买会员套餐后，系统会按照套餐权益发放对应积分；同时可以通过活动、任务或积分购买等方式获得积分，实际可用方式以页面展示为准。' },
+      { question: '05.积分扣减有疑问怎么办？', answer: '可以先在生成记录中查看对应任务的模型、规格和积分消耗明细。如果确认扣减异常，请保留任务信息并联系在线客服或专属顾问核查。' },
+      { question: '06.可以充值获得积分吗？', answer: '支持通过积分购买入口充值获得积分。不同模型和规格的消耗标准可能不同，提交前请确认购买数量、有效期和使用规则。' },
+      { question: '07.如何申请发票？需要多长时间？', answer: '购买成功后可在订单或会员中心提交发票申请，填写发票抬头及税务信息即可。审核和开具时间以订单页面提示为准，通常需要 1-7 个工作日。' },
+      { question: '08.低版本套餐费升级为高版本套餐，如何折算？', answer: '升级时会结合原套餐剩余有效期、已支付金额和目标套餐价格折算应补差价，具体金额以升级页面实时计算结果为准。' },
+      { question: '09.购买VIP后是否可以退货退款？', answer: '会员和积分属于虚拟服务，购买前请确认版本、时长和授权范围。已经使用或已生效的虚拟权益通常不支持无理由退款，特殊情况请联系在线客服处理。' },
+      { question: '10.是否支持多人同时使用？', answer: '个人版仅限购买账号本人使用，不支持多人共享；企业版支持按席位购买和管理，具体并发使用规则以对应企业套餐说明为准。' },
+      { question: '11.积分可以转赠给其他账号吗？', answer: '当前积分仅限购买账号或对应团队使用，不能直接转赠或提现。团队积分按照企业套餐规则由团队管理员统一管理。' },
+      { question: '12.包装模板/包装盒型模块下设计的包装能否商用？', answer: '包装设计用途不在常规商用授权范围内，不能直接用于市场流通的食品、日用品、电器等实物产品包装。如有包装商用需求，请先联系专属顾问确认适用授权。' },
     ],
   },
 };
@@ -714,6 +732,16 @@ const normalizeCommercialLicense = (value: unknown, fallback: MembershipCommerci
   };
 };
 
+const normalizeFaq = (value: unknown, fallback: MembershipFaqConfig): MembershipFaqConfig => {
+  if (!value || typeof value !== 'object') return clone(fallback);
+  const raw = value as Partial<MembershipFaqConfig>;
+  return {
+    ...clone(fallback),
+    title: typeof raw.title === 'string' ? raw.title : fallback.title,
+    items: Array.isArray(raw.items) && raw.items.length >= 10 ? raw.items : fallback.items,
+  };
+};
+
 const normalizePlans = (value: unknown): MembershipPlansConfig => {
   const fallback = DEFAULT_MEMBERSHIP_PAGE_CONFIG.plans;
   const rawTabs = (value as { tabs?: unknown } | null)?.tabs;
@@ -761,7 +789,7 @@ export function readMembershipPageConfig(platform: PlatformKey = 'web'): Members
       details: normalizeDetails(parseJson(json.details, fallback.details), fallback.details),
       modelConsumption: normalizeModelConsumption(parseJson(json['model-consumption'], fallback.modelConsumption), fallback.modelConsumption),
       commercialLicense: normalizeCommercialLicense(parseJson(json['commercial-license'], fallback.commercialLicense), fallback.commercialLicense),
-      faq: parseJson(json.faq, fallback.faq),
+      faq: normalizeFaq(parseJson(json.faq, fallback.faq), fallback.faq),
     };
   } catch {
     return fallback;
