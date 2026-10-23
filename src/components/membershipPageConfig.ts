@@ -419,8 +419,9 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         name: '企业使用',
         memberLevel: { level: 'enterprise' },
         options: [
-          { key: 'team-yearly', name: '团队包年', guideText: '多人协作更优惠', duration: '365天', highlighted: true },
-          { key: 'team-monthly', name: '团队包月', guideText: '灵活开通', duration: '30天' },
+          { key: 'team-two-year', name: '2年送1年', guideText: '', duration: '1095天', highlighted: true },
+          { key: 'team-yearly', name: '1年', guideText: '', duration: '365天' },
+          { key: 'team-quarterly', name: '季度', guideText: '', duration: '90天' },
         ],
         plans: enterprisePlans,
       },
@@ -752,11 +753,15 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
       const rawTab = rawTabs.find((item) => (item as { key?: string })?.key === fallbackTab.key) as Partial<MembershipTabConfig> | undefined;
       if (!rawTab) return clone(fallbackTab);
       const rawPlans = Array.isArray(rawTab.plans) ? rawTab.plans : fallbackTab.plans;
+      const rawOptions = Array.isArray(rawTab.options) ? rawTab.options : null;
+      const options = fallbackTab.key === 'enterprise' && rawOptions?.some((option) => (option as { key?: string })?.key === 'team-monthly')
+        ? clone(fallbackTab.options)
+        : rawOptions ?? fallbackTab.options;
       return {
         ...fallbackTab,
         ...rawTab,
         memberLevel: { ...fallbackTab.memberLevel, ...(rawTab.memberLevel ?? {}) },
-        options: Array.isArray(rawTab.options) ? rawTab.options : fallbackTab.options,
+        options,
         plans: rawPlans.map((plan, index) => {
           const fallbackPlan = fallbackTab.plans[index] ?? fallbackTab.plans[0];
           const rawPlan = plan as Partial<MembershipPlanDisplayConfig>;

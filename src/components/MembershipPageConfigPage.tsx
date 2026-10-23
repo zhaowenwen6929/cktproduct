@@ -47,14 +47,18 @@ const migratePlansJson = (value: unknown, fallback: string) => {
         ?? parsed.tabs?.[index]
         ?? {};
       const isPersonal = tab.key === 'personal' || tab.name === '个人订阅';
-      const isEnterprise = tab.key === 'team' || tab.name === '团队订阅';
+      const isEnterprise = tab.key === 'enterprise' || tab.key === 'team' || tab.name === '团队订阅';
+      const rawOptions = Array.isArray(tab.options) ? tab.options as Array<Record<string, unknown>> : null;
+      const options = isEnterprise && rawOptions?.some((option) => option.key === 'team-monthly')
+        ? fallbackTab.options
+        : rawOptions ?? fallbackTab.options;
       return {
         ...fallbackTab,
         ...tab,
         ...(isPersonal ? { key: 'personal', name: '个人使用' } : {}),
         ...(isEnterprise ? { key: 'enterprise', name: '企业使用' } : {}),
         memberLevel: tab.memberLevel ?? fallbackTab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
-        options: Array.isArray(tab.options) ? tab.options : fallbackTab.options,
+        options,
         plans: ((Array.isArray(tab.plans) ? tab.plans : Array.isArray(fallbackTab.plans) ? fallbackTab.plans : []) as Array<Record<string, unknown>>).map((plan, planIndex) => {
           const fallbackPlans = Array.isArray(fallbackTab.plans) ? fallbackTab.plans as Array<Record<string, unknown>> : [];
           const fallbackPlan = fallbackPlans[planIndex] ?? fallbackPlans[0] ?? {};

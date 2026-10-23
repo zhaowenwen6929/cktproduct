@@ -287,7 +287,8 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const visiblePlans = activeTab?.plans.map(hydratePlan) ?? [];
   const cycleOptions = activeTab?.options ?? [];
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
-  const activeCycleKey = cycleOptions[selectedCycle]?.key?.replace(/^team-/, '') ?? 'yearly';
+  const rawCycleKey = cycleOptions[selectedCycle]?.key?.replace(/^team-/, '') ?? 'yearly';
+  const activeCycleKey = rawCycleKey === 'two-year' ? 'yearly' : rawCycleKey;
   const activeDetails = pageConfig.details[membershipType];
   const requestClose = () => {
     const preferredIndex = membershipType === 'enterprise' ? 3 : 2;
