@@ -1,13 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Check, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
-import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
+import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 
 type MembershipCenterModalProps = {
   onClose: () => void;
 };
 
 type MembershipPlan = MembershipPlanDisplayConfig & MembershipPlanData;
+
+type RetentionPurchaseModalProps = {
+  cycleOptions: MembershipCycleConfig[];
+  selectedCycle: number;
+  activeCycleKey: string;
+  plans: MembershipPlan[];
+  selectedPlanIndex: number;
+  onCycleChange: (index: number) => void;
+  onPlanChange: (index: number) => void;
+  onContinue: () => void;
+  onClose: () => void;
+};
 
 function hydratePlan(plan: MembershipPlanDisplayConfig): MembershipPlan {
   const data = REAL_MEMBERSHIP_PLAN_DATA[plan.planKey] ?? REAL_MEMBERSHIP_PLAN_DATA.basic;
@@ -38,6 +50,15 @@ function CountdownBox({ value, label }: { value: string; label: string }) {
 function multiplyMoney(value: string, quantity: number) {
   const amount = Number(value.replace(/,/g, '')) || 0;
   return (amount * quantity).toLocaleString('en-US');
+}
+
+function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, plans, selectedPlanIndex, onCycleChange, onPlanChange, onContinue, onClose }: RetentionPurchaseModalProps) {
+  const selectedPlan = plans[selectedPlanIndex] ?? plans[0];
+  if (!selectedPlan) return null;
+
+  const cycleData = selectedPlan.cyclePricing?.[activeCycleKey] ?? selectedPlan;
+
+  return <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#162033]/55 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="挽留购买"><div className="relative w-[min(720px,calc(100vw-32px))] overflow-hidden rounded-[20px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.28)]"><div className="flex h-[62px] items-center justify-between border-b border-[#edf0f4] px-6"><div><h2 className="text-[17px] font-semibold text-[#202938]">先别急着离开</h2><p className="mt-1 text-[11px] text-[#8c96a6]">选择适合你的会员方案，立即解锁更多权益</p></div><button type="button" onClick={onClose} aria-label="关闭挽留购买弹框" className="flex h-8 w-8 items-center justify-center rounded-full text-[#9aa4b2] transition hover:bg-[#f3f5f8] hover:text-[#273144]"><X className="h-4 w-4" /></button></div><div className="px-6 py-6"><div className="rounded-[16px] bg-[#f6f8fb] p-4"><div className="text-center text-[12px] font-semibold text-[#273144]">选择套餐</div><div className="mt-4 grid grid-cols-2 gap-2 rounded-[12px] bg-[#e9edf3] p-1 sm:grid-cols-4">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => onCycleChange(index)} className={`min-w-0 rounded-[9px] px-2 py-2.5 text-[11px] transition ${selectedCycle === index ? 'bg-white font-semibold text-[#168ff2] shadow-[0_2px_7px_rgba(38,60,92,.1)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className="ml-1 text-[10px] text-[#8c98a9]">{cycle.guideText}</span> : null}</button>)}</div><div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">{plans.map((plan, index) => <button type="button" key={`${plan.planKey}-${index}`} onClick={() => onPlanChange(index)} className={`rounded-[11px] border px-3 py-3 text-left transition ${selectedPlanIndex === index ? 'border-[#168ff2] bg-[#edf6ff] text-[#168ff2] shadow-[0_3px_10px_rgba(22,143,242,.1)]' : 'border-[#e4e9f0] bg-white text-[#3e495b] hover:border-[#a9c9ee]'}`}><span className="block text-[13px] font-semibold">{plan.name}</span><span className="mt-1 block truncate text-[10px] text-[#8d98a8]">{plan.subtitle}</span></button>)}</div></div><div className="mt-5 flex items-end justify-between gap-4 rounded-[15px] border border-[#e8edf3] bg-white px-5 py-4"><div><div className="flex items-center gap-2"><span className="text-[16px] font-semibold text-[#202938]">{selectedPlan.name}</span><span className="rounded-[4px] bg-[#eef4ff] px-1.5 py-0.5 text-[10px] text-[#168ff2]">{cycleData.period}</span></div><p className="mt-1 text-[11px] text-[#8994a4]">{selectedPlan.subtitle}</p><p className="mt-3 text-[11px] text-[#6d7889]">每月赠送 <span className="font-semibold text-[#168ff2]">{cycleData.points}</span></p></div><div className="text-right"><div className="text-[12px] text-[#697587]">¥<strong className="ml-1 text-[28px] leading-none text-[#202938]">{cycleData.price}</strong></div><div className="mt-1 text-[10px] text-[#9aa3b0]">{cycleData.discount}折优惠</div></div></div></div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-6 py-4"><button type="button" onClick={onContinue} className="h-9 rounded-[6px] border border-[#dce3ed] px-5 text-[12px] text-[#697587] transition hover:border-[#b7c5d7] hover:text-[#273144]">继续浏览</button><button type="button" onClick={onClose} className="h-9 rounded-[6px] bg-[#168ff2] px-6 text-[12px] font-medium text-white shadow-[0_5px_12px_rgba(22,143,242,.18)] transition hover:bg-[#087edc]">立即开通</button></div></div></div>;
 }
 
 function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionConfig }) {
@@ -216,6 +237,8 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const [pageConfig, setPageConfig] = useState<MembershipPageContent>(() => readMembershipPageConfig('web'));
   const [promotionDeadline] = useState(() => Date.now() + promotionDurationMs);
   const [remainingMs, setRemainingMs] = useState(promotionDurationMs);
+  const [retentionOpen, setRetentionOpen] = useState(false);
+  const [retentionPlanIndex, setRetentionPlanIndex] = useState(0);
 
   useEffect(() => {
     const updateCountdown = () => setRemainingMs(Math.max(0, promotionDeadline - Date.now()));
@@ -245,12 +268,17 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
   const activeCycleKey = cycleOptions[selectedCycle]?.key?.replace(/^team-/, '') ?? 'yearly';
   const activeDetails = pageConfig.details[membershipType];
+  const requestClose = () => {
+    const preferredIndex = membershipType === 'enterprise' ? 3 : 2;
+    setRetentionPlanIndex(Math.min(preferredIndex, Math.max(visiblePlans.length - 1, 0)));
+    setRetentionOpen(true);
+  };
 
   return <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1f2937]/35 p-4 text-[#202938] sm:p-8" role="dialog" aria-modal="true" aria-label="会员中心">
     <div className="relative h-[90vh] w-[90vw] overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.24)]">
       <div className="h-full overflow-y-auto bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_58%,#f7f9fc_100%)]">
       <header className="sticky top-0 z-10 border-b border-[#edf0f4] bg-white/95 backdrop-blur-md"><div className="mx-auto flex h-[48px] max-w-[1240px] items-center justify-between px-5"><div className="flex items-center gap-3 text-[12px] text-[#657084]"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,#efc7b4,#91a9c1)] text-[10px] text-white">营</span><span className="font-medium text-[#364052]">营萱</span><span>免费版</span><span className="text-[#d2d6dd]">|</span><span>积分 <b className="font-medium text-[#414b5b]">✦ 66</b></span><ChevronRight className="h-3.5 w-3.5" /></div><div className="flex items-center gap-6 text-[12px] text-[#657084]"><button type="button" className="hover:text-[#168ff2]">购买积分</button><button type="button" className="hover:text-[#168ff2]">会员兑换</button></div></div></header>
-      <button type="button" onClick={onClose} aria-label="关闭会员中心" className="absolute right-3 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e9ef] bg-white text-[#7e8999] shadow-[0_4px_14px_rgba(38,53,79,.08)] transition hover:border-[#bdc7d7] hover:text-[#263247]"><X className="h-4 w-4" /></button>
+      <button type="button" onClick={requestClose} aria-label="关闭会员中心" className="absolute right-3 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e9ef] bg-white text-[#7e8999] shadow-[0_4px_14px_rgba(38,53,79,.08)] transition hover:border-[#bdc7d7] hover:text-[#263247]"><X className="h-4 w-4" /></button>
       <main className="mx-auto max-w-[1240px] px-5 pb-20 pt-0">
         <section className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(112deg,#1588ee_0%,#1b94f7_48%,#ffd57d_100%)] px-6 py-5 shadow-[0_14px_34px_rgba(39,143,238,.17)]"><div className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full bg-white/25 blur-3xl" /><div className="pointer-events-none absolute right-[17%] top-0 h-32 w-32 rounded-full bg-[#fff3d0]/40 blur-2xl" /><div className="relative flex min-h-[82px] items-center justify-between gap-6"><div><div className="mb-3 flex items-center gap-2"><span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-[#293548]">✦ Seedance 2.5</span><span className="rounded-full bg-white px-2 py-1 text-[10px] font-medium text-[#293548]">四重福利</span></div><p className="text-[17px] font-semibold text-white">🎟 ¥0.19超低单秒价备战双11</p><p className="mt-1 text-[15px] font-medium text-[#ffe74d]">最高额外加赠2个月会员、4万+积分</p></div><div className="hidden items-center gap-1.5 sm:flex"><CountdownBox value={countdown.days} label="天" /><CountdownBox value={countdown.hours} label="小时" /><CountdownBox value={countdown.minutes} label="分钟" /><CountdownBox value={countdown.seconds} label="秒" /></div></div></section>
         <section className="pt-6"><div className="flex items-center justify-center gap-10 text-[17px] font-semibold"><button type="button" onClick={() => { setMembershipType('personal'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalTab?.name ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button><button type="button" onClick={() => { setMembershipType('enterprise'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseTab?.name ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button></div><div className="mx-auto mt-4 flex max-w-[560px] items-center justify-between rounded-full bg-[#eef0f4] p-1 text-[11px] text-[#4e5868] shadow-inner">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => setActiveCycle(index)} className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 py-2.5 transition ${selectedCycle === index ? 'bg-[#e4e7eb] font-semibold text-[#253043]' : 'hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className={selectedCycle === index ? 'text-[#168ff2]' : 'text-[#8993a2]'}>{cycle.guideText}</span> : null}</button>)}</div></section>
@@ -261,6 +289,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
         <section className="mx-auto mt-16 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] p-6 sm:p-8"><h2 className="text-center text-[24px] font-semibold tracking-tight text-[#202938]">{pageConfig.faq.title}</h2><div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-2">{pageConfig.faq.items.map((item, index) => <details key={`${item.question}-${index}`} open={item.openByDefault ?? index < 2} className="group overflow-hidden rounded-[16px] border border-[#e6ebf1] bg-white shadow-[0_2px_8px_rgba(31,50,81,.02)]"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-[14px] font-semibold leading-5 text-[#202938] marker:hidden [&::-webkit-details-marker]:hidden"><span>{item.question}</span><ChevronDown className="h-5 w-5 shrink-0 text-[#aeb8c7] transition-transform group-open:rotate-180" /></summary><div className="border-t border-[#edf0f4] bg-[#f1f4fa] px-5 py-5 text-[12px] leading-6 text-[#66738a] whitespace-pre-line">{item.answer}</div></details>)}</div></section>
       </main>
       </div>
+      {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} onCycleChange={(index) => { setActiveCycle(index); setRetentionPlanIndex(0); }} onPlanChange={setRetentionPlanIndex} onContinue={() => setRetentionOpen(false)} onClose={onClose} /> : null}
     </div>
   </div>;
 }
