@@ -55,9 +55,27 @@ export type MembershipOverviewConfig = {
   items: Array<{ title: string; description: string }>;
 };
 
+export type MembershipDetailsColumn = {
+  key: string;
+  label: string;
+  tag?: string;
+};
+
+export type MembershipDetailsSection = {
+  title: string;
+  rows: Array<{ label: string; values: string[] }>;
+};
+
+export type MembershipComparisonConfig = {
+  columns: MembershipDetailsColumn[];
+  sections: MembershipDetailsSection[];
+};
+
 export type MembershipDetailsConfig = {
   title: string;
-  sections: Array<{ title: string; items: string[] }>;
+  personal?: MembershipComparisonConfig;
+  enterprise?: MembershipComparisonConfig;
+  sections?: Array<{ title: string; items: string[] }>;
 };
 
 export type MembershipModelConsumptionConfig = {
@@ -399,11 +417,121 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
     ],
   },
   details: {
-    title: '权益明细',
-    sections: [
-      { title: '模板权益', items: ['全量模板', '高级模板', '商用模板'] },
-      { title: '创作权益', items: ['高清导出', '去除水印', '团队协作'] },
-    ],
+    title: '权益对比',
+    personal: {
+      columns: [
+        { key: 'basic', label: '基础版' },
+        { key: 'advanced', label: '高级版' },
+        { key: 'professional', label: '专业版', tag: 'New' },
+      ],
+      sections: [
+        {
+          title: '基础信息',
+          rows: [
+            { label: '价格', values: ['¥33/月起', '¥92/月起', '¥434/月起'] },
+            { label: '可购席位数', values: ['个人使用\n1个', '个人使用\n1个', '个人使用\n1个'] },
+            { label: '授权类型', values: ['个人商用授权\n1个', '—', '个人商用授权\n1个'] },
+            { label: '授权范围', values: ['线上线下用途适用（不含“户外、敏感行业及转授权”拓展授权）', '—', '线上线下用途适用（不含“户外、敏感行业及转授权”拓展授权）'] },
+          ],
+        },
+        {
+          title: '模板设计权益',
+          rows: [
+            { label: '公益免费设计模板', values: ['✓', '✓', '✓'] },
+            { label: '正版可商用的精美平面模板', values: ['✓', '—', '✓'] },
+            { label: '正版可商用·PPT模板（限时加赠）', values: ['✓', '—', '✓'] },
+            { label: '正版可商用·H5模板（限时加赠）', values: ['✓', '—', '✓'] },
+            { label: '正版可商用·创意视频模板（限时加赠）', values: ['✓', '—', '✓'] },
+            { label: '正版可商用·素材/字体/音乐等（限时加赠）', values: ['✓', '—', '✓'] },
+            { label: '模板作品高清无水印下载', values: ['✓', '仅公益免费模板', '✓'] },
+            { label: '模板作品 PSD 导出（限时加赠，仅电脑端可使用）', values: ['—', '—', '10 次/月'] },
+          ],
+        },
+        {
+          title: 'AI 创作权益',
+          rows: [
+            { label: 'AI 创作积分额度', values: ['50 积分/月', '300~5000 积分/月', '300~5000 积分/月'] },
+            { label: '访问所有 AI 模型', values: ['✓', '✓', '✓'] },
+            { label: '加购积分享折扣', values: ['—', '✓', '✓'] },
+            { label: 'AI 作品高清下载（可设置多倍数尺寸）', values: ['—', '✓', '✓'] },
+            { label: '团队共享积分', values: ['—', '✓', '✓'] },
+            { label: '模型限时优惠', values: ['—', '✓', '✓'] },
+          ],
+        },
+        {
+          title: '精选素材组合包',
+          rows: [
+            { label: '官方自营素材下载次数', values: ['—', '—', '每月 100 次，共赠送 3 个月'] },
+            { label: '第三方合作素材下载次数', values: ['—', '—', '每月 20 次，共赠送 3 个月'] },
+          ],
+        },
+        {
+          title: '通用权益',
+          rows: [
+            { label: '存储空间', values: ['50 GB', '500 GB', '500 GB'] },
+            { label: '团队资产共享与复用', values: ['—', '✓', '✓'] },
+          ],
+        },
+      ],
+    },
+    enterprise: {
+      columns: [
+        { key: 'basic', label: '基础版' },
+        { key: 'advanced', label: '高级版' },
+        { key: 'professional', label: '专业版' },
+        { key: 'flagship', label: '旗舰版', tag: 'New' },
+      ],
+      sections: [
+        {
+          title: '基础信息',
+          rows: [
+            { label: '价格', values: ['¥33/月/席位起', '¥92/月/席位起', '¥434/月/席位起', '¥1,638/月/席位起'] },
+            { label: '可购席位数', values: ['支持增加席位', '支持增加席位', '支持增加席位', '支持增加席位'] },
+            { label: '授权类型', values: ['企业商用授权', '企业商用授权', '企业商用授权', '企业商用授权'] },
+            { label: '授权范围', values: ['线上线下用途适用', '线上线下用途适用', '线上线下用途适用', '线上线下用途适用，支持全球范围拓展'] },
+          ],
+        },
+        {
+          title: '企业版专属权益',
+          rows: [
+            { label: '中小企业或大型企业商用授权', values: ['✓', '✓', '✓', '✓'] },
+            { label: '支持线上线下授权', values: ['✓', '✓', '✓', '✓'] },
+            { label: '支持海外/全球范围授权', values: ['可选购', '可选购', '可选购', '✓'] },
+            { label: '支持敏感行业定制', values: ['可选购', '可选购', '可选购', '✓'] },
+            { label: '内容审批管理，保障合规安全', values: ['—', '—', '—', '✓'] },
+            { label: '人员离职无缝交接，内容资产完整保留', values: ['—', '—', '—', '✓'] },
+            { label: '自定义企业品牌界面/导航栏/内容推送等', values: ['—', '—', '—', '✓'] },
+            { label: '支持私有化部署与内容定制', values: ['—', '—', '—', '✓'] },
+          ],
+        },
+        {
+          title: 'AI 创作权益',
+          rows: [
+            { label: 'AI 创作积分额度', values: ['300~5000 积分/席位/月', '300~5000 积分/席位/月', '300~5000 积分/席位/月', '积分额度灵活定制'] },
+            { label: '访问所有 AI 模型', values: ['✓', '✓', '✓', '✓'] },
+            { label: '加购积分享折扣', values: ['✓', '✓', '✓', '✓'] },
+            { label: 'AI 作品高清下载', values: ['✓', '✓', '✓', '✓'] },
+            { label: '团队共享积分', values: ['✓', '✓', '✓', '✓'] },
+          ],
+        },
+        {
+          title: '素材下载权益',
+          rows: [
+            { label: '官方自营素材下载', values: ['✓', '✓', '✓', '按需定制'] },
+            { label: '第三方合作素材下载', values: ['✓', '✓', '✓', '按需定制'] },
+          ],
+        },
+        {
+          title: '通用权益',
+          rows: [
+            { label: '存储空间', values: ['10 TB/团队', '10 TB/团队', '10 TB/团队', '10 TB/团队'] },
+            { label: '无限团队空间数量', values: ['—', '—', '—', '✓'] },
+            { label: '无限企业资源库数量', values: ['—', '—', '—', '✓'] },
+            { label: '支持企业微信、自有系统、NAS 接入', values: ['—', '—', '—', '✓'] },
+          ],
+        },
+      ],
+    },
   },
   modelConsumption: {
     title: 'AI 模型消耗',
@@ -486,6 +614,23 @@ const normalizeModelConsumption = (value: unknown, fallback: MembershipModelCons
   };
 };
 
+const isComparisonConfig = (value: unknown): value is MembershipComparisonConfig => {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<MembershipComparisonConfig>;
+  return Array.isArray(candidate.columns) && Array.isArray(candidate.sections);
+};
+
+const normalizeDetails = (value: unknown, fallback: MembershipDetailsConfig): MembershipDetailsConfig => {
+  if (!value || typeof value !== 'object') return clone(fallback);
+  const raw = value as Partial<MembershipDetailsConfig>;
+  return {
+    ...clone(fallback),
+    title: typeof raw.title === 'string' ? raw.title : fallback.title,
+    personal: isComparisonConfig(raw.personal) ? raw.personal : fallback.personal,
+    enterprise: isComparisonConfig(raw.enterprise) ? raw.enterprise : fallback.enterprise,
+  };
+};
+
 const normalizePlans = (value: unknown): MembershipPlansConfig => {
   const fallback = DEFAULT_MEMBERSHIP_PAGE_CONFIG.plans;
   const rawTabs = (value as { tabs?: unknown } | null)?.tabs;
@@ -530,7 +675,7 @@ export function readMembershipPageConfig(platform: PlatformKey = 'web'): Members
     return {
       plans: normalizePlans(parseJson(json.plans, fallback.plans)),
       overview: parseJson(json.overview, fallback.overview),
-      details: parseJson(json.details, fallback.details),
+      details: normalizeDetails(parseJson(json.details, fallback.details), fallback.details),
       modelConsumption: normalizeModelConsumption(parseJson(json['model-consumption'], fallback.modelConsumption), fallback.modelConsumption),
       commercialLicense: parseJson(json['commercial-license'], fallback.commercialLicense),
       faq: parseJson(json.faq, fallback.faq),
