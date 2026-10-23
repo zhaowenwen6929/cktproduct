@@ -102,6 +102,10 @@ function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionC
 function DetailsComparisonTable({ config }: { config: MembershipComparisonConfig }) {
   const columns = config.columns;
   const gridStyle = { gridTemplateColumns: `minmax(250px,1.35fr) repeat(${Math.max(columns.length, 1)}, minmax(150px,1fr))` };
+  const [expanded, setExpanded] = useState(false);
+  const detailedRowCount = config.sections.filter((section) => section.title !== '基础信息').reduce((total, section) => total + section.rows.length, 0);
+  const previewRowCount = Math.max(1, Math.ceil(detailedRowCount / 3));
+  let previewRowsUsed = 0;
 
   const renderValue = (value: string, columnIndex: number) => {
     if (value === '✓') return <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#8993a0] text-white"><Check className="h-3 w-3" strokeWidth={3} /></span>;
@@ -115,13 +119,20 @@ function DetailsComparisonTable({ config }: { config: MembershipComparisonConfig
         <div className="px-5 py-4 text-[12px] font-semibold text-[#273143]">会员版本</div>
         {columns.map((column, columnIndex) => <div key={column.key} className={`px-3 py-4 text-center text-[13px] font-semibold text-[#273143] ${columnIndex === columns.length - 1 ? 'bg-[#fafafa]' : ''}`}><span>{column.label}</span>{column.tag ? <span className="ml-1 rounded-[4px] bg-[#ff554c] px-1 py-0.5 text-[9px] font-medium text-white">{column.tag}</span> : null}</div>)}
       </div>
-      {config.sections.map((section, sectionIndex) => <section key={`${section.title}-${sectionIndex}`}>
-        {section.title !== '基础信息' ? <div className="flex items-center gap-3 border-b border-[#e7ebf0] bg-white px-5 py-4"><span className="h-4 w-1 rounded-full bg-[#202938]" /><h3 className="text-[13px] font-semibold text-[#273143]">{section.title}</h3></div> : null}
-        {section.rows.map((row, rowIndex) => <div key={`${row.label}-${rowIndex}`} className="grid items-center border-b border-[#edf0f4] last:border-b-0" style={gridStyle}>
-          <div className="px-5 py-4 text-[11px] leading-5 text-[#414c5c]">{row.label}</div>
-          {columns.map((column, columnIndex) => <div key={`${column.key}-${columnIndex}`} className={`min-h-[52px] px-3 py-4 text-center text-[11px] ${columnIndex === columns.length - 1 ? 'bg-[#fafafa]' : ''}`}>{renderValue(row.values[columnIndex] ?? '—', columnIndex)}</div>)}
-        </div>)}
-      </section>)}
+      {config.sections.map((section, sectionIndex) => {
+        const isSummary = section.title === '基础信息';
+        const rows = isSummary || expanded ? section.rows : section.rows.slice(0, Math.max(previewRowCount - previewRowsUsed, 0));
+        if (!isSummary) previewRowsUsed += rows.length;
+        if (!rows.length) return null;
+        return <section key={`${section.title}-${sectionIndex}`}>
+          {!isSummary ? <div className="flex items-center gap-3 border-b border-[#e7ebf0] bg-white px-5 py-4"><span className="h-4 w-1 rounded-full bg-[#202938]" /><h3 className="text-[13px] font-semibold text-[#273143]">{section.title}</h3></div> : null}
+          {rows.map((row, rowIndex) => <div key={`${row.label}-${rowIndex}`} className="grid items-center border-b border-[#edf0f4] last:border-b-0" style={gridStyle}>
+            <div className="px-5 py-4 text-[11px] leading-5 text-[#414c5c]">{row.label}</div>
+            {columns.map((column, columnIndex) => <div key={`${column.key}-${columnIndex}`} className={`min-h-[52px] px-3 py-4 text-center text-[11px] ${columnIndex === columns.length - 1 ? 'bg-[#fafafa]' : ''}`}>{renderValue(row.values[columnIndex] ?? '—', columnIndex)}</div>)}
+          </div>)}
+        </section>;
+      })}
+      {detailedRowCount > previewRowCount ? <div className="border-t border-[#e7ebf0] px-5 py-4"><button type="button" onClick={() => setExpanded((current) => !current)} className="mx-auto flex items-center gap-1 text-[12px] font-medium text-[#7b8797] transition hover:text-[#168ff2]">{expanded ? '收起权益' : '查看全部权益'}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></div> : null}
     </div>
   </div>;
 }
