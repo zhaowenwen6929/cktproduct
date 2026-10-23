@@ -29,6 +29,7 @@ type PackageDetailRow = {
   displayTime: string;
   status: '显示' | '隐藏';
   points?: number;
+  pointsUnit?: '每人' | '团队';
 };
 
 const initialPackages: PackageRow[] = [
@@ -79,6 +80,7 @@ const blankPackageDetail: PackageDetailRow = {
   displayTime: '/',
   status: '显示',
   points: 0,
+  pointsUnit: '每人',
 };
 
 type DetailEditValues = {
@@ -102,6 +104,7 @@ type DetailEditValues = {
   validDays: string;
   remark: string;
   points: string;
+  pointsUnit: string;
 };
 
 const POINTS_REQUIREMENT = '新增需求：积分量用于配置套餐独立发放的积分额度。新增套餐时需填写非负整数；历史套餐可为空，未填写时按所属会员等级的积分量发放，已配置套餐不可修改。';
@@ -159,6 +162,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
     productId: '',
     downloadCount: isCreate ? '' : '-1',
     points: isCreate ? '' : row.points == null ? '' : String(row.points),
+    pointsUnit: row.pointsUnit ?? '每人',
     sort: String(row.sort),
     segment: isCreate ? '0' : row.segment === '/' ? '0' : row.segment,
     validDays: '',
@@ -196,6 +200,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">内购产品ID：</span><input value={form.productId} onChange={(event) => update('productId', event.currentTarget.value)} placeholder="请输入内购产品ID" className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>商用下载次数：</span><input disabled={!isCreate} value={form.downloadCount} onChange={(event) => update('downloadCount', event.currentTarget.value)} placeholder={isCreate ? '请输入商用下载次数' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-start gap-2 text-[13px] text-[#333]"><span className="flex items-center justify-end gap-1 pt-2 text-right">{isCreate ? <b className="mr-1 font-normal text-[#ff4d4f]">*</b> : null}积分量：<RequirementHint text={POINTS_REQUIREMENT} /></span><div><input type="number" min="0" step="1" required={isCreate} disabled={!isCreate} value={form.points} onChange={(event) => { setPointsError(''); update('points', event.currentTarget.value.replace(/\D/g, '')); }} placeholder={isCreate ? '请输入积分量' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} />{pointsError ? <p className="mt-1 text-[12px] text-[#ff4d4f]">{pointsError}</p> : null}<p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">未填写积分量时，按照套餐所属会员等级的积分量发放</p></div></label>
+          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">发放单位：</span><select disabled={!isCreate} value={form.pointsUnit} onChange={(event) => update('pointsUnit', event.currentTarget.value)} className={`${isCreate ? inputClass : disabledClass} bg-white`}><option value="每人">每人</option><option value="团队">团队</option></select></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>排序：</span><input value={form.sort} onChange={(event) => update('sort', event.currentTarget.value)} className={inputClass} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">指定分群：</span><select value={form.segment} onChange={(event) => update('segment', event.currentTarget.value)} className={inputClass}><option value="0">0</option><option value="109">109</option><option value="110">110</option></select></label>
           <label className="mb-1 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right">有效期：</span><input value={form.validDays} onChange={(event) => update('validDays', event.currentTarget.value)} className="h-8 w-[90px] rounded-[1px] border border-[#d7d7d7] px-3 text-[13px] outline-none focus:border-[#278fee]" /></label>
@@ -222,7 +227,7 @@ function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, o
     setDetails((current) => {
       if (values.id === 0) {
         const nextId = Math.max(...current.map((row) => row.id), 0) + 1;
-        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: Number(values.points) || 0 }, ...current];
+        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人' }, ...current];
       }
       return current.map((row) => row.id === values.id ? { ...row, name: values.name, discount: Number(values.discount) || row.discount, sort: Number(values.sort) || 0, segment: values.segment || '/' } : row);
     });
