@@ -114,6 +114,24 @@ const migrateDetailsJson = (value: unknown, fallback: string) => {
   }
 };
 
+const migrateCommercialLicenseJson = (value: unknown, fallback: string) => {
+  if (typeof value !== 'string') return fallback;
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    if (Array.isArray(parsed.scopeSections) && Array.isArray(parsed.testimonials) && Array.isArray(parsed.logos) && parsed.serviceCta) return value;
+    const fallbackConfig = JSON.parse(fallback) as Record<string, unknown>;
+    return JSON.stringify({
+      ...fallbackConfig,
+      title: typeof parsed.title === 'string' ? parsed.title : fallbackConfig.title,
+      description: typeof parsed.description === 'string' ? parsed.description : fallbackConfig.description,
+      enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : fallbackConfig.enabled,
+      scopes: Array.isArray(parsed.scopes) ? parsed.scopes : fallbackConfig.scopes,
+    }, null, 2);
+  } catch {
+    return value;
+  }
+};
+
 const readStoredState = (): ConfigState => {
   if (typeof window === 'undefined') return createDefaultState();
   try {
@@ -122,7 +140,7 @@ const readStoredState = (): ConfigState => {
     const parsed = JSON.parse(stored) as Partial<ConfigState>;
     const defaults = createDefaultState();
     const mergePlatform = (storedConfig: PlatformConfig | undefined, defaultConfig: PlatformConfig) => storedConfig
-      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']) } }
+      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']), 'commercial-license': migrateCommercialLicenseJson(storedConfig.json?.['commercial-license'], defaultConfig.json['commercial-license']) } }
       : defaultConfig;
     return {
       web: mergePlatform(parsed.web, defaults.web),

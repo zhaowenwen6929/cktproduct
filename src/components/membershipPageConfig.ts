@@ -101,6 +101,25 @@ export type MembershipCommercialLicenseConfig = {
   description: string;
   enabled: boolean;
   scopes: string[];
+  scopeSections?: Array<{
+    title: string;
+    enabled: boolean;
+    items: Array<{ title: string; description: string }>;
+  }>;
+  testimonials?: Array<{
+    name: string;
+    role: string;
+    tags: string[];
+    quote: string;
+    avatar?: string;
+  }>;
+  logos?: string[];
+  serviceCta?: {
+    title: string;
+    buttonLabel: string;
+    qrTitle: string;
+    qrDescription: string;
+  };
 };
 
 export type MembershipFaqConfig = {
@@ -571,10 +590,58 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
     ],
   },
   commercialLicense: {
-    title: '商用授权',
-    description: '会员生成内容可用于商业场景',
+    title: '商用授权范围说明',
+    description: '创客贴会员权益覆盖常见线上、线下商用场景，同时明确不可使用的场景范围。',
     enabled: true,
     scopes: ['商品宣传', '营销推广', '社交媒体'],
+    scopeSections: [
+      {
+        title: '线上用途',
+        enabled: true,
+        items: [
+          { title: '新媒体配图', description: '微信公众号、小程序、新浪微博、今日头条、百度问答、知乎问答、抖音、快手等新媒体平台配图' },
+          { title: '网站及应用程序', description: '网页设计、APP设计、皮肤/主题、H5、微信/微博配图、电邮（非广告性质）等' },
+          { title: '电商用途', description: '淘宝、京东、天猫、有赞、拼多多、美团、饿了么、小红书、微商域、在线教育等第三方电商平台' },
+          { title: '推广及线上媒介广告', description: '网站、网站站外推广（百度推广、淘宝直通车等）、通过线上媒体渠道投放的平面及视频广告' },
+          { title: '网络视频用途', description: '网络视频等媒体播放平台，如抖音、优酷、YouTube、微信视频号等' },
+        ],
+      },
+      {
+        title: '线下用途',
+        enabled: true,
+        items: [
+          { title: '线下印刷用途（60 万份内）', description: '书籍、杂志、广告海报、宣传册、折页、门店陈设、门店商业显示屏投放等；铭牌、手机壳、贺卡、明信片、日历、杯子、T恤、抱枕、箱包等非转售印刷品' },
+          { title: '图书出版（60 万份内）', description: '报纸配图、杂志封面及配图、图书封面及配图' },
+          { title: '商业提案（非转售）', description: '网络设计、VI设计、项目营销策划等提案' },
+          { title: '办公用途', description: '行政公文、工作汇报、市场及行业报告、企业VI、宣传册、宣传语、标准字、楼书、企业内部设计用途（商标、LOGO除外）' },
+          { title: '户外广告（大牌广告除外）', description: '对外发布的户外广告（宣传册、海报、报纸杂志广告、楼宇、车身、灯箱、围挡、橱窗、公共场所陈列等）' },
+        ],
+      },
+      {
+        title: '禁用项',
+        enabled: false,
+        items: [
+          { title: '户外广告牌', description: '制作户外广告牌' },
+          { title: '网络转售', description: '软件程序、课件、教学视频、APP皮肤/主题、设计模板、H5模板、PPT模板、屏幕保护程序等' },
+          { title: '包装设计用途', description: '用于市场流通的食品、日用品、电器等各类实物产品的包装' },
+          { title: '商标注册', description: '商标、LOGO' },
+          { title: 'AI数据训练', description: '用于训练AI类人工智能模型' },
+          { title: '敏感行业用途', description: '用于制作药物、保健品和烟草行业；用于成人娱乐、约会婚恋等敏感类广告宣传' },
+        ],
+      },
+    ],
+    testimonials: [
+      { name: '陈*', role: '电商卖家', tags: ['抠图神器', '操作简单', '电商小助手'], quote: '最开始使用是同行推荐的，以前拍产品照背景总是乱糟糟的，创客贴的智能抠图真的吹爆，操作也简单，一点就能抠干净。' },
+      { name: '高**', role: '视觉负责人', tags: ['多人协同', '实时评论', '素材共享'], quote: '多人协同编辑功能挺好的，团队分三个城市，做张海报微信发几十条语音去调整。现在创客贴协作，设计师做完我直接在线图上批评，运营改文案实时同步，太方便。' },
+      { name: '林**', role: '独立设计师', tags: ['AI灵感加持', '生态丰富', '灵活高效'], quote: '作为设计师，最头疼的是客户修改和灵感枯竭。创客贴的 AI 创作和丰富模板，让我从找素材到交付都更高效。' },
+    ],
+    logos: ['iQIYI 爱奇艺', '广发银行 CGB', '途虎养车', '汇联易', 'vanke', '平安银行', 'Mercedes-Benz', 'SF 顺丰', '吉利汽车', 'Tencent 腾讯', '斗鱼', '中国移动', '美团', '13 出行', '高顿教育'],
+    serviceCta: {
+      title: '为团队/企业提供专属服务和解决方案',
+      buttonLabel: '申请试用',
+      qrTitle: '扫码添加\n专属顾问',
+      qrDescription: '企业专属服务',
+    },
   },
   faq: {
     title: '常见问题',
@@ -631,6 +698,22 @@ const normalizeDetails = (value: unknown, fallback: MembershipDetailsConfig): Me
   };
 };
 
+const normalizeCommercialLicense = (value: unknown, fallback: MembershipCommercialLicenseConfig): MembershipCommercialLicenseConfig => {
+  if (!value || typeof value !== 'object') return clone(fallback);
+  const raw = value as Partial<MembershipCommercialLicenseConfig>;
+  return {
+    ...clone(fallback),
+    title: typeof raw.title === 'string' ? raw.title : fallback.title,
+    description: typeof raw.description === 'string' ? raw.description : fallback.description,
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : fallback.enabled,
+    scopes: Array.isArray(raw.scopes) ? raw.scopes : fallback.scopes,
+    scopeSections: Array.isArray(raw.scopeSections) ? raw.scopeSections : fallback.scopeSections,
+    testimonials: Array.isArray(raw.testimonials) ? raw.testimonials : fallback.testimonials,
+    logos: Array.isArray(raw.logos) ? raw.logos : fallback.logos,
+    serviceCta: raw.serviceCta && typeof raw.serviceCta === 'object' ? raw.serviceCta : fallback.serviceCta,
+  };
+};
+
 const normalizePlans = (value: unknown): MembershipPlansConfig => {
   const fallback = DEFAULT_MEMBERSHIP_PAGE_CONFIG.plans;
   const rawTabs = (value as { tabs?: unknown } | null)?.tabs;
@@ -677,7 +760,7 @@ export function readMembershipPageConfig(platform: PlatformKey = 'web'): Members
       overview: parseJson(json.overview, fallback.overview),
       details: normalizeDetails(parseJson(json.details, fallback.details), fallback.details),
       modelConsumption: normalizeModelConsumption(parseJson(json['model-consumption'], fallback.modelConsumption), fallback.modelConsumption),
-      commercialLicense: parseJson(json['commercial-license'], fallback.commercialLicense),
+      commercialLicense: normalizeCommercialLicense(parseJson(json['commercial-license'], fallback.commercialLicense), fallback.commercialLicense),
       faq: parseJson(json.faq, fallback.faq),
     };
   } catch {

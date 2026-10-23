@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, ChevronRight, Crown, Gift, Sparkles, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
-import { readMembershipPageConfig, type MembershipComparisonConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
+import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 
 type MembershipCenterModalProps = {
   onClose: () => void;
@@ -98,6 +98,43 @@ function DetailsComparisonTable({ config }: { config: MembershipComparisonConfig
       </section>)}
     </div>
   </div>;
+}
+
+function CommercialLicenseOverview({ config }: { config: MembershipCommercialLicenseConfig }) {
+  const scopeSections = config.scopeSections ?? [];
+  const testimonials = config.testimonials ?? [];
+  const logos = config.logos ?? [];
+
+  return <>
+    <section className="mx-auto mt-4 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8">
+      <h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{config.title}</h2>
+      <p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{config.description}</p>
+      {scopeSections.length ? <div className="mt-7 grid grid-cols-1 overflow-hidden rounded-[16px] border border-[#e7ebf0] bg-white lg:grid-cols-3">
+        {scopeSections.map((section, sectionIndex) => <div key={`${section.title}-${sectionIndex}`} className={`px-5 py-6 ${section.enabled ? 'bg-white' : 'bg-[#f3f6fc]'}`}>
+          <h3 className="text-[16px] font-semibold text-[#273143]">{section.title}</h3>
+          <ul className="mt-5 space-y-5">
+            {section.items.map((item, itemIndex) => <li key={`${item.title}-${itemIndex}`}>
+              <div className="flex items-start gap-2"><span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${section.enabled ? 'bg-[#168ff2] text-white' : 'bg-[#c8cdd5] text-white'}`}>{section.enabled ? <Check className="h-3 w-3" strokeWidth={3} /> : <X className="h-3 w-3" strokeWidth={3} />}</span><span className="text-[12px] font-medium text-[#344052]">{item.title}</span></div>
+              <p className="ml-6 mt-2 text-[11px] leading-5 text-[#7e8999]">{item.description}</p>
+            </li>)}
+          </ul>
+        </div>)}
+      </div> : <div className="mt-6 flex flex-wrap justify-center gap-2">{config.scopes.map((scope) => <span key={scope} className="rounded-full bg-white px-3 py-1.5 text-[11px] text-[#687588] shadow-sm">{scope}</span>)}</div>}
+    </section>
+    {testimonials.length ? <section className="mx-auto mt-14 max-w-[1120px] px-1">
+      <h2 className="text-center text-[26px] font-semibold tracking-[-.04em] text-[#202a3d]">这些企业和用户都在选择创客贴</h2>
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {testimonials.map((testimonial, index) => <article key={`${testimonial.name}-${index}`} className="rounded-[16px] border border-[#edf0f4] bg-white p-5 shadow-[0_8px_22px_rgba(37,52,77,.04)]">
+          <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#d7e7ff,#f4c9b5)] text-[13px] font-semibold text-white">{testimonial.avatar ?? testimonial.name.slice(0, 1)}</span><div><div className="text-[12px] font-semibold text-[#273143]">{testimonial.name} <span className="font-normal text-[#8994a3]">/ {testimonial.role}</span></div><div className="mt-1 flex flex-wrap gap-1">{testimonial.tags.map((tag) => <span key={tag} className="rounded-[3px] bg-[#edf3ff] px-1.5 py-0.5 text-[9px] text-[#6e7f9d]">{tag}</span>)}</div></div></div>
+          <p className="mt-4 text-[11px] leading-5 text-[#7d899c]">“{testimonial.quote}”</p>
+        </article>)}
+      </div>
+      {logos.length ? <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+        {logos.map((logo) => <div key={logo} className="flex h-12 items-center justify-center rounded-[10px] border border-[#f0f2f5] bg-white px-2 text-center text-[11px] font-semibold text-[#8b95a4] shadow-[0_5px_14px_rgba(37,52,77,.04)]">{logo}</div>)}
+      </div> : null}
+    </section> : null}
+    {config.serviceCta ? <section className="mx-auto mt-14 flex max-w-[1120px] items-center justify-between gap-6 overflow-hidden rounded-[18px] bg-[#202940] px-8 py-7 text-white shadow-[0_16px_36px_rgba(32,41,64,.15)]"><div><h2 className="text-[18px] font-semibold">{config.serviceCta.title}</h2><button type="button" className="mt-5 rounded-[7px] bg-white px-6 py-2.5 text-[12px] font-medium text-[#263247] transition hover:bg-[#eef3fb]">{config.serviceCta.buttonLabel}</button></div><div className="flex items-center gap-3"><div className="flex h-[92px] w-[92px] items-center justify-center rounded-[10px] border-4 border-white bg-[#f5f7fb] text-[42px] text-[#202940]">▦</div><div className="rounded-[8px] bg-[#168ff2] px-4 py-3 text-[12px] font-medium leading-5">{config.serviceCta.qrTitle.split('\n').map((line) => <div key={line}>{line}</div>)}<span className="mt-1 block text-[10px] font-normal text-white/70">{config.serviceCta.qrDescription}</span></div></div></section> : null}
+  </>;
 }
 
 function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enterprise = false, seats = 1, onSeatChange }: { plan: MembershipPlan; selected: boolean; cycleKey: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; onSeatChange?: (delta: number) => void }) {
@@ -221,7 +258,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
         <section className="mt-16 text-center"><h2 className="text-[20px] font-semibold text-[#273144]">{pageConfig.overview.title}</h2><p className="mt-2 text-[12px] text-[#9aa4b2]">{pageConfig.overview.subtitle}</p><div className="mx-auto mt-7 grid max-w-[780px] grid-cols-1 gap-3 text-left md:grid-cols-3">{pageConfig.overview.items.map((item, index) => { const Icon = [Gift, Crown, Sparkles][index % 3]; return <div key={`${item.title}-${index}`} className="rounded-[14px] border border-[#e9edf3] bg-white p-4"><Icon className={`h-5 w-5 ${index % 3 === 0 ? 'text-[#168ff2]' : index % 3 === 1 ? 'text-[#ff9b2f]' : 'text-[#7a6cf0]'}`} /><h3 className="mt-3 text-[13px] font-semibold">{item.title}</h3><p className="mt-1 text-[11px] leading-5 text-[#8a94a4]">{item.description}</p></div>; })}</div></section>
         <section className="mx-auto mt-12 max-w-[1120px] rounded-[16px] border border-[#e9edf3] bg-[#f7f8fa] p-6"><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} /> : <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section>
         <section className="mx-auto mt-4 max-w-[1120px] rounded-[16px] border border-[#e9edf3] bg-[#f7f8fa] p-6"><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.modelConsumption.title}</h2><p className="mt-2 text-[12px] text-[#8a94a4]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section>
-        <section className="mx-auto mt-4 max-w-[980px] rounded-[16px] border border-[#e9edf3] bg-white p-6"><div className="flex items-center justify-between gap-4"><div><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.commercialLicense.title}</h2><p className="mt-2 text-[12px] text-[#8a94a4]">{pageConfig.commercialLicense.description}</p></div><span className={`rounded-full px-3 py-1 text-[11px] ${pageConfig.commercialLicense.enabled ? 'bg-[#e9f8f0] text-[#2a9a66]' : 'bg-[#f1f3f6] text-[#929baa]'}`}>{pageConfig.commercialLicense.enabled ? '已开启' : '未开启'}</span></div><div className="mt-4 flex flex-wrap gap-2">{pageConfig.commercialLicense.scopes.map((scope) => <span key={scope} className="rounded-full bg-[#f4f7fb] px-3 py-1.5 text-[11px] text-[#687588]">{scope}</span>)}</div></section>
+        <CommercialLicenseOverview config={pageConfig.commercialLicense} />
         <section className="mx-auto mt-4 max-w-[980px] rounded-[16px] border border-[#e9edf3] bg-white p-6"><h2 className="text-[18px] font-semibold text-[#273144]">{pageConfig.faq.title}</h2><div className="mt-4 divide-y divide-[#edf0f4]">{pageConfig.faq.items.map((item, index) => <details key={`${item.question}-${index}`} className="py-3"><summary className="cursor-pointer text-[13px] font-medium text-[#394355]">{item.question}</summary><p className="mt-2 text-[12px] leading-5 text-[#8a94a4]">{item.answer}</p></details>)}</div></section>
       </main>
       </div>
