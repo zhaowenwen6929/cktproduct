@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { CalendarDays, ChevronDown, ChevronRight, CircleHelp, Download } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getPackagePointsDisplay } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getDefaultMemberDurationDays, getMemberPointsConfig, getPackagePointsDisplay, isHistoricalMemberType } from './MembershipPackagePage';
 
 type MembershipOpenPageProps = {
   onBackToDirectory: () => void;
@@ -188,6 +188,20 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
     if (item === '会员页面配置') onNavigateToMembershipPageConfig?.();
   };
   const isProfessional = category === '专业版';
+  const historicalMembershipSelected = !isProfessional && isHistoricalMemberType(membershipType);
+  const handleMembershipTypeChange = (value: string) => {
+    const pointsConfig = getMemberPointsConfig(value);
+    const historical = isHistoricalMemberType(value);
+    setMembershipType(value);
+    setPointsError('');
+    setForm((current) => ({
+      ...current,
+      duration: historical ? getDefaultMemberDurationDays(value) || current.duration : current.duration,
+      points: historical && pointsConfig?.points != null ? String(pointsConfig.points) : '',
+      pointsUnit: pointsConfig?.pointsUnit ?? '每人',
+      pointsCycle: pointsConfig?.pointsCycle ?? '按月',
+    }));
+  };
   const panelTabs: MembershipPanel[] = isProfessional ? ['开通会员', '购买席位', '配置域名', '历史记录'] : ['开通会员', '购买席位', '历史记录'];
 
   return (
@@ -252,7 +266,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                   className="px-8 pb-12 pt-11"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    if (!form.points.trim()) {
+                    if (!historicalMembershipSelected && !form.points.trim()) {
                       setPointsError('请输入积分量');
                       return;
                     }
@@ -270,7 +284,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     {!isProfessional ? <FormRow label="会员类型" required>
                       <div className="relative rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3">
                         <div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
-                        <MemberTypeDropdown value={membershipType} onChange={setMembershipType} className="w-[240px]" />
+                        <MemberTypeDropdown value={membershipType} onChange={handleMembershipTypeChange} className="w-[240px]" />
                       </div>
                     </FormRow> : null}
 
@@ -282,20 +296,20 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                       <input value={form.memberCount} onChange={(event) => updateForm('memberCount', event.currentTarget.value)} placeholder="请输入成员人数（人）" className={`${inputClassName} w-[425px] max-w-full`} />
                     </FormRow>
 
-                    <FormRow label="积分量" required>
+                    <FormRow label="积分量" required={!historicalMembershipSelected}>
                       <div className="relative rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 pb-2 pt-3">
                         <div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={POINTS_REQUIREMENT} requirementName={OPEN_POINTS_REQUIREMENT_NAME} /></div>
                         <div className="flex w-[425px] max-w-full items-center gap-2">
-                          <input type="number" min="0" step="1" required value={form.points} onChange={(event) => { setPointsError(''); updateForm('points', event.currentTarget.value.replace(/\D/g, '')); }} placeholder="请输入积分量" className={`${inputClassName} min-w-0 flex-1`} />
+                          <input type="number" min="0" step="1" required={!historicalMembershipSelected} disabled={historicalMembershipSelected} value={form.points} onChange={(event) => { setPointsError(''); updateForm('points', event.currentTarget.value.replace(/\D/g, '')); }} placeholder={historicalMembershipSelected ? undefined : '请输入积分量'} className={`${historicalMembershipSelected ? 'cursor-not-allowed bg-[#f5f5f5] text-[#bcbcbc]' : inputClassName} min-w-0 flex-1`} />
                           <div className="relative w-[96px] shrink-0">
-                            <select aria-label="发放单位" value={form.pointsUnit} onChange={(event) => updateForm('pointsUnit', event.currentTarget.value)} className={`${selectClassName} w-full`}>
+                            <select aria-label="发放单位" disabled={historicalMembershipSelected} value={form.pointsUnit} onChange={(event) => updateForm('pointsUnit', event.currentTarget.value)} className={`${historicalMembershipSelected ? 'cursor-not-allowed bg-[#f5f5f5] text-[#bcbcbc]' : selectClassName} w-full`}>
                               <option value="每人">每人</option>
                               <option value="团队">团队</option>
                             </select>
                             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7afb9]" />
                           </div>
                           <div className="relative w-[96px] shrink-0">
-                            <select aria-label="发放周期" value={form.pointsCycle} onChange={(event) => updateForm('pointsCycle', event.currentTarget.value)} className={`${selectClassName} w-full`}>
+                            <select aria-label="发放周期" disabled={historicalMembershipSelected} value={form.pointsCycle} onChange={(event) => updateForm('pointsCycle', event.currentTarget.value)} className={`${historicalMembershipSelected ? 'cursor-not-allowed bg-[#f5f5f5] text-[#bcbcbc]' : selectClassName} w-full`}>
                               <option value="按月">按月</option>
                               <option value="一次性">一次性</option>
                             </select>
@@ -303,7 +317,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                           </div>
                         </div>
                         {pointsError ? <p className="mt-1 text-[12px] text-[#ff4d4f]">{pointsError}</p> : null}
-                        <p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">未填写积分量时，按照套餐所属会员等级的积分量发放</p>
+                        <p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">{historicalMembershipSelected ? '历史会员按会员等级回显积分量，不支持修改' : '未填写积分量时，按照套餐所属会员等级的积分量发放'}</p>
                       </div>
                     </FormRow>
 
