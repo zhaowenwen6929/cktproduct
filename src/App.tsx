@@ -15,11 +15,12 @@ import { MembershipPackagePage } from './components/MembershipPackagePage';
 import { MembershipPageConfigPage } from './components/MembershipPageConfigPage';
 import { MembershipOpenPage } from './components/MembershipOpenPage';
 import { UserSegmentPage } from './components/UserSegmentPage';
+import { CustomUserSegmentPage, NewRuleUserSegmentPage } from './components/UserSegmentConditionPage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
 type ExportRequest =
   | {
@@ -74,6 +75,8 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/admin-backoffice/membership-open') return '/admin-backoffice/membership-open';
   if (pathname === '/admin-backoffice/membership-packages') return '/admin-backoffice/membership-packages';
   if (pathname === '/admin-backoffice/membership-page-config') return '/admin-backoffice/membership-page-config';
+  if (pathname === '/admin-backoffice/user-segments/new-rule') return '/admin-backoffice/user-segments/new-rule';
+  if (pathname === '/admin-backoffice/user-segments/custom-rule') return '/admin-backoffice/user-segments/custom-rule';
   if (pathname === '/admin-backoffice/user-segments') return '/admin-backoffice/user-segments';
   if (pathname === '/admin-backoffice') return '/admin-backoffice';
   return '/';
@@ -1382,6 +1385,14 @@ export default function App() {
         title: '创客贴管理后台｜用户分群',
         description: '用户中心下的用户分群管理页面。',
       },
+      '/admin-backoffice/user-segments/new-rule': {
+        title: '创客贴管理后台｜新增规则分群',
+        description: '用户中心下的新建规则分群条件页面。',
+      },
+      '/admin-backoffice/user-segments/custom-rule': {
+        title: '创客贴管理后台｜定制分群条件',
+        description: '用户中心下的定制分群条件页面。',
+      },
       '/admin-backoffice/requirements': {
         title: '创客贴管理后台｜需求列表',
         description: '按新增时间倒序查看后台功能需求明细，并进入对应功能页面。',
@@ -1679,6 +1690,30 @@ export default function App() {
   if (currentRoute === '/admin-backoffice/user-segments') {
     return <UserSegmentPage
       onBackToDirectory={() => navigateTo('/')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
+      onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+      onNavigateToNewRule={() => navigateTo('/admin-backoffice/user-segments/new-rule')}
+      onNavigateToCustomRule={() => navigateTo('/admin-backoffice/user-segments/custom-rule')}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/user-segments/new-rule') {
+    return <NewRuleUserSegmentPage
+      onBackToDirectory={() => navigateTo('/')}
+      onBackToUserSegments={() => navigateTo('/admin-backoffice/user-segments')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
+      onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/user-segments/custom-rule') {
+    return <CustomUserSegmentPage
+      onBackToDirectory={() => navigateTo('/')}
+      onBackToUserSegments={() => navigateTo('/admin-backoffice/user-segments')}
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
       onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
