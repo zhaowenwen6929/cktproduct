@@ -77,29 +77,29 @@ function UserSegmentConditionPage({ mode, onBackToDirectory, onBackToUserSegment
               </div>
             </div>
 
-            <div className="px-10 pb-16 pt-7 sm:px-12">
-              <div className="max-w-[900px] space-y-7">
+            <div className="px-8 pb-10 pt-5 sm:px-10">
+              <div className="max-w-[900px] space-y-4">
                 <div className="grid grid-cols-[120px_360px_84px] items-center gap-3">
-                  <label htmlFor="segment-name" className="text-right text-[17px] text-[#30343b]"><i className="mr-1 not-italic text-[#ff4d5a]">*</i>分群名称：</label>
-                  <input id="segment-name" value={groupName} onChange={(event) => setGroupName(event.currentTarget.value)} placeholder="请输入分群名称" className="h-11 rounded-[3px] border border-[#d7dce3] px-3 text-[16px] outline-none placeholder:text-[#c8cbd0] focus:border-[#278fee]" />
-                  <button type="button" disabled={!groupName.trim()} onClick={complete} className="h-11 rounded-[3px] border border-[#d9dde2] bg-[#f5f6f7] text-[15px] text-[#c4c7ca] transition enabled:border-[#278fee] enabled:bg-[#278fee] enabled:text-white enabled:hover:bg-[#167fdc]">完成</button>
+                  <label htmlFor="segment-name" className="text-right text-[15px] text-[#30343b]"><i className="mr-1 not-italic text-[#ff4d5a]">*</i>分群名称：</label>
+                  <input id="segment-name" value={groupName} onChange={(event) => setGroupName(event.currentTarget.value)} placeholder="请输入分群名称" className="h-10 rounded-[3px] border border-[#d7dce3] px-3 text-[15px] outline-none placeholder:text-[#c8cbd0] focus:border-[#278fee]" />
+                  <button type="button" disabled={!groupName.trim()} onClick={complete} className="h-10 rounded-[3px] border border-[#d9dde2] bg-[#f5f6f7] text-[14px] text-[#c4c7ca] transition enabled:border-[#278fee] enabled:bg-[#278fee] enabled:text-white enabled:hover:bg-[#167fdc]">完成</button>
                 </div>
 
                 <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                  <span className="text-right text-[17px]">注册条件：</span>
+                  <span className="text-right text-[15px]">注册条件：</span>
                   <ConditionSelect value={registrationCondition} onChange={setRegistrationCondition} options={['不限制', '已注册', '未注册']} />
                 </div>
 
                 <div className="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-3">
-                  <span className="pt-3 text-right text-[17px]">会员身份：</span>
-                  <div className="space-y-7">
+                  <span className="pt-2 text-right text-[15px]">会员身份：</span>
+                  <div className="space-y-4">
                     <CsvSelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]">
                       {IDENTITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </CsvSelect>
 
                     {isPreviousMember ? (
                       <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-3">
-                        <span className="text-right text-[17px]">用户之前的身份：</span>
+                        <span className="text-right text-[15px]">用户之前的身份：</span>
                         <ConditionSelect value={previousIdentity} onChange={setPreviousIdentity} options={['不限制', '一直是免费会员', '之前是会员']} />
                       </div>
                     ) : null}
@@ -119,43 +119,43 @@ function UserSegmentConditionPage({ mode, onBackToDirectory, onBackToUserSegment
                 {mode === 'rule' ? (
                   <>
                     <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">活跃行为：</span>
+                      <span className="text-right text-[15px]">活跃行为：</span>
                       <ConditionSelect value={activeBehavior} onChange={setActiveBehavior} options={['不限', '活跃用户', '非活跃用户']} />
                     </div>
                     <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">付费行为：</span>
+                      <span className="text-right text-[15px]">付费行为：</span>
                       <ConditionSelect value={paidBehavior} onChange={setPaidBehavior} options={['不限', '付费用户', '未付费用户']} />
                     </div>
                     <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">注册来源：</span>
+                      <span className="text-right text-[15px]">注册来源：</span>
                       <ConditionSelect value={registrationSource} onChange={setRegistrationSource} options={['不限', '自然注册', '邀请注册', '活动注册']} />
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">活跃行为：</span>
+                      <span className="text-right text-[15px]">活跃行为：</span>
                       <ConditionSelect value={activeBehavior} onChange={setActiveBehavior} options={['不限', '活跃用户', '非活跃用户']} />
                     </div>
                     <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">所在平台：</span>
+                      <span className="text-right text-[15px]">所在平台：</span>
                       <ConditionSelect value={platform} onChange={setPlatform} options={['不限', '网页端', '移动端', '小程序']} />
                     </div>
                     <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">注册来源：</span>
+                      <span className="text-right text-[15px]">注册来源：</span>
                       <ConditionSelect value={registrationSource} onChange={setRegistrationSource} options={['不限', '自然注册', '邀请注册', '活动注册']} />
                     </div>
                     <div className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">登录状态：</span>
+                      <span className="text-right text-[15px]">登录状态：</span>
                       <ConditionSelect value={loginStatus} onChange={setLoginStatus} options={['不限', '已登录', '未登录']} />
                     </div>
                     <label className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">用户行业：</span>
-                      <input value={userIndustry} onChange={(event) => setUserIndustry(event.currentTarget.value)} className="h-11 rounded-[3px] border border-[#d7dce3] px-3 text-[16px] outline-none focus:border-[#278fee]" />
+                      <span className="text-right text-[15px]">用户行业：</span>
+                      <input value={userIndustry} onChange={(event) => setUserIndustry(event.currentTarget.value)} className="h-10 rounded-[3px] border border-[#d7dce3] px-3 text-[15px] outline-none focus:border-[#278fee]" />
                     </label>
                     <label className="grid grid-cols-[120px_360px] items-center gap-3">
-                      <span className="text-right text-[17px]">设计用途：</span>
-                      <input value={designPurpose} onChange={(event) => setDesignPurpose(event.currentTarget.value)} className="h-11 rounded-[3px] border border-[#d7dce3] px-3 text-[16px] outline-none focus:border-[#278fee]" />
+                      <span className="text-right text-[15px]">设计用途：</span>
+                      <input value={designPurpose} onChange={(event) => setDesignPurpose(event.currentTarget.value)} className="h-10 rounded-[3px] border border-[#d7dce3] px-3 text-[15px] outline-none focus:border-[#278fee]" />
                     </label>
                   </>
                 )}

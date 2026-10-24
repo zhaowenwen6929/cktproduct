@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CalendarDays, ChevronDown, Search } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementHint } from './MembershipPackagePage';
 
 type UserAuthorizationPageProps = {
   onBackToDirectory: () => void;
@@ -21,7 +22,7 @@ type AuthorizationRecord = {
   authorizationStatus: '个人' | '企业';
 };
 
-const BENEFIT_LEVEL_OPTIONS = [
+const EXISTING_BENEFIT_LEVEL_OPTIONS = [
   '基础版VIP',
   '协作版VIP',
   '高级团队版VIP',
@@ -37,6 +38,7 @@ const BENEFIT_LEVEL_OPTIONS = [
   '专业版（单人）',
   '旗舰版（企业）',
 ];
+const NEW_BENEFIT_LEVEL_OPTIONS = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 220'];
 
 const AUTHORIZATION_RECORDS: AuthorizationRecord[] = [
   { userId: '121904831', source: '主站/WPS', benefitLevel: '基础版VIP', seats: '1', duration: '31', openedAt: '2026-04-30 15:08:16', benefitStatus: '已失效', authorizationStatus: '个人' },
@@ -143,7 +145,11 @@ export function UserAuthorizationPage({ onBackToDirectory, onNavigateToSkillConf
                   {benefitDropdownOpen ? (
                     <div className="absolute left-0 top-[calc(100%+4px)] z-30 max-h-[250px] w-full overflow-y-auto rounded-[3px] border border-[#dfe4eb] bg-white py-1 shadow-[0_8px_18px_rgba(31,43,61,.16)]">
                       <button type="button" onClick={() => { setBenefitLevel(''); setBenefitDropdownOpen(false); }} className="block w-full px-3 py-2 text-left text-[14px] text-[#4a5563] hover:bg-[#eef6fd]">全部等级</button>
-                      {BENEFIT_LEVEL_OPTIONS.map((option) => <button key={option} type="button" onClick={() => { setBenefitLevel(option); setBenefitDropdownOpen(false); }} className={`block w-full px-3 py-2 text-left text-[14px] ${benefitLevel === option ? 'bg-[#eaf5ff] text-[#278fee]' : 'text-[#4a5563] hover:bg-[#eef6fd]'}`}>{option}</button>)}
+                      {EXISTING_BENEFIT_LEVEL_OPTIONS.map((option) => <button key={option} type="button" onClick={() => { setBenefitLevel(option); setBenefitDropdownOpen(false); }} className={`block w-full px-3 py-2 text-left text-[14px] ${benefitLevel === option ? 'bg-[#eaf5ff] text-[#278fee]' : 'text-[#4a5563] hover:bg-[#eef6fd]'}`}>{option}</button>)}
+                      <div className="relative mt-2 rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-1 pb-1 pt-4">
+                        <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName="用户授权信息管理新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
+                        {NEW_BENEFIT_LEVEL_OPTIONS.map((option) => <button key={option} type="button" onClick={() => { setBenefitLevel(option); setBenefitDropdownOpen(false); }} className={`block w-full rounded-[2px] px-3 py-2 text-left text-[14px] ${benefitLevel === option ? 'bg-[#ffe6e1] text-[#e05252]' : 'text-[#4a5563] hover:bg-[#fff0ed]'}`}>{option}</button>)}
+                      </div>
                     </div>
                   ) : null}
                 </div>

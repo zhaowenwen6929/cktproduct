@@ -18,11 +18,12 @@ import { UserSegmentPage } from './components/UserSegmentPage';
 import { CustomUserSegmentPage, NewRuleUserSegmentPage } from './components/UserSegmentConditionPage';
 import { AuthorizationScopePage } from './components/AuthorizationScopePage';
 import { UserAuthorizationPage } from './components/UserAuthorizationPage';
+import { MembershipActivationPage } from './components/MembershipActivationPage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
 type ExportRequest =
   | {
@@ -81,6 +82,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/admin-backoffice/user-segments/custom-rule') return '/admin-backoffice/user-segments/custom-rule';
   if (pathname === '/admin-backoffice/authorization-scope') return '/admin-backoffice/authorization-scope';
   if (pathname === '/admin-backoffice/user-authorization') return '/admin-backoffice/user-authorization';
+  if (pathname === '/admin-backoffice/membership-activation') return '/admin-backoffice/membership-activation';
   if (pathname === '/admin-backoffice/user-segments') return '/admin-backoffice/user-segments';
   if (pathname === '/admin-backoffice') return '/admin-backoffice';
   return '/';
@@ -1405,6 +1407,10 @@ export default function App() {
         title: '创客贴管理后台｜用户授权信息管理',
         description: '创客贴版权资源库下的用户授权信息管理与查询页面。',
       },
+      '/admin-backoffice/membership-activation': {
+        title: '创客贴管理后台｜会员激活码',
+        description: '会员中心下的激活码活动列表和生成管理页面。',
+      },
       '/admin-backoffice/requirements': {
         title: '创客贴管理后台｜需求列表',
         description: '按新增时间倒序查看后台功能需求明细，并进入对应功能页面。',
@@ -1745,6 +1751,16 @@ export default function App() {
 
   if (currentRoute === '/admin-backoffice/user-authorization') {
     return <UserAuthorizationPage
+      onBackToDirectory={() => navigateTo('/')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
+      onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/membership-activation') {
+    return <MembershipActivationPage
       onBackToDirectory={() => navigateTo('/')}
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}

@@ -10,6 +10,7 @@ import {
   Database,
   FileText,
   Grid2X2,
+  KeyRound,
   LayoutDashboard,
   Menu,
   Pencil,
@@ -275,11 +276,17 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: '会员激活码',
+    icon: KeyRound,
+    expanded: false,
+    children: ['活动列表', '渠道商', '定制页面配置', '兑换码查询'],
+  },
+  {
     label: '授权管理',
     icon: Users,
     expanded: false,
     children: [
-      '用户授权信息查看',
+      '授权信息管理与查询',
       '授权类型管理',
       '授权范围设置',
       '版权方管理',
@@ -307,7 +314,12 @@ type RequirementNavItem = {
 const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
   { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirementKey: 'V2610', requirement: '完善会员套餐、会员页面和积分配置能力。', summary: '会员中心后台和前台会员页同步改版。', details: ['会员套餐管理、开通会员和会员页面配置作为本次改版的子需求。', '统一补充积分、权益、展示配置和企业使用场景。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/requirements/membership' },
   { id: 'membership-packages', title: '会员套餐新增积分量', navLabels: ['会员套餐管理'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '新增套餐积分量、发放单位和发放周期配置。', summary: '会员套餐支持补充积分发放规则，历史套餐保持兼容。', details: ['新增套餐积分量为必填项，填写非负整数，默认每人、按月，可切换团队和一次性。', '历史会员等级积分量非必填，按等级积分量自动回显且不可修改；终身套餐按36135天识别并一次性发放。', '购买套餐时按购买套餐对应的积分量立即发放，上一笔对应的未使用积分量失效；未配置时回退到会员等级积分量和规则。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-packages' },
-  { id: 'membership-open', title: '开通会员新增会员类型', navLabels: ['开通会员'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '开通会员页同步会员套餐管理中的会员类型和新增等级 level，并在成员人数下新增积分量、发放单位和发放周期。', summary: '开通会员与会员套餐管理共用会员类型和积分配置规则，新增等级名称和 level 保持一致。', details: ['复用会员套餐管理中的完整会员类型列表。', '新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '会员类型显示名称在前，level 数字在后。', '成员人数下新增积分量，沿用套餐的必填、单位、周期和发放说明。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-open' },
+  { id: 'membership-open', title: '开通会员新增新会员等级', navLabels: ['开通会员'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '开通会员页同步会员套餐管理中的会员类型和新增等级 level，并在成员人数下新增积分量、发放单位和发放周期。', summary: '开通会员与会员套餐管理共用会员类型和积分配置规则，新增等级名称和 level 保持一致。', details: ['复用会员套餐管理中的完整会员类型列表。', '新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '会员类型显示名称在前，level 数字在后。', '成员人数下新增积分量，沿用套餐的必填、单位、周期和发放说明。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-open' },
+  { id: 'membership-levels', title: '会员套餐管理新增新会员等级', navLabels: ['会员套餐管理'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员套餐管理的会员类型选择器同步新增会员等级及 level。', summary: '套餐管理中的会员类型与开通会员、用户分群保持一致。', details: ['会员类型列表新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '显示名称在前，level 数字在后。', '新增等级选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/membership-packages' },
+  { id: 'user-segments-member-level', title: '用户分群新增新会员等级', navLabels: ['用户分群'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户分群中的会员等级筛选同步新增会员等级及 level。', summary: 'CSV 导入分群、规则分群和定制分群条件统一支持新会员等级筛选。', details: ['会员等级筛选新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增等级在会员类型选项中以名称在前、level 数字在后的格式展示。', '新增选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-segments' },
+  { id: 'authorization-scope-member-level', title: '授权范围设置新增新会员等级', navLabels: ['授权范围设置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '授权范围设置的会员类型筛选同步新增会员等级及 level。', summary: '授权属性中的会员类型支持新会员等级，并以需求样式突出新增选项。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/authorization-scope' },
+  { id: 'user-authorization-member-level', title: '用户授权信息管理新增新会员等级', navLabels: ['授权信息管理与查询'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户授权信息管理的权益等级/类型筛选同步新增会员等级及 level。', summary: '权益等级筛选支持新会员等级并沿用统一需求说明。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-authorization' },
+  { id: 'membership-activation-member-level', title: '会员激活码新增新会员等级', navLabels: ['活动列表'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员激活码活动新增会员等级同步会员套餐管理中的等级和 level。', summary: '添加激活码活动时，激活码类型支持新会员等级。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/membership-activation' },
   { id: 'membership-page-config', title: '会员页面配置套餐与权益', navLabels: ['会员页面配置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '配置网页版和移动端会员页面的套餐、权益和说明内容。', summary: '会员页配置拆分个人使用和企业使用，并支持各模块 JSON 配置。', details: ['支持网页版和移动端两个端配置，默认进入网页版。', '支持套餐、权益概览、权益明细、模型消耗、商用授权和常见问题模块。', '会员套餐价格和积分沿用真实套餐数据。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-page-config' },
   { id: 'guided-search', title: '搜索引导管理', level: 'main', requirementKey: 'SG-2610', requirement: '维护引导词节点、节点关系，并查询实际映射配置。', summary: '支持引导词、关系和映射结果的查询与维护。', details: ['支持节点、关系和映射三个管理视图。', '可按关键词、层级、关系类型和状态筛选数据。', '支持导入、编辑、启停和删除操作。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/guided-search' },
   { id: 'ai-ecommerce', title: 'AI电商配置', level: 'main', requirementKey: 'AIE-2610', requirement: '按 function_code 和 scene 查询、编辑 AI 电商配置。', summary: '面向 AI 电商技能配置的查询、编辑和缓存管理。', details: ['支持按功能标识和场景查询配置。', '支持 JSON 草稿编辑、格式校验和保存。', '支持清理对应功能缓存，并保留最近查询记录。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/ai-ecommerce' },
@@ -412,7 +424,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
     const defaultExpanded = typeof item === 'string' ? false : item.expanded ?? true;
     const isExpanded = hasChildren && (expandedItems[label] ?? defaultExpanded);
     const linkedRequirements = hasChildren ? [] : getRequirementsForNavItem(item);
-    const showEntryDot = label === '开通会员' && linkedRequirements.some((requirement) => requirement.status !== '已上线');
+    const showEntryDot = linkedRequirements.some((requirement) => requirement.status !== '已上线');
 
     return (
       <div key={`${label}-${level}-${index}`}>
@@ -437,12 +449,16 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
               window.history.pushState({}, '', '/admin-backoffice/user-authorization');
               window.dispatchEvent(new PopStateEvent('popstate'));
             }
+            if (label === '活动列表' && typeof window !== 'undefined') {
+              window.history.pushState({}, '', '/admin-backoffice/membership-activation');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
             onNavigate?.(label);
           }
         }} style={{ paddingLeft: `${43 + level * 20}px` }} className={`mx-2 flex h-[34px] w-[calc(100%-16px)] items-center justify-between rounded-[5px] pr-3 text-left text-[10px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white shadow-[0_3px_10px_rgba(18,140,241,.2)]' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
           <span className="flex min-w-0 items-center gap-1">
             <span className="truncate">{label}</span>
-            {showEntryDot ? <RequirementDot label="开通会员有待开发需求" /> : null}
+            {showEntryDot ? <RequirementDot label={`${label}有待开发需求`} /> : null}
             {linkedRequirements.map((requirement) => <RequirementKeyBadge key={requirement.id} requirement={requirement} />)}
           </span>
           {hasChildren ? <ChevronDown className={`h-3 w-3 shrink-0 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}

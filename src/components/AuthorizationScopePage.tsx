@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementHint } from './MembershipPackagePage';
 
 type AuthorizationScopePageProps = {
   onBackToDirectory: () => void;
@@ -9,12 +10,14 @@ type AuthorizationScopePageProps = {
   onNavigateToMembershipPageConfig?: () => void;
 };
 
-const MEMBER_TYPES = [
+const EXISTING_MEMBER_TYPES = [
   '个人版VIP', '基础版VIP', '基础团队版VIP', '加强版VIP', '协作版VIP', '全用途版VIP', '标准团队版VIP', '高级团队版VIP', '企业专业版VIP',
   '基础版VIP', '全用途版VIP', '标准团队版VIP', '高级团队版VIP', '企业专业版', '新媒体商户版', '全用途商户版', '团队协作版', '标准版(个人)',
   '标准版(企业)', '个人高级版', '企业高级版', '高级版', '标准版(大企业)', '高级版(大企业)', '协作版', '高级版(团队)', '专业版(团队)', '至尊版(团队)',
   '通用版(个人)', '通用版(企业)', '基础版(单人)', '高级版(单人)', '专业版(单人)', '至尊版(单人)', '旗舰版',
 ];
+const NEW_MEMBER_TYPES = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 220'];
+const MEMBER_TYPES = [...EXISTING_MEMBER_TYPES, ...NEW_MEMBER_TYPES];
 
 type ScopeItem = {
   title: string;
@@ -78,9 +81,17 @@ export function AuthorizationScopePage({ onBackToDirectory, onNavigateToSkillCon
                 <div className="flex items-start gap-4 text-[14px]">
                   <span className="w-[72px] shrink-0 pt-2 text-[#424a55]">会员类型：</span>
                   <div className="flex flex-wrap gap-2">
-                    {MEMBER_TYPES.map((memberType, index) => (
+                    {EXISTING_MEMBER_TYPES.map((memberType, index) => (
                       <button key={`${memberType}-${index}`} type="button" onClick={() => setSelectedMemberType(memberType)} className={`rounded-[4px] border px-3 py-2 transition ${selectedMemberType === memberType ? 'border-[#278fee] bg-[#278fee] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)]' : 'border-[#e1e5ea] bg-white text-[#4d5664] hover:border-[#b8d7f5] hover:text-[#278fee]'}`}>{memberType}</button>
                     ))}
+                    <div className="relative mt-1 w-full rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 pb-3 pt-4">
+                      <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName="授权范围设置新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
+                      <div className="flex flex-wrap gap-2">
+                        {NEW_MEMBER_TYPES.map((memberType) => (
+                          <button key={memberType} type="button" onClick={() => setSelectedMemberType(memberType)} className={`rounded-[4px] border px-3 py-2 transition ${selectedMemberType === memberType ? 'border-[#278fee] bg-[#278fee] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)]' : 'border-[#e1e5ea] bg-white text-[#4d5664] hover:border-[#ffb0a8] hover:text-[#e05252]'}`}>{memberType}</button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

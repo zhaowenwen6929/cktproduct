@@ -246,7 +246,8 @@ export const POINTS_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '影响入口', items: ['会员套餐管理列表、套餐详情、新增套餐、编辑套餐，以及开通会员页成员人数下的积分量字段。'] },
 ];
 export const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
-export const MEMBER_TYPE_REQUIREMENT_NAME = '开通会员新增会员类型';
+export const MEMBER_TYPE_REQUIREMENT_NAME = '会员套餐管理新增新会员等级';
+export const OPEN_MEMBER_TYPE_REQUIREMENT_NAME = '开通会员新增新会员等级';
 export const MEMBER_TYPE_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '功能说明', items: ['会员类型列表新增 5 个会员等级及对应 level。'] },
   { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },
@@ -334,7 +335,7 @@ export function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY,
   );
 }
 
-export function MemberTypeDropdown({ value, onChange, disabled = false, className = 'w-[240px]' }: { value: string; onChange: (value: string) => void; disabled?: boolean; className?: string }) {
+export function MemberTypeDropdown({ value, onChange, disabled = false, className = 'w-[240px]', requirementName = MEMBER_TYPE_REQUIREMENT_NAME }: { value: string; onChange: (value: string) => void; disabled?: boolean; className?: string; requirementName?: string }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const selected = MEMBER_TYPE_OPTIONS.find((member) => member.name === value);
@@ -371,7 +372,7 @@ export function MemberTypeDropdown({ value, onChange, disabled = false, classNam
         <button type="button" onClick={() => choose('')} className={!value ? 'block w-full rounded-[2px] bg-[#f4f6f9] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#f7f9fc]'}>请选择会员类型</button>
         {existingOptions.map((member) => <button type="button" role="option" aria-selected={member.name === value} key={member.name} onClick={() => choose(member.name)} className={member.name === value ? 'block w-full rounded-[2px] bg-[#f4f6f9] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#f7f9fc]'}>{formatLabel(member)}</button>)}
         <div className="relative mt-3 rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-1 pb-1 pt-3">
-          <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
+          <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={requirementName} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
           {newOptions.map((member) => <button type="button" role="option" aria-selected={member.name === value} key={member.name} onClick={() => choose(member.name)} className={member.name === value ? 'block w-full rounded-[2px] bg-[#ffe6e1] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#fff0ed]'}>{formatLabel(member)}</button>)}
         </div>
       </div> : null}
