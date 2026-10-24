@@ -398,6 +398,8 @@ function getRequirementDisplayPath(item: RequirementNavItem): string {
     const group = NAV_GROUPS.find((candidate) => candidate.children?.some((child) => navItemContainsLabel(child, navLabel)));
     return [projectName, group?.label, navLabel].filter(Boolean).join(' > ');
   }
+  if (item.id === 'guided-search') return `${projectName} > 内容运营管理 > 搜索管理 > 搜索引导管理`;
+  if (item.id === 'ai-ecommerce') return `${projectName} > 灵感社区 > 玩法管理 > AI电商配置`;
   if (item.id === 'membership-redesign') return `${projectName} > 会员中心 > 会员改版`;
   return `${projectName} > 需求中心`;
 }

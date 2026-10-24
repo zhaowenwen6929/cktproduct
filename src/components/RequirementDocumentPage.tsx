@@ -178,7 +178,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '入口与导航层级',
         description: '入口位于内容运营管理，和实体词典保持同一级。',
         items: [
-          { label: '菜单位置', content: '内容运营管理 > 搜索管理 > 实体词典、搜索引导管理。搜索引导管理与实体词典保持同一级。' },
+          { label: '菜单位置', content: '创客贴管理后台 > 内容运营管理 > 搜索管理 > 搜索引导管理。搜索引导管理与实体词典保持同一级。' },
           { label: '权限差异', content: 'admin、operator 可导入、编辑、启用/禁用和删除；viewer 只读，不展示编辑类操作。' },
           { label: '页面形态', content: '三个 Tab 共用页面容器，切换 Tab 不跳转新页面，并保留各自的筛选条件。' },
         ],
