@@ -576,8 +576,12 @@ type RequirementListPageProps = {
 
 function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
   const childRequirements = item.level === 'main' ? getRequirementChildren(item.id) : [];
+  const detailedRequirementGroups = childRequirements.map((child) => ({
+    title: child.title,
+    items: child.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail, path: child.path })),
+  }));
   const detailedRequirements = childRequirements.length > 0
-    ? childRequirements.flatMap((child) => child.details.map((detail, index) => ({ label: `${child.title} · 需求点 ${index + 1}`, content: detail, path: child.path })))
+    ? []
     : item.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail, path: item.path }));
 
   return {
@@ -596,8 +600,9 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
       },
       {
         title: '具体需求',
-        description: '列表之外的实现细节和验收关注点。',
+        description: childRequirements.length > 0 ? '按子需求归类展示具体需求点。' : '列表之外的实现细节和验收关注点。',
         items: detailedRequirements,
+        groups: detailedRequirementGroups.length > 0 ? detailedRequirementGroups : undefined,
       },
       {
         title: '所在路径',
