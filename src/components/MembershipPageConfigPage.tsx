@@ -36,6 +36,24 @@ const createDefaultConfig = (): PlatformConfig => ({
 const createDefaultState = (): ConfigState => ({ web: createDefaultConfig(), mobile: createDefaultConfig() });
 const STORAGE_KEY = MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY;
 
+type MembershipPageVersion = {
+  id: string;
+  name: string;
+  status: '使用中' | '草稿';
+  updatedAt: string;
+  description: string;
+};
+
+const MEMBERSHIP_PAGE_VERSIONS: MembershipPageVersion[] = [
+  {
+    id: 'membership-page-2026-10',
+    name: '2026年10月版本会员页',
+    status: '使用中',
+    updatedAt: '2026-10-24 10:00:00',
+    description: '会员页改版，支持个人使用和企业使用，并配置套餐、权益、模型消耗、商用授权和常见问题。',
+  },
+];
+
 const migratePlansJson = (value: unknown, fallback: string) => {
   if (typeof value !== 'string') return fallback;
   try {
@@ -170,18 +188,54 @@ const readStoredState = (): ConfigState => {
   }
 };
 
-export function MembershipPageConfigPage({
+function MembershipPageVersionList({
   onBackToDirectory,
   onNavigateToSkillConfig,
   onNavigateToGuidedSearch,
   onNavigateToMembershipPackages,
   onNavigateToRequirement,
+  onOpenVersion,
 }: {
   onBackToDirectory: () => void;
   onNavigateToSkillConfig?: () => void;
   onNavigateToGuidedSearch?: () => void;
   onNavigateToMembershipPackages?: () => void;
   onNavigateToRequirement?: (path: string) => void;
+  onOpenVersion: (version: MembershipPageVersion) => void;
+}) {
+  return <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]"><AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员页面配置" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} /><TopHeader /><main className="ml-[228px] min-h-screen pt-[62px]"><div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>会员中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">会员页面配置</span></div><section className="overflow-hidden rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e8edf3] px-5 py-5"><div><h1 className="text-[18px] font-semibold text-[#283244]">会员页面配置</h1><p className="mt-1 text-[12px] text-[#98a2b2]">请选择页面版本，进入后配置该版本的会员页面内容。</p></div><span className="rounded-[5px] bg-[#f3f7fc] px-3 py-2 text-[12px] text-[#6e7d93]">共 {MEMBERSHIP_PAGE_VERSIONS.length} 个版本</span></header><div className="p-5"><div className="mb-3 text-[14px] font-semibold text-[#27344a]">页面版本</div><div className="overflow-hidden rounded-[6px] border border-[#e2e8f0]"><div className="grid grid-cols-[1.4fr_1fr_1.5fr_1.2fr_120px] items-center gap-4 bg-[#fafbfd] px-5 py-3 text-[12px] text-[#7d899a]"><span>版本名称</span><span>状态</span><span>版本说明</span><span>最近更新时间</span><span className="text-right">操作</span></div>{MEMBERSHIP_PAGE_VERSIONS.map((version) => <div key={version.id} className="grid grid-cols-[1.4fr_1fr_1.5fr_1.2fr_120px] items-center gap-4 border-t border-[#edf0f4] px-5 py-5 text-[12px] text-[#536176] transition hover:bg-[#fbfdff]"><div><div className="text-[14px] font-medium text-[#27344a]">{version.name}</div><div className="mt-1 text-[11px] text-[#9aa5b5]">版本标识：{version.id}</div></div><span className="w-fit rounded-[4px] bg-[#eaf7ef] px-2.5 py-1 text-[11px] font-medium text-[#2b9160]">{version.status}</span><span className="leading-5 text-[#7c899b]">{version.description}</span><span className="text-[#7c899b]">{version.updatedAt}</span><div className="text-right"><button type="button" onClick={() => onOpenVersion(version)} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入配置<ChevronRight className="h-3.5 w-3.5" /></button></div></div>)}</div></div></section></div></main></div>;
+}
+
+export function MembershipPageConfigPage(props: {
+  onBackToDirectory: () => void;
+  onNavigateToSkillConfig?: () => void;
+  onNavigateToGuidedSearch?: () => void;
+  onNavigateToMembershipPackages?: () => void;
+  onNavigateToRequirement?: (path: string) => void;
+}) {
+  const [selectedVersion, setSelectedVersion] = useState<MembershipPageVersion | null>(null);
+
+  if (!selectedVersion) return <MembershipPageVersionList {...props} onOpenVersion={setSelectedVersion} />;
+
+  return <MembershipPageConfigEditor {...props} version={selectedVersion} onBackToVersions={() => setSelectedVersion(null)} />;
+}
+
+function MembershipPageConfigEditor({
+  onBackToDirectory,
+  onNavigateToSkillConfig,
+  onNavigateToGuidedSearch,
+  onNavigateToMembershipPackages,
+  onNavigateToRequirement,
+  version,
+  onBackToVersions,
+}: {
+  onBackToDirectory: () => void;
+  onNavigateToSkillConfig?: () => void;
+  onNavigateToGuidedSearch?: () => void;
+  onNavigateToMembershipPackages?: () => void;
+  onNavigateToRequirement?: (path: string) => void;
+  version: MembershipPageVersion;
+  onBackToVersions: () => void;
 }) {
   const [platform, setPlatform] = useState<PlatformKey>('web');
   const [activeModule, setActiveModule] = useState<ModuleKey>('plans');
@@ -236,5 +290,5 @@ export function MembershipPageConfigPage({
     return <div className="rounded-[8px] border border-[#e3e8f0] bg-white p-4"><div className="mb-3 flex items-center justify-between"><div><h3 className="text-[14px] font-semibold text-[#27344a]">{activeModuleMeta.label} JSON</h3><p className="mt-1 text-[12px] text-[#9aa5b5]">请使用合法 JSON 配置当前模块，保存前会自动校验格式。</p>{key === 'plans' ? <p className="mt-1 text-[11px] text-[#c1842d]">价格、原价、积分、积分档位和折扣不由此处维护，会员页会沿用真实套餐数据。</p> : null}</div><span className="rounded-full bg-[#f1f5fb] px-2.5 py-1 text-[11px] text-[#7a879a]">{platform === 'web' ? '网页版' : '移动端'}</span></div><textarea value={currentConfig.json[key]} onChange={(event) => updateJson(key, event.currentTarget.value)} spellCheck={false} className={`min-h-[480px] w-full resize-y rounded-[6px] border bg-[#101b2d] px-4 py-4 font-mono text-[12px] leading-6 text-[#dbe7f7] outline-none placeholder:text-[#74839a] ${error ? 'border-[#ff6e6e]' : 'border-[#22334d] focus:border-[#4c9fff]'}`} />{error ? <p className="mt-2 text-[12px] text-[#e04b4b]">{error}</p> : <p className="mt-2 text-[11px] text-[#a5afbd]">支持直接粘贴完整 JSON；当前配置仅保存在本地原型中。</p>}</div>;
   };
 
-  return <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]"><AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员页面配置" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} /><TopHeader /><main className="ml-[228px] min-h-screen pt-[62px]"><div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>会员中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">会员页面配置</span></div><section className="rounded-[4px] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">会员页面配置</h1><p className="mt-1 text-[12px] text-[#9aa5b5]">配置不同端会员页面的套餐、权益和说明内容。</p></div><div className="rounded-[5px] bg-[#f3f7fc] px-3 py-2 text-[12px] text-[#6e7d93]">当前端：<span className="font-medium text-[#278fee]">{platform === 'web' ? '网页版' : '移动端'}</span></div></div><div className="mt-5 flex border-b border-[#e8edf3]"><button type="button" onClick={() => setPlatform('web')} className={`relative px-5 py-3 text-[13px] ${platform === 'web' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>网页版{platform === 'web' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button><button type="button" onClick={() => setPlatform('mobile')} className={`relative px-5 py-3 text-[13px] ${platform === 'mobile' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>移动端{platform === 'mobile' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button></div></section><section className="mt-4 rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="border-b border-[#e8edf3] px-5 pt-2"><div className="flex flex-wrap gap-1">{MODULES.map((module) => <button type="button" key={module.key} onClick={() => setActiveModule(module.key)} className={`relative rounded-t-[5px] px-4 py-3 text-[13px] transition ${activeModule === module.key ? 'bg-[#eef6ff] font-medium text-[#278fee]' : 'text-[#69768a] hover:bg-[#f7f9fc] hover:text-[#278fee]'}`}>{module.label}{activeModule === module.key ? <span className="absolute inset-x-4 bottom-0 h-0.5 bg-[#278fee]" /> : null}</button>)}</div></div><div className="min-h-[590px] px-5 py-5"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-[15px] font-semibold text-[#27344a]">{activeModuleMeta.label}</h2><p className="mt-1 text-[12px] text-[#98a2b2]">{activeModuleMeta.description}</p></div><span className="rounded-[4px] border border-[#e2e8f0] px-2.5 py-1 text-[11px] text-[#8a96a8]">{platform === 'web' ? '网页版配置' : '移动端配置'}</span></div>{renderJsonEditor(activeModule)}</div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-5 py-4"><span className={`mr-auto text-[12px] ${saved ? 'text-[#2a9a66]' : 'text-[#9ba5b4]'}`}>{saved ? '已保存当前配置' : '修改后请点击保存'}</span><button type="button" onClick={save} className="inline-flex h-9 items-center gap-1.5 rounded-[4px] bg-[#278fee] px-5 text-[13px] text-white shadow-[0_4px_10px_rgba(39,143,238,.18)] hover:bg-[#167fdc]"><Save className="h-4 w-4" />保存</button></div></section></div></main></div>;
+  return <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]"><AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员页面配置" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} /><TopHeader /><main className="ml-[228px] min-h-screen pt-[62px]"><div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>会员中心</span><ChevronRight className="h-3.5 w-3.5" /><button type="button" onClick={onBackToVersions} className="text-[#4d5b70] hover:text-[#278fee]">会员页面配置</button><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">{version.name}</span></div><section className="rounded-[4px] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">{version.name}</h1><p className="mt-1 text-[12px] text-[#9aa5b5]">配置不同端会员页面的套餐、权益和说明内容。</p></div><div className="flex items-center gap-3"><span className="rounded-[5px] bg-[#eaf7ef] px-3 py-2 text-[12px] font-medium text-[#2b9160]">{version.status}</span><div className="rounded-[5px] bg-[#f3f7fc] px-3 py-2 text-[12px] text-[#6e7d93]">当前端：<span className="font-medium text-[#278fee]">{platform === 'web' ? '网页版' : '移动端'}</span></div></div></div><div className="mt-5 flex border-b border-[#e8edf3]"><button type="button" onClick={() => setPlatform('web')} className={`relative px-5 py-3 text-[13px] ${platform === 'web' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>网页版{platform === 'web' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button><button type="button" onClick={() => setPlatform('mobile')} className={`relative px-5 py-3 text-[13px] ${platform === 'mobile' ? 'font-semibold text-[#278fee]' : 'text-[#7d899a] hover:text-[#278fee]'}`}>移动端{platform === 'mobile' ? <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#278fee]" /> : null}</button></div></section><section className="mt-4 rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="border-b border-[#e8edf3] px-5 pt-2"><div className="flex flex-wrap gap-1">{MODULES.map((module) => <button type="button" key={module.key} onClick={() => setActiveModule(module.key)} className={`relative rounded-t-[5px] px-4 py-3 text-[13px] transition ${activeModule === module.key ? 'bg-[#eef6ff] font-medium text-[#278fee]' : 'text-[#69768a] hover:bg-[#f7f9fc] hover:text-[#278fee]'}`}>{module.label}{activeModule === module.key ? <span className="absolute inset-x-4 bottom-0 h-0.5 bg-[#278fee]" /> : null}</button>)}</div></div><div className="min-h-[590px] px-5 py-5"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-[15px] font-semibold text-[#27344a]">{activeModuleMeta.label}</h2><p className="mt-1 text-[12px] text-[#98a2b2]">{activeModuleMeta.description}</p></div><span className="rounded-[4px] border border-[#e2e8f0] px-2.5 py-1 text-[11px] text-[#8a96a8]">{platform === 'web' ? '网页版配置' : '移动端配置'}</span></div>{renderJsonEditor(activeModule)}</div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-5 py-4"><span className={`mr-auto text-[12px] ${saved ? 'text-[#2a9a66]' : 'text-[#9ba5b4]'}`}>{saved ? '已保存当前配置' : '修改后请点击保存'}</span><button type="button" onClick={save} className="inline-flex h-9 items-center gap-1.5 rounded-[4px] bg-[#278fee] px-5 text-[13px] text-white shadow-[0_4px_10px_rgba(39,143,238,.18)] hover:bg-[#167fdc]"><Save className="h-4 w-4" />保存</button></div></section></div></main></div>;
 }
