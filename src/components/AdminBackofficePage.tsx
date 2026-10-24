@@ -575,6 +575,11 @@ type RequirementListPageProps = {
 };
 
 function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
+  const childRequirements = item.level === 'main' ? getRequirementChildren(item.id) : [];
+  const detailedRequirements = childRequirements.length > 0
+    ? childRequirements.flatMap((child) => child.details.map((detail, index) => ({ label: `${child.title} · 需求点 ${index + 1}`, content: detail, path: child.path })))
+    : item.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail, path: item.path }));
+
   return {
     title: item.title,
     requirementKey: item.requirementKey,
@@ -592,7 +597,7 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
       {
         title: '具体需求',
         description: '列表之外的实现细节和验收关注点。',
-        items: item.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail, path: item.path })),
+        items: detailedRequirements,
       },
       {
         title: '所在路径',
