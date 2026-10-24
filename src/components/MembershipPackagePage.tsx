@@ -179,7 +179,7 @@ const POINTS_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '影响入口', items: ['会员套餐管理列表、套餐详情、新增套餐和编辑套餐。'] },
 ];
 const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
-const MEMBER_TYPE_REQUIREMENT_NAME = '会员套餐新增会员类型';
+const MEMBER_TYPE_REQUIREMENT_NAME = '开通会员新增会员类型';
 const MEMBER_TYPE_REQUIREMENT_SECTIONS = [
   { title: '功能说明', items: ['会员类型列表新增 5 个会员等级及对应 level。'] },
   { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },

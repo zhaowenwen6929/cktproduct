@@ -32,7 +32,7 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
     goal: '建立一套统一的会员管理后台交互和数据展示规则，保证会员类型、level、套餐积分、权益配置和页面版本之间的数据口径一致。',
     sections: [
       {
-        title: '会员类型与开通会员',
+        title: '开通会员新增会员类型',
         description: '开通会员页沿用套餐管理中的完整会员类型列表，新增等级必须同步展示名称和 level。',
         items: [
           { label: '入口位置', content: '会员中心 > 开通会员，进入后左侧会员中心目录默认展开并选中开通会员。' },
