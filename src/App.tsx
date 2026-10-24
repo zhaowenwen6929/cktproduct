@@ -14,11 +14,12 @@ import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { MembershipPackagePage } from './components/MembershipPackagePage';
 import { MembershipPageConfigPage } from './components/MembershipPageConfigPage';
 import { MembershipOpenPage } from './components/MembershipOpenPage';
+import { UserSegmentPage } from './components/UserSegmentPage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
 type ExportRequest =
   | {
@@ -73,6 +74,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/admin-backoffice/membership-open') return '/admin-backoffice/membership-open';
   if (pathname === '/admin-backoffice/membership-packages') return '/admin-backoffice/membership-packages';
   if (pathname === '/admin-backoffice/membership-page-config') return '/admin-backoffice/membership-page-config';
+  if (pathname === '/admin-backoffice/user-segments') return '/admin-backoffice/user-segments';
   if (pathname === '/admin-backoffice') return '/admin-backoffice';
   return '/';
 };
@@ -1376,6 +1378,10 @@ export default function App() {
         title: '创客贴管理后台｜会员页面配置',
         description: '配置网页版和移动端会员页面的套餐、权益及说明内容。',
       },
+      '/admin-backoffice/user-segments': {
+        title: '创客贴管理后台｜用户分群',
+        description: '用户中心下的用户分群管理页面。',
+      },
       '/admin-backoffice/requirements': {
         title: '创客贴管理后台｜需求列表',
         description: '按新增时间倒序查看后台功能需求明细，并进入对应功能页面。',
@@ -1667,6 +1673,16 @@ export default function App() {
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
       onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
       onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/user-segments') {
+    return <UserSegmentPage
+      onBackToDirectory={() => navigateTo('/')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
+      onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
     />;
   }
 

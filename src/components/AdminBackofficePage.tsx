@@ -251,6 +251,17 @@ const NAV_GROUPS: NavGroup[] = [
       '会员页面配置',
     ],
   },
+  {
+    label: '用户中心',
+    icon: Users,
+    expanded: false,
+    children: [
+      '账户注销',
+      '注销记录',
+      '用户分群',
+      'AB测试管理',
+    ],
+  },
 ];
 
 const prettyJson = (config: SkillConfig) => JSON.stringify(config, null, 2);
@@ -357,6 +368,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
       灵感社区: activeGroupLabel === '灵感社区',
       内容运营管理: activeGroupLabel === '内容运营管理',
       会员中心: activeGroupLabel === '会员中心',
+      用户中心: activeGroupLabel === '用户中心',
     };
   });
   const [activeItem, setActiveItem] = useState('AI电商配置');
@@ -388,6 +400,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             setActiveItem(label);
             if (label === '开通会员' && typeof window !== 'undefined') {
               window.history.pushState({}, '', '/admin-backoffice/membership-open');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+            if (label === '用户分群' && typeof window !== 'undefined') {
+              window.history.pushState({}, '', '/admin-backoffice/user-segments');
               window.dispatchEvent(new PopStateEvent('popstate'));
             }
             onNavigate?.(label);
