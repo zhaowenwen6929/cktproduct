@@ -1495,8 +1495,8 @@ export default function App() {
         <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-8 sm:px-10 lg:px-12">
           <div className="rounded-[32px] border border-white/70 bg-white/75 p-8 shadow-[0_30px_80px_rgba(82,64,39,0.12)] backdrop-blur">
             <div className="flex flex-col gap-10">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <div className="max-w-3xl">
+              <div className="flex flex-col gap-5">
+                <div className="max-w-4xl">
                   <div className="mb-4 inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-4 py-1 text-xs font-semibold tracking-[0.24em] text-stone-500 uppercase">
                     Feature Hub
                   </div>
@@ -1504,16 +1504,9 @@ export default function App() {
                     创客贴需求原型
                   </h1>
                   <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600 sm:text-lg">
-                    这里作为项目首页，统一承接“无限画布”和后续新增功能的入口。以后只需要继续往这里追加卡片和路由，不用再改整体结构。
+                    这里作为项目首页，统一承接后续新增功能和需求入口。以后只需要继续往这里追加卡片和路由，不用再改整体结构。
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => navigateTo('/canvas')}
-                  className="inline-flex items-center justify-center rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
-                >
-                  直接进入无限画布
-                </button>
               </div>
 
               <div role="tablist" aria-label="原型查看方式" className="inline-flex w-fit rounded-full border border-stone-200 bg-stone-100/80 p-1 shadow-[0_8px_20px_rgba(120,95,60,0.06)]">
