@@ -174,8 +174,8 @@ function CsvImportUserSegmentModal({ onClose, onComplete }: CsvImportUserSegment
   const isMemberLevelMode = memberIdentity === 'member-level' || memberIdentity === 'non-member-level';
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-2 sm:p-4">
-      <section className="relative flex max-h-[calc(100vh-24px)] w-full max-w-[2000px] flex-col overflow-hidden rounded-[3px] bg-white shadow-[0_12px_40px_rgba(0,0,0,.24)]">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-2 sm:p-4 lg:pl-[244px]">
+      <section className="relative flex max-h-[calc(100vh-24px)] w-full max-w-none flex-col overflow-hidden rounded-[3px] bg-white shadow-[0_12px_40px_rgba(0,0,0,.24)]">
         <header className="flex min-h-[68px] shrink-0 items-center justify-between border-b border-[#e6e8eb] px-6 sm:px-8">
           <h2 className="text-[22px] font-medium text-[#292d32]">CSV导入用户分群</h2>
           <button type="button" aria-label="关闭" onClick={onClose} className="rounded p-1 text-[#96999d] transition hover:bg-[#f3f5f7] hover:text-[#4c5259]"><X className="h-6 w-6" /></button>
