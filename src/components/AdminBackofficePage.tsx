@@ -22,7 +22,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
-import { RequirementDocumentDrawer } from './RequirementDocumentPage';
+import { RequirementDocumentDrawer, type RequirementSpec } from './RequirementDocumentPage';
 
 type SkillOption = {
   label: string;
@@ -313,9 +313,8 @@ type RequirementNavItem = {
 
 const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
   { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirementKey: 'V2610', requirement: '完善会员套餐、会员页面和积分配置能力。', summary: '会员中心后台和前台会员页同步改版。', details: ['会员套餐管理、开通会员和会员页面配置作为本次改版的子需求。', '统一补充积分、权益、展示配置和企业使用场景。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/requirements/membership' },
-  { id: 'membership-packages', title: '会员套餐新增积分量', navLabels: ['会员套餐管理'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '新增套餐积分量、发放单位和发放周期配置。', summary: '会员套餐支持补充积分发放规则，历史套餐保持兼容。', details: ['新增套餐积分量为必填项，填写非负整数，默认每人、按月，可切换团队和一次性。', '历史会员等级积分量非必填，按等级积分量自动回显且不可修改；终身套餐按36135天识别并一次性发放。', '购买套餐时按购买套餐对应的积分量立即发放，上一笔对应的未使用积分量失效；未配置时回退到会员等级积分量和规则。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-packages' },
+  { id: 'membership-packages', title: '会员套餐管理新增会员等级及积分量', navLabels: ['会员套餐管理'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员套餐管理按页面统一支持新增会员等级、level 和积分发放配置。', summary: '会员套餐管理集中维护新会员等级与积分量、发放单位、发放周期及历史套餐回显规则。', details: ['会员类型列表新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220，并显示对应 level。', '新增套餐积分量为必填项，填写非负整数，默认每人、按月，可切换团队和一次性。', '历史会员等级积分量非必填，按等级积分量自动回显且不可修改；终身套餐按36135天识别并一次性发放。', '购买套餐时按购买套餐对应的积分量立即发放，上一笔对应的未使用积分量失效；未配置时回退到会员等级积分量和规则。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-packages' },
   { id: 'membership-open', title: '开通会员新增新会员等级', navLabels: ['开通会员'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '开通会员页同步会员套餐管理中的会员类型和新增等级 level，并在成员人数下新增积分量、发放单位和发放周期。', summary: '开通会员与会员套餐管理共用会员类型和积分配置规则，新增等级名称和 level 保持一致。', details: ['复用会员套餐管理中的完整会员类型列表。', '新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '会员类型显示名称在前，level 数字在后。', '成员人数下新增积分量，沿用套餐的必填、单位、周期和发放说明。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-open' },
-  { id: 'membership-levels', title: '会员套餐管理新增新会员等级', navLabels: ['会员套餐管理'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员套餐管理的会员类型选择器同步新增会员等级及 level。', summary: '套餐管理中的会员类型与开通会员、用户分群保持一致。', details: ['会员类型列表新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '显示名称在前，level 数字在后。', '新增等级选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/membership-packages' },
   { id: 'user-segments-member-level', title: '用户分群新增新会员等级', navLabels: ['用户分群'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户分群中的会员等级筛选同步新增会员等级及 level。', summary: 'CSV 导入分群、规则分群和定制分群条件统一支持新会员等级筛选。', details: ['会员等级筛选新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增等级在会员类型选项中以名称在前、level 数字在后的格式展示。', '新增选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-segments' },
   { id: 'authorization-scope-member-level', title: '授权范围设置新增新会员等级', navLabels: ['授权范围设置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '授权范围设置的会员类型筛选同步新增会员等级及 level，并为每个新增会员配置完整授权范围。', summary: '授权属性中的会员类型支持新会员等级，并以需求样式突出新增选项。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增选项使用红色虚线框、V2610 标识和需求说明突出展示。', '每个新增会员均配置线上推广用途、线下印刷用途和禁用三类授权范围；每条范围支持启用/停用及是否在会员协议显示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/authorization-scope' },
   { id: 'user-authorization-member-level', title: '用户授权信息管理新增新会员等级', navLabels: ['授权信息管理与查询'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户授权信息管理的权益等级/类型筛选同步新增会员等级及 level。', summary: '权益等级筛选支持新会员等级并沿用统一需求说明。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增选项使用红色虚线框、V2610 标识和需求说明突出展示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-authorization-management' },
@@ -521,7 +520,40 @@ type RequirementListPageProps = {
   onNavigateToRequirementList?: () => void;
 };
 
-function RequirementCard({ item, index, nested = false, onNavigate, childCount = 0, isChildrenExpanded = false, onToggleChildren }: { item: RequirementNavItem; index: number; nested?: boolean; onNavigate?: (path: string) => void; childCount?: number; isChildrenExpanded?: boolean; onToggleChildren?: () => void }) {
+function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
+  return {
+    title: item.title,
+    requirementKey: item.requirementKey,
+    status: item.status,
+    eyebrow: item.level === 'main' ? 'MAIN REQUIREMENT' : `${item.navLabels?.[0] ?? '页面需求'} · PAGE REQUIREMENT`,
+    summary: item.summary,
+    background: item.requirement,
+    goal: `在${item.navLabels?.[0] ?? '对应页面'}内完成需求改动，并保持页面入口、数据展示和交互规则一致。`,
+    sections: [
+      {
+        title: '需求描述',
+        description: '本页面需要实现的核心改动。',
+        items: [{ label: '需求描述', content: item.requirement }],
+      },
+      {
+        title: '具体需求',
+        description: '列表之外的实现细节和验收关注点。',
+        items: item.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail })),
+      },
+      {
+        title: '页面路径',
+        description: '从需求列表进入对应页面进行验证。',
+        items: [{ label: '所在路径', content: item.path }],
+      },
+    ],
+    acceptance: [
+      `页面路径：${item.path}`,
+      ...item.details,
+    ],
+  };
+}
+
+function RequirementCard({ item, index, nested = false, onNavigate, onOpenDetails, childCount = 0, isChildrenExpanded = false, onToggleChildren }: { item: RequirementNavItem; index: number; nested?: boolean; onNavigate?: (path: string) => void; onOpenDetails?: (item: RequirementNavItem) => void; childCount?: number; isChildrenExpanded?: boolean; onToggleChildren?: () => void }) {
   const hasPage = item.path !== '/admin-backoffice/requirements';
   const canToggleChildren = !nested && childCount > 0;
   const handleCardKeyDown = (event: KeyboardEvent<HTMLElement>) => {
@@ -538,8 +570,7 @@ function RequirementCard({ item, index, nested = false, onNavigate, childCount =
     aria-expanded={canToggleChildren ? isChildrenExpanded : undefined}
     className={`${nested ? 'rounded-[8px] border border-[#e5eaf1] bg-[#fbfcfe] p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]' : 'rounded-[8px] border border-[#dce5f0] bg-white p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]'} ${canToggleChildren ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#278fee]/25' : ''}`}
   >
-    <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className={nested ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#eef4fb] text-[11px] font-semibold text-[#6c86a5]' : 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff2b8] text-[12px] font-semibold text-[#a16b00]'}>{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-[15px] font-semibold text-[#27344a]">{item.title}</h2><span className="rounded-[4px] bg-[#eaf3ff] px-2 py-0.5 text-[10px] font-semibold text-[#3979b7]">{item.requirementKey}</span><span className="rounded-[4px] bg-[#fff7dc] px-2 py-0.5 text-[10px] font-medium text-[#a36d08]">{item.status}</span>{nested ? <span className="rounded-[4px] bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#5c82b1]">子需求</span> : <span className="rounded-[4px] bg-[#f1f4f8] px-2 py-0.5 text-[10px] font-medium text-[#6d7b8d]">主需求</span>}</div><p className="mt-2 text-[12px] leading-5 text-[#4d5b70]"><span className="font-medium text-[#7c899b]">需求：</span>{item.requirement}</p><p className="mt-1 text-[12px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#a2adbb]">概述：</span>{item.summary}</p></div></div><div className="flex shrink-0 items-center gap-3"><span className="text-[11px] text-[#9aa5b5]">新增于 {item.addedAt}</span>{hasPage ? <button type="button" onClick={(event) => { event.stopPropagation(); onNavigate?.(item.path); }} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入页面<ChevronRight className="h-3.5 w-3.5" /></button> : null}{canToggleChildren ? <span className="inline-flex items-center gap-1 rounded-[4px] bg-[#f6f8fb] px-2.5 py-1.5 text-[11px] text-[#65758b]">{isChildrenExpanded ? '已展开子需求' : `展开 ${childCount} 个子需求`}<ChevronDown className={`h-3 w-3 transition-transform ${isChildrenExpanded ? '' : '-rotate-90'}`} /></span> : null}</div></div>
-    <div className="mt-4 border-t border-[#edf0f4] pt-3"><div className="mb-2 text-[12px] font-medium text-[#526075]">需求明细</div><ul className="grid gap-1.5 md:grid-cols-3">{item.details.map((detail) => <li key={detail} className="flex items-start gap-2 text-[11px] leading-5 text-[#7e8a9c]"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#278fee]" />{detail}</li>)}</ul></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className={nested ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#eef4fb] text-[11px] font-semibold text-[#6c86a5]' : 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff2b8] text-[12px] font-semibold text-[#a16b00]'}>{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-[15px] font-semibold text-[#27344a]">{item.title}</h2><span className="rounded-[4px] bg-[#eaf3ff] px-2 py-0.5 text-[10px] font-semibold text-[#3979b7]">{item.requirementKey}</span><span className="rounded-[4px] bg-[#fff7dc] px-2 py-0.5 text-[10px] font-medium text-[#a36d08]">{item.status}</span>{nested ? <span className="rounded-[4px] bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#5c82b1]">子需求</span> : <span className="rounded-[4px] bg-[#f1f4f8] px-2 py-0.5 text-[10px] font-medium text-[#6d7b8d]">主需求</span>}</div><p className="mt-2 text-[12px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#69778a]">需求概述：</span>{item.summary}</p><p className="mt-1 text-[12px] leading-5 text-[#4d5b70]"><span className="font-medium text-[#69778a]">需求描述：</span>{item.requirement}</p><p className="mt-1 break-all text-[11px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#69778a]">需求所在路径：</span>{item.path}</p></div></div><div className="flex shrink-0 flex-wrap items-center justify-end gap-2"><span className="text-[11px] text-[#9aa5b5]">新增于 {item.addedAt}</span><button type="button" onClick={(event) => { event.stopPropagation(); onOpenDetails?.(item); }} className="inline-flex h-8 items-center gap-1 rounded-[4px] border border-[#cfe0f8] bg-white px-3 text-[12px] font-medium text-[#3979b7] transition hover:border-[#8eb8ed] hover:bg-[#f5f9ff]"><FileText className="h-3.5 w-3.5" />需求说明</button>{hasPage ? <button type="button" onClick={(event) => { event.stopPropagation(); onNavigate?.(item.path); }} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入页面<ChevronRight className="h-3.5 w-3.5" /></button> : null}{canToggleChildren ? <span className="inline-flex items-center gap-1 rounded-[4px] bg-[#f6f8fb] px-2.5 py-1.5 text-[11px] text-[#65758b]">{isChildrenExpanded ? '已展开子需求' : `展开 ${childCount} 个子需求`}<ChevronDown className={`h-3 w-3 transition-transform ${isChildrenExpanded ? '' : '-rotate-90'}`} /></span> : null}</div></div>
   </article>;
 }
 
@@ -547,12 +578,14 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
   const mainRequirements = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'main');
   const childRequirementCount = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'sub').length;
   const [expandedMainRequirements, setExpandedMainRequirements] = useState<Record<string, boolean>>({});
+  const [selectedRequirement, setSelectedRequirement] = useState<RequirementNavItem | null>(null);
+  const requirementDrawerWidth = 'min(520px, max(320px, calc(100vw - 244px)))';
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]">
       <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="需求列表" onNavigateToRequirement={onNavigateToRequirement} onNavigateToRequirementList={onNavigateToRequirementList} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
-      <TopHeader />
-      <main className="ml-[228px] min-h-screen pt-[62px]">
+      <TopHeader rightOffset={selectedRequirement ? requirementDrawerWidth : undefined} />
+      <main style={selectedRequirement ? { marginRight: requirementDrawerWidth } : undefined} className="ml-[228px] min-h-screen pt-[62px] transition-[margin-right] duration-200">
         <div className="px-6 py-5">
           <div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>需求中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">需求列表</span></div>
           <section className="overflow-hidden rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
@@ -561,12 +594,13 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
               {mainRequirements.map((item, index) => {
                 const children = REQUIREMENT_NAV_ITEMS.filter((child) => child.parentId === item.id);
                 const isExpanded = Boolean(expandedMainRequirements[item.id]);
-                return <div key={item.id}><RequirementCard item={item} index={index} childCount={children.length} isChildrenExpanded={isExpanded} onToggleChildren={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} onNavigate={onNavigateToRequirement} />{children.length > 0 && isExpanded ? <div className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigateToRequirement} />)}</div> : null}</div>;
+                return <div key={item.id}><RequirementCard item={item} index={index} childCount={children.length} isChildrenExpanded={isExpanded} onToggleChildren={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} />{children.length > 0 && isExpanded ? <div className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} />)}</div> : null}</div>;
               })}
             </div>
           </section>
         </div>
       </main>
+      {selectedRequirement ? <RequirementDocumentDrawer spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} /> : null}
     </div>
   );
 }

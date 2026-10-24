@@ -9,7 +9,7 @@ type RequirementSection = {
   items: Array<{ label: string; content: string }>;
 };
 
-type RequirementSpec = {
+export type RequirementSpec = {
   title: string;
   requirementKey: string;
   status: string;
@@ -299,10 +299,12 @@ export function RequirementDocumentPage({ kind, onBack }: { kind: RequirementKin
   );
 }
 
-export function RequirementDocumentDrawer({ kind, onClose }: { kind: RequirementKind; onClose: () => void }) {
-  const spec = requirementSpecs[kind];
+export function RequirementDocumentDrawer({ kind, spec: customSpec, onClose }: { kind?: RequirementKind; spec?: RequirementSpec; onClose: () => void }) {
+  const spec = customSpec ?? (kind ? requirementSpecs[kind] : undefined);
   const [copied, setCopied] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+
+  if (!spec) return null;
 
   const copyAiPrompt = async () => {
     const prompt = buildAiPrompt(spec);
