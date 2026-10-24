@@ -238,6 +238,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     key={item}
                     onClick={() => setPanel(item)}
                     className={`relative pb-[17px] text-[15px] transition ${panel === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
+                    style={item === '开通会员' && (category === '企业会员' || category === '专业版') ? { outline: '1px dashed #ff665b', outlineOffset: '3px', borderRadius: '4px' } : undefined}
                   >
                     {item}
                     {item === '开通会员' && (category === '企业会员' || category === '专业版') ? <RequirementEntryDot label={`${category}开通会员有待开发需求`} /> : null}
