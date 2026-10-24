@@ -51,6 +51,7 @@ const NEW_MEMBER_LEVEL_GROUPS: { label: string; options: string[] }[] = [
   { label: '企业会员', options: ['基础版（企业），310', '专业版（企业），311', '旗舰版（企业），220'] },
 ];
 const NEW_MEMBER_LEVEL_OPTIONS = NEW_MEMBER_LEVEL_GROUPS.flatMap((group) => group.options);
+const MEMBER_TYPE_REQUIREMENT_OPTIONS = new Set(['个人不限次会员', '企业会员']);
 const PACKAGE_TYPE_OPTIONS = ['签约套餐', '非签约套餐'];
 
 export type CsvSelectProps = {
@@ -129,7 +130,9 @@ export function CsvCheckboxGroup({ label, options, value, onChange, dense = fals
   const toggleOption = (option: string) => {
     onChange(value.includes(option) ? value.filter((item) => item !== option) : [...value, option]);
   };
-  const existingOptions = options.filter((option) => !NEW_MEMBER_LEVEL_OPTIONS.includes(option));
+  const shouldFrameMemberTypes = options.includes('个人限次会员') && options.includes('个人不限次会员') && options.includes('企业会员');
+  const existingOptions = options.filter((option) => !NEW_MEMBER_LEVEL_OPTIONS.includes(option) && (!shouldFrameMemberTypes || !MEMBER_TYPE_REQUIREMENT_OPTIONS.has(option)));
+  const framedMemberTypeOptions = shouldFrameMemberTypes ? options.filter((option) => MEMBER_TYPE_REQUIREMENT_OPTIONS.has(option)) : [];
   const newOptions = options.filter((option) => NEW_MEMBER_LEVEL_OPTIONS.includes(option));
   const renderOption = (option: string) => (
     <label key={option} className="inline-flex min-h-7 cursor-pointer items-center gap-2 text-[16px] text-[#30343b]">
@@ -143,6 +146,13 @@ export function CsvCheckboxGroup({ label, options, value, onChange, dense = fals
       <span className="pt-1.5 text-right text-[16px] text-[#30343b]">{label}：</span>
       <div className={`grid gap-x-5 gap-y-2.5 ${dense ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
         {existingOptions.map(renderOption)}
+        {framedMemberTypeOptions.length > 0 ? (
+          <div className="col-span-full sm:col-span-2 lg:col-span-2">
+            <RequirementEntryFrame className="w-full" text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS}>
+              <div className="flex flex-wrap gap-x-5 gap-y-2.5">{framedMemberTypeOptions.map(renderOption)}</div>
+            </RequirementEntryFrame>
+          </div>
+        ) : null}
         {newOptions.length > 0 ? (
           <div className="col-span-full mt-2 grid gap-3 xl:grid-cols-2">
             {NEW_MEMBER_LEVEL_GROUPS.map((group) => {
