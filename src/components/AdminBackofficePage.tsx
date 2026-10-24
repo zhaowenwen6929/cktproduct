@@ -331,18 +331,20 @@ type AdminSidebarProps = {
   onNavigateToRequirementList?: () => void;
 };
 
-function NewFeatureBadge({ title, requirementKey, requirement, summary, addedAt }: { title: string; requirementKey: string; requirement: string; summary: string; addedAt: string }) {
+function NewFeatureBadge({ title, displayKey, requirementKey, status, requirement, summary, addedAt }: { title: string; displayKey: string; requirementKey: string; status: string; requirement: string; summary: string; addedAt: string }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
   const tooltipHeight = 250;
 
   return (
     <span className="group relative inline-flex shrink-0" onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); const showAbove = window.innerHeight - rect.bottom < tooltipHeight && rect.top > tooltipHeight + 8; setTipPosition({ top: showAbove ? rect.top - tooltipHeight : Math.max(8, Math.min(rect.top, window.innerHeight - tooltipHeight - 8)), left: 238 }); }} onMouseLeave={() => setTipPosition(null)} aria-label={`需求标识：${requirementKey}`}>
-      <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">{requirementKey}</span>
-      {tipPosition ? <span style={tipPosition} className="pointer-events-none fixed z-50 w-[280px] rounded-[9px] bg-[#172336] px-4 py-3 text-[12px] font-normal leading-5 text-white shadow-[0_10px_24px_rgba(0,0,0,.28)]">
-        <span className="mb-2 block text-[13px] font-semibold text-white">{title}</span>
-        <span className="block"><span className="text-[#a9b9cd]">需求：</span>{requirement}</span>
-        <span className="mt-1 block"><span className="text-[#a9b9cd]">概述：</span>{summary}</span>
-        <span className="mt-1 block"><span className="text-[#a9b9cd]">新增时间：</span>{addedAt}</span>
+      <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">{displayKey}</span>
+      {tipPosition ? <span style={tipPosition} className="pointer-events-none fixed z-50 w-[280px] rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
+        <span className="mb-2 block text-[13px] font-semibold text-[#493812]">{title}</span>
+        <span className="block"><span className="text-[#8a6a22]">需求标识：</span>{requirementKey}</span>
+        <span className="mt-1 block"><span className="text-[#8a6a22]">状态：</span>{status}</span>
+        <span className="mt-1 block"><span className="text-[#8a6a22]">需求：</span>{requirement}</span>
+        <span className="mt-1 block"><span className="text-[#8a6a22]">概述：</span>{summary}</span>
+        <span className="mt-1 block"><span className="text-[#8a6a22]">新增时间：</span>{addedAt}</span>
       </span> : null}
     </span>
   );
@@ -387,10 +389,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
         }} style={{ paddingLeft: `${43 + level * 20}px` }} className={`mx-2 flex h-[34px] w-[calc(100%-16px)] items-center justify-between rounded-[5px] pr-3 text-left text-[10px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white shadow-[0_3px_10px_rgba(18,140,241,.2)]' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
           <span className="flex min-w-0 items-center gap-1">
             <span className="truncate">{label}</span>
-            {label === 'AI电商配置' ? <NewFeatureBadge title="AI电商配置" requirementKey="AIE-2610" requirement="AI电商配置管理" summary="按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。" addedAt="2026-10-22" /> : null}
-            {label === '搜索引导管理' ? <NewFeatureBadge title="搜索引导管理" requirementKey="SG-2610" requirement="搜索引导管理" summary="维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
-            {label === '会员套餐管理' ? <NewFeatureBadge title="积分量发放配置" requirementKey="MEM-2610" requirement="新增套餐积分量、发放单位和发放周期配置。" summary="积分量为必填项，支持按每人或团队、按月或一次性发放；历史套餐未填写时按照所属会员等级的积分量发放。" addedAt="2026-10-24" /> : null}
-            {label === '会员页面配置' ? <NewFeatureBadge title="会员页面配置" requirementKey="MEM-2610" requirement="配置会员页面的网页版和移动端展示内容。" summary="支持个人使用和企业使用两类页面，配置套餐、权益概览、权益明细、模型消耗、商用授权和常见问题等模块。" addedAt="2026-10-24" /> : null}
+            {label === 'AI电商配置' ? <NewFeatureBadge title="AI电商配置" displayKey="AIE" requirementKey="AIE-2610" status="待开发" requirement="AI电商配置管理" summary="按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。" addedAt="2026-10-22" /> : null}
+            {label === '搜索引导管理' ? <NewFeatureBadge title="搜索引导管理" displayKey="SG" requirementKey="SG-2610" status="待开发" requirement="搜索引导管理" summary="维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
+            {label === '会员套餐管理' ? <NewFeatureBadge title="积分量发放配置" displayKey="MEM" requirementKey="MEM-2610" status="待开发" requirement="新增套餐积分量、发放单位和发放周期配置。" summary="积分量为必填项，支持按每人或团队、按月或一次性发放；历史套餐未填写时按照所属会员等级的积分量发放。" addedAt="2026-10-24" /> : null}
+            {label === '会员页面配置' ? <NewFeatureBadge title="会员页面配置" displayKey="MEM" requirementKey="MEM-2610" status="待开发" requirement="配置会员页面的网页版和移动端展示内容。" summary="支持个人使用和企业使用两类页面，配置套餐、权益概览、权益明细、模型消耗、商用授权和常见问题等模块。" addedAt="2026-10-24" /> : null}
           </span>
           {hasChildren ? <ChevronDown className={`h-3 w-3 shrink-0 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
         </button>
@@ -423,7 +425,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
           return (
             <div key={group.label}>
               <button type="button" title={group.label} onClick={() => hasChildren && setExpandedGroups((current) => ({ ...current, [group.label]: !isExpanded }))} className="flex h-[38px] w-full items-center justify-between px-5 text-left text-[11px] font-medium tracking-[.01em] text-[#a8bacb] transition hover:bg-white/[.06] hover:text-white">
-                <span className="flex min-w-0 items-center gap-2.5"><Icon className="h-[14px] w-[14px] shrink-0 opacity-80" /><span className="truncate">{group.label}</span>{requirementKeys.length > 0 ? <span className="shrink-0 rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]" title={`需求标识：${requirementKeys.join('、')}`} aria-label={`需求标识：${requirementKeys.join('、')}`}>{requirementKeys.join(' / ')}</span> : null}</span>
+                <span className="flex min-w-0 items-center gap-2.5"><Icon className="h-[14px] w-[14px] shrink-0 opacity-80" /><span className="truncate">{group.label}</span>{requirementKeys.length > 0 ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label="有新增需求" /> : null}</span>
                 {hasChildren ? <ChevronDown className={`h-3 w-3 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
               </button>
               {hasChildren && isExpanded ? (
