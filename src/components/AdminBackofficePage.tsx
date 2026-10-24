@@ -262,6 +262,17 @@ const NAV_GROUPS: NavGroup[] = [
       'AB测试管理',
     ],
   },
+  {
+    label: '授权管理',
+    icon: Users,
+    expanded: false,
+    children: [
+      '用户授权信息查看',
+      '授权类型管理',
+      '授权范围设置',
+      '版权方管理',
+    ],
+  },
 ];
 
 const prettyJson = (config: SkillConfig) => JSON.stringify(config, null, 2);
@@ -404,6 +415,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             }
             if (label === '用户分群' && typeof window !== 'undefined') {
               window.history.pushState({}, '', '/admin-backoffice/user-segments');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+            if (label === '授权范围设置' && typeof window !== 'undefined') {
+              window.history.pushState({}, '', '/admin-backoffice/authorization-scope');
               window.dispatchEvent(new PopStateEvent('popstate'));
             }
             onNavigate?.(label);
