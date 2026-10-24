@@ -106,6 +106,39 @@ export const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
   { name: '旗舰版（企业）', level: 220 },
 ];
 
+type MemberPointsConfig = Pick<PackageDetailRow, 'points' | 'pointsUnit' | 'pointsCycle'>;
+
+const MEMBER_LEVEL_POINTS: Record<string, MemberPointsConfig> = {
+  '个人版VIP': { points: 600, pointsUnit: '每人', pointsCycle: '按月' },
+  '标准版(个人)': { points: 600, pointsUnit: '每人', pointsCycle: '按月' },
+  '标准版(企业)': { points: 1500, pointsUnit: '每人', pointsCycle: '按月' },
+  '标准版(大企业)': { points: 1500, pointsUnit: '每人', pointsCycle: '按月' },
+  '个人高级版': { points: 1500, pointsUnit: '团队', pointsCycle: '按月' },
+  '企业高级版': { points: 1500, pointsUnit: '团队', pointsCycle: '按月' },
+  '高级版': { points: 1500, pointsUnit: '团队', pointsCycle: '按月' },
+  '协作版': { points: 1500, pointsUnit: '团队', pointsCycle: '按月' },
+  '旗舰版': { points: 880, pointsUnit: '团队', pointsCycle: '按月' },
+  '高级版(大企业)': { points: 1500, pointsUnit: '团队', pointsCycle: '按月' },
+  '通用版(个人)': { points: 600, pointsUnit: '每人', pointsCycle: '按月' },
+  '通用版(企业)': { points: 1500, pointsUnit: '每人', pointsCycle: '按月' },
+  '高级版(团队)': { points: 1500, pointsUnit: '团队', pointsCycle: '按月' },
+  '专业版(团队)': { points: 3800, pointsUnit: '团队', pointsCycle: '按月' },
+  '至尊版(团队)': { points: 8000, pointsUnit: '团队', pointsCycle: '按月' },
+  '基础版(单人)': { points: 600, pointsUnit: '每人', pointsCycle: '按月' },
+  '高级版(单人)': { points: 1500, pointsUnit: '每人', pointsCycle: '按月' },
+  '专业版(单人)': { points: 3800, pointsUnit: '每人', pointsCycle: '按月' },
+  '至尊版(单人)': { points: 8000, pointsUnit: '每人', pointsCycle: '按月' },
+  '基础版（个人）': {},
+  '专业版（个人）': {},
+  '基础版（企业）': {},
+  '专业版（企业）': {},
+  '旗舰版（企业）': {},
+};
+
+function getMemberPointsConfig(member: string) {
+  return MEMBER_LEVEL_POINTS[member];
+}
+
 const initialPackageDetails: PackageDetailRow[] = [
   { id: 3480, name: 'web-高级版（团队）-3年（加送1年）', displayName: '3年+1年', duration: 1460, originalPrice: 1578, discount: 100, currentPrice: 1578, contractPrice: '-', packageType: '普通套餐', member: '高级版(团队)', sort: 0, trialDays: 0, segment: '/', displayTime: '/', status: '显示', points: undefined },
   { id: 3479, name: 'web-高级版（团队）-2年会员（加6个月）', displayName: '2年+6个月', duration: 910, originalPrice: 1138, discount: 100, currentPrice: 1138, contractPrice: '-', packageType: '普通套餐', member: '高级版(团队)', sort: 1, trialDays: 0, segment: '/', displayTime: '/', status: '显示', points: undefined },
@@ -125,7 +158,8 @@ export function formatPointsDisplay(points?: number, pointsUnit?: '每人' | '�
 
 export function getPackagePointsDisplay(member: string) {
   const packageDetail = initialPackageDetails.find((row) => row.member === member);
-  return formatPointsDisplay(packageDetail?.points, packageDetail?.pointsUnit, packageDetail?.pointsCycle);
+  const configuredPoints = packageDetail?.points == null ? getMemberPointsConfig(member) : packageDetail;
+  return formatPointsDisplay(configuredPoints?.points, configuredPoints?.pointsUnit, configuredPoints?.pointsCycle);
 }
 
 const blankPackageDetail: PackageDetailRow = {
@@ -346,6 +380,7 @@ function PackageModal({ mode, row, onClose, onSave }: { mode: 'detail' | 'edit' 
 function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: PackageDetailRow; mode?: 'edit' | 'create'; onClose: () => void; onSave: (values: DetailEditValues) => void }) {
   const isCreate = mode === 'create';
   const [pointsError, setPointsError] = useState('');
+  const memberPoints = row.points == null ? getMemberPointsConfig(row.member) : row;
   const [form, setForm] = useState<DetailEditValues>({
     id: row.id,
     name: row.name,
@@ -362,9 +397,9 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
     maxMembers: isCreate ? '' : '2',
     productId: '',
     downloadCount: isCreate ? '' : '-1',
-    points: isCreate ? '' : row.points == null ? '' : String(row.points),
-    pointsUnit: row.pointsUnit ?? '每人',
-    pointsCycle: row.pointsCycle ?? '按月',
+    points: isCreate ? '' : memberPoints?.points == null ? '' : String(memberPoints.points),
+    pointsUnit: memberPoints?.pointsUnit ?? '每人',
+    pointsCycle: memberPoints?.pointsCycle ?? '按月',
     sort: String(row.sort),
     segment: isCreate ? '0' : row.segment === '/' ? '0' : row.segment,
     validDays: '',
