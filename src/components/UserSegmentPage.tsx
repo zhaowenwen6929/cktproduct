@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Upload } from 'lucide-react';
+import { type ReactNode, useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, Plus, Upload, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 
 type UserSegmentPageProps = {
@@ -32,6 +32,153 @@ const INITIAL_SEGMENTS: SegmentRecord[] = [
   { id: 303, name: '10.28-11.28下载用户', count: 45259, type: 'CSV导入', editor: 'sunyaq', createdAt: '2025-11-28', calculatedAt: '2025-11-28' },
 ];
 
+const MEMBER_LEVEL_OPTIONS = [
+  '基础版，1', '协作版，2', '高级团队版，3', '个人版，4', '标准版团队，5', '企业专业版，6', '加强版，7',
+  '基础团队版，8', '全用途版，9', '基础版，100', '全用途版，105', '标准团队版，110', '高级团队版，115', '企业专业版，120',
+  '新媒体商户版，125', '全用途商户版，130', '团队协作版，135', '个人高级版，201', '企业高级版，202', '标准版（个人），199',
+  '标准版（企业），200', '标准版（大企业），210', '高级版，203', '高级版（大企业），204', '旗舰版，220', '通用版（个人），211',
+  '通用版（企业），212', '协作版，205', '基础版（单人），230', '高级版（单人），231', '专业版（单人），232', '至尊版（单人），233',
+  '高级版（团队），300', '专业版（团队），301', '至尊版（团队），302',
+];
+
+const MEMBER_TYPE_OPTIONS = ['个人限次会员', '个人不限次会员', '企业会员'];
+const PACKAGE_TYPE_OPTIONS = ['签约套餐', '非签约套餐'];
+
+type CsvSelectProps = {
+  value: string;
+  onChange: (value: string) => void;
+  children: ReactNode;
+  className?: string;
+};
+
+function CsvSelect({ value, onChange, children, className = '' }: CsvSelectProps) {
+  return (
+    <div className={`relative w-full max-w-[360px] ${className}`}>
+      <select value={value} onChange={(event) => onChange(event.currentTarget.value)} className="h-12 w-full appearance-none rounded-[3px] border border-[#d7dce3] bg-white px-4 pr-11 text-[18px] text-[#30343b] outline-none transition focus:border-[#278fee]">
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a8afb9]" />
+    </div>
+  );
+}
+
+type CsvCheckboxGroupProps = {
+  label: string;
+  options: string[];
+  value: string[];
+  onChange: (value: string[]) => void;
+  dense?: boolean;
+};
+
+function CsvCheckboxGroup({ label, options, value, onChange, dense = false }: CsvCheckboxGroupProps) {
+  const toggleOption = (option: string) => {
+    onChange(value.includes(option) ? value.filter((item) => item !== option) : [...value, option]);
+  };
+
+  return (
+    <div className="grid grid-cols-[150px_minmax(0,1fr)] items-start gap-5">
+      <span className="pt-2 text-right text-[20px] text-[#30343b]">{label}：</span>
+      <div className={`grid gap-x-7 gap-y-4 ${dense ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
+        {options.map((option) => (
+          <label key={option} className="inline-flex min-h-8 cursor-pointer items-center gap-3 text-[18px] text-[#30343b]">
+            <input type="checkbox" checked={value.includes(option)} onChange={() => toggleOption(option)} className="h-5 w-5 accent-[#278fee]" />
+            <span>{option}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type CsvImportUserSegmentModalProps = {
+  onClose: () => void;
+  onComplete: () => void;
+};
+
+function CsvImportUserSegmentModal({ onClose, onComplete }: CsvImportUserSegmentModalProps) {
+  const [groupName, setGroupName] = useState('');
+  const [fileName, setFileName] = useState('');
+  const [memberIdentity, setMemberIdentity] = useState('member');
+  const [previousIdentity, setPreviousIdentity] = useState('member');
+  const [memberTypes, setMemberTypes] = useState<string[]>([]);
+  const [packageTypes, setPackageTypes] = useState<string[]>([]);
+  const [memberExpiry, setMemberExpiry] = useState('unlimited');
+  const [previousExpiry, setPreviousExpiry] = useState('unlimited');
+
+  const isReady = groupName.trim().length > 0 && fileName.length > 0;
+  const isPreviousMemberMode = memberIdentity === 'non-member';
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-2 sm:p-4">
+      <section className="relative flex max-h-[calc(100vh-24px)] w-full max-w-[2000px] flex-col overflow-hidden rounded-[3px] bg-white shadow-[0_12px_40px_rgba(0,0,0,.24)]">
+        <header className="flex min-h-[88px] shrink-0 items-center justify-between border-b border-[#e6e8eb] px-8 sm:px-12">
+          <h2 className="text-[28px] font-medium text-[#292d32]">CSV导入用户分群</h2>
+          <button type="button" aria-label="关闭" onClick={onClose} className="rounded p-1 text-[#96999d] transition hover:bg-[#f3f5f7] hover:text-[#4c5259]"><X className="h-8 w-8" /></button>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 sm:px-12 sm:py-10">
+          <div className="max-w-[1800px] space-y-8">
+            <label className="grid grid-cols-[150px_minmax(0,1fr)] items-center gap-5">
+              <span className="text-right text-[20px] text-[#30343b]"><i className="mr-1 not-italic text-[#ff4d5a]">*</i>分群名称：</span>
+              <input value={groupName} onChange={(event) => setGroupName(event.currentTarget.value)} placeholder="分群名称" className="h-16 w-full max-w-[400px] rounded-[3px] border border-[#d7dce3] px-5 text-[20px] text-[#30343b] outline-none placeholder:text-[#c8cbd0] focus:border-[#278fee]" />
+            </label>
+
+            <div className="grid grid-cols-[150px_minmax(0,1fr)] items-center gap-5">
+              <span className="text-right text-[20px] text-[#30343b]"><i className="mr-1 not-italic text-[#ff4d5a]">*</i>csv文件：</span>
+              <div className="flex flex-wrap items-center gap-5">
+                <label htmlFor="csv-user-segment-file" className="inline-flex h-16 cursor-pointer items-center rounded-[3px] bg-[#278fee] px-8 text-[20px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">＋上传文件</label>
+                <input id="csv-user-segment-file" type="file" accept=".csv,text/csv" className="hidden" onChange={(event) => setFileName(event.currentTarget.files?.[0]?.name ?? '')} />
+                <button type="button" className="text-[20px] text-[#278fee] hover:text-[#167fdc]">下载模板</button>
+                {fileName ? <span className="max-w-[420px] truncate text-[16px] text-[#6f7b8c]" title={fileName}>{fileName}</span> : null}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-[150px_minmax(0,1fr)] items-center gap-5">
+              <span className="text-right text-[20px] text-[#30343b]">会员身份：</span>
+              <CsvSelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]">
+                <option value="member">是会员用户</option>
+                <option value="non-member">不是会员用户（按等级）</option>
+              </CsvSelect>
+            </div>
+
+            {isPreviousMemberMode ? (
+              <>
+                <div className="grid grid-cols-[150px_minmax(0,1fr)] items-center gap-5">
+                  <span className="text-right text-[20px] text-[#30343b]">用户之前的身份：</span>
+                  <CsvSelect value={previousIdentity} onChange={setPreviousIdentity}>
+                    <option value="unlimited">不限制</option>
+                    <option value="free">一直是免费会员</option>
+                    <option value="member">之前是会员</option>
+                  </CsvSelect>
+                </div>
+                <CsvCheckboxGroup label="会员类型" options={MEMBER_LEVEL_OPTIONS} value={memberTypes} onChange={setMemberTypes} dense />
+              </>
+            ) : (
+              <CsvCheckboxGroup label="会员类型" options={MEMBER_TYPE_OPTIONS} value={memberTypes} onChange={setMemberTypes} />
+            )}
+
+            <CsvCheckboxGroup label="套餐类型" options={PACKAGE_TYPE_OPTIONS} value={packageTypes} onChange={setPackageTypes} />
+
+            <div className="grid grid-cols-[150px_minmax(0,1fr)] items-center gap-5">
+              <span className="text-right text-[20px] text-[#30343b]">{isPreviousMemberMode ? '之前会员到期时间' : '会员到期时间'}：</span>
+              <CsvSelect value={isPreviousMemberMode ? previousExpiry : memberExpiry} onChange={isPreviousMemberMode ? setPreviousExpiry : setMemberExpiry}>
+                <option value="unlimited">不限制</option>
+                <option value="expired">已过期</option>
+                <option value="within-30">30天内到期</option>
+                <option value="within-90">90天内到期</option>
+              </CsvSelect>
+            </div>
+          </div>
+        </div>
+
+        <footer className="flex h-[105px] shrink-0 items-center justify-center border-t border-[#e6e8eb]">
+          <button type="button" disabled={!isReady} onClick={onComplete} className="h-16 min-w-[128px] rounded-[3px] border border-[#d7d9dc] bg-[#f7f7f7] px-8 text-[20px] text-[#c1c3c6] transition enabled:border-[#278fee] enabled:bg-[#278fee] enabled:text-white enabled:hover:bg-[#167fdc]">完成</button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig }: UserSegmentPageProps) {
   const [segments] = useState(INITIAL_SEGMENTS);
   const [nameQuery, setNameQuery] = useState('');
@@ -39,6 +186,7 @@ export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, on
   const [typeFilter, setTypeFilter] = useState('全部');
   const [appliedFilters, setAppliedFilters] = useState({ name: '', editor: '', type: '全部' });
   const [actionMessage, setActionMessage] = useState('');
+  const [isCsvImportOpen, setIsCsvImportOpen] = useState(false);
 
   const filteredSegments = useMemo(() => segments.filter((segment) => {
     const matchesName = !appliedFilters.name || segment.name.includes(appliedFilters.name);
@@ -75,7 +223,7 @@ export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, on
             <header className="border-b border-[#e8edf3] px-5 py-5"><h1 className="text-[18px] font-semibold text-[#283244]">用户分群</h1></header>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#edf0f4] px-5 py-4">
               <div className="flex flex-wrap items-center gap-3">
-                <button type="button" onClick={() => showActionMessage('已打开 CSV 导入分群')} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" />CSV导入分群</button>
+                <button type="button" onClick={() => setIsCsvImportOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" />CSV导入分群</button>
                 <button type="button" onClick={() => showActionMessage('已打开新增规则分群')} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />新增规则分群</button>
                 <button type="button" onClick={() => showActionMessage('已打开定制分群条件')} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />定制分群条件</button>
               </div>
@@ -101,6 +249,7 @@ export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, on
         </div>
       </main>
       {actionMessage ? <div className="fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-[4px] bg-[#263247] px-4 py-2 text-[12px] text-white shadow-[0_6px_18px_rgba(25,38,58,.25)]">{actionMessage}</div> : null}
+      {isCsvImportOpen ? <CsvImportUserSegmentModal onClose={() => setIsCsvImportOpen(false)} onComplete={() => { setIsCsvImportOpen(false); showActionMessage('CSV导入分群已提交'); }} /> : null}
     </div>
   );
 }
