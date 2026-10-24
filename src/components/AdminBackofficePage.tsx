@@ -332,6 +332,12 @@ export type RequirementProjectStats = {
   notLaunched: number;
 };
 
+export type RequirementOverviewStats = {
+  projectCount: number;
+  mainCount: number;
+  subCount: number;
+};
+
 export function getRequirementProjectStats(): Record<string, RequirementProjectStats> {
   return REQUIREMENT_NAV_ITEMS.reduce<Record<string, RequirementProjectStats>>((stats, item) => {
     const projectName = item.projectName ?? '创客贴管理后台';
@@ -345,6 +351,14 @@ export function getRequirementProjectStats(): Record<string, RequirementProjectS
     stats[projectName] = current;
     return stats;
   }, {});
+}
+
+export function getRequirementOverviewStats(): RequirementOverviewStats {
+  return {
+    projectCount: new Set(REQUIREMENT_NAV_ITEMS.map((item) => item.projectName ?? '创客贴管理后台')).size,
+    mainCount: REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'main').length,
+    subCount: REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'sub').length,
+  };
 }
 
 const REQUIREMENT_CHILD_ORDER: Record<string, string[]> = {

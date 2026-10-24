@@ -9,7 +9,7 @@ import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { TemplateCenterPage } from './components/TemplateCenterPage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
-import { AdminBackofficePage, getRequirementProjectStats, RequirementListBoard, RequirementListPage } from './components/AdminBackofficePage';
+import { AdminBackofficePage, getRequirementOverviewStats, getRequirementProjectStats, RequirementListBoard, RequirementListPage } from './components/AdminBackofficePage';
 import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { MembershipPackagePage } from './components/MembershipPackagePage';
 import { MembershipPageConfigPage } from './components/MembershipPageConfigPage';
@@ -1337,7 +1337,7 @@ export default function App() {
     const titleMap: Record<AppRoute, { title: string; description: string }> = {
       '/': {
         title: '创客贴需求原型',
-        description: '创客贴需求原型首页，统一承接各功能入口。',
+        description: '创客贴需求原型首页，展示需求与项目情况。',
       },
       '/canvas': {
         title: '无限画布',
@@ -1490,6 +1490,7 @@ export default function App() {
       },
     ];
     const requirementProjectStats = getRequirementProjectStats();
+    const requirementOverviewStats = getRequirementOverviewStats();
 
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f7efe5_0%,#f5f0e8_32%,#ebe6dc_100%)] text-stone-900">
@@ -1504,9 +1505,18 @@ export default function App() {
                   <h1 className="text-4xl font-semibold tracking-[-0.04em] text-stone-900 sm:text-5xl">
                     创客贴需求原型
                   </h1>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600 sm:text-lg">
-                    这里作为项目首页，统一承接后续新增功能和需求入口。以后只需要继续往这里追加卡片和路由，不用再改整体结构。
-                  </p>
+                  <div className="mt-5 flex flex-wrap gap-3 text-sm text-stone-600">
+                    <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3">
+                      <span className="mr-3 font-medium text-stone-500">需求情况</span>
+                      <span className="font-semibold text-stone-900">{requirementOverviewStats.mainCount} 个主需求</span>
+                      <span className="mx-1.5 text-stone-400">·</span>
+                      <span className="font-semibold text-stone-900">{requirementOverviewStats.subCount} 个子需求</span>
+                    </div>
+                    <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3">
+                      <span className="mr-3 font-medium text-stone-500">项目情况</span>
+                      <span className="font-semibold text-stone-900">{requirementOverviewStats.projectCount} 个项目</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
