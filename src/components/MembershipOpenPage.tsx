@@ -230,18 +230,22 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                 <p>当前在售所有会员均在「企业会员」目录下开通，根据需求选择会员类型<span className="relative mx-1 inline-block max-w-[calc(100%-24px)] rounded-[4px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-2 pb-1 pt-2 align-middle text-[17px] font-semibold"><span>基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220</span><span className="absolute -right-4 -top-3"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={OPEN_MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></span></span>进行开通。</p>
               </div>
               <div className="mt-7 flex items-end gap-8">
-                {(['个人会员', '企业会员', '专业版'] as MembershipCategory[]).map((item) => (
-                  <button
-                    type="button"
-                    key={item}
-                    onClick={() => { setCategory(item); setPanel('开通会员'); }}
-                    className={`relative pb-3 text-[15px] transition ${category === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
-                  >
-                    {item}
-                    {item === '企业会员' || item === '专业版' ? <RequirementEntryDot label={`${item}有待开发需求`} /> : null}
-                    {category === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
-                  </button>
-                ))}
+                {(['个人会员', '企业会员', '专业版'] as MembershipCategory[]).map((item) => {
+                  const hasMemberLevelRequirement = item === '企业会员' || item === '专业版';
+                  return (
+                    <div key={item} className={`relative ${hasMemberLevelRequirement ? 'pt-1' : ''}`}>
+                      <button
+                        type="button"
+                        onClick={() => { setCategory(item); setPanel('开通会员'); }}
+                        className={`relative pb-3 text-[15px] transition ${hasMemberLevelRequirement ? 'rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-2' : ''} ${category === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
+                      >
+                        {item}
+                        {category === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
+                      </button>
+                      {hasMemberLevelRequirement ? <span className="absolute -right-5 -top-3"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={`${item}新增新会员等级`} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></span> : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -255,7 +259,6 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     className={`relative pb-[17px] text-[15px] transition ${panel === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
                   >
                     {item}
-                    {item === '开通会员' && (category === '企业会员' || category === '专业版') ? <RequirementEntryDot label={`${category}开通会员有待开发需求`} /> : null}
                     {item === '历史记录' && (category === '企业会员' || category === '专业版') ? <RequirementEntryDot label={`${category}历史会员有待开发需求`} /> : null}
                     {panel === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
                   </button>
