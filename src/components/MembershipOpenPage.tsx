@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, CircleHelp } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint } from './MembershipPackagePage';
 
@@ -13,11 +13,15 @@ type MembershipOpenPageProps = {
 };
 
 type MembershipCategory = '个人会员' | '企业会员' | '专业版';
-type MembershipPanel = '开通会员' | '购买席位' | '历史记录';
+type MembershipPanel = '开通会员' | '购买席位' | '配置域名' | '历史记录';
 
 const inputClassName = 'h-[42px] rounded-[3px] border border-[#d9dfe7] bg-white px-3 text-[13px] text-[#303b4d] outline-none transition placeholder:text-[#c6cbd3] focus:border-[#278fee] focus:shadow-[0_0_0_2px_rgba(39,143,238,.08)]';
 const selectClassName = `${inputClassName} appearance-none pr-10`;
 const OPEN_POINTS_REQUIREMENT_NAME = '开通会员新增积分量';
+
+function RequirementEntryDot({ label }: { label: string }) {
+  return <span className="ml-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] align-middle shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label={label} />;
+}
 
 function FormRow({ label, required = false, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
@@ -44,6 +48,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
     pointsCycle: '按月',
     paymentStatus: '未支付',
     paymentAmount: '',
+    domain: '',
     companyName: '',
     reason: '',
   });
@@ -61,6 +66,8 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
     if (item === '会员套餐管理') onNavigateToMembershipPackages?.();
     if (item === '会员页面配置') onNavigateToMembershipPageConfig?.();
   };
+  const isProfessional = category === '专业版';
+  const panelTabs: MembershipPanel[] = isProfessional ? ['开通会员', '购买席位', '配置域名', '历史记录'] : ['开通会员', '购买席位', '历史记录'];
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] font-sans text-[#30343b]">
@@ -95,10 +102,11 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                   <button
                     type="button"
                     key={item}
-                    onClick={() => setCategory(item)}
+                    onClick={() => { setCategory(item); setPanel('开通会员'); }}
                     className={`relative pb-3 text-[15px] transition ${category === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
                   >
                     {item}
+                    {item === '企业会员' || item === '专业版' ? <RequirementEntryDot label={`${item}有待开发需求`} /> : null}
                     {category === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
                   </button>
                 ))}
@@ -107,7 +115,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
 
             <div className="mx-[25px] mt-8 border border-[#f0f1f3] bg-white">
               <div className="flex h-[58px] items-end gap-8 border-b border-[#edf0f3] px-8">
-                {(['开通会员', '购买席位', '历史记录'] as MembershipPanel[]).map((item) => (
+                {panelTabs.map((item) => (
                   <button
                     type="button"
                     key={item}
@@ -140,12 +148,12 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                       </div>
                     </FormRow>
 
-                    <FormRow label="会员类型" required>
+                    {!isProfessional ? <FormRow label="会员类型" required>
                       <div className="relative rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3">
                         <div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
                         <MemberTypeDropdown value={membershipType} onChange={setMembershipType} className="w-[240px]" />
                       </div>
-                    </FormRow>
+                    </FormRow> : null}
 
                     <FormRow label="会员时长" required>
                       <input value={form.duration} onChange={(event) => updateForm('duration', event.currentTarget.value)} placeholder="请输入开通会员时长的天数（天）" className={`${inputClassName} w-[425px] max-w-full`} />
@@ -193,6 +201,14 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     <FormRow label="支付金额" required>
                       <input value={form.paymentAmount} onChange={(event) => updateForm('paymentAmount', event.currentTarget.value)} placeholder="请输入支付金额（元）" className={`${inputClassName} w-[425px] max-w-full`} />
                     </FormRow>
+
+                    {isProfessional ? <FormRow label="配置域名">
+                      <div className="flex w-[475px] max-w-full">
+                        <input value={form.domain} onChange={(event) => updateForm('domain', event.currentTarget.value)} placeholder="例如：@ckt.cn;@chuangkit.com" className={`${inputClassName} min-w-0 flex-1 rounded-r-none`} />
+                        <button type="button" disabled className="h-[42px] shrink-0 rounded-r-[3px] bg-[#d9d9d9] px-5 text-[13px] text-white">确认域名信息</button>
+                        <CircleHelp className="ml-2 mt-[12px] h-4 w-4 shrink-0 text-[#777]" />
+                      </div>
+                    </FormRow> : null}
 
                     <FormRow label="开通公司名称">
                       <input value={form.companyName} onChange={(event) => updateForm('companyName', event.currentTarget.value)} placeholder="请输入公司名称" className={`${inputClassName} w-[425px] max-w-full`} />
