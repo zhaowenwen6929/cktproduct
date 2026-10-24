@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronRight, Save } from 'lucide-react';
+import { ChevronRight, Plus, Save, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 import { DEFAULT_MEMBERSHIP_PAGE_CONFIG, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
 
@@ -53,6 +53,30 @@ const MEMBERSHIP_PAGE_VERSIONS: MembershipPageVersion[] = [
     description: '会员页改版，支持个人使用和企业使用，并配置套餐、权益、模型消耗、商用授权和常见问题。',
   },
 ];
+
+const VERSION_STORAGE_KEY = 'admin-membership-page-versions';
+
+const readStoredVersions = (): MembershipPageVersion[] => {
+  if (typeof window === 'undefined') return MEMBERSHIP_PAGE_VERSIONS;
+  try {
+    const stored = window.localStorage.getItem(VERSION_STORAGE_KEY);
+    if (!stored) return MEMBERSHIP_PAGE_VERSIONS;
+    const parsed = JSON.parse(stored) as unknown;
+    if (!Array.isArray(parsed)) return MEMBERSHIP_PAGE_VERSIONS;
+    const versions = parsed.filter((item): item is MembershipPageVersion => Boolean(item && typeof item === 'object' && typeof (item as MembershipPageVersion).id === 'string' && typeof (item as MembershipPageVersion).name === 'string' && ((item as MembershipPageVersion).status === '使用中' || (item as MembershipPageVersion).status === '草稿')));
+    return versions.length > 0 ? versions : MEMBERSHIP_PAGE_VERSIONS;
+  } catch {
+    return MEMBERSHIP_PAGE_VERSIONS;
+  }
+};
+
+const persistVersions = (versions: MembershipPageVersion[]) => {
+  try {
+    window.localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(versions));
+  } catch {
+    // Keep the prototype usable when browser storage is unavailable.
+  }
+};
 
 const migratePlansJson = (value: unknown, fallback: string) => {
   if (typeof value !== 'string') return fallback;
@@ -195,6 +219,9 @@ function MembershipPageVersionList({
   onNavigateToMembershipPackages,
   onNavigateToRequirement,
   onOpenVersion,
+  versions,
+  onToggleVersionStatus,
+  onCreateVersion,
 }: {
   onBackToDirectory: () => void;
   onNavigateToSkillConfig?: () => void;
@@ -202,8 +229,32 @@ function MembershipPageVersionList({
   onNavigateToMembershipPackages?: () => void;
   onNavigateToRequirement?: (path: string) => void;
   onOpenVersion: (version: MembershipPageVersion) => void;
+  versions: MembershipPageVersion[];
+  onToggleVersionStatus: (id: string) => void;
+  onCreateVersion: (version: MembershipPageVersion) => void;
 }) {
-  return <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]"><AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员页面配置" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} /><TopHeader /><main className="ml-[228px] min-h-screen pt-[62px]"><div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>会员中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">会员页面配置</span></div><section className="overflow-hidden rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e8edf3] px-5 py-5"><div><h1 className="text-[18px] font-semibold text-[#283244]">会员页面配置</h1><p className="mt-1 text-[12px] text-[#98a2b2]">请选择页面版本，进入后配置该版本的会员页面内容。</p></div><span className="rounded-[5px] bg-[#f3f7fc] px-3 py-2 text-[12px] text-[#6e7d93]">共 {MEMBERSHIP_PAGE_VERSIONS.length} 个版本</span></header><div className="p-5"><div className="mb-3 text-[14px] font-semibold text-[#27344a]">页面版本</div><div className="overflow-hidden rounded-[6px] border border-[#e2e8f0]"><div className="grid grid-cols-[1.4fr_1fr_1.5fr_1.2fr_120px] items-center gap-4 bg-[#fafbfd] px-5 py-3 text-[12px] text-[#7d899a]"><span>版本名称</span><span>状态</span><span>版本说明</span><span>最近更新时间</span><span className="text-right">操作</span></div>{MEMBERSHIP_PAGE_VERSIONS.map((version) => <div key={version.id} className="grid grid-cols-[1.4fr_1fr_1.5fr_1.2fr_120px] items-center gap-4 border-t border-[#edf0f4] px-5 py-5 text-[12px] text-[#536176] transition hover:bg-[#fbfdff]"><div><div className="text-[14px] font-medium text-[#27344a]">{version.name}</div><div className="mt-1 text-[11px] text-[#9aa5b5]">版本标识：{version.id}</div></div><span className="w-fit rounded-[4px] bg-[#eaf7ef] px-2.5 py-1 text-[11px] font-medium text-[#2b9160]">{version.status}</span><span className="leading-5 text-[#7c899b]">{version.description}</span><span className="text-[#7c899b]">{version.updatedAt}</span><div className="text-right"><button type="button" onClick={() => onOpenVersion(version)} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入配置<ChevronRight className="h-3.5 w-3.5" /></button></div></div>)}</div></div></section></div></main></div>;
+  const [createOpen, setCreateOpen] = useState(false);
+  const [versionName, setVersionName] = useState('');
+  const [versionDescription, setVersionDescription] = useState('');
+
+  const submitVersion = () => {
+    const name = versionName.trim();
+    if (!name) return;
+    const now = new Date();
+    const pad = (value: number) => String(value).padStart(2, '0');
+    onCreateVersion({
+      id: `membership-page-${Date.now()}`,
+      name,
+      status: '草稿',
+      updatedAt: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+      description: versionDescription.trim() || '会员页面版本配置。',
+    });
+    setVersionName('');
+    setVersionDescription('');
+    setCreateOpen(false);
+  };
+
+  return <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]"><AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员页面配置" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); }} /><TopHeader /><main className="ml-[228px] min-h-screen pt-[62px]"><div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>会员中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">会员页面配置</span></div><section className="overflow-hidden rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]"><header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e8edf3] px-5 py-5"><div><h1 className="text-[18px] font-semibold text-[#283244]">会员页面配置</h1><p className="mt-1 text-[12px] text-[#98a2b2]">请选择页面版本，进入后配置该版本的会员页面内容。</p></div><div className="flex items-center gap-3"><span className="rounded-[5px] bg-[#f3f7fc] px-3 py-2 text-[12px] text-[#6e7d93]">共 {versions.length} 个版本</span><button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[4px] bg-[#278fee] px-4 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />新增页面版本</button></div></header><div className="p-5"><div className="mb-3 text-[14px] font-semibold text-[#27344a]">页面版本</div><div className="overflow-hidden rounded-[6px] border border-[#e2e8f0]"><div className="grid grid-cols-[1.4fr_1fr_1.5fr_1.2fr_120px] items-center gap-4 bg-[#fafbfd] px-5 py-3 text-[12px] text-[#7d899a]"><span>版本名称</span><span>状态</span><span>版本说明</span><span>最近更新时间</span><span className="text-right">操作</span></div>{versions.map((version) => <div key={version.id} className="grid grid-cols-[1.4fr_1fr_1.5fr_1.2fr_120px] items-center gap-4 border-t border-[#edf0f4] px-5 py-5 text-[12px] text-[#536176] transition hover:bg-[#fbfdff]"><div><div className="text-[14px] font-medium text-[#27344a]">{version.name}</div><div className="mt-1 text-[11px] text-[#9aa5b5]">版本标识：{version.id}</div></div><button type="button" onClick={() => onToggleVersionStatus(version.id)} className={`flex w-fit items-center gap-2 rounded-full px-2.5 py-1 text-[11px] font-medium transition ${version.status === '使用中' ? 'bg-[#eaf7ef] text-[#2b9160]' : 'bg-[#f1f3f6] text-[#7c8797]'}`} aria-label={`切换${version.name}状态`}><span className={`relative h-3.5 w-6 rounded-full transition ${version.status === '使用中' ? 'bg-[#56bb80]' : 'bg-[#b8c0cb]'}`}><span className={`absolute top-0.5 h-2.5 w-2.5 rounded-full bg-white shadow-sm transition ${version.status === '使用中' ? 'left-[11px]' : 'left-0.5'}`} /></span>{version.status}</button><span className="leading-5 text-[#7c899b]">{version.description}</span><span className="text-[#7c899b]">{version.updatedAt}</span><div className="text-right"><button type="button" onClick={() => onOpenVersion(version)} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入配置<ChevronRight className="h-3.5 w-3.5" /></button></div></div>)}</div></div></section></div></main>{createOpen ? <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f1d2f]/35 p-5"><div className="w-full max-w-[540px] rounded-[5px] bg-white shadow-[0_16px_50px_rgba(20,35,57,.22)]"><div className="flex h-14 items-center justify-between border-b border-[#edf0f4] px-5"><h2 className="text-[16px] font-medium text-[#252d3b]">新增页面版本</h2><button type="button" onClick={() => setCreateOpen(false)} className="text-[#a0a8b4] hover:text-[#4d5869]" aria-label="关闭"><X className="h-5 w-5" /></button></div><div className="space-y-5 px-5 py-5"><label className="block text-[12px] text-[#657084]"><span className="mb-2 block"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>版本名称</span><input autoFocus value={versionName} onChange={(event) => setVersionName(event.currentTarget.value)} placeholder="请输入页面版本名称" className="h-9 w-full rounded-[3px] border border-[#dfe3ea] px-3 text-[12px] text-[#303b4d] outline-none focus:border-[#278fee] placeholder:text-[#c8c8c8]" /></label><label className="block text-[12px] text-[#657084]"><span className="mb-2 block">版本说明</span><textarea value={versionDescription} onChange={(event) => setVersionDescription(event.currentTarget.value)} placeholder="请输入版本说明" className="min-h-[90px] w-full resize-none rounded-[3px] border border-[#dfe3ea] px-3 py-2 text-[12px] leading-5 text-[#303b4d] outline-none focus:border-[#278fee] placeholder:text-[#c8c8c8]" /></label></div><div className="flex justify-end gap-3 border-t border-[#edf0f4] px-5 py-4"><button type="button" onClick={() => setCreateOpen(false)} className="h-9 rounded-[3px] border border-[#dfe3ea] px-5 text-[12px] text-[#667285]">取消</button><button type="button" onClick={submitVersion} disabled={!versionName.trim()} className="h-9 rounded-[3px] bg-[#278fee] px-5 text-[12px] text-white transition hover:bg-[#167fdc] disabled:cursor-not-allowed disabled:opacity-50">生成</button></div></div></div> : null}</div>;
 }
 
 export function MembershipPageConfigPage(props: {
@@ -214,8 +265,17 @@ export function MembershipPageConfigPage(props: {
   onNavigateToRequirement?: (path: string) => void;
 }) {
   const [selectedVersion, setSelectedVersion] = useState<MembershipPageVersion | null>(null);
+  const [versions, setVersions] = useState<MembershipPageVersion[]>(readStoredVersions);
 
-  if (!selectedVersion) return <MembershipPageVersionList {...props} onOpenVersion={setSelectedVersion} />;
+  const updateVersions = (updater: (current: MembershipPageVersion[]) => MembershipPageVersion[]) => {
+    setVersions((current) => {
+      const next = updater(current);
+      persistVersions(next);
+      return next;
+    });
+  };
+
+  if (!selectedVersion) return <MembershipPageVersionList {...props} versions={versions} onOpenVersion={setSelectedVersion} onCreateVersion={(version) => updateVersions((current) => [...current, version])} onToggleVersionStatus={(id) => updateVersions((current) => current.map((version) => version.id === id ? { ...version, status: version.status === '使用中' ? '草稿' : '使用中' } : version))} />;
 
   return <MembershipPageConfigEditor {...props} version={selectedVersion} onBackToVersions={() => setSelectedVersion(null)} />;
 }
