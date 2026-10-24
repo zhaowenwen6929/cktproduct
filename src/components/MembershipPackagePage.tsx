@@ -77,9 +77,9 @@ const initialPackages: PackageRow[] = [
 
 const CONFIGURED_PACKAGE_IDS = new Set([1, 2, 6, 7, 8, 9]);
 
-type MemberTypeOption = { name: string; level?: number };
+export type MemberTypeOption = { name: string; level?: number };
 
-const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
+export const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
   { name: '个人版VIP' },
   { name: '标准版(个人)' },
   { name: '标准版(企业)' },
@@ -267,7 +267,7 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
   );
 }
 
-function MemberTypeDropdown({ value, onChange, disabled = false, className = 'w-[240px]' }: { value: string; onChange: (value: string) => void; disabled?: boolean; className?: string }) {
+export function MemberTypeDropdown({ value, onChange, disabled = false, className = 'w-[240px]' }: { value: string; onChange: (value: string) => void; disabled?: boolean; className?: string }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const selected = MEMBER_TYPE_OPTIONS.find((member) => member.name === value);

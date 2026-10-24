@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
+import { MemberTypeDropdown } from './MembershipPackagePage';
 
 type MembershipOpenPageProps = {
   onBackToDirectory: () => void;
@@ -13,8 +14,6 @@ type MembershipOpenPageProps = {
 
 type MembershipCategory = '个人会员' | '企业会员' | '专业版';
 type MembershipPanel = '开通会员' | '购买席位' | '历史记录';
-
-const membershipTypes = ['标准团队版VIP', '通用版（企业）', '协作版', '旗舰版'];
 
 const inputClassName = 'h-[42px] rounded-[3px] border border-[#d9dfe7] bg-white px-3 text-[13px] text-[#303b4d] outline-none transition placeholder:text-[#c6cbd3] focus:border-[#278fee] focus:shadow-[0_0_0_2px_rgba(39,143,238,.08)]';
 const selectClassName = `${inputClassName} appearance-none pr-10`;
@@ -34,7 +33,7 @@ function FormRow({ label, required = false, children }: { label: string; require
 export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onNavigateToRequirement }: MembershipOpenPageProps) {
   const [category, setCategory] = useState<MembershipCategory>('企业会员');
   const [panel, setPanel] = useState<MembershipPanel>('开通会员');
-  const [membershipType, setMembershipType] = useState(membershipTypes[0]);
+  const [membershipType, setMembershipType] = useState('');
   const [form, setForm] = useState({
     userId: '',
     duration: '',
@@ -78,6 +77,10 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
           <section className="min-h-[calc(100vh-130px)] bg-white">
             <div className="border-b border-[#edf0f3] px-[25px] pt-[22px]">
               <h1 className="text-[22px] font-semibold tracking-[-.02em] text-[#252525]">开通会员</h1>
+              <div className="mt-2 flex items-center gap-3">
+                <p className="text-[12px] text-[#8b9199]">会员类型与会员套餐管理保持一致，新增等级会同步显示 level。</p>
+                <button type="button" onClick={() => onNavigateToRequirement?.('/admin-backoffice/requirements/membership')} className="text-[12px] text-[#278fee] hover:text-[#167fdc]">查看需求说明</button>
+              </div>
               <div className="mt-5 space-y-1 text-[14px] leading-6 text-[#ff5a5f]">
                 <p>开通会员需先在企微提交审批，审批通过后可按照对应要求开通会员。</p>
                 <p>当前在售所有会员均在「企业会员」目录下开通，根据需求选择会员类型<span className="text-[17px] font-semibold">通用版（个人）、通用版（企业）、协作版、旗舰版</span>进行开通。</p>
@@ -129,12 +132,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     </FormRow>
 
                     <FormRow label="会员类型" required>
-                      <div className="relative w-[185px]">
-                        <select value={membershipType} onChange={(event) => setMembershipType(event.currentTarget.value)} className={`${selectClassName} w-full`}>
-                          {membershipTypes.map((item) => <option key={item}>{item}</option>)}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7afb9]" />
-                      </div>
+                      <MemberTypeDropdown value={membershipType} onChange={setMembershipType} className="w-[240px]" />
                     </FormRow>
 
                     <FormRow label="会员时长" required>
