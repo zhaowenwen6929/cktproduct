@@ -1,5 +1,6 @@
-import { useMemo, useState, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { ChevronDown, ChevronRight, Eye, Pencil, Plus, Search, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 
 type PackageRow = {
@@ -190,29 +191,75 @@ function RequirementEntryDot() {
 function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS, requirementName = POINTS_REQUIREMENT_NAME, sections = POINTS_REQUIREMENT_SECTIONS }: { text: string; requirementKey?: string; status?: string; requirementName?: string; sections?: { title: string; items: string[] }[] }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
   const [isPinned, setIsPinned] = useState(false);
-  const tooltipWidth = 480;
+  const anchorRef = useRef<HTMLSpanElement | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
+  const tooltipRef = useRef<HTMLSpanElement | null>(null);
+  const tooltipWidth = 360;
   const markerClass = status === '已上线' ? 'bg-[#52b788] shadow-[0_0_6px_rgba(82,183,136,.45)]' : 'bg-[#ff725c] shadow-[0_2px_6px_rgba(255,114,92,.3)]';
+  const clearHideTimer = () => {
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  };
+  const getTipPosition = (rect: DOMRect, contentWidth: number, contentHeight: number) => {
+    const gap = 10;
+    const viewportPadding = 12;
+    const availableWidth = Math.max(220, window.innerWidth - viewportPadding * 2);
+    const width = Math.min(contentWidth, availableWidth);
+    const height = Math.min(contentHeight, window.innerHeight - viewportPadding * 2);
+    const rightSpace = window.innerWidth - rect.right;
+    const leftSpace = rect.left;
+    const showRight = rightSpace >= width + gap || rightSpace >= leftSpace;
+    const rawLeft = showRight ? rect.right + gap : rect.left - width - gap;
+    const left = Math.max(viewportPadding, Math.min(rawLeft, window.innerWidth - width - viewportPadding));
+    const rawTop = rect.top + rect.height / 2 - height / 2;
+    const top = Math.max(viewportPadding, Math.min(rawTop, window.innerHeight - height - viewportPadding));
+    return { top, left };
+  };
+  const updateTipPosition = (target: HTMLElement) => {
+    const rect = target.getBoundingClientRect();
+    setTipPosition(getTipPosition(rect, tooltipWidth, Math.min(520, Math.max(180, window.innerHeight - 24))));
+  };
   const handleMouseEnter = (event: MouseEvent<HTMLSpanElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const gap = 8;
-    const viewportPadding = 8;
-    const tooltipHeight = Math.min(620, Math.max(0, window.innerHeight - viewportPadding * 2));
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const showAbove = spaceBelow < tooltipHeight + gap && rect.top > tooltipHeight + gap;
-    const top = showAbove
-      ? rect.top - tooltipHeight - gap
-      : Math.max(viewportPadding, Math.min(rect.bottom + gap, window.innerHeight - tooltipHeight - viewportPadding));
-    const left = Math.max(viewportPadding, Math.min(rect.left + rect.width / 2 - tooltipWidth / 2, window.innerWidth - tooltipWidth - viewportPadding));
-    setTipPosition({ top, left });
+    clearHideTimer();
+    anchorRef.current = event.currentTarget;
+    updateTipPosition(event.currentTarget);
+  };
+  const scheduleHide = () => {
+    clearHideTimer();
+    if (!isPinned) hideTimerRef.current = window.setTimeout(() => setTipPosition(null), 160);
   };
 
+  useEffect(() => () => clearHideTimer(), []);
+  useEffect(() => {
+    if (!tipPosition) return undefined;
+    const reposition = () => {
+      if (anchorRef.current) updateTipPosition(anchorRef.current);
+    };
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
+    return () => {
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
+    };
+  }, [tipPosition]);
+  useLayoutEffect(() => {
+    if (!tipPosition || !anchorRef.current || !tooltipRef.current) return;
+    const nextPosition = getTipPosition(anchorRef.current.getBoundingClientRect(), tooltipRef.current.getBoundingClientRect().width, tooltipRef.current.getBoundingClientRect().height);
+    if (Math.abs(nextPosition.top - tipPosition.top) > 1 || Math.abs(nextPosition.left - tipPosition.left) > 1) setTipPosition(nextPosition);
+  }, [tipPosition]);
+
   return (
-    <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => { if (!isPinned) setTipPosition(null); }} aria-label={`需求标识：${requirementKey}，${text}`}>
-      <span role="button" tabIndex={0} aria-expanded={Boolean(tipPosition)} onClick={(event) => { event.stopPropagation(); if (isPinned) { setIsPinned(false); setTipPosition(null); } else { setIsPinned(true); handleMouseEnter(event); } }} className={`cursor-help rounded-[4px] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white ${markerClass}`}>V2610</span>
-      {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth, maxHeight: 'calc(100vh - 16px)' }} className="pointer-events-auto fixed z-[120] max-h-[calc(100vh-16px)] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
-        <span className="block whitespace-nowrap"><span className="font-semibold text-[#765d1c]">{requirementName}</span><span className="ml-2 text-[#8a6a22]">{requirementKey} · {status}</span></span>
-        <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{sections.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
-      </span> : null}
+    <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={scheduleHide} aria-label={`需求标识：${requirementKey}，${text}`}>
+      <span role="button" tabIndex={0} aria-expanded={Boolean(tipPosition)} onClick={(event) => { event.stopPropagation(); clearHideTimer(); if (isPinned) { setIsPinned(false); setTipPosition(null); } else { setIsPinned(true); handleMouseEnter(event); } }} className={`cursor-help rounded-[4px] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white ${markerClass}`}>{requirementKey}</span>
+      {tipPosition && typeof document !== 'undefined' ? createPortal(
+        <span ref={tooltipRef} role="tooltip" onMouseEnter={clearHideTimer} onMouseLeave={scheduleHide} style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth, maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100vh - 24px)' }} className="pointer-events-auto fixed z-[9999] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
+          <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1"><span className="font-semibold text-[#765d1c]">{requirementName}</span><span className="text-[#8a6a22]">{requirementKey} · {status}</span></span>
+          <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{sections.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
+        </span>,
+        document.body,
+      ) : null}
     </span>
   );
 }
