@@ -197,12 +197,12 @@ type NavGroup = {
 
 const NAV_GROUPS: NavGroup[] = [
   { label: '企业账号管理（2.0）', icon: Users },
-  { label: '灵感社区', icon: Sparkles, expanded: true, children: ['灵感专题', '提示词库', '灵感作品管理', '活动管理', '玩法专题', '玩法管理', 'AI电商配置'] },
+  { label: '灵感社区', icon: Sparkles, expanded: false, children: ['灵感专题', '提示词库', '灵感作品管理', '活动管理', '玩法专题', '玩法管理', 'AI电商配置'] },
   { label: '系统管理', icon: Settings2 },
   {
     label: '内容运营管理',
     icon: FileText,
-    expanded: true,
+    expanded: false,
     children: [
       '模板数据统计',
       {
@@ -237,7 +237,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: '会员中心',
     icon: Users,
-    expanded: true,
+    expanded: false,
     children: [
       '开通会员',
       '会员退款',
@@ -253,6 +253,13 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 const prettyJson = (config: SkillConfig) => JSON.stringify(config, null, 2);
+
+const NEW_REQUIREMENT_NAV_ITEMS = new Set(['AI电商配置', '搜索引导管理', '会员套餐管理', '会员页面配置']);
+
+function containsNewRequirement(item: NavItem): boolean {
+  if (typeof item === 'string') return NEW_REQUIREMENT_NAV_ITEMS.has(item);
+  return NEW_REQUIREMENT_NAV_ITEMS.has(item.label) || Boolean(item.children?.some(containsNewRequirement));
+}
 
 function isSkillConfig(value: unknown): value is SkillConfig {
   if (!value || typeof value !== 'object') return false;
@@ -309,8 +316,9 @@ function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: stri
 
 export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate }: AdminSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    灵感社区: true,
-    内容运营管理: true,
+    灵感社区: false,
+    内容运营管理: false,
+    会员中心: false,
   });
   const [activeItem, setActiveItem] = useState('AI电商配置');
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
@@ -364,10 +372,11 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
           const Icon = group.icon;
           const hasChildren = Boolean(group.children?.length);
           const isExpanded = expandedGroups[group.label] ?? Boolean(group.expanded);
+          const hasNewRequirement = Boolean(group.children?.some(containsNewRequirement));
           return (
             <div key={group.label}>
               <button type="button" title={group.label} onClick={() => hasChildren && setExpandedGroups((current) => ({ ...current, [group.label]: !isExpanded }))} className="flex h-[38px] w-full items-center justify-between px-5 text-left text-[11px] font-medium tracking-[.01em] text-[#a8bacb] transition hover:bg-white/[.06] hover:text-white">
-                <span className="flex min-w-0 items-center gap-2.5"><Icon className="h-[14px] w-[14px] shrink-0 opacity-80" /><span className="truncate">{group.label}</span></span>
+                <span className="flex min-w-0 items-center gap-2.5"><Icon className="h-[14px] w-[14px] shrink-0 opacity-80" /><span className="truncate">{group.label}</span>{hasNewRequirement ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label="有新增需求" /> : null}</span>
                 {hasChildren ? <ChevronDown className={`h-3 w-3 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
               </button>
               {hasChildren && isExpanded ? (
