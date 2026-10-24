@@ -283,14 +283,11 @@ function MemberTypeDropdown({ value, onChange, disabled = false, className = 'w-
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
     };
-    const closeOnScroll = () => setOpen(false);
     document.addEventListener('mousedown', closeOnOutsidePointer);
     document.addEventListener('keydown', closeOnEscape);
-    window.addEventListener('scroll', closeOnScroll, true);
     return () => {
       document.removeEventListener('mousedown', closeOnOutsidePointer);
       document.removeEventListener('keydown', closeOnEscape);
-      window.removeEventListener('scroll', closeOnScroll, true);
     };
   }, [open]);
 
