@@ -264,8 +264,9 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
   );
 }
 
-function MemberTypeDropdown({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+function MemberTypeDropdown({ value, onChange, disabled = false, className = 'w-[240px]' }: { value: string; onChange: (value: string) => void; disabled?: boolean; className?: string }) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const selected = MEMBER_TYPE_OPTIONS.find((member) => member.name === value);
   const existingOptions = MEMBER_TYPE_OPTIONS.filter((member) => !member.level);
   const newOptions = MEMBER_TYPE_OPTIONS.filter((member) => member.level);
@@ -274,10 +275,28 @@ function MemberTypeDropdown({ value, onChange }: { value: string; onChange: (val
     onChange(nextValue);
     setOpen(false);
   };
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsidePointer = (event: globalThis.MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    const closeOnScroll = () => setOpen(false);
+    document.addEventListener('mousedown', closeOnOutsidePointer);
+    document.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('scroll', closeOnScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsidePointer);
+      document.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('scroll', closeOnScroll, true);
+    };
+  }, [open]);
 
   return (
-    <div className="relative w-[240px] shrink-0">
-      <button type="button" onClick={() => setOpen((current) => !current)} aria-haspopup="listbox" aria-expanded={open} className="flex h-[33px] w-full items-center justify-between rounded-[2px] border border-[#d9d9d9] bg-white px-3 text-left text-[12px] text-[#b6bbc1] outline-none focus:border-[#278fee]">
+    <div ref={containerRef} className={`relative ${className} shrink-0`}>
+      <button type="button" disabled={disabled} onClick={() => { if (!disabled) setOpen((current) => !current); }} aria-haspopup="listbox" aria-expanded={open} className="flex h-[33px] w-full items-center justify-between rounded-[2px] border border-[#d9d9d9] bg-white px-3 text-left text-[12px] text-[#b6bbc1] outline-none focus:border-[#278fee] disabled:cursor-not-allowed disabled:bg-[#f5f5f5]">
         <span className={selected ? 'text-[#333]' : ''}>{selected ? formatLabel(selected) : '请选择会员类型'}</span>
         <ChevronDown className="h-4 w-4 text-[#aeb5bd]" />
       </button>
@@ -362,7 +381,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>名称：</span><input value={form.name} onChange={(event) => update('name', event.currentTarget.value)} placeholder={isCreate ? '请输入名称' : undefined} className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>显示名称：</span><input disabled={!isCreate} value={form.displayName} onChange={(event) => update('displayName', event.currentTarget.value)} placeholder={isCreate ? '请输入显示名称' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>售卖描述：</span><input value={form.saleDescription} onChange={(event) => update('saleDescription', event.currentTarget.value)} placeholder={isCreate ? '请输入售卖描述' : undefined} className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
-          <div className="relative mb-6"><div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div><div className="rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3"><label className="grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>所属会员：</span><select disabled={!isCreate} value={form.member} onChange={(event) => update('member', event.currentTarget.value)} className={`${isCreate ? inputClass : disabledClass} appearance-none`}><option value="">{isCreate ? '请选择会员类型' : form.member}</option>{MEMBER_TYPE_OPTIONS.map((memberType) => <option key={memberType.name} value={memberType.name}>{memberType.name}{memberType.level ? ` ${memberType.level}` : ''}</option>)}</select></label></div></div>
+          <div className="relative mb-6"><div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div><div className="rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3"><label className="grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>所属会员：</span><MemberTypeDropdown value={form.member} onChange={(value) => update('member', value)} disabled={!isCreate} className="w-full" /></label></div></div>
           <div className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐类型：</span><div className={`flex items-center gap-5 text-[13px] ${isCreate ? 'text-[#333]' : 'text-[#c1c1c1]'}`}><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '普通套餐'} onChange={() => update('packageType', '普通套餐')} disabled={!isCreate} />普通套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '订阅套餐'} onChange={() => update('packageType', '订阅套餐')} disabled={!isCreate} />订阅套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '低价试用且订阅套餐'} onChange={() => update('packageType', '低价试用且订阅套餐')} disabled={!isCreate} />低价试用且订阅套餐</label><span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#c7c7c7] text-[10px] font-bold text-white">?</span></div></div>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐时长(天)：</span><input disabled={!isCreate} value={form.duration} onChange={(event) => update('duration', event.currentTarget.value)} placeholder={isCreate ? '请输入套餐时长(天)' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐价格原价（元）：</span><input disabled={!isCreate} value={form.originalPrice} onChange={(event) => update('originalPrice', event.currentTarget.value)} placeholder={isCreate ? '请输入套餐价格原价（元）' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
