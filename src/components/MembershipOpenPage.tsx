@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { CalendarDays, ChevronDown, ChevronRight, CircleHelp, Download } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, OPEN_MEMBER_TYPE_REQUIREMENT_NAME, POINTS_HISTORY_HELPER_TEXT, POINTS_OPENING_HELPER_TEXT, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getMemberPointsConfigForDuration, getPackagePointsDisplay, isHistoricalMemberType, isLifetimeDuration } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, OPEN_MEMBER_TYPE_REQUIREMENT_NAME, POINTS_HISTORY_HELPER_TEXT, POINTS_OPENING_HELPER_TEXT, POINTS_REQUIREMENT, POINTS_REQUIREMENT_SECTIONS, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getMemberPointsConfigForDuration, getPackagePointsDisplay, isHistoricalMemberType, isLifetimeDuration } from './MembershipPackagePage';
 
 type MembershipOpenPageProps = {
   onBackToDirectory: () => void;
@@ -19,10 +19,6 @@ const inputClassName = 'h-[42px] rounded-[3px] border border-[#d9dfe7] bg-white 
 const selectClassName = `${inputClassName} appearance-none pr-10`;
 const OPEN_POINTS_REQUIREMENT_NAME = '开通会员新增积分量';
 const HISTORY_POINTS_REQUIREMENT_NAME = '历史记录显示开通套餐的积分量';
-
-function RequirementEntryDot({ label }: { label: string }) {
-  return <span className="ml-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] align-middle shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label={label} />;
-}
 
 function FormRow({ label, required = false, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
@@ -240,7 +236,6 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                         className={`relative pb-3 text-[15px] transition ${hasMemberLevelRequirement ? 'rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-2' : ''} ${category === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
                       >
                         {item}
-                        {hasMemberLevelRequirement ? <RequirementEntryDot label={`${item}新增新会员等级`} /> : null}
                         {category === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
                       </button>
                       {hasMemberLevelRequirement ? <span className="absolute -right-5 -top-3"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={`${item}新增新会员等级`} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></span> : null}
@@ -257,10 +252,10 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     type="button"
                     key={item}
                     onClick={() => setPanel(item)}
-                    className={`relative pb-[17px] text-[15px] transition ${panel === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
+                    className={`relative pb-[17px] text-[15px] transition ${item === '历史记录' && (category === '企业会员' || category === '专业版') ? 'rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-2 pt-1' : ''} ${panel === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
                   >
                     {item}
-                    {item === '历史记录' && (category === '企业会员' || category === '专业版') ? <RequirementEntryDot label={`${category}历史会员有待开发需求`} /> : null}
+                    {item === '历史记录' && (category === '企业会员' || category === '专业版') ? <span className="absolute -right-5 -top-3 z-10"><RequirementHint text={POINTS_REQUIREMENT} requirementName={`${category}历史记录显示开通套餐的积分量`} sections={POINTS_REQUIREMENT_SECTIONS} /></span> : null}
                     {panel === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
                   </button>
                 ))}

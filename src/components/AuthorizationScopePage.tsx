@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { RequirementEntryDot, RequirementHint, type RequirementSection } from './MembershipPackagePage';
+import { RequirementEntryFrame, RequirementHint, type RequirementSection } from './MembershipPackagePage';
 
 type AuthorizationScopePageProps = {
   onBackToDirectory: () => void;
@@ -131,7 +131,7 @@ export function AuthorizationScopePage({ onBackToDirectory, onNavigateToSkillCon
                 </div>
 
                 <div className="flex items-start gap-4 text-[14px]">
-                  <span className="flex w-[72px] shrink-0 items-center justify-end gap-1 pt-2 text-[#424a55]">会员类型：<RequirementEntryDot label="会员类型新增新会员等级" /></span>
+                  <RequirementEntryFrame className="shrink-0" text={AUTHORIZATION_SCOPE_REQUIREMENT} requirementName="授权范围设置新增新会员等级" sections={AUTHORIZATION_SCOPE_REQUIREMENT_SECTIONS}><span className="w-[72px] pt-1 text-[#424a55]">会员类型：</span></RequirementEntryFrame>
                   <div className="flex flex-wrap gap-2">
                     {EXISTING_MEMBER_TYPES.map((memberType, index) => (
                       <button key={`${memberType}-${index}`} type="button" onClick={() => setSelectedMemberType(memberType)} className={`rounded-[4px] border px-3 py-2 transition ${selectedMemberType === memberType ? 'border-[#278fee] bg-[#278fee] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)]' : 'border-[#e1e5ea] bg-white text-[#4d5664] hover:border-[#b8d7f5] hover:text-[#278fee]'}`}>{memberType}</button>

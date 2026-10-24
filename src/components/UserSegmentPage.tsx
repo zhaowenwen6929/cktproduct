@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Upload, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryDot, RequirementHint } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryFrame, RequirementHint } from './MembershipPackagePage';
 
 type UserSegmentPageProps = {
   onBackToDirectory: () => void;
@@ -89,23 +89,26 @@ export function MemberIdentitySelect({ value, onChange, className = '' }: { valu
     return () => document.removeEventListener('mousedown', closeOnOutsideClick);
   }, [open]);
 
+  const renderOption = (option: { value: string; label: string }) => {
+    const optionButton = <button key={option.value} type="button" role="option" aria-selected={option.value === value} onClick={() => { onChange(option.value); setOpen(false); }} className={`flex min-h-10 w-full items-center justify-between px-3 text-left text-[16px] transition hover:bg-[#eef7ff] ${option.value === value ? 'bg-[#eef7ff] text-[#278fee]' : 'text-[#30343b]'}`}><span>{option.label}</span></button>;
+    return option.value === 'member-level' || option.value === 'non-member-level'
+      ? <RequirementEntryFrame key={option.value} className="m-1 w-[calc(100%-8px)]" text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS}>{optionButton}</RequirementEntryFrame>
+      : optionButton;
+  };
+
   return (
     <div ref={containerRef} className={`relative w-full max-w-[360px] ${className}`}>
-      <button type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((current) => !current)} className="flex h-10 w-full items-center justify-between rounded-[3px] border border-[#d7dce3] bg-white px-3 text-left text-[16px] text-[#30343b] outline-none transition hover:border-[#278fee] focus:border-[#278fee]">
-        <span className="truncate">{selectedOption.label}</span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-[#a8afb9] transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
+      <RequirementEntryFrame className="w-full" text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS}>
+        <button type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((current) => !current)} className="flex h-10 w-full items-center justify-between rounded-[3px] border border-[#d7dce3] bg-white px-3 text-left text-[16px] text-[#30343b] outline-none transition hover:border-[#278fee] focus:border-[#278fee]">
+          <span className="truncate">{selectedOption.label}</span>
+          <ChevronDown className={`h-4 w-4 shrink-0 text-[#a8afb9] transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+      </RequirementEntryFrame>
       {open ? (
         <div role="listbox" className="absolute left-0 top-[calc(100%+4px)] z-50 w-full overflow-hidden rounded-[3px] border border-[#d7dce3] bg-white py-1 shadow-[0_6px_18px_rgba(25,38,58,.16)]">
-          {MEMBER_IDENTITY_OPTIONS.map((option) => (
-            <button key={option.value} type="button" role="option" aria-selected={option.value === value} onClick={() => { onChange(option.value); setOpen(false); }} className={`flex min-h-10 w-full items-center justify-between px-3 text-left text-[16px] transition hover:bg-[#eef7ff] ${option.value === value ? 'bg-[#eef7ff] text-[#278fee]' : 'text-[#30343b]'}`}>
-              <span>{option.label}</span>
-              {option.value === 'member-level' || option.value === 'non-member-level' ? <RequirementEntryDot label={`${option.label}有需求改动`} /> : null}
-            </button>
-          ))}
+          {MEMBER_IDENTITY_OPTIONS.map(renderOption)}
         </div>
       ) : null}
-      <span className="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2"><RequirementEntryDot label="会员身份按等级筛选有需求改动" /></span>
     </div>
   );
 }
@@ -283,7 +286,7 @@ export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, on
             <header className="border-b border-[#e8edf3] px-5 py-5"><h1 className="text-[18px] font-semibold text-[#283244]">用户分群</h1></header>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#edf0f4] px-5 py-4">
               <div className="flex flex-wrap items-center gap-3">
-                <button type="button" onClick={() => setIsCsvImportOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" /><span>CSV导入分群</span><RequirementEntryDot label="CSV导入分群有需求改动" /></button>
+                <RequirementEntryFrame text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS}><button type="button" onClick={() => setIsCsvImportOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" /><span>CSV导入分群</span></button></RequirementEntryFrame>
                 <button type="button" onClick={() => onNavigateToNewRule?.()} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />新增规则分群</button>
                 <button type="button" onClick={() => onNavigateToCustomRule?.()} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />定制分群条件</button>
               </div>

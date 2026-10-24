@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CalendarDays, ChevronDown, Search } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryDot, RequirementHint } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryFrame, RequirementHint } from './MembershipPackagePage';
 
 type UserAuthorizationPageProps = {
   onBackToDirectory: () => void;
@@ -138,10 +138,12 @@ export function UserAuthorizationPage({ onBackToDirectory, onNavigateToSkillConf
                 <FilterSelect value={type} onChange={setType} placeholder="全部类型" options={['会员', '零售']} />
                 <span className="text-right text-[#424a55]">权益等级/类型：</span>
                 <div className="relative">
-                  <button type="button" aria-expanded={benefitDropdownOpen} onClick={() => setBenefitDropdownOpen((open) => !open)} className="flex h-11 w-full items-center justify-between rounded-[3px] border border-[#278fee] bg-white px-3 text-left text-[14px] text-[#a7afb9] outline-none">
-                    <span className="flex min-w-0 items-center gap-1.5"><span className="truncate">{benefitLevel || '权益等级/...'}</span><RequirementEntryDot label="权益等级/类型新增新会员等级" /></span>
-                    <Search className="h-4 w-4 shrink-0 text-[#a6adb7]" />
-                  </button>
+                  <RequirementEntryFrame className="w-full" text={MEMBER_TYPE_REQUIREMENT} requirementName="用户授权信息查看新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS}>
+                    <button type="button" aria-expanded={benefitDropdownOpen} onClick={() => setBenefitDropdownOpen((open) => !open)} className="flex h-11 w-full items-center justify-between rounded-[3px] border border-[#278fee] bg-white px-3 text-left text-[14px] text-[#a7afb9] outline-none">
+                      <span className="truncate">{benefitLevel || '权益等级/...'}</span>
+                      <Search className="h-4 w-4 shrink-0 text-[#a6adb7]" />
+                    </button>
+                  </RequirementEntryFrame>
                   {benefitDropdownOpen ? (
                     <div className="absolute left-0 top-[calc(100%+4px)] z-30 max-h-[250px] w-full overflow-y-auto rounded-[3px] border border-[#dfe4eb] bg-white py-1 shadow-[0_8px_18px_rgba(31,43,61,.16)]">
                       <button type="button" onClick={() => { setBenefitLevel(''); setBenefitDropdownOpen(false); }} className="block w-full px-3 py-2 text-left text-[14px] text-[#4a5563] hover:bg-[#eef6fd]">全部等级</button>
