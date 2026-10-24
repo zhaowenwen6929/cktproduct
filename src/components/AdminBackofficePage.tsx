@@ -334,8 +334,9 @@ export type RequirementProjectStats = {
 
 export type RequirementOverviewStats = {
   projectCount: number;
-  mainCount: number;
-  subCount: number;
+  requirementCount: number;
+  launchedCount: number;
+  notLaunchedCount: number;
 };
 
 export function getRequirementProjectStats(): Record<string, RequirementProjectStats> {
@@ -354,10 +355,16 @@ export function getRequirementProjectStats(): Record<string, RequirementProjectS
 }
 
 export function getRequirementOverviewStats(): RequirementOverviewStats {
+  const projectStats = getRequirementProjectStats();
+  const totals = Object.values(projectStats).reduce((result, current) => ({
+    requirementCount: result.requirementCount + current.total,
+    launchedCount: result.launchedCount + current.launched,
+    notLaunchedCount: result.notLaunchedCount + current.notLaunched,
+  }), { requirementCount: 0, launchedCount: 0, notLaunchedCount: 0 });
+
   return {
     projectCount: new Set(REQUIREMENT_NAV_ITEMS.map((item) => item.projectName ?? '创客贴管理后台')).size,
-    mainCount: REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'main').length,
-    subCount: REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'sub').length,
+    ...totals,
   };
 }
 

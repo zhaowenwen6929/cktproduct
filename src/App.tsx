@@ -1500,16 +1500,17 @@ export default function App() {
                     创客贴需求原型
                   </h1>
                   <div className="mt-5 flex flex-wrap gap-3 text-sm text-stone-600">
-                    <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3">
+                    {homeViewMode === 'requirements' ? <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3">
                       <span className="mr-3 font-medium text-stone-500">需求情况</span>
-                      <span className="font-semibold text-stone-900">{requirementOverviewStats.mainCount} 个主需求</span>
+                      <span className="font-semibold text-stone-900">{requirementOverviewStats.requirementCount} 个需求</span>
                       <span className="mx-1.5 text-stone-400">·</span>
-                      <span className="font-semibold text-stone-900">{requirementOverviewStats.subCount} 个子需求</span>
-                    </div>
-                    <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3">
+                      <span className="font-semibold text-emerald-700">已上线 {requirementOverviewStats.launchedCount}</span>
+                      <span className="mx-1.5 text-stone-400">·</span>
+                      <span className="font-semibold text-amber-700">未上线 {requirementOverviewStats.notLaunchedCount}</span>
+                    </div> : <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3">
                       <span className="mr-3 font-medium text-stone-500">项目情况</span>
                       <span className="font-semibold text-stone-900">{requirementOverviewStats.projectCount} 个项目</span>
-                    </div>
+                    </div>}
                   </div>
                 </div>
               </div>
