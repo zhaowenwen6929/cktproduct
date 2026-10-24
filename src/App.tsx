@@ -1689,6 +1689,7 @@ export default function App() {
     return <RequirementDocumentPage
       kind="membership"
       onBack={() => navigateTo('/admin-backoffice/requirements')}
+      onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
   }
 
@@ -1696,6 +1697,7 @@ export default function App() {
     return <RequirementDocumentPage
       kind="ai-ecommerce"
       onBack={() => navigateTo('/admin-backoffice/ai-ecommerce')}
+      onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
   }
 
@@ -1703,6 +1705,7 @@ export default function App() {
     return <RequirementDocumentPage
       kind="search-guide"
       onBack={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
   }
 

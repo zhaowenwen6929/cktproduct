@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { ArrowLeft, Check, CheckCircle2, Clipboard, ClipboardList, FileText, Maximize2, Minimize2, X } from 'lucide-react';
+import { ArrowLeft, Check, CheckCircle2, ChevronRight, Clipboard, ClipboardList, FileText, Maximize2, Minimize2, X } from 'lucide-react';
 
 type RequirementKind = 'ai-ecommerce' | 'search-guide' | 'membership';
 
 type RequirementSection = {
   title: string;
   description: string;
-  items: Array<{ label: string; content: string }>;
+  items: Array<{ label: string; content: string; path?: string }>;
 };
 
 export type RequirementSpec = {
@@ -230,7 +230,20 @@ function buildAiPrompt(spec: RequirementSpec) {
   return `你是一名资深后台产品经理、交互设计师和前端开发者。请严格根据下面的需求说明，设计并实现“${spec.title}”功能，不要擅自扩展业务范围。\n\n## 需求概述\n${spec.summary}\n\n## 需求背景\n${spec.background}\n\n## 需求目标\n${spec.goal}\n\n## 具体需求\n${sections}\n\n## 验收标准\n${spec.acceptance.map((item) => `- ${item}`).join('\n')}\n\n## 输出要求\n请先梳理页面信息架构、组件划分、交互流程、接口依赖、权限差异、空态、加载态和错误态，再给出实现方案。保持现有项目的视觉风格和路由结构；涉及接口时说明请求参数、返回数据和异常处理，不要编造未确认的后端能力。`;
 }
 
-export function RequirementDocumentPage({ kind, onBack }: { kind: RequirementKind; onBack: () => void }) {
+function RequirementSectionItem({ item, compact = false, onNavigate }: { item: RequirementSection['items'][number]; compact?: boolean; onNavigate?: (path: string) => void }) {
+  const className = compact ? 'rounded-[8px] bg-[#f8fafc] px-3 py-2.5 text-left transition' : 'rounded-[9px] bg-[#f8fafc] px-4 py-3 text-left transition';
+  const content = <><div className={compact ? 'text-[11px] font-medium text-[#536178]' : 'text-[12px] font-medium text-[#536178]'}>{item.label}</div><p className={compact ? 'mt-1 text-[11px] leading-5 text-[#778397]' : 'mt-1.5 text-[12px] leading-5 text-[#778397]'}>{item.content}</p>{item.path && onNavigate ? <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#278fee]">查看对应页面<ChevronRight className="h-3 w-3" /></span> : null}</>;
+
+  if (item.path && onNavigate) {
+    return <button type="button" onClick={() => onNavigate(item.path!)} className={`${className} w-full hover:bg-[#eef6ff] hover:text-[#278fee]`}>
+      {content}
+    </button>;
+  }
+
+  return <div className={className}>{content}</div>;
+}
+
+export function RequirementDocumentPage({ kind, onBack, onNavigate }: { kind: RequirementKind; onBack: () => void; onNavigate?: (path: string) => void }) {
   const spec = requirementSpecs[kind];
   const [copied, setCopied] = useState(false);
 
@@ -284,7 +297,7 @@ export function RequirementDocumentPage({ kind, onBack }: { kind: RequirementKin
             {spec.sections.map((section, sectionIndex) => (
               <section key={section.title} className="rounded-[12px] border border-[#e8ecf2] bg-white p-5">
                 <div className="flex items-start gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[#edf4ff] text-[11px] font-semibold text-[#4c87d7]">{String(sectionIndex + 1).padStart(2, '0')}</span><div><h2 className="text-[15px] font-semibold text-[#344158]">{section.title}</h2>{section.description ? <p className="mt-1 text-[12px] text-[#8b96a7]">{section.description}</p> : null}</div></div>
-                <div className={`mt-4 grid gap-3 ${section.items.length > 1 ? 'md:grid-cols-2' : ''}`}>{section.items.map((item) => <div key={item.label} className="rounded-[9px] bg-[#f8fafc] px-4 py-3"><div className="text-[12px] font-medium text-[#536178]">{item.label}</div><p className="mt-1.5 text-[12px] leading-5 text-[#778397]">{item.content}</p></div>)}</div>
+                <div className={`mt-4 grid gap-3 ${section.items.length > 1 ? 'md:grid-cols-2' : ''}`}>{section.items.map((item) => <RequirementSectionItem key={item.label} item={item} onNavigate={onNavigate} />)}</div>
               </section>
             ))}
           </div>
@@ -299,7 +312,7 @@ export function RequirementDocumentPage({ kind, onBack }: { kind: RequirementKin
   );
 }
 
-export function RequirementDocumentDrawer({ kind, spec: customSpec, onClose }: { kind?: RequirementKind; spec?: RequirementSpec; onClose: () => void }) {
+export function RequirementDocumentDrawer({ kind, spec: customSpec, onClose, onNavigate }: { kind?: RequirementKind; spec?: RequirementSpec; onClose: () => void; onNavigate?: (path: string) => void }) {
   const spec = customSpec ?? (kind ? requirementSpecs[kind] : undefined);
   const [copied, setCopied] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -343,7 +356,7 @@ export function RequirementDocumentDrawer({ kind, spec: customSpec, onClose }: {
 
             <div className="grid gap-3 border-t border-[#edf0f4] p-4 md:grid-cols-2 md:p-5"><div className="rounded-[10px] border border-[#edf0f4] bg-[#fbfcfe] p-4"><h2 className="text-[14px] font-semibold text-[#344158]">需求背景</h2><p className="mt-2 text-[12px] leading-5 text-[#6c788c]">{spec.background}</p></div><div className="rounded-[10px] border border-[#e3ecfb] bg-[#f7faff] p-4"><h2 className="text-[14px] font-semibold text-[#344158]">需求目标</h2><p className="mt-2 text-[12px] leading-5 text-[#6c788c]">{spec.goal}</p></div></div>
 
-            <div className="space-y-3 px-4 pb-4 md:px-5 md:pb-5">{spec.sections.map((section, sectionIndex) => <section key={section.title} className="rounded-[10px] border border-[#e8ecf2] bg-white p-4"><div className="flex items-start gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-[#edf4ff] text-[10px] font-semibold text-[#4c87d7]">{String(sectionIndex + 1).padStart(2, '0')}</span><div><h2 className="text-[14px] font-semibold text-[#344158]">{section.title}</h2>{section.description ? <p className="mt-1 text-[11px] leading-5 text-[#8b96a7]">{section.description}</p> : null}</div></div><div className={`mt-3 grid gap-2 ${section.items.length > 1 ? 'md:grid-cols-2' : ''}`}>{section.items.map((item) => <div key={item.label} className="rounded-[8px] bg-[#f8fafc] px-3 py-2.5"><div className="text-[11px] font-medium text-[#536178]">{item.label}</div><p className="mt-1 text-[11px] leading-5 text-[#778397]">{item.content}</p></div>)}</div></section>)}</div>
+            <div className="space-y-3 px-4 pb-4 md:px-5 md:pb-5">{spec.sections.map((section, sectionIndex) => <section key={section.title} className="rounded-[10px] border border-[#e8ecf2] bg-white p-4"><div className="flex items-start gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-[#edf4ff] text-[10px] font-semibold text-[#4c87d7]">{String(sectionIndex + 1).padStart(2, '0')}</span><div><h2 className="text-[14px] font-semibold text-[#344158]">{section.title}</h2>{section.description ? <p className="mt-1 text-[11px] leading-5 text-[#8b96a7]">{section.description}</p> : null}</div></div><div className={`mt-3 grid gap-2 ${section.items.length > 1 ? 'md:grid-cols-2' : ''}`}>{section.items.map((item) => <RequirementSectionItem key={item.label} item={item} compact onNavigate={onNavigate} />)}</div></section>)}</div>
 
             <section className="mx-4 mb-4 rounded-[10px] border border-[#dfeafc] bg-[#f6f9ff] p-4 md:mx-5 md:mb-5"><h2 className="text-[14px] font-semibold text-[#344158]">验收标准</h2><div className="mt-2 grid gap-2">{spec.acceptance.map((item) => <div key={item} className="flex items-start gap-2 text-[11px] leading-5 text-[#647187]"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#4e9a7b]" />{item}</div>)}</div></section>
           </section>

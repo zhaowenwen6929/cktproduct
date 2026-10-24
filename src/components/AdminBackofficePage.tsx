@@ -592,12 +592,12 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
       {
         title: '具体需求',
         description: '列表之外的实现细节和验收关注点。',
-        items: item.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail })),
+        items: item.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail, path: item.path })),
       },
       {
         title: '所在路径',
         description: '',
-        items: [{ label: '所在路径', content: getRequirementDisplayPath(item) }],
+        items: [{ label: '所在路径', content: getRequirementDisplayPath(item), path: item.path }],
       },
     ],
     acceptance: [
@@ -646,7 +646,7 @@ export function RequirementListBoard({ onNavigate }: { onNavigate?: (path: strin
         })}
       </div>
     </section>
-    {selectedRequirement ? <RequirementDocumentDrawer spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} /> : null}
+    {selectedRequirement ? <RequirementDocumentDrawer spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} onNavigate={onNavigate} /> : null}
   </div>;
 }
 
@@ -676,7 +676,7 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
           </section>
         </div>
       </main>
-      {selectedRequirement ? <RequirementDocumentDrawer spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} /> : null}
+      {selectedRequirement ? <RequirementDocumentDrawer spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} onNavigate={onNavigateToRequirement} /> : null}
     </div>
   );
 }
