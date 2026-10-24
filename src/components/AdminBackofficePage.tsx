@@ -347,6 +347,26 @@ export function getRequirementProjectStats(): Record<string, RequirementProjectS
   }, {});
 }
 
+const REQUIREMENT_CHILD_ORDER: Record<string, string[]> = {
+  'membership-redesign': [
+    'membership-packages',
+    'membership-open',
+    'membership-page-config',
+    'user-segments-member-level',
+    'authorization-scope-member-level',
+    'user-authorization-member-level',
+    'membership-activation-member-level',
+  ],
+};
+
+function getRequirementChildren(parentId: string): RequirementNavItem[] {
+  const children = REQUIREMENT_NAV_ITEMS.filter((item) => item.parentId === parentId);
+  const preferredOrder = REQUIREMENT_CHILD_ORDER[parentId];
+  if (!preferredOrder) return children;
+
+  return children.sort((left, right) => preferredOrder.indexOf(left.id) - preferredOrder.indexOf(right.id));
+}
+
 function navItemContainsLabel(item: NavItem, label: string): boolean {
   if (typeof item === 'string') return item === label;
   return item.label === label || Boolean(item.children?.some((child) => navItemContainsLabel(child, label)));
@@ -634,7 +654,7 @@ export function RequirementListBoard({ onNavigate }: { onNavigate?: (path: strin
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8edf3] px-5 py-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">需求列表</h1><p className="mt-1 text-[12px] text-[#98a2b2]">按主需求新增时间倒序展示，子需求归属在对应主需求下。</p></div><span className="rounded-[5px] bg-[#fff4c8] px-3 py-1.5 text-[12px] font-medium text-[#986a00]">{mainRequirements.length} 个主需求 · {childRequirementCount} 个子需求</span></header>
       <div className="space-y-3 p-5">
         {mainRequirements.map((item, index) => {
-          const children = REQUIREMENT_NAV_ITEMS.filter((child) => child.parentId === item.id);
+          const children = getRequirementChildren(item.id);
           const isExpanded = Boolean(expandedMainRequirements[item.id]);
           return <div key={item.id}><RequirementCard item={item} index={index} onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} />{children.length > 0 ? <><ChildRequirementDisclosure itemId={item.id} childCount={children.length} isExpanded={isExpanded} onToggle={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} /><ChildRequirementList itemId={item.id} children={children} isExpanded={isExpanded} onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} /></> : null}</div>;
         })}
@@ -662,7 +682,7 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
             <header className="flex items-center justify-between border-b border-[#e8edf3] px-5 py-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">需求列表</h1><p className="mt-1 text-[12px] text-[#98a2b2]">按主需求新增时间倒序展示，子需求归属在对应主需求下。</p></div><span className="rounded-[5px] bg-[#fff4c8] px-3 py-1.5 text-[12px] font-medium text-[#986a00]">{mainRequirements.length} 个主需求 · {childRequirementCount} 个子需求</span></header>
             <div className="space-y-3 p-5">
               {mainRequirements.map((item, index) => {
-                const children = REQUIREMENT_NAV_ITEMS.filter((child) => child.parentId === item.id);
+                const children = getRequirementChildren(item.id);
                 const isExpanded = Boolean(expandedMainRequirements[item.id]);
                 return <div key={item.id}><RequirementCard item={item} index={index} onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} />{children.length > 0 ? <><ChildRequirementDisclosure itemId={item.id} childCount={children.length} isExpanded={isExpanded} onToggle={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} /><ChildRequirementList itemId={item.id} children={children} isExpanded={isExpanded} onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} /></> : null}</div>;
               })}
