@@ -159,12 +159,19 @@ type DetailEditValues = {
 
 const POINTS_REQUIREMENT_KEY = 'VIP-2610';
 const POINTS_REQUIREMENT_STATUS = '待开发';
-const POINTS_REQUIREMENT = '积分量用于配置套餐独立发放的积分额度。新增套餐时需填写非负整数；历史套餐可为空，未填写时按所属会员等级的积分量发放，已配置套餐不可修改。列表展示规则：①积分量为空时，显示“按会员等级发”；②已配置具体值时，显示为“具体值/单位/周期”，例如“600/每人/按月”。';
+const POINTS_REQUIREMENT_SECTIONS = [
+  { title: '功能说明', items: ['积分量用于配置套餐独立发放的积分额度。'] },
+  { title: '表单配置', items: ['新增套餐：积分量为必填项，填写非负整数。', '发放单位：默认每人，可选团队。', '发放周期：默认按月，可选一次性。'] },
+  { title: '历史套餐', items: ['历史套餐积分量留空，未填写时按照所属会员等级的积分量发放；已配置套餐不可修改。'] },
+  { title: '列表展示规则', items: ['积分量为空：显示“按会员等级发”。', '已配置具体值：显示“具体值/单位/周期”，例如“600/每人/按月”。'] },
+  { title: '影响入口', items: ['会员套餐管理列表、套餐详情、新增套餐和编辑套餐。'] },
+];
+const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 
 function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS }: { text: string; requirementKey?: string; status?: string }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
-  const tooltipWidth = 420;
-  const tooltipHeight = 260;
+  const tooltipWidth = 440;
+  const tooltipHeight = 360;
   const handleMouseEnter = (event: MouseEvent<HTMLSpanElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const gap = 8;
@@ -179,12 +186,12 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
   };
 
   return (
-    <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => setTipPosition(null)} title={`${requirementKey}：${text}`} aria-label={`需求标识：${requirementKey}`}>
+    <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => setTipPosition(null)} aria-label={`需求标识：${requirementKey}，${text}`}>
       <span className="cursor-help rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">V2610</span>
-      {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth }} className="pointer-events-none fixed z-[120] max-w-[calc(100vw-16px)] rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
+      {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth }} className="pointer-events-none fixed z-[120] max-h-[calc(100vh-16px)] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
         <span className="block"><span className="text-[#8a6a22]">需求标识：</span>{requirementKey}</span>
         <span className="mt-1 block"><span className="text-[#8a6a22]">状态：</span>{status}</span>
-        <span className="mt-1 block"><span className="text-[#8a6a22]">说明：</span><span className="mt-1 block whitespace-normal break-all leading-5">{text}</span></span>
+        <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{POINTS_REQUIREMENT_SECTIONS.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
       </span> : null}
     </span>
   );
