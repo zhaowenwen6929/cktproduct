@@ -165,11 +165,14 @@ type DetailEditValues = {
   pointsCycle: string;
 };
 
+type RequirementSection = { title: string; items: string[]; highlight?: boolean };
+
 const POINTS_REQUIREMENT_NAME = '会员套餐新增积分量';
 const POINTS_REQUIREMENT_KEY = 'V2610';
 const POINTS_REQUIREMENT_STATUS = '待开发';
-const POINTS_REQUIREMENT_SECTIONS = [
+const POINTS_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '功能说明', items: ['积分量用于配置套餐独立发放的积分额度。'] },
+  { title: '积分发放规则变化', highlight: true, items: ['优先查询用户当前生效套餐对应的积分量，按规则发放；套餐中未配置积分量的，按照套餐对应会员等级的积分量和规则发放。'] },
   { title: '表单配置', items: ['新增套餐：积分量为必填项，填写非负整数。', '发放单位：默认每人，可选团队。', '发放周期：默认按月，可选一次性。'] },
   { title: '历史套餐', items: ['历史套餐积分量留空，未填写时按照所属会员等级的积分量发放；已配置套餐不可修改。'] },
   { title: '列表展示规则', items: ['积分量为空：显示“按会员等级发”。', '已配置具体值：显示“具体值/单位/周期”，例如“600/每人/按月”。'] },
@@ -188,7 +191,7 @@ function RequirementEntryDot() {
   return POINTS_REQUIREMENT_STATUS === '已上线' ? null : <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label="有待开发需求" />;
 }
 
-function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS, requirementName = POINTS_REQUIREMENT_NAME, sections = POINTS_REQUIREMENT_SECTIONS }: { text: string; requirementKey?: string; status?: string; requirementName?: string; sections?: { title: string; items: string[] }[] }) {
+function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS, requirementName = POINTS_REQUIREMENT_NAME, sections = POINTS_REQUIREMENT_SECTIONS }: { text: string; requirementKey?: string; status?: string; requirementName?: string; sections?: RequirementSection[] }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
   const [isPinned, setIsPinned] = useState(false);
   const anchorRef = useRef<HTMLSpanElement | null>(null);
@@ -256,7 +259,7 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
       {tipPosition && typeof document !== 'undefined' ? createPortal(
         <span ref={tooltipRef} role="tooltip" onMouseEnter={clearHideTimer} onMouseLeave={scheduleHide} style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth, maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100vh - 24px)' }} className="pointer-events-auto fixed z-[9999] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
           <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1"><span className="font-semibold text-[#765d1c]">{requirementName}</span><span className="text-[#8a6a22]">{requirementKey} · {status}</span></span>
-          <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{sections.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
+          <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{sections.map((section) => <span key={section.title} className={section.highlight ? 'block rounded-[4px] border-l-2 border-[#e05252] bg-[#fff0ed] px-2 py-1.5 text-[#c43f3f]' : 'block'}><span className={section.highlight ? 'block font-semibold text-[#c43f3f]' : 'block font-semibold text-[#765d1c]'}>{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className={section.highlight ? "block pl-3 text-[#c43f3f] before:mr-1 before:content-['·']" : "block pl-3 before:mr-1 before:content-['·']"}>{item}</span>)}</span></span>)}</span></span>
         </span>,
         document.body,
       ) : null}
