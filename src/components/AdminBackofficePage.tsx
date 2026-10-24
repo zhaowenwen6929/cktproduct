@@ -1,4 +1,4 @@
-import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   AlertTriangle,
   Bell,
@@ -587,25 +587,40 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
   };
 }
 
-function RequirementCard({ item, index, nested = false, onNavigate, onOpenDetails, childCount = 0, isChildrenExpanded = false, onToggleChildren }: { item: RequirementNavItem; index: number; nested?: boolean; onNavigate?: (path: string) => void; onOpenDetails?: (item: RequirementNavItem) => void; childCount?: number; isChildrenExpanded?: boolean; onToggleChildren?: () => void }) {
+function RequirementCard({ item, index, nested = false, onNavigate, onOpenDetails }: { item: RequirementNavItem; index: number; nested?: boolean; onNavigate?: (path: string) => void; onOpenDetails?: (item: RequirementNavItem) => void }) {
   const hasPage = item.path !== '/admin-backoffice/requirements';
-  const canToggleChildren = !nested && childCount > 0;
-  const handleCardKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (canToggleChildren && (event.key === 'Enter' || event.key === ' ')) {
-      event.preventDefault();
-      onToggleChildren?.();
-    }
-  };
 
   return <article
-    onClick={canToggleChildren ? onToggleChildren : undefined}
-    onKeyDown={canToggleChildren ? handleCardKeyDown : undefined}
-    tabIndex={canToggleChildren ? 0 : undefined}
-    aria-expanded={canToggleChildren ? isChildrenExpanded : undefined}
-    className={`${nested ? 'rounded-[8px] border border-[#e5eaf1] bg-[#fbfcfe] p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]' : 'rounded-[8px] border border-[#dce5f0] bg-white p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]'} ${canToggleChildren ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#278fee]/25' : ''}`}
+    className={nested ? 'rounded-[8px] border border-[#e5eaf1] bg-[#fbfcfe] p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]' : 'rounded-[8px] border border-[#dce5f0] bg-white p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]'}
   >
-    <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className={nested ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#eef4fb] text-[11px] font-semibold text-[#6c86a5]' : 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff2b8] text-[12px] font-semibold text-[#a16b00]'}>{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-[15px] font-semibold text-[#27344a]">{item.title}</h2><span className="rounded-[4px] bg-[#eaf3ff] px-2 py-0.5 text-[10px] font-semibold text-[#3979b7]">{item.requirementKey}</span><span className="rounded-[4px] bg-[#fff7dc] px-2 py-0.5 text-[10px] font-medium text-[#a36d08]">{item.status}</span>{nested ? <span className="rounded-[4px] bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#5c82b1]">子需求</span> : <span className="rounded-[4px] bg-[#f1f4f8] px-2 py-0.5 text-[10px] font-medium text-[#6d7b8d]">主需求</span>}</div><p className="mt-2 text-[12px] leading-5 text-[#4d5b70]"><span className="font-medium text-[#69778a]">需求概述：</span>{item.summary}</p><p className="mt-1 text-[11px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#69778a]">所在路径：</span>{getRequirementDisplayPath(item)}</p><div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#9aa5b5]"><span>新增时间：{item.addedAt}</span>{item.status === '已上线' && item.releasedAt ? <span>上线时间：{item.releasedAt}</span> : null}</div></div></div><div className="flex shrink-0 flex-wrap items-center justify-end gap-2"><button type="button" onClick={(event) => { event.stopPropagation(); onOpenDetails?.(item); }} className="inline-flex h-8 items-center gap-1 rounded-[4px] border border-[#cfe0f8] bg-white px-3 text-[12px] font-medium text-[#3979b7] transition hover:border-[#8eb8ed] hover:bg-[#f5f9ff]"><FileText className="h-3.5 w-3.5" />需求说明</button>{hasPage ? <button type="button" onClick={(event) => { event.stopPropagation(); onNavigate?.(item.path); }} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入页面<ChevronRight className="h-3.5 w-3.5" /></button> : null}{canToggleChildren ? <span className="inline-flex items-center gap-1 rounded-[4px] bg-[#f6f8fb] px-2.5 py-1.5 text-[11px] text-[#65758b]">{isChildrenExpanded ? '已展开子需求' : `展开 ${childCount} 个子需求`}<ChevronDown className={`h-3 w-3 transition-transform ${isChildrenExpanded ? '' : '-rotate-90'}`} /></span> : null}</div></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className={nested ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#eef4fb] text-[11px] font-semibold text-[#6c86a5]' : 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff2b8] text-[12px] font-semibold text-[#a16b00]'}>{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-[15px] font-semibold text-[#27344a]">{item.title}</h2><span className="rounded-[4px] bg-[#eaf3ff] px-2 py-0.5 text-[10px] font-semibold text-[#3979b7]">{item.requirementKey}</span><span className="rounded-[4px] bg-[#fff7dc] px-2 py-0.5 text-[10px] font-medium text-[#a36d08]">{item.status}</span></div><p className="mt-2 text-[12px] leading-5 text-[#4d5b70]"><span className="font-medium text-[#69778a]">需求概述：</span>{item.summary}</p><p className="mt-1 text-[11px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#69778a]">所在路径：</span>{getRequirementDisplayPath(item)}</p><div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#9aa5b5]"><span>新增时间：{item.addedAt}</span>{item.status === '已上线' && item.releasedAt ? <span>上线时间：{item.releasedAt}</span> : null}</div></div></div><div className="flex shrink-0 flex-wrap items-center justify-end gap-2"><button type="button" onClick={(event) => { event.stopPropagation(); onOpenDetails?.(item); }} className="inline-flex h-8 items-center gap-1 rounded-[4px] border border-[#cfe0f8] bg-white px-3 text-[12px] font-medium text-[#3979b7] transition hover:border-[#8eb8ed] hover:bg-[#f5f9ff]"><FileText className="h-3.5 w-3.5" />需求说明</button>{hasPage ? <button type="button" onClick={(event) => { event.stopPropagation(); onNavigate?.(item.path); }} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 py-2 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入页面<ChevronRight className="h-3.5 w-3.5" /></button> : null}</div></div>
   </article>;
+}
+
+function ChildRequirementDisclosure({ itemId, childCount, isExpanded, onToggle }: { itemId: string; childCount: number; isExpanded: boolean; onToggle: () => void }) {
+  const panelId = `${itemId}-children`;
+  return (
+    <div className={`ml-5 mt-2 rounded-[8px] border pl-4 transition ${isExpanded ? 'border-[#cfe0f8] bg-[#f8fbff]' : 'border-[#e5eaf1] bg-[#fbfcfe]'}`}>
+      <button type="button" aria-expanded={isExpanded} aria-controls={panelId} onClick={onToggle} className="flex min-h-[58px] w-full items-center justify-between gap-4 pr-4 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#278fee]/25">
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eaf3ff] text-[12px] font-semibold text-[#3979b7]">{childCount}</span>
+          <span className="min-w-0">
+            <span className="block text-[13px] font-semibold text-[#3d5875]">子需求</span>
+            <span className="mt-0.5 block text-[11px] text-[#8b96a7]">{isExpanded ? '已展开，点击收起' : '点击展开查看'} {childCount} 项关联需求</span>
+          </span>
+        </span>
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-[5px] border border-[#cfe0f8] bg-white px-3 py-1.5 text-[11px] font-medium text-[#3979b7] shadow-[0_2px_5px_rgba(52,111,171,.06)]">
+          {isExpanded ? '收起' : '展开查看'}
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+        </span>
+      </button>
+    </div>
+  );
+}
+
+function ChildRequirementList({ itemId, children, isExpanded, onNavigate, onOpenDetails }: { itemId: string; children: RequirementNavItem[]; isExpanded: boolean; onNavigate?: (path: string) => void; onOpenDetails?: (item: RequirementNavItem) => void }) {
+  if (!isExpanded) return null;
+  return <div id={`${itemId}-children`} className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigate} onOpenDetails={onOpenDetails} />)}</div>;
 }
 
 export function RequirementListBoard({ onNavigate }: { onNavigate?: (path: string) => void }) {
@@ -621,7 +636,7 @@ export function RequirementListBoard({ onNavigate }: { onNavigate?: (path: strin
         {mainRequirements.map((item, index) => {
           const children = REQUIREMENT_NAV_ITEMS.filter((child) => child.parentId === item.id);
           const isExpanded = Boolean(expandedMainRequirements[item.id]);
-          return <div key={item.id}><RequirementCard item={item} index={index} childCount={children.length} isChildrenExpanded={isExpanded} onToggleChildren={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} />{children.length > 0 && isExpanded ? <div className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} />)}</div> : null}</div>;
+          return <div key={item.id}><RequirementCard item={item} index={index} onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} />{children.length > 0 ? <><ChildRequirementDisclosure itemId={item.id} childCount={children.length} isExpanded={isExpanded} onToggle={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} /><ChildRequirementList itemId={item.id} children={children} isExpanded={isExpanded} onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} /></> : null}</div>;
         })}
       </div>
     </section>
@@ -649,7 +664,7 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
               {mainRequirements.map((item, index) => {
                 const children = REQUIREMENT_NAV_ITEMS.filter((child) => child.parentId === item.id);
                 const isExpanded = Boolean(expandedMainRequirements[item.id]);
-                return <div key={item.id}><RequirementCard item={item} index={index} childCount={children.length} isChildrenExpanded={isExpanded} onToggleChildren={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} />{children.length > 0 && isExpanded ? <div className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} />)}</div> : null}</div>;
+                return <div key={item.id}><RequirementCard item={item} index={index} onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} />{children.length > 0 ? <><ChildRequirementDisclosure itemId={item.id} childCount={children.length} isExpanded={isExpanded} onToggle={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} /><ChildRequirementList itemId={item.id} children={children} isExpanded={isExpanded} onNavigate={onNavigateToRequirement} onOpenDetails={setSelectedRequirement} /></> : null}</div>;
               })}
             </div>
           </section>
