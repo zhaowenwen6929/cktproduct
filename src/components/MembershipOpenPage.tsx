@@ -240,6 +240,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     className={`relative pb-[17px] text-[15px] transition ${panel === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
                   >
                     {item}
+                    {item === '开通会员' && (category === '企业会员' || category === '专业版') ? <RequirementEntryDot label={`${category}开通会员有待开发需求`} /> : null}
                     {item === '历史记录' && (category === '企业会员' || category === '专业版') ? <RequirementEntryDot label={`${category}历史会员有待开发需求`} /> : null}
                     {panel === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
                   </button>
