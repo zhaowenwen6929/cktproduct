@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { CalendarDays, ChevronDown, ChevronRight, CircleHelp, Download } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getDefaultMemberDurationDays, getMemberPointsConfig, getPackagePointsDisplay, isHistoricalMemberType } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getDefaultMemberDurationDays, getMemberPointsConfigForDuration, getPackagePointsDisplay, isHistoricalMemberType, isLifetimeDuration } from './MembershipPackagePage';
 
 type MembershipOpenPageProps = {
   onBackToDirectory: () => void;
@@ -101,7 +101,7 @@ function HistoryRecordsPanel() {
   const [recordType, setRecordType] = useState('全部');
   const [paymentStatus, setPaymentStatus] = useState('全部');
   const filteredRecords = useMemo(() => membershipHistoryRecords.filter((record) => (recordType === '全部' || record.recordType === recordType) && (paymentStatus === '全部' || record.paymentStatus === paymentStatus)), [paymentStatus, recordType]);
-  const pointsDisplay = (record: MembershipHistoryRecord) => record.points == null ? getPackagePointsDisplay(record.memberType) : formatPointsDisplay(record.points, record.pointsUnit, record.pointsCycle);
+  const pointsDisplay = (record: MembershipHistoryRecord) => record.points == null ? getPackagePointsDisplay(record.memberType, record.duration) : formatPointsDisplay(record.points, record.pointsUnit, isLifetimeDuration(record.duration.replace(/\D/g, '')) ? '一次性' : record.pointsCycle);
 
   return (
     <div className="px-8 pb-8 pt-6">
@@ -130,7 +130,7 @@ function ProfessionalHistoryRecordsPanel() {
     return (paymentStatus === '全部' || record.paymentStatus === paymentStatus) && createdDate >= startDate && createdDate <= endDate;
   }), [endDate, paymentStatus, startDate]);
 
-  const pointsDisplay = (record: ProfessionalHistoryRecord) => record.points == null ? '按会员等级发' : formatPointsDisplay(record.points, record.pointsUnit, record.pointsCycle);
+  const pointsDisplay = (record: ProfessionalHistoryRecord) => record.points == null ? '按会员等级发' : formatPointsDisplay(record.points, record.pointsUnit, isLifetimeDuration(record.duration.replace(/\D/g, '')) ? '一次性' : record.pointsCycle);
 
   return (
     <div className="px-8 pb-8 pt-6">
@@ -190,13 +190,14 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
   const isProfessional = category === '专业版';
   const historicalMembershipSelected = !isProfessional && isHistoricalMemberType(membershipType);
   const handleMembershipTypeChange = (value: string) => {
-    const pointsConfig = getMemberPointsConfig(value);
     const historical = isHistoricalMemberType(value);
+    const defaultDuration = getDefaultMemberDurationDays(value);
+    const pointsConfig = getMemberPointsConfigForDuration(value, defaultDuration);
     setMembershipType(value);
     setPointsError('');
     setForm((current) => ({
       ...current,
-      duration: historical ? getDefaultMemberDurationDays(value) || current.duration : current.duration,
+      duration: historical ? defaultDuration || (isLifetimeDuration(current.duration) ? '' : current.duration) : current.duration,
       points: historical && pointsConfig?.points != null ? String(pointsConfig.points) : '',
       pointsUnit: pointsConfig?.pointsUnit ?? '每人',
       pointsCycle: pointsConfig?.pointsCycle ?? '按月',
@@ -289,7 +290,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     </FormRow> : null}
 
                     <FormRow label="会员时长" required>
-                      <input value={form.duration} onChange={(event) => updateForm('duration', event.currentTarget.value)} placeholder="请输入开通会员时长的天数（天）" className={`${inputClassName} w-[425px] max-w-full`} />
+                      <input value={form.duration} onChange={(event) => { const duration = event.currentTarget.value; updateForm('duration', duration); if (isLifetimeDuration(duration)) updateForm('pointsCycle', '一次性'); }} placeholder="请输入开通会员时长的天数（天）" className={`${inputClassName} w-[425px] max-w-full`} />
                     </FormRow>
 
                     <FormRow label="成员人数" required>
@@ -309,7 +310,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7afb9]" />
                           </div>
                           <div className="relative w-[96px] shrink-0">
-                            <select aria-label="发放周期" disabled={historicalMembershipSelected} value={form.pointsCycle} onChange={(event) => updateForm('pointsCycle', event.currentTarget.value)} className={`${historicalMembershipSelected ? 'cursor-not-allowed bg-[#f5f5f5] text-[#bcbcbc]' : selectClassName} w-full`}>
+                            <select aria-label="发放周期" disabled={historicalMembershipSelected || isLifetimeDuration(form.duration)} value={form.pointsCycle} onChange={(event) => updateForm('pointsCycle', event.currentTarget.value)} className={`${historicalMembershipSelected || isLifetimeDuration(form.duration) ? 'cursor-not-allowed bg-[#f5f5f5] text-[#bcbcbc]' : selectClassName} w-full`}>
                               <option value="按月">按月</option>
                               <option value="一次性">一次性</option>
                             </select>
@@ -317,7 +318,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                           </div>
                         </div>
                         {pointsError ? <p className="mt-1 text-[12px] text-[#ff4d4f]">{pointsError}</p> : null}
-                        <p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">{historicalMembershipSelected ? '历史会员按会员等级回显积分量，不支持修改' : '未填写积分量时，按照套餐所属会员等级的积分量发放'}</p>
+                        <p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">{historicalMembershipSelected ? '历史会员按会员等级回显积分量，不支持修改' : isLifetimeDuration(form.duration) ? '终身会员按99年识别，积分一次性发放' : '未填写积分量时，按照套餐所属会员等级的积分量发放'}</p>
                       </div>
                     </FormRow>
 
