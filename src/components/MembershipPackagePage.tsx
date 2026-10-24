@@ -180,7 +180,7 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
 
   return (
     <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => setTipPosition(null)} title={`${requirementKey}：${text}`} aria-label={`需求标识：${requirementKey}`}>
-      <span className="cursor-help rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">VIP</span>
+      <span className="cursor-help rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">V2610</span>
       {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth }} className="pointer-events-none fixed z-[120] max-w-[calc(100vw-16px)] rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
         <span className="block"><span className="text-[#8a6a22]">需求标识：</span>{requirementKey}</span>
         <span className="mt-1 block"><span className="text-[#8a6a22]">状态：</span>{status}</span>
