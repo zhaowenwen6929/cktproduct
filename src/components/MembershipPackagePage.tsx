@@ -74,6 +74,8 @@ const initialPackages: PackageRow[] = [
   { id: 1, name: '激活码专享套餐', description: '激活码专享套餐', packageCode: '56', creator: '范文东', createdAt: '2023-10-08 09:55:30', status: '使用中' },
 ];
 
+const CONFIGURED_PACKAGE_IDS = new Set([1, 2, 6, 7, 8, 9]);
+
 const initialPackageDetails: PackageDetailRow[] = [
   { id: 3480, name: 'web-高级版（团队）-3年（加送1年）', displayName: '3年+1年', duration: 1460, originalPrice: 1578, discount: 100, currentPrice: 1578, contractPrice: '-', packageType: '普通套餐', member: '高级版（团队）', sort: 0, trialDays: 0, segment: '/', displayTime: '/', status: '显示', points: undefined },
   { id: 3479, name: 'web-高级版（团队）-2年会员（加6个月）', displayName: '2年+6个月', duration: 910, originalPrice: 1138, discount: 100, currentPrice: 1138, contractPrice: '-', packageType: '普通套餐', member: '高级版（团队）', sort: 1, trialDays: 0, segment: '/', displayTime: '/', status: '显示', points: undefined },
@@ -283,11 +285,21 @@ export function MembershipPackagePage({ onBackToDirectory, onNavigateToSkillConf
   const [submittedQuery, setSubmittedQuery] = useState('');
   const [modal, setModal] = useState<{ mode: 'detail' | 'edit' | 'create'; row: PackageRow } | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<PackageRow | null>(null);
+  const [notice, setNotice] = useState('');
   const filteredPackages = useMemo(() => packages.filter((row) => !submittedQuery.trim() || row.name.includes(submittedQuery.trim())), [packages, submittedQuery]);
 
   const savePackage = (row: PackageRow) => {
     setPackages((current) => row.id && current.some((item) => item.id === row.id) ? current.map((item) => item.id === row.id ? row : item) : [row, ...current]);
     setModal(null);
+  };
+
+  const openPackageDetail = (row: PackageRow) => {
+    if (CONFIGURED_PACKAGE_IDS.has(row.id)) {
+      setSelectedPackage(row);
+      return;
+    }
+    setNotice('暂未配置数据');
+    window.setTimeout(() => setNotice(''), 1800);
   };
 
   if (selectedPackage) {
@@ -303,10 +315,11 @@ export function MembershipPackagePage({ onBackToDirectory, onNavigateToSkillConf
           <header className="flex h-[65px] items-center justify-between border-b border-[#ededed] px-[25px]"><h1 className="text-[16px] font-medium text-[#252525]">会员套餐管理</h1><button type="button" onClick={() => setModal({ mode: 'create', row: { id: 0, name: '', description: '', packageCode: '', creator: '赵文文', createdAt: '', status: '使用中' } })} className="inline-flex h-[33px] items-center gap-1.5 rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]"><Plus className="h-4 w-4" />新增套餐组</button></header>
           <div className="px-[25px] pb-8 pt-6">
             <form onSubmit={(event) => { event.preventDefault(); setSubmittedQuery(nameQuery); }} className="flex items-center"><input value={nameQuery} onChange={(event) => setNameQuery(event.currentTarget.value)} placeholder="名称" className="h-[32px] w-[335px] rounded-l-[2px] border border-[#d9d9d9] px-3 text-[12px] text-[#333] outline-none focus:border-[#278fee]" /><button type="submit" className="inline-flex h-[32px] w-[65px] items-center justify-center gap-1 rounded-r-[2px] bg-[#278fee] text-[12px] text-white hover:bg-[#167fdc]"><Search className="h-3.5 w-3.5" />搜索</button></form>
-            <div className="mt-[30px] overflow-x-auto"><table className="w-full min-w-[1180px] table-fixed border-collapse text-left text-[13px]"><colgroup><col className="w-[7%]" /><col className="w-[18%]" /><col className="w-[18%]" /><col className="w-[12%]" /><col className="w-[11%]" /><col className="w-[16%]" /><col className="w-[10%]" /><col className="w-[18%]" /></colgroup><thead className="h-[54px] bg-[#fafafa] text-[#222]"><tr>{['ID', '名称', '描述', '套餐标识', '创建人', '创建时间', '状态', '操作'].map((label) => <th key={label} className="px-6 font-normal">{label}</th>)}</tr></thead><tbody>{filteredPackages.map((row) => <tr key={row.id} className="h-[65px] border-b border-[#ededed] text-[#3b3b3b] hover:bg-[#fcfdff]"><td className="px-6">{row.id}</td><td className="px-6">{row.name}</td><td className="px-6">{row.description}</td><td className="px-6">{row.packageCode}</td><td className="px-6">{row.creator}</td><td className="px-6 whitespace-nowrap">{row.createdAt}</td><td className="px-6">{row.status}</td><td className="px-6"><div className="flex items-center gap-3 whitespace-nowrap"><button type="button" onClick={() => setSelectedPackage(row)} className="inline-flex h-[33px] items-center gap-1 rounded-[2px] border border-[#d9dfe6] bg-white px-4 text-[12px] text-[#444] hover:border-[#278fee] hover:text-[#278fee]"><Eye className="h-3.5 w-3.5" />套餐详情</button><button type="button" onClick={() => setModal({ mode: 'edit', row })} className="inline-flex h-[33px] items-center gap-1 rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]"><Pencil className="h-3.5 w-3.5" />编辑套餐组</button></div></td></tr>)}</tbody></table>{filteredPackages.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无匹配的套餐组</div> : null}</div>
+            <div className="mt-[30px] overflow-x-auto"><table className="w-full min-w-[1180px] table-fixed border-collapse text-left text-[13px]"><colgroup><col className="w-[7%]" /><col className="w-[18%]" /><col className="w-[18%]" /><col className="w-[12%]" /><col className="w-[11%]" /><col className="w-[16%]" /><col className="w-[10%]" /><col className="w-[18%]" /></colgroup><thead className="h-[54px] bg-[#fafafa] text-[#222]"><tr>{['ID', '名称', '描述', '套餐标识', '创建人', '创建时间', '状态', '操作'].map((label) => <th key={label} className="px-6 font-normal">{label}</th>)}</tr></thead><tbody>{filteredPackages.map((row) => <tr key={row.id} className={`h-[65px] border-b border-[#ededed] text-[#3b3b3b] ${CONFIGURED_PACKAGE_IDS.has(row.id) ? 'bg-[#effaf3] hover:bg-[#e5f6eb]' : 'hover:bg-[#fcfdff]'}`}><td className="px-6">{row.id}</td><td className="px-6">{row.name}</td><td className="px-6">{row.description}</td><td className="px-6">{row.packageCode}</td><td className="px-6">{row.creator}</td><td className="px-6 whitespace-nowrap">{row.createdAt}</td><td className="px-6">{row.status}</td><td className="px-6"><div className="flex items-center gap-3 whitespace-nowrap"><button type="button" onClick={() => openPackageDetail(row)} className="inline-flex h-[33px] items-center gap-1 rounded-[2px] border border-[#d9dfe6] bg-white px-4 text-[12px] text-[#444] hover:border-[#278fee] hover:text-[#278fee]"><Eye className="h-3.5 w-3.5" />套餐详情</button><button type="button" onClick={() => setModal({ mode: 'edit', row })} className="inline-flex h-[33px] items-center gap-1 rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]"><Pencil className="h-3.5 w-3.5" />编辑套餐组</button></div></td></tr>)}</tbody></table>{filteredPackages.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无匹配的套餐组</div> : null}</div>
           </div>
         </section>
       </main>
+      {notice ? <div className="fixed right-6 top-[78px] z-[80] rounded-[5px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-2.5 text-[13px] text-[#7c5a09] shadow-[0_6px_18px_rgba(145,108,26,.18)]">{notice}</div> : null}
       {modal ? <PackageModal mode={modal.mode} row={modal.row} onClose={() => setModal(null)} onSave={savePackage} /> : null}
     </div>
   );
