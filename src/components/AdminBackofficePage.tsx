@@ -295,7 +295,7 @@ function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: stri
   const tooltipHeight = 250;
 
   return (
-    <span className="group relative inline-flex shrink-0" onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); const showAbove = window.innerHeight - rect.bottom < tooltipHeight && rect.top > tooltipHeight + 8; setTipPosition({ top: showAbove ? rect.top - tooltipHeight : Math.max(8, Math.min(rect.top, window.innerHeight - tooltipHeight - 8)), left: 238 }); }} onMouseLeave={() => setTipPosition(null)} aria-label={`新功能：${title}`} title={`新功能：${summary}`}>
+    <span className="group relative inline-flex shrink-0" onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); const showAbove = window.innerHeight - rect.bottom < tooltipHeight && rect.top > tooltipHeight + 8; setTipPosition({ top: showAbove ? rect.top - tooltipHeight : Math.max(8, Math.min(rect.top, window.innerHeight - tooltipHeight - 8)), left: 238 }); }} onMouseLeave={() => setTipPosition(null)} aria-label={`新功能：${title}`}>
       <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.04em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">NEW</span>
       {tipPosition ? <span style={tipPosition} className="pointer-events-none fixed z-50 w-[280px] rounded-[9px] bg-[#172336] px-4 py-3 text-[12px] font-normal leading-5 text-white shadow-[0_10px_24px_rgba(0,0,0,.28)]">
         <span className="mb-2 block text-[13px] font-semibold text-white">{title}</span>
@@ -336,7 +336,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             onNavigate?.(label);
           }
         }} style={{ paddingLeft: `${43 + level * 20}px` }} className={`mx-2 flex h-[34px] w-[calc(100%-16px)] items-center justify-between rounded-[5px] pr-3 text-left text-[10px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white shadow-[0_3px_10px_rgba(18,140,241,.2)]' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
-          <span className="flex min-w-0 items-center gap-2">
+          <span className="flex min-w-0 items-center gap-1">
             <span className="truncate">{label}</span>
             {label === 'AI电商配置' ? <NewFeatureBadge title="AI电商配置" requirement="AI电商配置管理" summary="按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。" addedAt="2026-10-22" /> : null}
             {label === '搜索引导管理' ? <NewFeatureBadge title="搜索引导管理" requirement="搜索引导管理" summary="维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
