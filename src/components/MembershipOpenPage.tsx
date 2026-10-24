@@ -210,13 +210,9 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
           <section className="min-h-[calc(100vh-130px)] bg-white">
             <div className="border-b border-[#edf0f3] px-[25px] pt-[22px]">
               <h1 className="text-[22px] font-semibold tracking-[-.02em] text-[#252525]">开通会员</h1>
-              <div className="mt-2 flex items-center gap-3">
-                <p className="text-[12px] text-[#8b9199]">会员类型与会员套餐管理保持一致，新增等级会同步显示 level。</p>
-                <button type="button" onClick={() => onNavigateToRequirement?.('/admin-backoffice/requirements/membership')} className="text-[12px] text-[#278fee] hover:text-[#167fdc]">查看需求说明</button>
-              </div>
               <div className="mt-5 space-y-1 text-[14px] leading-6 text-[#ff5a5f]">
                 <p>开通会员需先在企微提交审批，审批通过后可按照对应要求开通会员。</p>
-                <p>当前在售所有会员均在「企业会员」目录下开通，根据需求选择会员类型<span className="text-[17px] font-semibold">通用版（个人）、通用版（企业）、协作版、旗舰版</span>进行开通。</p>
+                <p>当前在售所有会员均在「企业会员」目录下开通，根据需求选择会员类型<span className="text-[17px] font-semibold">基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220</span><span className="ml-1 inline-flex align-middle"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></span>进行开通。</p>
               </div>
               <div className="mt-7 flex items-end gap-8">
                 {(['个人会员', '企业会员', '专业版'] as MembershipCategory[]).map((item) => (
