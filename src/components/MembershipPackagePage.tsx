@@ -1,5 +1,5 @@
 import { useMemo, useState, type MouseEvent } from 'react';
-import { ChevronRight, Eye, Pencil, Plus, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Eye, Pencil, Plus, Search, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 
 type PackageRow = {
@@ -76,7 +76,9 @@ const initialPackages: PackageRow[] = [
 
 const CONFIGURED_PACKAGE_IDS = new Set([1, 2, 6, 7, 8, 9]);
 
-const MEMBER_TYPE_OPTIONS: { name: string; level?: number }[] = [
+type MemberTypeOption = { name: string; level?: number };
+
+const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
   { name: '个人版VIP' },
   { name: '标准版(个人)' },
   { name: '标准版(企业)' },
@@ -96,14 +98,12 @@ const MEMBER_TYPE_OPTIONS: { name: string; level?: number }[] = [
   { name: '高级版(单人)' },
   { name: '专业版(单人)' },
   { name: '至尊版(单人)' },
-  { name: '基础版（个人） 240' },
-  { name: '专业版（个人） 241' },
-  { name: '基础版（企业） 310' },
-  { name: '专业版（企业） 311' },
-  { name: '旗舰版（企业） 220' },
+  { name: '基础版（个人）', level: 240 },
+  { name: '专业版（个人）', level: 241 },
+  { name: '基础版（企业）', level: 310 },
+  { name: '专业版（企业）', level: 311 },
+  { name: '旗舰版（企业）', level: 220 },
 ];
-
-const MEMBER_TYPES = MEMBER_TYPE_OPTIONS.map((member) => member.name);
 
 const initialPackageDetails: PackageDetailRow[] = [
   { id: 3480, name: 'web-高级版（团队）-3年（加送1年）', displayName: '3年+1年', duration: 1460, originalPrice: 1578, discount: 100, currentPrice: 1578, contractPrice: '-', packageType: '普通套餐', member: '高级版(团队)', sort: 0, trialDays: 0, segment: '/', displayTime: '/', status: '显示', points: undefined },
@@ -214,6 +214,35 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
         <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{sections.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
       </span> : null}
     </span>
+  );
+}
+
+function MemberTypeDropdown({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const selected = MEMBER_TYPE_OPTIONS.find((member) => member.name === value);
+  const existingOptions = MEMBER_TYPE_OPTIONS.filter((member) => !member.level);
+  const newOptions = MEMBER_TYPE_OPTIONS.filter((member) => member.level);
+  const formatLabel = (member: MemberTypeOption) => member.level ? member.name + ' ' + member.level : member.name;
+  const choose = (nextValue: string) => {
+    onChange(nextValue);
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative w-[240px] shrink-0">
+      <button type="button" onClick={() => setOpen((current) => !current)} aria-haspopup="listbox" aria-expanded={open} className="flex h-[33px] w-full items-center justify-between rounded-[2px] border border-[#d9d9d9] bg-white px-3 text-left text-[12px] text-[#b6bbc1] outline-none focus:border-[#278fee]">
+        <span className={selected ? 'text-[#333]' : ''}>{selected ? formatLabel(selected) : '请选择会员类型'}</span>
+        <ChevronDown className="h-4 w-4 text-[#aeb5bd]" />
+      </button>
+      {open ? <div role="listbox" className="absolute left-0 top-full z-[100] mt-1 max-h-[430px] w-full overflow-y-auto rounded-[4px] border border-[#e1e4e8] bg-white p-1 shadow-[0_8px_20px_rgba(31,45,61,.18)]">
+        <button type="button" onClick={() => choose('')} className={!value ? 'block w-full rounded-[2px] bg-[#f4f6f9] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#f7f9fc]'}>请选择会员类型</button>
+        {existingOptions.map((member) => <button type="button" role="option" aria-selected={member.name === value} key={member.name} onClick={() => choose(member.name)} className={member.name === value ? 'block w-full rounded-[2px] bg-[#f4f6f9] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#f7f9fc]'}>{formatLabel(member)}</button>)}
+        <div className="relative mt-3 rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-1 pb-1 pt-3">
+          <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
+          {newOptions.map((member) => <button type="button" role="option" aria-selected={member.name === value} key={member.name} onClick={() => choose(member.name)} className={member.name === value ? 'block w-full rounded-[2px] bg-[#ffe6e1] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#fff0ed]'}>{formatLabel(member)}</button>)}
+        </div>
+      </div> : null}
+    </div>
   );
 }
 
@@ -338,7 +367,7 @@ function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, o
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-[25px] pt-[25px]"><div className="flex items-center gap-2 text-[13px] text-[#8b9199]"><button type="button" onClick={onBack} className="hover:text-[#278fee]">会员套餐管理</button><RequirementEntryDot /><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#2d2d2d]">{packageName}</span></div>
           <section className="mt-[25px] min-h-[calc(100vh-130px)] bg-white px-[25px] pb-8">
-            <div className="flex items-center justify-end gap-5 border-b border-[#f0f0f0] py-4"><button type="button" className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">推荐套餐配置</button><input value={nameQuery} onChange={(event) => setNameQuery(event.currentTarget.value)} placeholder="名称" className="h-[33px] w-[240px] rounded-[2px] border border-[#d9d9d9] px-3 text-[12px] outline-none focus:border-[#278fee]" /><div className="relative shrink-0"><div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div><div className="rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] p-1.5"><select value={memberType} onChange={(event) => setMemberType(event.currentTarget.value)} className="h-[33px] w-[240px] rounded-[2px] border border-[#d9d9d9] bg-white px-3 text-[12px] text-[#b6bbc1] outline-none focus:border-[#278fee]"><option value="">请选择会员类型</option>{MEMBER_TYPES.map((member) => <option key={member} value={member}>{member}</option>)}</select></div></div><button type="button" onClick={() => { setSubmittedName(nameQuery); setSubmittedMemberType(memberType); }} className="h-[33px] rounded-[2px] bg-[#278fee] px-5 text-[12px] text-white hover:bg-[#167fdc]">查询</button><button type="button" onClick={() => setDetailEditor({ mode: 'create', row: blankPackageDetail })} className="inline-flex h-[33px] items-center gap-2 rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]"><span>＋ 新增套餐</span><RequirementEntryDot /></button><button type="button" onClick={() => setDetails((current) => [...current])} className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">刷新缓存</button></div>
+            <div className="flex items-center justify-end gap-5 border-b border-[#f0f0f0] py-4"><button type="button" className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">推荐套餐配置</button><input value={nameQuery} onChange={(event) => setNameQuery(event.currentTarget.value)} placeholder="名称" className="h-[33px] w-[240px] rounded-[2px] border border-[#d9d9d9] px-3 text-[12px] outline-none focus:border-[#278fee]" /><MemberTypeDropdown value={memberType} onChange={setMemberType} /><button type="button" onClick={() => { setSubmittedName(nameQuery); setSubmittedMemberType(memberType); }} className="h-[33px] rounded-[2px] bg-[#278fee] px-5 text-[12px] text-white hover:bg-[#167fdc]">查询</button><button type="button" onClick={() => setDetailEditor({ mode: 'create', row: blankPackageDetail })} className="inline-flex h-[33px] items-center gap-2 rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]"><span>＋ 新增套餐</span><RequirementEntryDot /></button><button type="button" onClick={() => setDetails((current) => [...current])} className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">刷新缓存</button></div>
             <div className="mt-[23px] overflow-x-auto pt-5"><table className="w-full min-w-[1420px] table-fixed border-collapse text-center text-[13px]"><colgroup><col className="w-[5%]" /><col className="w-[13%]" /><col className="w-[8%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[7%]" /><col className="w-[8%]" /><col className="w-[5%]" /><col className="w-[6%]" /><col className="w-[10%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[5%]" /><col className="w-[11%]" /></colgroup><thead className="h-[76px] bg-[#fafafa] text-[#222]"><tr>{['ID', '名称', '显示名称', '时长\n(天)', '原价', '套餐折\n扣率', '现价', '签约价\n格', '套餐\n类型', '所属会员', '排\n序', '试用\n天数', '积分量', '显示分\n群', '显示\n时间', '状\n态', '操作'].map((label) => <th key={label} className={`relative whitespace-pre-line px-2 font-normal leading-5 ${label === '积分量' ? 'border-x border-t border-dashed border-[#ff665b] bg-[#fff7f5]' : ''}`}>{label === '积分量' ? <><div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2"><RequirementHint text={POINTS_REQUIREMENT} /></div><span>积分量</span></> : label}</th>)}</tr></thead><tbody>{filteredDetails.map((row, rowIndex) => <tr key={row.id} className="h-[97px] border-b border-[#ededed] text-[#3b3b3b] hover:bg-[#fcfdff]"><td className="px-2">{row.id}</td><td className="px-2 leading-5">{row.name}</td><td className="px-2 leading-5">{row.displayName}</td><td className="px-2">{row.duration}</td><td className="px-2">{row.originalPrice}</td><td className="px-2">{row.discount}</td><td className="px-2">{row.currentPrice}</td><td className="px-2">{row.contractPrice}</td><td className="px-2 leading-5">{row.packageType}</td><td className="px-2 leading-5">{row.member}</td><td className="px-2">{row.sort}</td><td className="px-2">{row.trialDays}</td><td className={`border-x border-dashed border-[#ff665b] bg-[#fff7f5] px-2 whitespace-nowrap ${rowIndex === filteredDetails.length - 1 ? 'border-b' : ''}`}>{row.points == null ? '按会员等级发' : `${row.points}/${row.pointsUnit ?? '每人'}/${row.pointsCycle ?? '按月'}`}</td><td className="px-2">{row.segment}</td><td className="px-2">{row.displayTime}</td><td className="px-2 leading-5">{row.status}</td><td className="px-2"><div className="flex flex-wrap items-center justify-center gap-2"><button type="button" onClick={() => setDetailEditor({ mode: 'edit', row })} className="h-[33px] rounded-[2px] border border-[#d8dce1] bg-white px-4 text-[12px] text-[#333] hover:border-[#278fee] hover:text-[#278fee]">编辑</button><button type="button" onClick={() => toggleDisplay(row.id)} className={`h-[33px] rounded-[2px] px-4 text-[12px] text-white ${row.status === '显示' ? 'bg-[#ff4b55] hover:bg-[#ed3b45]' : 'bg-[#278fee] hover:bg-[#167fdc]'}`}>{row.status === '显示' ? '隐藏' : '显示'}</button><button type="button" className="h-[33px] rounded-[2px] bg-[#ff4b55] px-4 text-[12px] text-white hover:bg-[#ed3b45]">关闭</button></div></td></tr>)}</tbody></table>{filteredDetails.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无匹配的套餐</div> : null}</div>
           </section>
         </div>
