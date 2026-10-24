@@ -94,6 +94,7 @@ export default function App() {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(() =>
     typeof window === 'undefined' ? '/' : normalizeRoute(window.location.pathname)
   );
+  const [userSegmentEditName, setUserSegmentEditName] = useState('');
   const [objects, setObjects] = useState<CanvasObject[]>([]);
   const [workflowLinks, setWorkflowLinks] = useState<WorkflowLink[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -1718,7 +1719,7 @@ export default function App() {
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
       onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
       onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
-      onNavigateToNewRule={() => navigateTo('/admin-backoffice/user-segments/new-rule')}
+      onNavigateToNewRule={(segment) => { setUserSegmentEditName(segment?.name ?? ''); navigateTo('/admin-backoffice/user-segments/new-rule'); }}
       onNavigateToCustomRule={() => navigateTo('/admin-backoffice/user-segments/custom-rule')}
     />;
   }
@@ -1731,6 +1732,7 @@ export default function App() {
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
       onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
       onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+      initialGroupName={userSegmentEditName}
     />;
   }
 

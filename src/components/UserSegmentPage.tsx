@@ -9,7 +9,7 @@ type UserSegmentPageProps = {
   onNavigateToGuidedSearch?: () => void;
   onNavigateToMembershipPackages?: () => void;
   onNavigateToMembershipPageConfig?: () => void;
-  onNavigateToNewRule?: () => void;
+  onNavigateToNewRule?: (segment?: Pick<SegmentRecord, 'id' | 'name'>) => void;
   onNavigateToCustomRule?: () => void;
 };
 
@@ -24,7 +24,7 @@ type SegmentRecord = {
 };
 
 const INITIAL_SEGMENTS: SegmentRecord[] = [
-  { id: 311, name: '数仓-连续包季-会员', count: 0, type: '定制分群条件(实时)', editor: 'sunyaq', createdAt: '2026-01-14', calculatedAt: '2026-01-14' },
+  { id: 311, name: '数仓-连续包季非首充过期大于30天', count: 0, type: '定制分群条件(实时)', editor: 'sunyaq', createdAt: '2026-01-14', calculatedAt: '2026-01-14' },
   { id: 310, name: '数仓-通用个人会员', count: 0, type: '定制分群条件(实时)', editor: 'sunyaq', createdAt: '2026-01-14', calculatedAt: '2026-01-14' },
   { id: 309, name: '数仓-通用个人会员-历史', count: 0, type: '定制分群条件(实时)', editor: 'sunyaq', createdAt: '2026-01-14', calculatedAt: '2026-01-14' },
   { id: 308, name: '数仓-低频非会员', count: 0, type: '定制分群条件(实时)', editor: 'sunyaq', createdAt: '2025-12-30', calculatedAt: '2025-12-30' },
@@ -75,8 +75,8 @@ const MEMBER_IDENTITY_OPTIONS = [
   { value: 'non-member-level', label: '不是会员用户（按等级）' },
 ];
 
-export function MemberIdentitySelect({ value, onChange, className = '' }: { value: string; onChange: (value: string) => void; className?: string }) {
-  const [open, setOpen] = useState(false);
+export function MemberIdentitySelect({ value, onChange, className = '', autoOpen = false }: { value: string; onChange: (value: string) => void; className?: string; autoOpen?: boolean }) {
+  const [open, setOpen] = useState(autoOpen);
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedOption = MEMBER_IDENTITY_OPTIONS.find((option) => option.value === value) ?? MEMBER_IDENTITY_OPTIONS[0];
 
@@ -302,7 +302,7 @@ export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, on
                 <table className="w-full min-w-[1000px] table-fixed border-collapse text-center text-[13px] text-[#4d5664]">
                   <colgroup><col className="w-[10%]" /><col className="w-[23%]" /><col className="w-[12%]" /><col className="w-[18%]" /><col className="w-[15%]" /><col className="w-[11%]" /><col className="w-[11%]" /><col className="w-[10%]" /></colgroup>
                   <thead className="h-[58px] bg-[#fafafa] text-[#2f3744]"><tr>{['分群ID', '分群名称', '分群人数', '分群类型', '最后编辑人', '创建时间', '最近计算', '操作'].map((label) => <th key={label} className="px-3 font-medium">{label}</th>)}</tr></thead>
-                  <tbody>{filteredSegments.map((segment) => <tr key={segment.id} className="h-[78px] border-t border-[#edf0f4] transition hover:bg-[#fbfdff]"><td className="px-3">{segment.id}</td><td className="truncate px-3 text-left text-[#278fee]" title={segment.name}>{segment.name}</td><td className="px-3">{segment.count}</td><td className="px-3 leading-5">{segment.type}</td><td className="px-3">{segment.editor}</td><td className="px-3">{segment.createdAt}</td><td className="px-3">{segment.calculatedAt}</td><td className="px-3"><div className="flex items-center justify-center gap-4"><button type="button" onClick={() => showActionMessage(`已打开分群 ${segment.id} 编辑`)} className="text-[#278fee] hover:text-[#167fdc]">编辑</button><button type="button" onClick={() => showActionMessage(`已发起删除分群 ${segment.id}`)} className="text-[#278fee] hover:text-[#167fdc]">删除</button></div></td></tr>)}</tbody>
+                  <tbody>{filteredSegments.map((segment) => <tr key={segment.id} className="h-[78px] border-t border-[#edf0f4] transition hover:bg-[#fbfdff]"><td className="px-3">{segment.id}</td><td className="truncate px-3 text-left text-[#278fee]" title={segment.name}>{segment.name}</td><td className="px-3">{segment.count}</td><td className="px-3 leading-5">{segment.type}</td><td className="px-3">{segment.editor}</td><td className="px-3">{segment.createdAt}</td><td className="px-3">{segment.calculatedAt}</td><td className="px-3"><div className="flex items-center justify-center gap-4"><button type="button" onClick={() => segment.id === INITIAL_SEGMENTS[0].id ? onNavigateToNewRule?.(segment) : showActionMessage(`已打开分群 ${segment.id} 编辑`)} className="text-[#278fee] hover:text-[#167fdc]">编辑</button><button type="button" onClick={() => showActionMessage(`已发起删除分群 ${segment.id}`)} className="text-[#278fee] hover:text-[#167fdc]">删除</button></div></td></tr>)}</tbody>
                 </table>
                 {filteredSegments.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无匹配的分群</div> : null}
               </div>

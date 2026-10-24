@@ -11,6 +11,7 @@ type UserSegmentConditionPageProps = {
   onNavigateToGuidedSearch?: () => void;
   onNavigateToMembershipPackages?: () => void;
   onNavigateToMembershipPageConfig?: () => void;
+  initialGroupName?: string;
 };
 
 function ConditionSelect({ value, onChange, options }: { value: string; onChange: (value: string) => void; options: string[] }) {
@@ -21,8 +22,8 @@ function ConditionSelect({ value, onChange, options }: { value: string; onChange
   );
 }
 
-function UserSegmentConditionPage({ mode, onBackToDirectory, onBackToUserSegments, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig }: UserSegmentConditionPageProps) {
-  const [groupName, setGroupName] = useState('');
+function UserSegmentConditionPage({ mode, onBackToDirectory, onBackToUserSegments, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, initialGroupName }: UserSegmentConditionPageProps) {
+  const [groupName, setGroupName] = useState(initialGroupName ?? '');
   const [registrationCondition, setRegistrationCondition] = useState('不限制');
   const [memberIdentity, setMemberIdentity] = useState('unlimited');
   const [previousIdentity, setPreviousIdentity] = useState('之前是会员');
@@ -85,7 +86,7 @@ function UserSegmentConditionPage({ mode, onBackToDirectory, onBackToUserSegment
                 <div className="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-3">
                   <span className="pt-2 text-right text-[15px]">会员身份：</span>
                   <div className="space-y-4">
-                    <MemberIdentitySelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]" />
+                    <MemberIdentitySelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]" autoOpen={Boolean(initialGroupName)} />
 
                     {isPreviousMember ? (
                       <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-3">
