@@ -157,7 +157,8 @@ type DetailEditValues = {
   pointsCycle: string;
 };
 
-const POINTS_REQUIREMENT_KEY = 'VIP-2610';
+const POINTS_REQUIREMENT_NAME = '会员套餐新增积分量';
+const POINTS_REQUIREMENT_KEY = 'V2610';
 const POINTS_REQUIREMENT_STATUS = '待开发';
 const POINTS_REQUIREMENT_SECTIONS = [
   { title: '功能说明', items: ['积分量用于配置套餐独立发放的积分额度。'] },
@@ -194,8 +195,7 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
     <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => setTipPosition(null)} aria-label={`需求标识：${requirementKey}，${text}`}>
       <span className={`cursor-help rounded-[4px] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white ${markerClass}`}>V2610</span>
       {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth, maxHeight: 'calc(100vh - 16px)' }} className="pointer-events-auto fixed z-[120] max-h-[calc(100vh-16px)] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
-        <span className="block"><span className="text-[#8a6a22]">需求标识：</span>{requirementKey}</span>
-        <span className="mt-1 block"><span className="text-[#8a6a22]">状态：</span>{status}</span>
+        <span className="block whitespace-nowrap"><span className="font-semibold text-[#765d1c]">{POINTS_REQUIREMENT_NAME}</span><span className="ml-2 text-[#8a6a22]">{requirementKey} · {status}</span></span>
         <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{POINTS_REQUIREMENT_SECTIONS.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
       </span> : null}
     </span>
