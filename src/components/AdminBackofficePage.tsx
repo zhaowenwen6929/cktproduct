@@ -298,8 +298,8 @@ function getRequirementKeysForNavItems(items: NavItem[] | undefined): string[] {
     .map((requirement) => requirement.requirementKey))];
 }
 
-function hasPendingRequirementForNavItem(item: NavItem): boolean {
-  return REQUIREMENT_NAV_ITEMS.some((requirement) => requirement.status !== '已上线' && requirementMatchesNavItem(requirement, item));
+function getRequirementsForNavItem(item: NavItem): RequirementNavItem[] {
+  return REQUIREMENT_NAV_ITEMS.filter((requirement) => requirementMatchesNavItem(requirement, item));
 }
 
 function isSkillConfig(value: unknown): value is SkillConfig {
@@ -344,6 +344,11 @@ function RequirementDot({ label = '有待开发需求' }: { label?: string }) {
   return <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label={label} />;
 }
 
+function RequirementKeyBadge({ requirement }: { requirement: RequirementNavItem }) {
+  const isReleased = requirement.status === '已上线';
+  return <span title={`${requirement.title} · ${requirement.status}`} className={`shrink-0 rounded-[4px] px-1.5 py-0.5 text-[8px] font-semibold leading-none shadow-[0_0_6px_rgba(255,90,95,.25)] ${isReleased ? 'bg-[#45b889] text-white shadow-[0_0_6px_rgba(69,184,137,.3)]' : 'bg-[#ff6b62] text-white'}`}>{requirement.requirementKey}</span>;
+}
+
 export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate, onNavigateToRequirement, onNavigateToRequirementList }: AdminSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
     const activeGroupLabel = getActiveNavGroupLabel(activeItemProp);
@@ -370,6 +375,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
     const hasChildren = Boolean(children?.length);
     const defaultExpanded = typeof item === 'string' ? false : item.expanded ?? true;
     const isExpanded = hasChildren && (expandedItems[label] ?? defaultExpanded);
+    const linkedRequirements = hasChildren ? [] : getRequirementsForNavItem(item);
 
     return (
       <div key={`${label}-${level}-${index}`}>
@@ -383,7 +389,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
         }} style={{ paddingLeft: `${43 + level * 20}px` }} className={`mx-2 flex h-[34px] w-[calc(100%-16px)] items-center justify-between rounded-[5px] pr-3 text-left text-[10px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white shadow-[0_3px_10px_rgba(18,140,241,.2)]' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
           <span className="flex min-w-0 items-center gap-1">
             <span className="truncate">{label}</span>
-            {hasPendingRequirementForNavItem(item) ? <RequirementDot /> : null}
+            {linkedRequirements.map((requirement) => <RequirementKeyBadge key={requirement.id} requirement={requirement} />)}
           </span>
           {hasChildren ? <ChevronDown className={`h-3 w-3 shrink-0 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
         </button>
