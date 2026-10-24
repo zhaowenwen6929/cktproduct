@@ -424,8 +424,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
     const defaultExpanded = typeof item === 'string' ? false : item.expanded ?? true;
     const isExpanded = hasChildren && (expandedItems[label] ?? defaultExpanded);
     const linkedRequirements = hasChildren ? [] : getRequirementsForNavItem(item);
-    const isCurrentItem = label === activeItem || label === activeItemProp;
-    const showEntryDot = !isCurrentItem && linkedRequirements.some((requirement) => requirement.status !== '已上线');
+    const primaryRequirement = linkedRequirements.find((requirement) => requirement.status !== '已上线');
 
     return (
       <div key={`${label}-${level}-${index}`}>
@@ -459,8 +458,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
         }} style={{ paddingLeft: `${43 + level * 20}px` }} className={`mx-2 flex h-[34px] w-[calc(100%-16px)] items-center justify-between rounded-[5px] pr-3 text-left text-[10px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white shadow-[0_3px_10px_rgba(18,140,241,.2)]' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
           <span className="flex min-w-0 items-center gap-1">
             <span className="truncate">{label}</span>
-            {showEntryDot ? <RequirementDot label={`${label}有待开发需求`} /> : null}
-            {linkedRequirements.map((requirement) => <RequirementKeyBadge key={requirement.id} requirement={requirement} />)}
+            {primaryRequirement ? <RequirementKeyBadge requirement={primaryRequirement} /> : null}
           </span>
           {hasChildren ? <ChevronDown className={`h-3 w-3 shrink-0 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
         </button>
