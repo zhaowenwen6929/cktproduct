@@ -384,6 +384,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             setExpandedItems((current) => ({ ...current, [label]: !isExpanded }));
           } else {
             setActiveItem(label);
+            if (label === '开通会员' && typeof window !== 'undefined') {
+              window.history.pushState({}, '', '/admin-backoffice/membership-open');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
             onNavigate?.(label);
           }
         }} style={{ paddingLeft: `${43 + level * 20}px` }} className={`mx-2 flex h-[34px] w-[calc(100%-16px)] items-center justify-between rounded-[5px] pr-3 text-left text-[10px] transition ${label === activeItem ? 'bg-[#128cf1] font-medium text-white shadow-[0_3px_10px_rgba(18,140,241,.2)]' : 'text-[#8ea2b6] hover:bg-white/[.06] hover:text-white'}`}>
