@@ -9,7 +9,7 @@ import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { TemplateCenterPage } from './components/TemplateCenterPage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
-import { AdminBackofficePage, RequirementListBoard, RequirementListPage } from './components/AdminBackofficePage';
+import { AdminBackofficePage, getRequirementProjectStats, RequirementListBoard, RequirementListPage } from './components/AdminBackofficePage';
 import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { MembershipPackagePage } from './components/MembershipPackagePage';
 import { MembershipPageConfigPage } from './components/MembershipPageConfigPage';
@@ -1489,6 +1489,7 @@ export default function App() {
         available: true,
       },
     ];
+    const requirementProjectStats = getRequirementProjectStats();
 
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f7efe5_0%,#f5f0e8_32%,#ebe6dc_100%)] text-stone-900">
@@ -1537,20 +1538,30 @@ export default function App() {
               ) : (
               <div className="grid gap-5 lg:grid-cols-2">
                 {featureCards.map((feature) => (
+                  (() => {
+                    const requirementStats = requirementProjectStats[feature.title] ?? { total: 0, launched: 0, notLaunched: 0 };
+                    return (
                   <section
                     key={feature.title}
                     className="flex min-h-[280px] flex-col justify-between rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,241,234,0.98)_100%)] p-7 shadow-[0_20px_50px_rgba(120,95,60,0.08)]"
                   >
                     <div>
-                      <div className="mb-5 inline-flex rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-500">
-                        {feature.status}
-                      </div>
+                      {feature.status !== '新增入口' && feature.status !== '新增流程' ? (
+                        <div className="mb-5 inline-flex rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-500">
+                          {feature.status}
+                        </div>
+                      ) : null}
                       <h2 className="text-2xl font-semibold tracking-[-0.03em] text-stone-900">
                         {feature.title}
                       </h2>
                       <p className="mt-3 text-sm leading-7 text-stone-600 sm:text-base">
                         {feature.description}
                       </p>
+                      <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
+                        <span className="rounded-full bg-stone-100 px-3 py-1.5 font-medium text-stone-600">需求数 {requirementStats.total}</span>
+                        <span className="rounded-full bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">已上线 {requirementStats.launched}</span>
+                        <span className="rounded-full bg-amber-50 px-3 py-1.5 font-medium text-amber-700">未上线 {requirementStats.notLaunched}</span>
+                      </div>
                     </div>
 
                     <div className="mt-8 flex items-center justify-between gap-4">
@@ -1572,6 +1583,8 @@ export default function App() {
                       )}
                     </div>
                   </section>
+                    );
+                  })()
                 ))}
               </div>
               )}

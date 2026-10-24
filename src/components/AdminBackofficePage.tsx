@@ -300,6 +300,7 @@ type RequirementNavItem = {
   id: string;
   title: string;
   navLabels?: string[];
+  projectName?: string;
   level: 'main' | 'sub';
   requirementKey: string;
   parentId?: string;
@@ -324,6 +325,27 @@ const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
   { id: 'guided-search', title: '搜索引导管理', level: 'main', requirementKey: 'SG-2610', requirement: '维护引导词节点、节点关系，并查询实际映射配置。', summary: '支持引导词、关系和映射结果的查询与维护。', details: ['支持节点、关系和映射三个管理视图。', '可按关键词、层级、关系类型和状态筛选数据。', '支持导入、编辑、启停和删除操作。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/guided-search' },
   { id: 'ai-ecommerce', title: 'AI电商配置', level: 'main', requirementKey: 'AIE-2610', requirement: '按 function_code 和 scene 查询、编辑 AI 电商配置。', summary: '面向 AI 电商技能配置的查询、编辑和缓存管理。', details: ['支持按功能标识和场景查询配置。', '支持 JSON 草稿编辑、格式校验和保存。', '支持清理对应功能缓存，并保留最近查询记录。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/ai-ecommerce' },
 ] as RequirementNavItem[]).sort((left, right) => right.addedAt.localeCompare(left.addedAt));
+
+export type RequirementProjectStats = {
+  total: number;
+  launched: number;
+  notLaunched: number;
+};
+
+export function getRequirementProjectStats(): Record<string, RequirementProjectStats> {
+  return REQUIREMENT_NAV_ITEMS.reduce<Record<string, RequirementProjectStats>>((stats, item) => {
+    const projectName = item.projectName ?? '创客贴管理后台';
+    const current = stats[projectName] ?? { total: 0, launched: 0, notLaunched: 0 };
+    current.total += 1;
+    if (item.status === '已上线') {
+      current.launched += 1;
+    } else {
+      current.notLaunched += 1;
+    }
+    stats[projectName] = current;
+    return stats;
+  }, {});
+}
 
 function navItemContainsLabel(item: NavItem, label: string): boolean {
   if (typeof item === 'string') return item === label;
@@ -350,7 +372,7 @@ function getRequirementsForNavItem(item: NavItem): RequirementNavItem[] {
 }
 
 function getRequirementDisplayPath(item: RequirementNavItem): string {
-  const projectName = '创客贴管理后台';
+  const projectName = item.projectName ?? '创客贴管理后台';
   const navLabel = item.navLabels?.[0];
   if (navLabel) {
     const group = NAV_GROUPS.find((candidate) => candidate.children?.some((child) => navItemContainsLabel(child, navLabel)));
