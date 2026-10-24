@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MemberTypeDropdown } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint } from './MembershipPackagePage';
 
 type MembershipOpenPageProps = {
   onBackToDirectory: () => void;
@@ -38,12 +38,16 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
     userId: '',
     duration: '',
     memberCount: '',
+    points: '',
+    pointsUnit: '每人',
+    pointsCycle: '按月',
     paymentStatus: '未支付',
     paymentAmount: '',
     companyName: '',
     reason: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [pointsError, setPointsError] = useState('');
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setSubmitted(false);
@@ -120,6 +124,10 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                   className="px-8 pb-12 pt-11"
                   onSubmit={(event) => {
                     event.preventDefault();
+                    if (!form.points.trim()) {
+                      setPointsError('请输入积分量');
+                      return;
+                    }
                     setSubmitted(true);
                   }}
                 >
@@ -132,7 +140,10 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     </FormRow>
 
                     <FormRow label="会员类型" required>
-                      <MemberTypeDropdown value={membershipType} onChange={setMembershipType} className="w-[240px]" />
+                      <div className="relative rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3">
+                        <div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
+                        <MemberTypeDropdown value={membershipType} onChange={setMembershipType} className="w-[240px]" />
+                      </div>
                     </FormRow>
 
                     <FormRow label="会员时长" required>
@@ -141,6 +152,31 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
 
                     <FormRow label="成员人数" required>
                       <input value={form.memberCount} onChange={(event) => updateForm('memberCount', event.currentTarget.value)} placeholder="请输入成员人数（人）" className={`${inputClassName} w-[425px] max-w-full`} />
+                    </FormRow>
+
+                    <FormRow label="积分量" required>
+                      <div className="relative rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 pb-2 pt-3">
+                        <div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={POINTS_REQUIREMENT} /></div>
+                        <div className="flex w-[425px] max-w-full items-center gap-2">
+                          <input type="number" min="0" step="1" required value={form.points} onChange={(event) => { setPointsError(''); updateForm('points', event.currentTarget.value.replace(/\D/g, '')); }} placeholder="请输入积分量" className={`${inputClassName} min-w-0 flex-1`} />
+                          <div className="relative w-[96px] shrink-0">
+                            <select aria-label="发放单位" value={form.pointsUnit} onChange={(event) => updateForm('pointsUnit', event.currentTarget.value)} className={`${selectClassName} w-full`}>
+                              <option value="每人">每人</option>
+                              <option value="团队">团队</option>
+                            </select>
+                            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7afb9]" />
+                          </div>
+                          <div className="relative w-[96px] shrink-0">
+                            <select aria-label="发放周期" value={form.pointsCycle} onChange={(event) => updateForm('pointsCycle', event.currentTarget.value)} className={`${selectClassName} w-full`}>
+                              <option value="按月">按月</option>
+                              <option value="一次性">一次性</option>
+                            </select>
+                            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7afb9]" />
+                          </div>
+                        </div>
+                        {pointsError ? <p className="mt-1 text-[12px] text-[#ff4d4f]">{pointsError}</p> : null}
+                        <p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">未填写积分量时，按照套餐所属会员等级的积分量发放</p>
+                      </div>
                     </FormRow>
 
                     <FormRow label="支付状态" required>

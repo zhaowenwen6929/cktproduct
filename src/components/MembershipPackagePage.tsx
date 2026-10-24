@@ -165,33 +165,33 @@ type DetailEditValues = {
   pointsCycle: string;
 };
 
-type RequirementSection = { title: string; items: string[]; highlight?: boolean };
+export type RequirementSection = { title: string; items: string[]; highlight?: boolean };
 
-const POINTS_REQUIREMENT_NAME = '会员套餐新增积分量';
-const POINTS_REQUIREMENT_KEY = 'V2610';
-const POINTS_REQUIREMENT_STATUS = '待开发';
-const POINTS_REQUIREMENT_SECTIONS: RequirementSection[] = [
+export const POINTS_REQUIREMENT_NAME = '会员套餐新增积分量';
+export const POINTS_REQUIREMENT_KEY = 'V2610';
+export const POINTS_REQUIREMENT_STATUS = '待开发';
+export const POINTS_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '功能说明', items: ['积分量用于配置套餐独立发放的积分额度。'] },
   { title: '表单配置', items: ['新增套餐：积分量为必填项，填写非负整数。', '发放单位：默认每人，可选团队。', '发放周期：默认按月，可选一次性。'] },
   { title: '历史套餐', items: ['历史套餐积分量留空，未填写时按照所属会员等级的积分量发放；已配置套餐不可修改。'] },
   { title: '列表展示规则', items: ['积分量为空：显示“按会员等级发”。', '已配置具体值：显示“具体值/单位/周期”，例如“600/每人/按月”。'] },
   { title: '积分发放规则', highlight: true, items: ['优先查询用户当前生效套餐对应的积分量。', '按照当前生效套餐配置的积分量和规则发放。', '套餐未配置积分量时，按照套餐对应会员等级的积分量和规则发放。'] },
-  { title: '影响入口', items: ['会员套餐管理列表、套餐详情、新增套餐和编辑套餐。'] },
+  { title: '影响入口', items: ['会员套餐管理列表、套餐详情、新增套餐、编辑套餐，以及开通会员页成员人数下的积分量字段。'] },
 ];
-const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
-const MEMBER_TYPE_REQUIREMENT_NAME = '开通会员新增会员类型';
-const MEMBER_TYPE_REQUIREMENT_SECTIONS = [
+export const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
+export const MEMBER_TYPE_REQUIREMENT_NAME = '开通会员新增会员类型';
+export const MEMBER_TYPE_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '功能说明', items: ['会员类型列表新增 5 个会员等级及对应 level。'] },
   { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },
   { title: '列表展示规则', items: ['会员类型显示名称在前，level 数字在后。'] },
 ];
-const MEMBER_TYPE_REQUIREMENT = MEMBER_TYPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
+export const MEMBER_TYPE_REQUIREMENT = MEMBER_TYPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 
 function RequirementEntryDot() {
   return POINTS_REQUIREMENT_STATUS === '已上线' ? null : <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label="有待开发需求" />;
 }
 
-function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS, requirementName = POINTS_REQUIREMENT_NAME, sections = POINTS_REQUIREMENT_SECTIONS }: { text: string; requirementKey?: string; status?: string; requirementName?: string; sections?: RequirementSection[] }) {
+export function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS, requirementName = POINTS_REQUIREMENT_NAME, sections = POINTS_REQUIREMENT_SECTIONS }: { text: string; requirementKey?: string; status?: string; requirementName?: string; sections?: RequirementSection[] }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
   const [isPinned, setIsPinned] = useState(false);
   const anchorRef = useRef<HTMLSpanElement | null>(null);
