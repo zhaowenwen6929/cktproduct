@@ -123,7 +123,7 @@ export function UserAuthorizationPage({ onBackToDirectory, onNavigateToSkillConf
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] font-sans text-[#30343b]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="用户授权信息查看" onNavigate={handleNavigate} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="授权信息管理与查询" onNavigate={handleNavigate} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-6 py-5">
@@ -149,7 +149,7 @@ export function UserAuthorizationPage({ onBackToDirectory, onNavigateToSkillConf
                       <button type="button" onClick={() => { setBenefitLevel(''); setBenefitDropdownOpen(false); }} className="block w-full px-3 py-2 text-left text-[14px] text-[#4a5563] hover:bg-[#eef6fd]">全部等级</button>
                       {EXISTING_BENEFIT_LEVEL_OPTIONS.map((option) => <button key={option} type="button" onClick={() => { setBenefitLevel(option); setBenefitDropdownOpen(false); }} className={`block w-full px-3 py-2 text-left text-[14px] ${benefitLevel === option ? 'bg-[#eaf5ff] text-[#278fee]' : 'text-[#4a5563] hover:bg-[#eef6fd]'}`}>{option}</button>)}
                       <div className="relative mt-2 rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-1 pb-1 pt-4">
-                        <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName="用户授权信息查看新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
+                        <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName="用户授权信息管理新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
                         {NEW_BENEFIT_LEVEL_OPTIONS.map((option) => <button key={option} type="button" onClick={() => { setBenefitLevel(option); setBenefitDropdownOpen(false); }} className={`block w-full rounded-[2px] px-3 py-2 text-left text-[14px] ${benefitLevel === option ? 'bg-[#ffe6e1] text-[#e05252]' : 'text-[#4a5563] hover:bg-[#fff0ed]'}`}>{option}</button>)}
                       </div>
                     </div>
