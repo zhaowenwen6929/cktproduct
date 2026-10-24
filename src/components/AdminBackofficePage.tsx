@@ -541,11 +541,6 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
     goal: `在${item.navLabels?.[0] ?? '对应页面'}内完成需求改动，并保持页面入口、数据展示和交互规则一致。`,
     sections: [
       {
-        title: '需求描述',
-        description: '本页面需要实现的核心改动。',
-        items: [{ label: '需求描述', content: item.requirement }],
-      },
-      {
         title: '具体需求',
         description: '列表之外的实现细节和验收关注点。',
         items: item.details.map((detail, index) => ({ label: `需求点 ${index + 1}`, content: detail })),
@@ -610,7 +605,7 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
           </section>
         </div>
       </main>
-      {selectedRequirement ? <RequirementDocumentDrawer spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} /> : null}
+      {selectedRequirement ? <RequirementDocumentDrawer compact spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} /> : null}
     </div>
   );
 }
