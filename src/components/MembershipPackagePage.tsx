@@ -175,7 +175,7 @@ function RequirementEntryDot() {
 
 function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS }: { text: string; requirementKey?: string; status?: string }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
-  const tooltipWidth = 560;
+  const tooltipWidth = 480;
   const markerClass = status === '已上线' ? 'bg-[#52b788] shadow-[0_0_6px_rgba(82,183,136,.45)]' : 'bg-[#ff725c] shadow-[0_2px_6px_rgba(255,114,92,.3)]';
   const handleMouseEnter = (event: MouseEvent<HTMLSpanElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
