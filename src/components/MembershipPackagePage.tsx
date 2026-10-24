@@ -76,27 +76,34 @@ const initialPackages: PackageRow[] = [
 
 const CONFIGURED_PACKAGE_IDS = new Set([1, 2, 6, 7, 8, 9]);
 
-const MEMBER_TYPES = [
-  '个人版VIP',
-  '标准版(个人)',
-  '标准版(企业)',
-  '标准版(大企业)',
-  '个人高级版',
-  '企业高级版',
-  '高级版',
-  '协作版',
-  '旗舰版',
-  '高级版(大企业)',
-  '通用版(个人)',
-  '通用版(企业)',
-  '高级版(团队)',
-  '专业版(团队)',
-  '至尊版(团队)',
-  '基础版(单人)',
-  '高级版(单人)',
-  '专业版(单人)',
-  '至尊版(单人)',
+const MEMBER_TYPE_OPTIONS: { name: string; level?: number }[] = [
+  { name: '个人版VIP' },
+  { name: '标准版(个人)' },
+  { name: '标准版(企业)' },
+  { name: '标准版(大企业)' },
+  { name: '个人高级版' },
+  { name: '企业高级版' },
+  { name: '高级版' },
+  { name: '协作版' },
+  { name: '旗舰版' },
+  { name: '高级版(大企业)' },
+  { name: '通用版(个人)' },
+  { name: '通用版(企业)' },
+  { name: '高级版(团队)' },
+  { name: '专业版(团队)' },
+  { name: '至尊版(团队)' },
+  { name: '基础版(单人)' },
+  { name: '高级版(单人)' },
+  { name: '专业版(单人)' },
+  { name: '至尊版(单人)' },
+  { name: '基本版（个人） 240' },
+  { name: '专业版（个人） 241' },
+  { name: '基础版（企业） 310' },
+  { name: '专业版（企业） 311' },
+  { name: '旗舰版（企业） 220' },
 ];
+
+const MEMBER_TYPES = MEMBER_TYPE_OPTIONS.map((member) => member.name);
 
 const initialPackageDetails: PackageDetailRow[] = [
   { id: 3480, name: 'web-高级版（团队）-3年（加送1年）', displayName: '3年+1年', duration: 1460, originalPrice: 1578, discount: 100, currentPrice: 1578, contractPrice: '-', packageType: '普通套餐', member: '高级版(团队)', sort: 0, trialDays: 0, segment: '/', displayTime: '/', status: '显示', points: undefined },
@@ -168,12 +175,19 @@ const POINTS_REQUIREMENT_SECTIONS = [
   { title: '影响入口', items: ['会员套餐管理列表、套餐详情、新增套餐和编辑套餐。'] },
 ];
 const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
+const MEMBER_TYPE_REQUIREMENT_NAME = '会员套餐新增会员类型';
+const MEMBER_TYPE_REQUIREMENT_SECTIONS = [
+  { title: '功能说明', items: ['会员类型列表新增 5 个会员等级及对应 level。'] },
+  { title: '新增会员', items: ['基本版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },
+  { title: '列表展示规则', items: ['会员类型显示名称在前，level 数字在后。'] },
+];
+const MEMBER_TYPE_REQUIREMENT = MEMBER_TYPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 
 function RequirementEntryDot() {
   return POINTS_REQUIREMENT_STATUS === '已上线' ? null : <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label="有待开发需求" />;
 }
 
-function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS }: { text: string; requirementKey?: string; status?: string }) {
+function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS, requirementName = POINTS_REQUIREMENT_NAME, sections = POINTS_REQUIREMENT_SECTIONS }: { text: string; requirementKey?: string; status?: string; requirementName?: string; sections?: { title: string; items: string[] }[] }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
   const [isPinned, setIsPinned] = useState(false);
   const tooltipWidth = 480;
@@ -196,8 +210,8 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
     <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => { if (!isPinned) setTipPosition(null); }} aria-label={`需求标识：${requirementKey}，${text}`}>
       <span role="button" tabIndex={0} aria-expanded={Boolean(tipPosition)} onClick={(event) => { event.stopPropagation(); if (isPinned) { setIsPinned(false); setTipPosition(null); } else { setIsPinned(true); handleMouseEnter(event); } }} className={`cursor-help rounded-[4px] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white ${markerClass}`}>V2610</span>
       {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth, maxHeight: 'calc(100vh - 16px)' }} className="pointer-events-auto fixed z-[120] max-h-[calc(100vh-16px)] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
-        <span className="block whitespace-nowrap"><span className="font-semibold text-[#765d1c]">{POINTS_REQUIREMENT_NAME}</span><span className="ml-2 text-[#8a6a22]">{requirementKey} · {status}</span></span>
-        <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{POINTS_REQUIREMENT_SECTIONS.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
+        <span className="block whitespace-nowrap"><span className="font-semibold text-[#765d1c]">{requirementName}</span><span className="ml-2 text-[#8a6a22]">{requirementKey} · {status}</span></span>
+        <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{sections.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
       </span> : null}
     </span>
   );
@@ -272,7 +286,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>名称：</span><input value={form.name} onChange={(event) => update('name', event.currentTarget.value)} placeholder={isCreate ? '请输入名称' : undefined} className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>显示名称：</span><input disabled={!isCreate} value={form.displayName} onChange={(event) => update('displayName', event.currentTarget.value)} placeholder={isCreate ? '请输入显示名称' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>售卖描述：</span><input value={form.saleDescription} onChange={(event) => update('saleDescription', event.currentTarget.value)} placeholder={isCreate ? '请输入售卖描述' : undefined} className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
-          <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>所属会员：</span><select disabled={!isCreate} value={form.member} onChange={(event) => update('member', event.currentTarget.value)} className={`${isCreate ? inputClass : disabledClass} appearance-none`}><option value="">{isCreate ? '请选择会员类型' : form.member}</option>{MEMBER_TYPES.map((memberType) => <option key={memberType} value={memberType}>{memberType}</option>)}</select></label>
+          <div className="relative mb-6"><div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div><div className="rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3"><label className="grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>所属会员：</span><select disabled={!isCreate} value={form.member} onChange={(event) => update('member', event.currentTarget.value)} className={`${isCreate ? inputClass : disabledClass} appearance-none`}><option value="">{isCreate ? '请选择会员类型' : form.member}</option>{MEMBER_TYPE_OPTIONS.map((memberType) => <option key={memberType.name} value={memberType.name}>{memberType.name}{memberType.level ? ` ${memberType.level}` : ''}</option>)}</select></label></div></div>
           <div className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐类型：</span><div className={`flex items-center gap-5 text-[13px] ${isCreate ? 'text-[#333]' : 'text-[#c1c1c1]'}`}><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '普通套餐'} onChange={() => update('packageType', '普通套餐')} disabled={!isCreate} />普通套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '订阅套餐'} onChange={() => update('packageType', '订阅套餐')} disabled={!isCreate} />订阅套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '低价试用且订阅套餐'} onChange={() => update('packageType', '低价试用且订阅套餐')} disabled={!isCreate} />低价试用且订阅套餐</label><span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#c7c7c7] text-[10px] font-bold text-white">?</span></div></div>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐时长(天)：</span><input disabled={!isCreate} value={form.duration} onChange={(event) => update('duration', event.currentTarget.value)} placeholder={isCreate ? '请输入套餐时长(天)' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐价格原价（元）：</span><input disabled={!isCreate} value={form.originalPrice} onChange={(event) => update('originalPrice', event.currentTarget.value)} placeholder={isCreate ? '请输入套餐价格原价（元）' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
