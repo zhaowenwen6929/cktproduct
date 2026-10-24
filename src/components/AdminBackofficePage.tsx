@@ -596,7 +596,7 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
       },
       {
         title: '所在路径',
-        description: '使用后台目录层级标识对应页面，避免只看地址无法定位入口。',
+        description: '',
         items: [{ label: '所在路径', content: getRequirementDisplayPath(item) }],
       },
     ],
