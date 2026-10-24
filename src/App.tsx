@@ -1595,6 +1595,7 @@ export default function App() {
       onBackToDirectory={() => navigateTo('/')}
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice')}
       onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+      onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
       onOpenRequirement={() => navigateTo('/admin-backoffice/requirements/search-guide')}
     />;
   }
@@ -1605,6 +1606,7 @@ export default function App() {
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice')}
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
       onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+      onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
     />;
   }
 
@@ -1614,6 +1616,7 @@ export default function App() {
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice')}
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
       onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
+      onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
     />;
   }
 
@@ -1623,6 +1626,7 @@ export default function App() {
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
       onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
       onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+      onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
       onOpenRequirement={() => navigateTo('/admin-backoffice/requirements/ai-ecommerce')}
     />;
   }

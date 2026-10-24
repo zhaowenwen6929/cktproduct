@@ -256,6 +256,21 @@ const prettyJson = (config: SkillConfig) => JSON.stringify(config, null, 2);
 
 const NEW_REQUIREMENT_NAV_ITEMS = new Set(['AI电商配置', '搜索引导管理', '会员套餐管理', '会员页面配置']);
 
+type RequirementNavItem = {
+  id: string;
+  title: string;
+  summary: string;
+  addedAt: string;
+  path: string;
+};
+
+const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = [
+  { id: 'membership-packages', title: '会员套餐管理', summary: '新增套餐积分量、发放单位和发放周期配置。', addedAt: '2026-10-24', path: '/admin-backoffice/membership-packages' },
+  { id: 'membership-page-config', title: '会员页面配置', summary: '配置网页版和移动端会员页面的套餐、权益和说明内容。', addedAt: '2026-10-24', path: '/admin-backoffice/membership-page-config' },
+  { id: 'guided-search', title: '搜索引导管理', summary: '维护引导词节点、节点关系，并查询实际映射配置。', addedAt: '2026-10-22', path: '/admin-backoffice/guided-search' },
+  { id: 'ai-ecommerce', title: 'AI电商配置', summary: '按 function_code 和 scene 查询、编辑 AI 电商配置。', addedAt: '2026-10-22', path: '/admin-backoffice' },
+].sort((left, right) => right.addedAt.localeCompare(left.addedAt));
+
 function containsNewRequirement(item: NavItem): boolean {
   if (typeof item === 'string') return NEW_REQUIREMENT_NAV_ITEMS.has(item);
   return NEW_REQUIREMENT_NAV_ITEMS.has(item.label) || Boolean(item.children?.some(containsNewRequirement));
@@ -295,6 +310,7 @@ type AdminSidebarProps = {
   onBackToDirectory: () => void;
   activeItem?: string;
   onNavigate?: (item: string) => void;
+  onNavigateToRequirement?: (path: string) => void;
 };
 
 function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: string; requirement: string; summary: string; addedAt: string }) {
@@ -314,7 +330,7 @@ function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: stri
   );
 }
 
-export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate }: AdminSidebarProps) {
+export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate, onNavigateToRequirement }: AdminSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     灵感社区: false,
     内容运营管理: false,
@@ -322,9 +338,12 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
   });
   const [activeItem, setActiveItem] = useState('AI电商配置');
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [requirementsOpen, setRequirementsOpen] = useState(true);
+  const [selectedRequirementId, setSelectedRequirementId] = useState(REQUIREMENT_NAV_ITEMS[0]?.id ?? '');
 
   useEffect(() => {
     setActiveItem(activeItemProp);
+    setSelectedRequirementId(REQUIREMENT_NAV_ITEMS.find((item) => item.title === activeItemProp)?.id ?? REQUIREMENT_NAV_ITEMS[0]?.id ?? '');
   }, [activeItemProp]);
 
   const renderNavItems = (items: NavItem[], level = 0): ReactNode => items.map((item, index) => {
@@ -368,6 +387,22 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
       </div>
 
       <div className="flex-1 overflow-y-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <section className="mx-3 mb-3 border-b border-white/[.12] pb-3">
+          <button type="button" onClick={() => setRequirementsOpen((current) => !current)} className="flex w-full items-center justify-between rounded-[7px] border border-[#f1d36a] bg-[#fff2b8] px-3 py-2.5 text-left text-[12px] font-semibold text-[#8a5a00] shadow-[0_3px_10px_rgba(242,193,55,.14)] transition hover:bg-[#ffef9e]">
+            <span className="flex items-center gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f6c744] text-[10px] text-white">!</span><span>需求列表</span><span className="rounded-full bg-[#f6d768] px-1.5 py-0.5 text-[10px] font-medium text-[#795000]">{REQUIREMENT_NAV_ITEMS.length}</span></span>
+            <ChevronDown className={`h-3.5 w-3.5 text-[#9b6d00] transition-transform ${requirementsOpen ? '' : '-rotate-90'}`} />
+          </button>
+          {requirementsOpen ? <div className="mt-2 space-y-1.5">
+            {REQUIREMENT_NAV_ITEMS.map((requirement, index) => {
+              const isSelected = requirement.id === selectedRequirementId;
+              return <button key={requirement.id} type="button" onClick={() => { setSelectedRequirementId(requirement.id); onNavigateToRequirement?.(requirement.path); }} className={`flex w-full items-start gap-2 rounded-[6px] px-2.5 py-2 text-left transition ${isSelected ? 'bg-[#ffe89a] text-[#704900]' : 'text-[#d8c98b] hover:bg-white/[.08] hover:text-[#fff4c2]'}`}>
+                <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold ${isSelected ? 'bg-[#e4aa22] text-white' : 'bg-white/[.12] text-[#d8c98b]'}`}>{index + 1}</span>
+                <span className="min-w-0 flex-1"><span className="block truncate text-[11px] font-medium">{requirement.title}</span><span className={`mt-0.5 block truncate text-[10px] ${isSelected ? 'text-[#9a6c0a]' : 'text-[#9e9a7e]'}`}>{requirement.summary}</span></span>
+                <span className={`shrink-0 pt-0.5 text-[9px] ${isSelected ? 'text-[#9a6c0a]' : 'text-[#9e9a7e]'}`}>{requirement.addedAt.slice(5)}</span>
+              </button>;
+            })}
+          </div> : null}
+        </section>
         {NAV_GROUPS.map((group) => {
           const Icon = group.icon;
           const hasChildren = Boolean(group.children?.length);
@@ -416,7 +451,7 @@ function JsonCodeView({ config }: { config: SkillConfig }) {
   );
 }
 
-export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onOpenRequirement }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPackages?: () => void; onNavigateToMembershipPageConfig?: () => void; onOpenRequirement?: () => void }) {
+export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onOpenRequirement, onNavigateToRequirement }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPackages?: () => void; onNavigateToMembershipPageConfig?: () => void; onOpenRequirement?: () => void; onNavigateToRequirement?: (path: string) => void }) {
   const [config, setConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
   const [functionCode, setFunctionCode] = useState('');
   const [scene, setScene] = useState('');
@@ -590,7 +625,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="AI电商配置" onNavigate={(item) => { if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="AI电商配置" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-6 py-5">

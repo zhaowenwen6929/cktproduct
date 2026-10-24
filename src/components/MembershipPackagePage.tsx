@@ -216,7 +216,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
   );
 }
 
-function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig }: { packageName: string; onBack: () => void; onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void }) {
+function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { packageName: string; onBack: () => void; onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
   const [details, setDetails] = useState(initialPackageDetails);
   const [nameQuery, setNameQuery] = useState('');
   const [memberType, setMemberType] = useState('');
@@ -239,7 +239,7 @@ function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, o
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] font-sans text-[#30343b]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员套餐管理" onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员套餐管理" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-[25px] pt-[25px]"><div className="flex items-center gap-2 text-[13px] text-[#8b9199]"><button type="button" onClick={onBack} className="hover:text-[#278fee]">会员套餐管理</button><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#2d2d2d]">{packageName}</span></div>
@@ -254,7 +254,7 @@ function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, o
   );
 }
 
-export function MembershipPackagePage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig }: { onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void }) {
+export function MembershipPackagePage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
   const [packages, setPackages] = useState(initialPackages);
   const [nameQuery, setNameQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
@@ -268,12 +268,12 @@ export function MembershipPackagePage({ onBackToDirectory, onNavigateToSkillConf
   };
 
   if (selectedPackage) {
-    return <MembershipPackageDetailPage packageName={selectedPackage.id === 32 ? 'web端-新成' : selectedPackage.name} onBack={() => setSelectedPackage(null)} onBackToDirectory={onBackToDirectory} onNavigateToSkillConfig={onNavigateToSkillConfig} onNavigateToGuidedSearch={onNavigateToGuidedSearch} onNavigateToMembershipPageConfig={onNavigateToMembershipPageConfig} />;
+    return <MembershipPackageDetailPage packageName={selectedPackage.id === 32 ? 'web端-新成' : selectedPackage.name} onBack={() => setSelectedPackage(null)} onBackToDirectory={onBackToDirectory} onNavigateToSkillConfig={onNavigateToSkillConfig} onNavigateToGuidedSearch={onNavigateToGuidedSearch} onNavigateToMembershipPageConfig={onNavigateToMembershipPageConfig} onNavigateToRequirement={onNavigateToRequirement} />;
   }
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#30343b]">
-      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员套餐管理" onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="会员套餐管理" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <section className="mx-[27px] mt-[27px] min-h-[calc(100vh-89px)] bg-white">
