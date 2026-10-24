@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import { ChevronRight, Eye, Pencil, Plus, Search, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 
@@ -157,15 +157,35 @@ type DetailEditValues = {
   pointsCycle: string;
 };
 
-const POINTS_REQUIREMENT = '新增需求：积分量用于配置套餐独立发放的积分额度。新增套餐时需填写非负整数；历史套餐可为空，未填写时按所属会员等级的积分量发放，已配置套餐不可修改。';
+const POINTS_REQUIREMENT_KEY = 'VIP-2610';
+const POINTS_REQUIREMENT_STATUS = '待开发';
+const POINTS_REQUIREMENT = '积分量用于配置套餐独立发放的积分额度。新增套餐时需填写非负整数；历史套餐可为空，未填写时按所属会员等级的积分量发放，已配置套餐不可修改。';
 
-function RequirementHint({ text }: { text: string }) {
+function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS }: { text: string; requirementKey?: string; status?: string }) {
+  const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
+  const tooltipWidth = 300;
+  const tooltipHeight = 160;
+  const handleMouseEnter = (event: MouseEvent<HTMLSpanElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const gap = 8;
+    const viewportPadding = 8;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const showAbove = spaceBelow < tooltipHeight + gap && rect.top > tooltipHeight + gap;
+    const top = showAbove
+      ? rect.top - tooltipHeight - gap
+      : Math.max(viewportPadding, Math.min(rect.bottom + gap, window.innerHeight - tooltipHeight - viewportPadding));
+    const left = Math.max(viewportPadding, Math.min(rect.left + rect.width / 2 - tooltipWidth / 2, window.innerWidth - tooltipWidth - viewportPadding));
+    setTipPosition({ top, left });
+  };
+
   return (
-    <span className="group relative inline-flex shrink-0 align-middle" title={text} aria-label={text}>
-      <span className="cursor-help rounded-[3px] border border-[#ffd8bf] bg-[#fff7f0] px-1 py-[1px] text-[10px] font-medium leading-4 text-[#f07834]">新增</span>
-      <span role="tooltip" className="pointer-events-none absolute bottom-full left-1/2 z-[90] mb-2 hidden w-[280px] -translate-x-1/2 rounded-[4px] bg-[#273144] px-3 py-2 text-left text-[11px] font-normal leading-5 text-white shadow-[0_6px_18px_rgba(20,35,57,.22)] group-hover:block">
-        {text}
-      </span>
+    <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => setTipPosition(null)} title={`${requirementKey}：${text}`} aria-label={`需求标识：${requirementKey}`}>
+      <span className="cursor-help rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">VIP</span>
+      {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth }} className="pointer-events-none fixed z-[120] rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
+        <span className="block"><span className="text-[#8a6a22]">需求标识：</span>{requirementKey}</span>
+        <span className="mt-1 block"><span className="text-[#8a6a22]">状态：</span>{status}</span>
+        <span className="mt-1 block"><span className="text-[#8a6a22]">说明：</span>{text}</span>
+      </span> : null}
     </span>
   );
 }
