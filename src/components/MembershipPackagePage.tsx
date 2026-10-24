@@ -96,7 +96,7 @@ const MEMBER_TYPE_OPTIONS: { name: string; level?: number }[] = [
   { name: '高级版(单人)' },
   { name: '专业版(单人)' },
   { name: '至尊版(单人)' },
-  { name: '基本版（个人） 240' },
+  { name: '基础版（个人） 240' },
   { name: '专业版（个人） 241' },
   { name: '基础版（企业） 310' },
   { name: '专业版（企业） 311' },
@@ -178,7 +178,7 @@ const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => sect
 const MEMBER_TYPE_REQUIREMENT_NAME = '会员套餐新增会员类型';
 const MEMBER_TYPE_REQUIREMENT_SECTIONS = [
   { title: '功能说明', items: ['会员类型列表新增 5 个会员等级及对应 level。'] },
-  { title: '新增会员', items: ['基本版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },
+  { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },
   { title: '列表展示规则', items: ['会员类型显示名称在前，level 数字在后。'] },
 ];
 const MEMBER_TYPE_REQUIREMENT = MEMBER_TYPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
