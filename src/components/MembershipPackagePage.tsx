@@ -319,7 +319,7 @@ export function MembershipPackagePage({ onBackToDirectory, onNavigateToSkillConf
           </div>
         </section>
       </main>
-      {notice ? <div className="fixed right-6 top-[78px] z-[80] rounded-[5px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-2.5 text-[13px] text-[#7c5a09] shadow-[0_6px_18px_rgba(145,108,26,.18)]">{notice}</div> : null}
+      {notice ? <div className="pointer-events-none fixed inset-0 z-[80] flex items-center justify-center"><div className="rounded-[5px] border border-[#e2e6ec] bg-white px-6 py-3 text-[13px] text-[#4f5968] shadow-[0_8px_24px_rgba(38,52,74,.16)]">{notice}</div></div> : null}
       {modal ? <PackageModal mode={modal.mode} row={modal.row} onClose={() => setModal(null)} onSave={savePackage} /> : null}
     </div>
   );
