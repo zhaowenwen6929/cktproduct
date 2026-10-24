@@ -255,8 +255,8 @@ export const MEMBER_TYPE_REQUIREMENT_SECTIONS: RequirementSection[] = [
 ];
 export const MEMBER_TYPE_REQUIREMENT = MEMBER_TYPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 
-function RequirementEntryDot() {
-  return POINTS_REQUIREMENT_STATUS === '已上线' ? null : <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label="有待开发需求" />;
+export function RequirementEntryDot({ label = '有待开发需求' }: { label?: string }) {
+  return POINTS_REQUIREMENT_STATUS === '已上线' ? null : <span title={label} className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" aria-label={label} />;
 }
 
 export function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS, requirementName = POINTS_REQUIREMENT_NAME, sections = POINTS_REQUIREMENT_SECTIONS }: { text: string; requirementKey?: string; status?: string; requirementName?: string; sections?: RequirementSection[] }) {
@@ -365,7 +365,7 @@ export function MemberTypeDropdown({ value, onChange, disabled = false, classNam
   return (
     <div ref={containerRef} className={`relative ${className} shrink-0`}>
       <button type="button" disabled={disabled} onClick={() => { if (!disabled) setOpen((current) => !current); }} aria-haspopup="listbox" aria-expanded={open} className="flex h-[33px] w-full items-center justify-between rounded-[2px] border border-[#d9d9d9] bg-white px-3 text-left text-[12px] text-[#b6bbc1] outline-none focus:border-[#278fee] disabled:cursor-not-allowed disabled:bg-[#f5f5f5]">
-        <span className={selected ? 'text-[#333]' : ''}>{selected ? formatLabel(selected) : '请选择会员类型'}</span>
+        <span className="flex min-w-0 items-center gap-1.5"><span className={`truncate ${selected ? 'text-[#333]' : ''}`}>{selected ? formatLabel(selected) : '请选择会员类型'}</span><RequirementEntryDot label="会员类型新增新会员等级" /></span>
         <ChevronDown className="h-4 w-4 text-[#aeb5bd]" />
       </button>
       {open ? <div role="listbox" className="absolute left-0 top-full z-[100] mt-1 max-h-[430px] w-full overflow-y-auto rounded-[4px] border border-[#e1e4e8] bg-white p-1 shadow-[0_8px_20px_rgba(31,45,61,.18)]">

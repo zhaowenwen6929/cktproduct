@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CalendarDays, ChevronDown, Search } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementHint } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryDot, RequirementHint } from './MembershipPackagePage';
 
 type UserAuthorizationPageProps = {
   onBackToDirectory: () => void;
@@ -139,7 +139,7 @@ export function UserAuthorizationPage({ onBackToDirectory, onNavigateToSkillConf
                 <span className="text-right text-[#424a55]">权益等级/类型：</span>
                 <div className="relative">
                   <button type="button" aria-expanded={benefitDropdownOpen} onClick={() => setBenefitDropdownOpen((open) => !open)} className="flex h-11 w-full items-center justify-between rounded-[3px] border border-[#278fee] bg-white px-3 text-left text-[14px] text-[#a7afb9] outline-none">
-                    <span className="truncate">{benefitLevel || '权益等级/...'}</span>
+                    <span className="flex min-w-0 items-center gap-1.5"><span className="truncate">{benefitLevel || '权益等级/...'}</span><RequirementEntryDot label="权益等级/类型新增新会员等级" /></span>
                     <Search className="h-4 w-4 shrink-0 text-[#a6adb7]" />
                   </button>
                   {benefitDropdownOpen ? (

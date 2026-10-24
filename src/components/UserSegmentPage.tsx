@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Upload, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementHint } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryDot, RequirementHint } from './MembershipPackagePage';
 
 type UserSegmentPageProps = {
   onBackToDirectory: () => void;
@@ -75,10 +75,6 @@ const MEMBER_IDENTITY_OPTIONS = [
   { value: 'non-member-level', label: '不是会员用户（按等级）' },
 ];
 
-function SegmentRequirementDot({ label }: { label: string }) {
-  return <span title={label} aria-label={label} className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" />;
-}
-
 export function MemberIdentitySelect({ value, onChange, className = '' }: { value: string; onChange: (value: string) => void; className?: string }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -104,12 +100,12 @@ export function MemberIdentitySelect({ value, onChange, className = '' }: { valu
           {MEMBER_IDENTITY_OPTIONS.map((option) => (
             <button key={option.value} type="button" role="option" aria-selected={option.value === value} onClick={() => { onChange(option.value); setOpen(false); }} className={`flex min-h-10 w-full items-center justify-between px-3 text-left text-[16px] transition hover:bg-[#eef7ff] ${option.value === value ? 'bg-[#eef7ff] text-[#278fee]' : 'text-[#30343b]'}`}>
               <span>{option.label}</span>
-              {option.value === 'member-level' ? <SegmentRequirementDot label="是会员用户（按等级）有需求改动" /> : null}
+              {option.value === 'member-level' || option.value === 'non-member-level' ? <RequirementEntryDot label={`${option.label}有需求改动`} /> : null}
             </button>
           ))}
         </div>
       ) : null}
-      <span className="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2"><SegmentRequirementDot label="是会员用户（按等级）有需求改动" /></span>
+      <span className="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2"><RequirementEntryDot label="会员身份按等级筛选有需求改动" /></span>
     </div>
   );
 }
@@ -287,7 +283,7 @@ export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, on
             <header className="border-b border-[#e8edf3] px-5 py-5"><h1 className="text-[18px] font-semibold text-[#283244]">用户分群</h1></header>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#edf0f4] px-5 py-4">
               <div className="flex flex-wrap items-center gap-3">
-                <button type="button" onClick={() => setIsCsvImportOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" /><span>CSV导入分群</span><SegmentRequirementDot label="CSV导入分群有需求改动" /></button>
+                <button type="button" onClick={() => setIsCsvImportOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" /><span>CSV导入分群</span><RequirementEntryDot label="CSV导入分群有需求改动" /></button>
                 <button type="button" onClick={() => onNavigateToNewRule?.()} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />新增规则分群</button>
                 <button type="button" onClick={() => onNavigateToCustomRule?.()} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />定制分群条件</button>
               </div>

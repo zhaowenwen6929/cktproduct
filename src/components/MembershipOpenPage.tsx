@@ -240,6 +240,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                         className={`relative pb-3 text-[15px] transition ${hasMemberLevelRequirement ? 'rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-2' : ''} ${category === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
                       >
                         {item}
+                        {hasMemberLevelRequirement ? <RequirementEntryDot label={`${item}新增新会员等级`} /> : null}
                         {category === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
                       </button>
                       {hasMemberLevelRequirement ? <span className="absolute -right-5 -top-3"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={`${item}新增新会员等级`} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></span> : null}

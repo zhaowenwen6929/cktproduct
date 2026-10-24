@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, KeyRound, Search, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementHint } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryDot, RequirementHint } from './MembershipPackagePage';
 
 type MembershipActivationPageProps = {
   onBackToDirectory: () => void;
@@ -59,7 +59,7 @@ function ActivationSelect({ value, placeholder, options, onChange, open, onToggl
   return (
     <div className="relative">
       <button type="button" aria-expanded={open} onClick={onToggle} className={`flex h-11 w-full items-center justify-between rounded-[3px] border bg-white px-3 text-left text-[14px] outline-none transition ${open ? 'border-[#278fee]' : 'border-[#d7dce3]'}`}>
-        <span className={value ? 'text-[#30343b]' : 'text-[#c5cbd2]'}>{value || placeholder}</span>
+        <span className="flex min-w-0 items-center gap-1.5"><span className={`truncate ${value ? 'text-[#30343b]' : 'text-[#c5cbd2]'}`}>{value || placeholder}</span>{newOptions.length > 0 ? <RequirementEntryDot label="激活码类型新增新会员等级" /> : null}</span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-[#a5adb7] transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open ? (
@@ -192,7 +192,7 @@ export function MembershipActivationPage({ onBackToDirectory, onNavigateToSkillC
           <section className="overflow-hidden rounded-[2px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
             <header className="flex items-center justify-between border-b border-[#e8edf3] px-8 py-5">
               <h1 className="text-[18px] font-semibold text-[#283244]">激活码活动列表</h1>
-              <button type="button" onClick={() => setIsModalOpen(true)} className="inline-flex h-11 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-5 text-[14px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><KeyRound className="h-4 w-4" />添加激活码活动</button>
+              <button type="button" onClick={() => setIsModalOpen(true)} className="inline-flex h-11 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-5 text-[14px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><KeyRound className="h-4 w-4" /><span>添加激活码活动</span><RequirementEntryDot label="添加激活码活动有需求改动" /></button>
             </header>
 
             <div className="px-8 py-7">
