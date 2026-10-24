@@ -46,7 +46,11 @@ export const MEMBER_LEVEL_OPTIONS = [
 ];
 
 export const MEMBER_TYPE_OPTIONS = ['个人限次会员', '个人不限次会员', '企业会员'];
-const NEW_MEMBER_LEVEL_OPTIONS = ['基础版（个人），240', '专业版（个人），241', '基础版（企业），310', '专业版（企业），311', '旗舰版（企业），220'];
+const NEW_MEMBER_LEVEL_GROUPS: { label: string; options: string[] }[] = [
+  { label: '个人会员', options: ['基础版（个人），240', '专业版（个人），241'] },
+  { label: '企业会员', options: ['基础版（企业），310', '专业版（企业），311', '旗舰版（企业），220'] },
+];
+const NEW_MEMBER_LEVEL_OPTIONS = NEW_MEMBER_LEVEL_GROUPS.flatMap((group) => group.options);
 const PACKAGE_TYPE_OPTIONS = ['签约套餐', '非签约套餐'];
 
 export type CsvSelectProps = {
@@ -140,11 +144,20 @@ export function CsvCheckboxGroup({ label, options, value, onChange, dense = fals
       <div className={`grid gap-x-5 gap-y-2.5 ${dense ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
         {existingOptions.map(renderOption)}
         {newOptions.length > 0 ? (
-          <div className="relative col-span-full mt-2 rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 pb-2 pt-4">
-            <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
-            <div className={`grid gap-x-5 gap-y-2.5 ${dense ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
-              {newOptions.map(renderOption)}
-            </div>
+          <div className="col-span-full mt-2 grid gap-3 xl:grid-cols-2">
+            {NEW_MEMBER_LEVEL_GROUPS.map((group) => {
+              const groupOptions = group.options.filter((option) => newOptions.includes(option));
+              if (groupOptions.length === 0) return null;
+              return (
+                <div key={group.label} className="relative rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 pb-2 pt-4">
+                  <div className="absolute -top-3 left-3 z-10 rounded bg-[#fff7f5] px-1 text-[13px] font-semibold text-[#c43f3f]">{group.label}</div>
+                  <div className="absolute -right-1 -top-3 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
+                  <div className={`grid gap-x-5 gap-y-2.5 ${dense ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                    {groupOptions.map(renderOption)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : null}
       </div>
