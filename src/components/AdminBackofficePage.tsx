@@ -350,13 +350,14 @@ function getRequirementsForNavItem(item: NavItem): RequirementNavItem[] {
 }
 
 function getRequirementDisplayPath(item: RequirementNavItem): string {
+  const projectName = '创客贴管理后台';
   const navLabel = item.navLabels?.[0];
   if (navLabel) {
     const group = NAV_GROUPS.find((candidate) => candidate.children?.some((child) => navItemContainsLabel(child, navLabel)));
-    return [group?.label, navLabel].filter(Boolean).join(' > ');
+    return [projectName, group?.label, navLabel].filter(Boolean).join(' > ');
   }
-  if (item.id === 'membership-redesign') return '会员中心 > 会员改版';
-  return '需求中心';
+  if (item.id === 'membership-redesign') return `${projectName} > 会员中心 > 会员改版`;
+  return `${projectName} > 需求中心`;
 }
 
 function isSkillConfig(value: unknown): value is SkillConfig {
