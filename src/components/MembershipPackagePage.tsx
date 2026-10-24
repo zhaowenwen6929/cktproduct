@@ -106,7 +106,7 @@ export const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
   { name: '旗舰版（企业）', level: 220 },
 ];
 
-type MemberPointsConfig = Pick<PackageDetailRow, 'points' | 'pointsUnit' | 'pointsCycle'>;
+type MemberPointsConfig = Pick<PackageDetailRow, 'points' | 'pointsUnit' | 'pointsCycle'> & { display?: string };
 
 const MEMBER_LEVEL_POINTS: Record<string, MemberPointsConfig> = {
   '个人版VIP': { points: 600, pointsUnit: '每人', pointsCycle: '按月' },
@@ -128,11 +128,11 @@ const MEMBER_LEVEL_POINTS: Record<string, MemberPointsConfig> = {
   '高级版(单人)': { points: 1500, pointsUnit: '每人', pointsCycle: '按月' },
   '专业版(单人)': { points: 3800, pointsUnit: '每人', pointsCycle: '按月' },
   '至尊版(单人)': { points: 8000, pointsUnit: '每人', pointsCycle: '按月' },
-  '基础版（个人）': {},
-  '专业版（个人）': {},
-  '基础版（企业）': {},
-  '专业版（企业）': {},
-  '旗舰版（企业）': {},
+  '基础版（个人）': { display: '按套餐' },
+  '专业版（个人）': { display: '按套餐' },
+  '基础版（企业）': { display: '按套餐' },
+  '专业版（企业）': { display: '按套餐' },
+  '旗舰版（企业）': { display: '按套餐' },
 };
 
 function getMemberPointsConfig(member: string) {
@@ -159,6 +159,7 @@ export function formatPointsDisplay(points?: number, pointsUnit?: '每人' | '�
 export function getPackagePointsDisplay(member: string) {
   const packageDetail = initialPackageDetails.find((row) => row.member === member);
   const configuredPoints = packageDetail?.points == null ? getMemberPointsConfig(member) : packageDetail;
+  if (packageDetail?.points == null && configuredPoints?.display) return configuredPoints.display;
   return formatPointsDisplay(configuredPoints?.points, configuredPoints?.pointsUnit, configuredPoints?.pointsCycle);
 }
 
