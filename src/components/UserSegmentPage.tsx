@@ -4,7 +4,7 @@ import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryFrame, RequirementHint } from './MembershipPackagePage';
 
 const MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS = [
-  { title: '会员类型归属', items: ['基础版（个人）240、专业版（个人）241归入个人不限次会员。', '基础版（企业）310、专业版（企业）311、旗舰版（企业）220归入企业会员。'] },
+  { title: '归入已有类型', items: ['将新增会员归入已有类型。', '基础版（个人）240、专业版（个人）241归入个人不限次会员。', '基础版（企业）310、专业版（企业）311、旗舰版（企业）220归入企业会员。'] },
 ];
 const USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS = [...MEMBER_TYPE_REQUIREMENT_SECTIONS, ...MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS];
 const USER_SEGMENT_MEMBER_REQUIREMENT = USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
