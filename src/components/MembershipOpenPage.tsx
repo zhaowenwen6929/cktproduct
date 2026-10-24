@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight, CircleHelp } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getPackagePointsDisplay } from './MembershipPackagePage';
 
 type MembershipOpenPageProps = {
   onBackToDirectory: () => void;
@@ -32,6 +32,57 @@ function FormRow({ label, required = false, children }: { label: string; require
       </span>
       <span className="min-w-0">{children}</span>
     </label>
+  );
+}
+
+type MembershipHistoryRecord = {
+  userId: string;
+  recordType: string;
+  memberType: string;
+  memberCount: number;
+  points?: number;
+  pointsUnit?: '每人' | '团队';
+  pointsCycle?: '按月' | '一次性';
+  addedSeats: string;
+  duration: string;
+  companyName: string;
+  createdAt: string;
+  creator: string;
+  auditUser: string;
+  paidAt: string;
+  paymentMethod: string;
+  paymentStatus: string;
+  openingCompany: string;
+  reason: string;
+};
+
+const membershipHistoryRecords: MembershipHistoryRecord[] = [
+  { userId: '78695524', recordType: '会员', memberType: '旗舰版', memberCount: 150, addedSeats: '—', duration: '1044天', companyName: '华安证券股份有限公司', createdAt: '2026-10-23 14:54:26', creator: '田伟刚', auditUser: '—', paidAt: '—', paymentMethod: '—', paymentStatus: '未支付', openingCompany: '华安证券', reason: '202610210006' },
+  { userId: '22477207', recordType: '会员', memberType: '旗舰版', memberCount: 161, addedSeats: '—', duration: '255天', companyName: '上海闵途信息技术有限公司', createdAt: '2026-10-23 14:27:43', creator: '田伟刚', auditUser: '—', paidAt: '—', paymentMethod: '—', paymentStatus: '未支付', openingCompany: '途虎养车', reason: '202610210005' },
+  { userId: '7029878', recordType: '会员', memberType: '旗舰版', memberCount: 52, addedSeats: '—', duration: '1071天', companyName: '银联商务股份有限公司', createdAt: '2026-10-23 14:08:21', creator: '田伟刚', auditUser: '—', paidAt: '—', paymentMethod: '—', paymentStatus: '未支付', openingCompany: '银联商务', reason: '202610210008' },
+];
+
+function HistoryRecordsPanel() {
+  const [recordType, setRecordType] = useState('全部');
+  const [paymentStatus, setPaymentStatus] = useState('全部');
+  const filteredRecords = useMemo(() => membershipHistoryRecords.filter((record) => (recordType === '全部' || record.recordType === recordType) && (paymentStatus === '全部' || record.paymentStatus === paymentStatus)), [paymentStatus, recordType]);
+  const pointsDisplay = (record: MembershipHistoryRecord) => record.points == null ? getPackagePointsDisplay(record.memberType) : formatPointsDisplay(record.points, record.pointsUnit, record.pointsCycle);
+
+  return (
+    <div className="px-8 pb-8 pt-6">
+      <div className="mb-5 flex items-center justify-end gap-5 text-[12px] text-[#555]">
+        <label className="flex items-center gap-2">记录类型：<select value={recordType} onChange={(event) => setRecordType(event.currentTarget.value)} className="h-8 rounded-[3px] border border-[#d9dfe7] bg-white px-3 text-[12px] text-[#4d5562] outline-none"><option>全部</option><option>会员</option><option>席位</option></select></label>
+        <label className="flex items-center gap-2">支付状态：<select value={paymentStatus} onChange={(event) => setPaymentStatus(event.currentTarget.value)} className="h-8 rounded-[3px] border border-[#d9dfe7] bg-white px-3 text-[12px] text-[#4d5562] outline-none"><option>全部</option><option>未支付</option><option>已支付</option></select></label>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[1660px] table-fixed border-collapse text-center text-[12px] text-[#333]">
+          <colgroup><col className="w-[7%]" /><col className="w-[5%]" /><col className="w-[6%]" /><col className="w-[5%]" /><col className="w-[8%]" /><col className="w-[6%]" /><col className="w-[9%]" /><col className="w-[9%]" /><col className="w-[6%]" /><col className="w-[8%]" /><col className="w-[8%]" /><col className="w-[7%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[8%]" /><col className="w-[8%]" /><col className="w-[6%]" /></colgroup>
+          <thead className="h-[112px] bg-[#fafafa] text-[#222]"><tr>{['用户ID', '记录\n类型', '会员\n类型', '成员\n人数', '积分量', '新增\n席位', '开通时\n长（天）', '公司\n名称', '订单创建\n时间', '订单创\n建者', '支付完成\n审核人', '支付完成\n时间', '支付\n方式', '支付\n状态', '开通公司\n名称', '开通原因', '操作'].map((label) => <th key={label} className={`relative whitespace-pre-line px-2 font-normal leading-5 ${label === '积分量' ? 'border-x border-t border-dashed border-[#ff665b] bg-[#fff7f5]' : ''}`}>{label === '积分量' ? <><div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2"><RequirementHint text={POINTS_REQUIREMENT} requirementName={OPEN_POINTS_REQUIREMENT_NAME} /></div><span>积分量</span></> : label}</th>)}</tr></thead>
+          <tbody>{filteredRecords.map((record) => <tr key={record.userId} className="h-[105px] border-b border-[#ededed] hover:bg-[#fcfdff]"><td className="px-2">{record.userId}</td><td className="px-2">{record.recordType}</td><td className="px-2">{record.memberType}</td><td className="px-2">{record.memberCount}</td><td className="border-x border-dashed border-[#ff665b] bg-[#fff7f5] px-2 leading-5">{pointsDisplay(record)}</td><td className="px-2">{record.addedSeats}</td><td className="px-2 leading-5">{record.duration}</td><td className="px-2 leading-5">{record.companyName}</td><td className="px-2 leading-5">{record.createdAt}</td><td className="px-2 leading-5">{record.creator}</td><td className="px-2">{record.auditUser}</td><td className="px-2">{record.paidAt}</td><td className="px-2">{record.paymentMethod}</td><td className="px-2 leading-5">{record.paymentStatus}</td><td className="px-2 leading-5">{record.openingCompany}</td><td className="px-2 leading-5">{record.reason}</td><td className="px-2"><button type="button" className="h-8 rounded-[3px] bg-[#278fee] px-4 text-[12px] text-white">已支付</button></td></tr>)}</tbody>
+        </table>
+        {filteredRecords.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无历史记录</div> : null}
+      </div>
+    </div>
   );
 }
 
@@ -123,6 +174,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     className={`relative pb-[17px] text-[15px] transition ${panel === item ? 'font-medium text-[#278fee]' : 'text-[#333] hover:text-[#278fee]'}`}
                   >
                     {item}
+                    {item === '历史记录' && category === '企业会员' ? <RequirementEntryDot label="历史会员有待开发需求" /> : null}
                     {panel === item ? <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#278fee]" /> : null}
                   </button>
                 ))}
@@ -224,6 +276,8 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                     </div>
                   </div>
                 </form>
+              ) : panel === '历史记录' && category === '企业会员' ? (
+                <HistoryRecordsPanel />
               ) : (
                 <div className="flex min-h-[530px] items-center justify-center text-[14px] text-[#9aa3af]">暂无{panel}记录</div>
               )}
