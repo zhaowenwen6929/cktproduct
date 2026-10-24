@@ -1450,42 +1450,36 @@ export default function App() {
         title: '无限画布',
         description: '进入当前的创作主工作台，继续使用现有画布、生成与导出能力。',
         href: '/canvas' as AppRoute,
-        status: '已上线',
         available: true,
       },
       {
         title: '浏览器插件原型',
         description: '预览“右侧常驻创作助手”形态，模拟插件在网页里的推荐动作、结果预览与流转闭环。',
         href: '/plugin-prototype' as AppRoute,
-        status: '原型可看',
         available: true,
       },
       {
         title: 'AI 连接器授权原型',
         description: '模拟“登录创客贴 -> 查看/创建 Access Key -> 使用授权 -> 回跳 WorkBuddy”的完整流程。',
         href: '/connector-auth' as AppRoute,
-        status: '新增流程',
         available: true,
       },
       {
         title: '创客贴网站',
         description: '进入创作首页，浏览技能分类、填写技能参数，并将需求带入无限画布生成。',
         href: '/agent-skills-home' as AppRoute,
-        status: '新增入口',
         available: true,
       },
       {
         title: '创客贴设计 APP',
         description: '参考移动端设计首页，提供创建设计、图片编辑、AI 创作、工具和模板推荐入口。',
         href: '/design-app' as AppRoute,
-        status: '新增入口',
         available: true,
       },
       {
         title: '创客贴管理后台',
         description: '进入管理后台需求目录，查看玩法管理下的 AI 电商配置查询与 JSON 编辑流程。',
         href: '/admin-backoffice' as AppRoute,
-        status: '新增入口',
         available: true,
       },
     ];
@@ -1556,11 +1550,6 @@ export default function App() {
                     className="flex min-h-[280px] flex-col justify-between rounded-[28px] border border-stone-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,241,234,0.98)_100%)] p-7 shadow-[0_20px_50px_rgba(120,95,60,0.08)]"
                   >
                     <div>
-                      {feature.status !== '新增入口' && feature.status !== '新增流程' ? (
-                        <div className="mb-5 inline-flex rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-500">
-                          {feature.status}
-                        </div>
-                      ) : null}
                       <h2 className="text-2xl font-semibold tracking-[-0.03em] text-stone-900">
                         {feature.title}
                       </h2>
