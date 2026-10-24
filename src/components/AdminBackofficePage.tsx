@@ -260,6 +260,7 @@ type RequirementNavItem = {
   id: string;
   title: string;
   level: 'main' | 'sub';
+  requirementKey: string;
   parentId?: string;
   requirement: string;
   summary: string;
@@ -270,16 +271,25 @@ type RequirementNavItem = {
 };
 
 const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
-  { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirement: '完善会员套餐、会员页面和积分配置能力。', summary: '会员中心后台和前台会员页同步改版。', details: ['会员套餐管理和会员页面配置作为本次改版的子需求。', '统一补充积分、权益、展示配置和企业使用场景。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/requirements' },
-  { id: 'membership-packages', title: '会员套餐管理', level: 'sub', parentId: 'membership-redesign', requirement: '新增套餐积分量、发放单位和发放周期配置。', summary: '会员套餐支持补充积分发放规则，历史套餐保持兼容。', details: ['积分量为必填项，已创建套餐展示积分量且不可修改。', '支持按每人或团队发放，周期支持按月或一次性。', '历史套餐未填写积分量时，按照所属会员等级的积分量发放。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-packages' },
-  { id: 'membership-page-config', title: '会员页面配置', level: 'sub', parentId: 'membership-redesign', requirement: '配置网页版和移动端会员页面的套餐、权益和说明内容。', summary: '会员页配置拆分个人使用和企业使用，并支持各模块 JSON 配置。', details: ['支持网页版和移动端两个端配置，默认进入网页版。', '支持套餐、权益概览、权益明细、模型消耗、商用授权和常见问题模块。', '会员套餐价格和积分沿用真实套餐数据。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-page-config' },
-  { id: 'guided-search', title: '搜索引导管理', level: 'main', requirement: '维护引导词节点、节点关系，并查询实际映射配置。', summary: '支持引导词、关系和映射结果的查询与维护。', details: ['支持节点、关系和映射三个管理视图。', '可按关键词、层级、关系类型和状态筛选数据。', '支持导入、编辑、启停和删除操作。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/guided-search' },
-  { id: 'ai-ecommerce', title: 'AI电商配置', level: 'main', requirement: '按 function_code 和 scene 查询、编辑 AI 电商配置。', summary: '面向 AI 电商技能配置的查询、编辑和缓存管理。', details: ['支持按功能标识和场景查询配置。', '支持 JSON 草稿编辑、格式校验和保存。', '支持清理对应功能缓存，并保留最近查询记录。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/ai-ecommerce' },
+  { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirementKey: 'MEM-2610', requirement: '完善会员套餐、会员页面和积分配置能力。', summary: '会员中心后台和前台会员页同步改版。', details: ['会员套餐管理和会员页面配置作为本次改版的子需求。', '统一补充积分、权益、展示配置和企业使用场景。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/requirements' },
+  { id: 'membership-packages', title: '会员套餐管理', level: 'sub', requirementKey: 'MEM-2610', parentId: 'membership-redesign', requirement: '新增套餐积分量、发放单位和发放周期配置。', summary: '会员套餐支持补充积分发放规则，历史套餐保持兼容。', details: ['积分量为必填项，已创建套餐展示积分量且不可修改。', '支持按每人或团队发放，周期支持按月或一次性。', '历史套餐未填写积分量时，按照所属会员等级的积分量发放。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-packages' },
+  { id: 'membership-page-config', title: '会员页面配置', level: 'sub', requirementKey: 'MEM-2610', parentId: 'membership-redesign', requirement: '配置网页版和移动端会员页面的套餐、权益和说明内容。', summary: '会员页配置拆分个人使用和企业使用，并支持各模块 JSON 配置。', details: ['支持网页版和移动端两个端配置，默认进入网页版。', '支持套餐、权益概览、权益明细、模型消耗、商用授权和常见问题模块。', '会员套餐价格和积分沿用真实套餐数据。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-page-config' },
+  { id: 'guided-search', title: '搜索引导管理', level: 'main', requirementKey: 'SG-2610', requirement: '维护引导词节点、节点关系，并查询实际映射配置。', summary: '支持引导词、关系和映射结果的查询与维护。', details: ['支持节点、关系和映射三个管理视图。', '可按关键词、层级、关系类型和状态筛选数据。', '支持导入、编辑、启停和删除操作。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/guided-search' },
+  { id: 'ai-ecommerce', title: 'AI电商配置', level: 'main', requirementKey: 'AIE-2610', requirement: '按 function_code 和 scene 查询、编辑 AI 电商配置。', summary: '面向 AI 电商技能配置的查询、编辑和缓存管理。', details: ['支持按功能标识和场景查询配置。', '支持 JSON 草稿编辑、格式校验和保存。', '支持清理对应功能缓存，并保留最近查询记录。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/ai-ecommerce' },
 ] as RequirementNavItem[]).sort((left, right) => right.addedAt.localeCompare(left.addedAt));
 
 function containsNewRequirement(item: NavItem): boolean {
   if (typeof item === 'string') return NEW_REQUIREMENT_NAV_ITEMS.has(item);
   return NEW_REQUIREMENT_NAV_ITEMS.has(item.label) || Boolean(item.children?.some(containsNewRequirement));
+}
+
+function navItemContainsLabel(item: NavItem, label: string): boolean {
+  if (typeof item === 'string') return item === label;
+  return item.label === label || Boolean(item.children?.some((child) => navItemContainsLabel(child, label)));
+}
+
+function getActiveNavGroupLabel(label: string): string | undefined {
+  return NAV_GROUPS.find((group) => group.children?.some((item) => navItemContainsLabel(item, label)))?.label;
 }
 
 function isSkillConfig(value: unknown): value is SkillConfig {
@@ -338,16 +348,23 @@ function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: stri
 }
 
 export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate, onNavigateToRequirement, onNavigateToRequirementList }: AdminSidebarProps) {
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    灵感社区: false,
-    内容运营管理: false,
-    会员中心: false,
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    const activeGroupLabel = getActiveNavGroupLabel(activeItemProp);
+    return {
+      灵感社区: activeGroupLabel === '灵感社区',
+      内容运营管理: activeGroupLabel === '内容运营管理',
+      会员中心: activeGroupLabel === '会员中心',
+    };
   });
   const [activeItem, setActiveItem] = useState('AI电商配置');
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setActiveItem(activeItemProp);
+    const activeGroupLabel = getActiveNavGroupLabel(activeItemProp);
+    if (activeGroupLabel) {
+      setExpandedGroups((current) => ({ ...current, [activeGroupLabel]: true }));
+    }
   }, [activeItemProp]);
 
   const renderNavItems = (items: NavItem[], level = 0): ReactNode => items.map((item, index) => {
@@ -431,10 +448,10 @@ type RequirementListPageProps = {
   onNavigateToRequirementList?: () => void;
 };
 
-function RequirementCard({ item, index, nested = false, onNavigate, childCount = 0 }: { item: RequirementNavItem; index: number; nested?: boolean; onNavigate?: (path: string) => void; childCount?: number }) {
+function RequirementCard({ item, index, nested = false, onNavigate, childCount = 0, isChildrenExpanded = false, onToggleChildren }: { item: RequirementNavItem; index: number; nested?: boolean; onNavigate?: (path: string) => void; childCount?: number; isChildrenExpanded?: boolean; onToggleChildren?: () => void }) {
   const hasPage = item.path !== '/admin-backoffice/requirements';
   return <article className={nested ? 'rounded-[8px] border border-[#e5eaf1] bg-[#fbfcfe] p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]' : 'rounded-[8px] border border-[#dce5f0] bg-white p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]'}>
-    <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className={nested ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#eef4fb] text-[11px] font-semibold text-[#6c86a5]' : 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff2b8] text-[12px] font-semibold text-[#a16b00]'}>{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-[15px] font-semibold text-[#27344a]">{item.title}</h2><span className="rounded-[4px] bg-[#fff7dc] px-2 py-0.5 text-[10px] font-medium text-[#a36d08]">{item.status}</span>{nested ? <span className="rounded-[4px] bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#5c82b1]">子需求</span> : <span className="rounded-[4px] bg-[#f1f4f8] px-2 py-0.5 text-[10px] font-medium text-[#6d7b8d]">主需求</span>}</div><p className="mt-2 text-[12px] leading-5 text-[#4d5b70]"><span className="font-medium text-[#7c899b]">需求：</span>{item.requirement}</p><p className="mt-1 text-[12px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#a2adbb]">概述：</span>{item.summary}</p></div></div><div className="flex shrink-0 items-center gap-3"><span className="text-[11px] text-[#9aa5b5]">新增于 {item.addedAt}</span>{hasPage ? <button type="button" onClick={() => onNavigate?.(item.path)} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入页面<ChevronRight className="h-3.5 w-3.5" /></button> : childCount > 0 ? <span className="rounded-[4px] bg-[#f6f8fb] px-2.5 py-1.5 text-[11px] text-[#8390a1]">包含 {childCount} 个子需求</span> : null}</div></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className={nested ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#eef4fb] text-[11px] font-semibold text-[#6c86a5]' : 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff2b8] text-[12px] font-semibold text-[#a16b00]'}>{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-[15px] font-semibold text-[#27344a]">{item.title}</h2><span className="rounded-[4px] bg-[#eaf3ff] px-2 py-0.5 text-[10px] font-semibold text-[#3979b7]">{item.requirementKey}</span><span className="rounded-[4px] bg-[#fff7dc] px-2 py-0.5 text-[10px] font-medium text-[#a36d08]">{item.status}</span>{nested ? <span className="rounded-[4px] bg-[#eef5ff] px-2 py-0.5 text-[10px] font-medium text-[#5c82b1]">子需求</span> : <span className="rounded-[4px] bg-[#f1f4f8] px-2 py-0.5 text-[10px] font-medium text-[#6d7b8d]">主需求</span>}</div><p className="mt-2 text-[12px] leading-5 text-[#4d5b70]"><span className="font-medium text-[#7c899b]">需求：</span>{item.requirement}</p><p className="mt-1 text-[12px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#a2adbb]">概述：</span>{item.summary}</p></div></div><div className="flex shrink-0 items-center gap-3"><span className="text-[11px] text-[#9aa5b5]">新增于 {item.addedAt}</span>{hasPage ? <button type="button" onClick={() => onNavigate?.(item.path)} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入页面<ChevronRight className="h-3.5 w-3.5" /></button> : childCount > 0 ? <button type="button" onClick={onToggleChildren} className="inline-flex items-center gap-1 rounded-[4px] bg-[#f6f8fb] px-2.5 py-1.5 text-[11px] text-[#65758b] transition hover:bg-[#eef5ff] hover:text-[#278fee]">{isChildrenExpanded ? '收起子需求' : `展开 ${childCount} 个子需求`}<ChevronDown className={`h-3 w-3 transition-transform ${isChildrenExpanded ? '' : '-rotate-90'}`} /></button> : null}</div></div>
     <div className="mt-4 border-t border-[#edf0f4] pt-3"><div className="mb-2 text-[12px] font-medium text-[#526075]">需求明细</div><ul className="grid gap-1.5 md:grid-cols-3">{item.details.map((detail) => <li key={detail} className="flex items-start gap-2 text-[11px] leading-5 text-[#7e8a9c]"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#278fee]" />{detail}</li>)}</ul></div>
   </article>;
 }
@@ -442,6 +459,7 @@ function RequirementCard({ item, index, nested = false, onNavigate, childCount =
 export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onNavigateToRequirement, onNavigateToRequirementList }: RequirementListPageProps) {
   const mainRequirements = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'main');
   const childRequirementCount = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'sub').length;
+  const [expandedMainRequirements, setExpandedMainRequirements] = useState<Record<string, boolean>>({});
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]">
@@ -455,7 +473,8 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
             <div className="space-y-3 p-5">
               {mainRequirements.map((item, index) => {
                 const children = REQUIREMENT_NAV_ITEMS.filter((child) => child.parentId === item.id);
-                return <div key={item.id}><RequirementCard item={item} index={index} childCount={children.length} onNavigate={onNavigateToRequirement} />{children.length > 0 ? <div className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigateToRequirement} />)}</div> : null}</div>;
+                const isExpanded = Boolean(expandedMainRequirements[item.id]);
+                return <div key={item.id}><RequirementCard item={item} index={index} childCount={children.length} isChildrenExpanded={isExpanded} onToggleChildren={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} onNavigate={onNavigateToRequirement} />{children.length > 0 && isExpanded ? <div className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigateToRequirement} />)}</div> : null}</div>;
               })}
             </div>
           </section>
