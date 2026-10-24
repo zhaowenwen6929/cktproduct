@@ -318,7 +318,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
                           </div>
                         </div>
                         {pointsError ? <p className="mt-1 text-[12px] text-[#ff4d4f]">{pointsError}</p> : null}
-                        <p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">{historicalMembershipSelected ? '历史会员按会员等级回显积分量，不支持修改' : isLifetimeDuration(form.duration) ? '终身会员按99年识别，积分一次性发放' : '未填写积分量时，按照套餐所属会员等级的积分量发放'}</p>
+                        <p className="mt-1 text-[12px] leading-5 text-[#8a94a3]">{historicalMembershipSelected ? '历史会员按会员等级回显积分量，不支持修改' : '对应用户/团队的积分量将按照开通时的「积分量」设置进行发放，每次开通将立即按生效套餐发放，上一笔对应的未使用积分量失效'}</p>
                       </div>
                     </FormRow>
 
