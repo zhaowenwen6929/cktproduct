@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Upload, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementHint } from './MembershipPackagePage';
@@ -63,6 +63,53 @@ export function CsvSelect({ value, onChange, children, className = '' }: CsvSele
         {children}
       </select>
       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a8afb9]" />
+    </div>
+  );
+}
+
+const MEMBER_IDENTITY_OPTIONS = [
+  { value: 'unlimited', label: '不限制' },
+  { value: 'member', label: '是会员用户' },
+  { value: 'member-level', label: '是会员用户（按等级）' },
+  { value: 'non-member', label: '不是会员用户' },
+  { value: 'non-member-level', label: '不是会员用户（按等级）' },
+];
+
+function SegmentRequirementDot({ label }: { label: string }) {
+  return <span title={label} aria-label={label} className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[#ff5a5f] shadow-[0_0_6px_rgba(255,90,95,.75)]" />;
+}
+
+export function MemberIdentitySelect({ value, onChange, className = '' }: { value: string; onChange: (value: string) => void; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const selectedOption = MEMBER_IDENTITY_OPTIONS.find((option) => option.value === value) ?? MEMBER_IDENTITY_OPTIONS[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className={`relative w-full max-w-[360px] ${className}`}>
+      <button type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((current) => !current)} className="flex h-10 w-full items-center justify-between rounded-[3px] border border-[#d7dce3] bg-white px-3 text-left text-[16px] text-[#30343b] outline-none transition hover:border-[#278fee] focus:border-[#278fee]">
+        <span className="truncate">{selectedOption.label}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-[#a8afb9] transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open ? (
+        <div role="listbox" className="absolute left-0 top-[calc(100%+4px)] z-50 w-full overflow-hidden rounded-[3px] border border-[#d7dce3] bg-white py-1 shadow-[0_6px_18px_rgba(25,38,58,.16)]">
+          {MEMBER_IDENTITY_OPTIONS.map((option) => (
+            <button key={option.value} type="button" role="option" aria-selected={option.value === value} onClick={() => { onChange(option.value); setOpen(false); }} className={`flex min-h-10 w-full items-center justify-between px-3 text-left text-[16px] transition hover:bg-[#eef7ff] ${option.value === value ? 'bg-[#eef7ff] text-[#278fee]' : 'text-[#30343b]'}`}>
+              <span>{option.label}</span>
+              {option.value === 'member-level' ? <SegmentRequirementDot label="是会员用户（按等级）有需求改动" /> : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <span className="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2"><SegmentRequirementDot label="是会员用户（按等级）有需求改动" /></span>
     </div>
   );
 }
@@ -153,13 +200,7 @@ function CsvImportUserSegmentModal({ onClose, onComplete }: CsvImportUserSegment
 
             <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4">
               <span className="text-right text-[16px] text-[#30343b]">会员身份：</span>
-              <CsvSelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]">
-                <option value="unlimited">不限制</option>
-                <option value="member">是会员用户</option>
-                <option value="member-level">是会员用户（按等级）</option>
-                <option value="non-member">不是会员用户</option>
-                <option value="non-member-level">不是会员用户（按等级）</option>
-              </CsvSelect>
+              <MemberIdentitySelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]" />
             </div>
 
             {isPreviousMemberMode ? (
@@ -246,7 +287,7 @@ export function UserSegmentPage({ onBackToDirectory, onNavigateToSkillConfig, on
             <header className="border-b border-[#e8edf3] px-5 py-5"><h1 className="text-[18px] font-semibold text-[#283244]">用户分群</h1></header>
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#edf0f4] px-5 py-4">
               <div className="flex flex-wrap items-center gap-3">
-                <button type="button" onClick={() => setIsCsvImportOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" />CSV导入分群</button>
+                <button type="button" onClick={() => setIsCsvImportOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Upload className="h-4 w-4" /><span>CSV导入分群</span><SegmentRequirementDot label="CSV导入分群有需求改动" /></button>
                 <button type="button" onClick={() => onNavigateToNewRule?.()} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />新增规则分群</button>
                 <button type="button" onClick={() => onNavigateToCustomRule?.()} className="inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-[#278fee] px-4 text-[13px] text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]"><Plus className="h-4 w-4" />定制分群条件</button>
               </div>

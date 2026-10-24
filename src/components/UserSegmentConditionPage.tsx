@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { CsvCheckboxGroup, CsvSelect, MEMBER_LEVEL_OPTIONS, MEMBER_TYPE_OPTIONS } from './UserSegmentPage';
+import { CsvCheckboxGroup, CsvSelect, MemberIdentitySelect, MEMBER_LEVEL_OPTIONS, MEMBER_TYPE_OPTIONS } from './UserSegmentPage';
 
 type UserSegmentConditionPageProps = {
   mode: 'rule' | 'custom';
@@ -12,14 +12,6 @@ type UserSegmentConditionPageProps = {
   onNavigateToMembershipPackages?: () => void;
   onNavigateToMembershipPageConfig?: () => void;
 };
-
-const IDENTITY_OPTIONS = [
-  { value: 'unlimited', label: '不限制' },
-  { value: 'member', label: '是会员用户' },
-  { value: 'member-level', label: '是会员用户（按等级）' },
-  { value: 'non-member', label: '不是会员用户' },
-  { value: 'non-member-level', label: '不是会员用户（按等级）' },
-];
 
 function ConditionSelect({ value, onChange, options }: { value: string; onChange: (value: string) => void; options: string[] }) {
   return (
@@ -93,9 +85,7 @@ function UserSegmentConditionPage({ mode, onBackToDirectory, onBackToUserSegment
                 <div className="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-3">
                   <span className="pt-2 text-right text-[15px]">会员身份：</span>
                   <div className="space-y-4">
-                    <CsvSelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]">
-                      {IDENTITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                    </CsvSelect>
+                    <MemberIdentitySelect value={memberIdentity} onChange={setMemberIdentity} className="max-w-[360px]" />
 
                     {isPreviousMember ? (
                       <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-3">
