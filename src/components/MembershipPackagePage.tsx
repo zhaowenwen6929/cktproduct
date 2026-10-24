@@ -174,13 +174,13 @@ function RequirementEntryDot() {
 
 function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status = POINTS_REQUIREMENT_STATUS }: { text: string; requirementKey?: string; status?: string }) {
   const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
-  const tooltipWidth = 440;
-  const tooltipHeight = 360;
+  const tooltipWidth = 560;
   const markerClass = status === '已上线' ? 'bg-[#52b788] shadow-[0_0_6px_rgba(82,183,136,.45)]' : 'bg-[#ff725c] shadow-[0_2px_6px_rgba(255,114,92,.3)]';
   const handleMouseEnter = (event: MouseEvent<HTMLSpanElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const gap = 8;
     const viewportPadding = 8;
+    const tooltipHeight = Math.min(620, Math.max(0, window.innerHeight - viewportPadding * 2));
     const spaceBelow = window.innerHeight - rect.bottom;
     const showAbove = spaceBelow < tooltipHeight + gap && rect.top > tooltipHeight + gap;
     const top = showAbove
@@ -193,7 +193,7 @@ function RequirementHint({ text, requirementKey = POINTS_REQUIREMENT_KEY, status
   return (
     <span className="inline-flex shrink-0 align-middle" onMouseEnter={handleMouseEnter} onMouseLeave={() => setTipPosition(null)} aria-label={`需求标识：${requirementKey}，${text}`}>
       <span className={`cursor-help rounded-[4px] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.02em] text-white ${markerClass}`}>V2610</span>
-      {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth }} className="pointer-events-none fixed z-[120] max-h-[calc(100vh-16px)] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
+      {tipPosition ? <span role="tooltip" style={{ top: tipPosition.top, left: tipPosition.left, width: tooltipWidth, maxHeight: 'calc(100vh - 16px)' }} className="pointer-events-auto fixed z-[120] max-h-[calc(100vh-16px)] overflow-y-auto rounded-[9px] border border-[#f1d36a] bg-[#fff2b8] px-4 py-3 text-left text-[12px] font-normal leading-5 text-[#5d4a1c] shadow-[0_10px_24px_rgba(145,108,26,.24)]">
         <span className="block"><span className="text-[#8a6a22]">需求标识：</span>{requirementKey}</span>
         <span className="mt-1 block"><span className="text-[#8a6a22]">状态：</span>{status}</span>
         <span className="mt-2 block border-t border-[#efd77e] pt-2"><span className="text-[#8a6a22]">说明：</span><span className="mt-2 block space-y-2 whitespace-normal break-words leading-5">{POINTS_REQUIREMENT_SECTIONS.map((section) => <span key={section.title} className="block"><span className="block font-semibold text-[#765d1c]">{section.title}</span><span className="block">{section.items.map((item) => <span key={item} className="block pl-3 before:mr-1 before:content-['·']">{item}</span>)}</span></span>)}</span></span>
