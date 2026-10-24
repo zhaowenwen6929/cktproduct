@@ -349,8 +349,6 @@ function getRequirementsForNavItem(item: NavItem): RequirementNavItem[] {
   return REQUIREMENT_NAV_ITEMS.filter((requirement) => requirementMatchesNavItem(requirement, item));
 }
 
-const REQUIREMENT_BADGE_PARENT_GROUPS = new Set(['用户中心', '会员激活码', '授权管理']);
-
 function isSkillConfig(value: unknown): value is SkillConfig {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Partial<SkillConfig>;
@@ -490,13 +488,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
           const hasChildren = Boolean(group.children?.length);
           const isExpanded = expandedGroups[group.label] ?? Boolean(group.expanded);
           const requirementKeys = getRequirementKeysForNavItems(group.children);
-          const groupRequirement = REQUIREMENT_BADGE_PARENT_GROUPS.has(group.label)
-            ? REQUIREMENT_NAV_ITEMS.find((requirement) => requirement.status !== '已上线' && group.children?.some((item) => requirementMatchesNavItem(requirement, item)))
-            : undefined;
           return (
             <div key={group.label}>
               <button type="button" title={group.label} onClick={() => hasChildren && setExpandedGroups((current) => ({ ...current, [group.label]: !isExpanded }))} className="flex h-[38px] w-full items-center justify-between px-5 text-left text-[11px] font-medium tracking-[.01em] text-[#a8bacb] transition hover:bg-white/[.06] hover:text-white">
-                <span className="flex min-w-0 items-center gap-2.5"><Icon className="h-[14px] w-[14px] shrink-0 opacity-80" /><span className="truncate">{group.label}</span>{requirementKeys.length > 0 ? <RequirementDot /> : null}{groupRequirement ? <RequirementKeyBadge requirement={groupRequirement} /> : null}</span>
+                <span className="flex min-w-0 items-center gap-2.5"><Icon className="h-[14px] w-[14px] shrink-0 opacity-80" /><span className="truncate">{group.label}</span>{requirementKeys.length > 0 ? <RequirementDot /> : null}</span>
                 {hasChildren ? <ChevronDown className={`h-3 w-3 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
               </button>
               {hasChildren && isExpanded ? (
