@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { CalendarDays, ChevronDown, ChevronRight, CircleHelp, Download } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getDefaultMemberDurationDays, getMemberPointsConfigForDuration, getPackagePointsDisplay, isHistoricalMemberType, isLifetimeDuration } from './MembershipPackagePage';
+import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_NAME, MEMBER_TYPE_REQUIREMENT_SECTIONS, POINTS_REQUIREMENT, MemberTypeDropdown, RequirementHint, formatPointsDisplay, getMemberPointsConfigForDuration, getPackagePointsDisplay, isHistoricalMemberType, isLifetimeDuration } from './MembershipPackagePage';
 
 type MembershipOpenPageProps = {
   onBackToDirectory: () => void;
@@ -191,17 +191,17 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
   const historicalMembershipSelected = !isProfessional && isHistoricalMemberType(membershipType);
   const handleMembershipTypeChange = (value: string) => {
     const historical = isHistoricalMemberType(value);
-    const defaultDuration = getDefaultMemberDurationDays(value);
-    const pointsConfig = getMemberPointsConfigForDuration(value, defaultDuration);
     setMembershipType(value);
     setPointsError('');
-    setForm((current) => ({
-      ...current,
-      duration: historical ? defaultDuration || (isLifetimeDuration(current.duration) ? '' : current.duration) : current.duration,
-      points: historical && pointsConfig?.points != null ? String(pointsConfig.points) : '',
-      pointsUnit: pointsConfig?.pointsUnit ?? '每人',
-      pointsCycle: pointsConfig?.pointsCycle ?? '按月',
-    }));
+    setForm((current) => {
+      const pointsConfig = getMemberPointsConfigForDuration(value, current.duration);
+      return {
+        ...current,
+        points: historical && pointsConfig?.points != null ? String(pointsConfig.points) : '',
+        pointsUnit: pointsConfig?.pointsUnit ?? '每人',
+        pointsCycle: pointsConfig?.pointsCycle ?? '按月',
+      };
+    });
   };
   const panelTabs: MembershipPanel[] = isProfessional ? ['开通会员', '购买席位', '配置域名', '历史记录'] : ['开通会员', '购买席位', '历史记录'];
 
