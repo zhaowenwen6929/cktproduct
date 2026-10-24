@@ -291,12 +291,13 @@ type AdminSidebarProps = {
 };
 
 function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: string; requirement: string; summary: string; addedAt: string }) {
-  const [tipTop, setTipTop] = useState<number | null>(null);
+  const [tipPosition, setTipPosition] = useState<{ top: number; left: number } | null>(null);
+  const tooltipHeight = 250;
 
   return (
-    <span className="group relative inline-flex shrink-0" onMouseEnter={(event) => setTipTop(event.currentTarget.getBoundingClientRect().top)} onMouseLeave={() => setTipTop(null)} aria-label={`新功能：${title}`} title={`新功能：${summary}`}>
+    <span className="group relative inline-flex shrink-0" onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); const showAbove = window.innerHeight - rect.bottom < tooltipHeight && rect.top > tooltipHeight + 8; setTipPosition({ top: showAbove ? rect.top - tooltipHeight : Math.max(8, Math.min(rect.top, window.innerHeight - tooltipHeight - 8)), left: 238 }); }} onMouseLeave={() => setTipPosition(null)} aria-label={`新功能：${title}`} title={`新功能：${summary}`}>
       <span className="rounded-[4px] bg-[#ff725c] px-1.5 py-0.5 text-[9px] font-bold leading-none tracking-[.04em] text-white shadow-[0_2px_6px_rgba(255,114,92,.3)]">NEW</span>
-      {tipTop !== null ? <span style={{ top: tipTop, left: 238 }} className="pointer-events-none fixed z-50 w-[280px] rounded-[9px] bg-[#172336] px-4 py-3 text-[12px] font-normal leading-5 text-white shadow-[0_10px_24px_rgba(0,0,0,.28)]">
+      {tipPosition ? <span style={tipPosition} className="pointer-events-none fixed z-50 w-[280px] rounded-[9px] bg-[#172336] px-4 py-3 text-[12px] font-normal leading-5 text-white shadow-[0_10px_24px_rgba(0,0,0,.28)]">
         <span className="mb-2 block text-[13px] font-semibold text-white">{title}</span>
         <span className="block"><span className="text-[#a9b9cd]">需求：</span>{requirement}</span>
         <span className="mt-1 block"><span className="text-[#a9b9cd]">概述：</span>{summary}</span>
