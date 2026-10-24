@@ -224,7 +224,19 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   { label: '设计师工具箱', icon: SlidersHorizontal },
-  { label: '创客贴版权资源库', icon: ShieldCheck },
+  {
+    label: '创客贴版权资源库',
+    icon: ShieldCheck,
+    expanded: false,
+    children: [
+      '版权资源库',
+      '授权信息黑白名单',
+      '授权信息管理与查询',
+      '授权记录查询与管理',
+      '维权信息校验',
+      '版权结算',
+    ],
+  },
   { label: '创客贴模板库管理', icon: LayoutDashboard },
   { label: '内容库分发管理', icon: Database },
   { label: '数据增长', icon: PlayCircle },
@@ -419,6 +431,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             }
             if (label === '授权范围设置' && typeof window !== 'undefined') {
               window.history.pushState({}, '', '/admin-backoffice/authorization-scope');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+            if (label === '授权信息管理与查询' && typeof window !== 'undefined') {
+              window.history.pushState({}, '', '/admin-backoffice/user-authorization');
               window.dispatchEvent(new PopStateEvent('popstate'));
             }
             onNavigate?.(label);
