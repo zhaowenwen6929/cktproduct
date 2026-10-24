@@ -172,10 +172,10 @@ const POINTS_REQUIREMENT_KEY = 'V2610';
 const POINTS_REQUIREMENT_STATUS = '待开发';
 const POINTS_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '功能说明', items: ['积分量用于配置套餐独立发放的积分额度。'] },
-  { title: '积分发放规则变化', highlight: true, items: ['优先查询用户当前生效套餐对应的积分量，按规则发放；套餐中未配置积分量的，按照套餐对应会员等级的积分量和规则发放。'] },
   { title: '表单配置', items: ['新增套餐：积分量为必填项，填写非负整数。', '发放单位：默认每人，可选团队。', '发放周期：默认按月，可选一次性。'] },
   { title: '历史套餐', items: ['历史套餐积分量留空，未填写时按照所属会员等级的积分量发放；已配置套餐不可修改。'] },
   { title: '列表展示规则', items: ['积分量为空：显示“按会员等级发”。', '已配置具体值：显示“具体值/单位/周期”，例如“600/每人/按月”。'] },
+  { title: '积分发放规则', highlight: true, items: ['优先查询用户当前生效套餐对应的积分量。', '按照当前生效套餐配置的积分量和规则发放。', '套餐未配置积分量时，按照套餐对应会员等级的积分量和规则发放。'] },
   { title: '影响入口', items: ['会员套餐管理列表、套餐详情、新增套餐和编辑套餐。'] },
 ];
 const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
