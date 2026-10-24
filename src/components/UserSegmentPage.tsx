@@ -6,6 +6,7 @@ import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementE
 const MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS = [
   { title: '归入已有类型', items: ['将新增会员归入已有类型。', '基础版（个人）240、专业版（个人）241归入个人不限次会员。', '基础版（企业）310、专业版（企业）311、旗舰版（企业）220归入企业会员。'] },
 ];
+const MEMBER_TYPE_GROUP_REQUIREMENT = MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 const USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS = [...MEMBER_TYPE_REQUIREMENT_SECTIONS, ...MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS];
 const USER_SEGMENT_MEMBER_REQUIREMENT = USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 
@@ -102,8 +103,11 @@ export function MemberIdentitySelect({ value, onChange, className = '', autoOpen
 
   const renderOption = (option: { value: string; label: string }) => {
     const optionButton = <button key={option.value} type="button" role="option" aria-selected={option.value === value} onClick={() => { onChange(option.value); setOpen(false); }} className={`flex min-h-10 w-full items-center justify-between px-3 text-left text-[16px] transition hover:bg-[#eef7ff] ${option.value === value ? 'bg-[#eef7ff] text-[#278fee]' : 'text-[#30343b]'}`}><span>{option.label}</span></button>;
-    return option.value === 'member' || option.value === 'member-level' || option.value === 'non-member-level'
-      ? <RequirementEntryFrame key={option.value} className="m-1 w-[calc(100%-8px)]" text={USER_SEGMENT_MEMBER_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS}>{optionButton}</RequirementEntryFrame>
+    if (option.value === 'member') {
+      return <RequirementEntryFrame key={option.value} className="m-1 w-[calc(100%-8px)]" text={MEMBER_TYPE_GROUP_REQUIREMENT} requirementName="用户分群将新增会员归入已有类型" sections={MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS}>{optionButton}</RequirementEntryFrame>;
+    }
+    return option.value === 'member-level' || option.value === 'non-member-level'
+      ? <RequirementEntryFrame key={option.value} className="m-1 w-[calc(100%-8px)]" text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS}>{optionButton}</RequirementEntryFrame>
       : optionButton;
   };
 
@@ -154,7 +158,7 @@ export function CsvCheckboxGroup({ label, options, value, onChange, dense = fals
         {existingOptions.map(renderOption)}
         {framedMemberTypeOptions.length > 0 ? (
           <div className="col-span-full sm:col-span-2 lg:col-span-2">
-            <RequirementEntryFrame className="w-full" text={USER_SEGMENT_MEMBER_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS}>
+            <RequirementEntryFrame className="w-full" text={MEMBER_TYPE_GROUP_REQUIREMENT} requirementName="用户分群将新增会员归入已有类型" sections={MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS}>
               <div className="flex flex-wrap gap-x-5 gap-y-2.5">{framedMemberTypeOptions.map(renderOption)}</div>
             </RequirementEntryFrame>
           </div>
@@ -167,7 +171,7 @@ export function CsvCheckboxGroup({ label, options, value, onChange, dense = fals
               return (
                 <div key={group.label} className="relative rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 pb-2 pt-4">
                   <div className="absolute -top-3 left-3 z-10 rounded bg-[#fff7f5] px-1 text-[13px] font-semibold text-[#c43f3f]">{group.label}</div>
-                  <div className="absolute -right-1 -top-3 z-10"><RequirementHint text={USER_SEGMENT_MEMBER_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS} /></div>
+                  <div className="absolute -right-1 -top-3 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName="用户分群新增新会员等级" sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
                   <div className={`grid gap-x-5 gap-y-2.5 ${dense ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'}`}>
                     {groupOptions.map(renderOption)}
                   </div>
