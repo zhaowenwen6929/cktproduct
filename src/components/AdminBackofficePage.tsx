@@ -580,6 +580,27 @@ function RequirementCard({ item, index, nested = false, onNavigate, onOpenDetail
   </article>;
 }
 
+export function RequirementListBoard({ onNavigate }: { onNavigate?: (path: string) => void }) {
+  const mainRequirements = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'main');
+  const childRequirementCount = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'sub').length;
+  const [expandedMainRequirements, setExpandedMainRequirements] = useState<Record<string, boolean>>({});
+  const [selectedRequirement, setSelectedRequirement] = useState<RequirementNavItem | null>(null);
+
+  return <div className="relative min-w-0">
+    <section className="overflow-hidden rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8edf3] px-5 py-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">需求列表</h1><p className="mt-1 text-[12px] text-[#98a2b2]">按主需求新增时间倒序展示，子需求归属在对应主需求下。</p></div><span className="rounded-[5px] bg-[#fff4c8] px-3 py-1.5 text-[12px] font-medium text-[#986a00]">{mainRequirements.length} 个主需求 · {childRequirementCount} 个子需求</span></header>
+      <div className="space-y-3 p-5">
+        {mainRequirements.map((item, index) => {
+          const children = REQUIREMENT_NAV_ITEMS.filter((child) => child.parentId === item.id);
+          const isExpanded = Boolean(expandedMainRequirements[item.id]);
+          return <div key={item.id}><RequirementCard item={item} index={index} childCount={children.length} isChildrenExpanded={isExpanded} onToggleChildren={() => setExpandedMainRequirements((current) => ({ ...current, [item.id]: !current[item.id] }))} onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} />{children.length > 0 && isExpanded ? <div className="ml-5 mt-2 space-y-2 border-l-2 border-[#f2d46d] pl-4">{children.map((child, childIndex) => <RequirementCard key={child.id} item={child} index={childIndex} nested onNavigate={onNavigate} onOpenDetails={setSelectedRequirement} />)}</div> : null}</div>;
+        })}
+      </div>
+    </section>
+    {selectedRequirement ? <RequirementDocumentDrawer compact spec={buildRequirementSpec(selectedRequirement)} onClose={() => setSelectedRequirement(null)} /> : null}
+  </div>;
+}
+
 export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onNavigateToRequirement, onNavigateToRequirementList }: RequirementListPageProps) {
   const mainRequirements = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'main');
   const childRequirementCount = REQUIREMENT_NAV_ITEMS.filter((item) => item.level === 'sub').length;

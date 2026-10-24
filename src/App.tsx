@@ -9,7 +9,7 @@ import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { TemplateCenterPage } from './components/TemplateCenterPage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
-import { AdminBackofficePage, RequirementListPage } from './components/AdminBackofficePage';
+import { AdminBackofficePage, RequirementListBoard, RequirementListPage } from './components/AdminBackofficePage';
 import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { MembershipPackagePage } from './components/MembershipPackagePage';
 import { MembershipPageConfigPage } from './components/MembershipPageConfigPage';
@@ -105,6 +105,7 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [credits, setCredits] = useState(204843);
   const [projectName, setProjectName] = useState('Logo设计');
+  const [homeViewMode, setHomeViewMode] = useState<'requirements' | 'projects'>('requirements');
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [exportSelectedIds, setExportSelectedIds] = useState<string[]>([]);
   const [exportRequest, setExportRequest] = useState<ExportRequest | null>(null);
@@ -1515,6 +1516,32 @@ export default function App() {
                 </button>
               </div>
 
+              <div role="tablist" aria-label="原型查看方式" className="inline-flex w-fit rounded-full border border-stone-200 bg-stone-100/80 p-1 shadow-[0_8px_20px_rgba(120,95,60,0.06)]">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={homeViewMode === 'requirements'}
+                  onClick={() => setHomeViewMode('requirements')}
+                  className={`rounded-full px-5 py-2 text-sm font-medium transition ${homeViewMode === 'requirements' ? 'bg-stone-900 text-white shadow-[0_5px_12px_rgba(41,32,23,.16)]' : 'text-stone-500 hover:text-stone-900'}`}
+                >
+                  按需求查看
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={homeViewMode === 'projects'}
+                  onClick={() => setHomeViewMode('projects')}
+                  className={`rounded-full px-5 py-2 text-sm font-medium transition ${homeViewMode === 'projects' ? 'bg-stone-900 text-white shadow-[0_5px_12px_rgba(41,32,23,.16)]' : 'text-stone-500 hover:text-stone-900'}`}
+                >
+                  按项目查看
+                </button>
+              </div>
+
+              {homeViewMode === 'requirements' ? (
+                <div className="rounded-[28px] border border-stone-200 bg-[#f4f6f9] p-3 shadow-[0_20px_50px_rgba(120,95,60,0.08)] sm:p-4">
+                  <RequirementListBoard onNavigate={(path) => navigateTo(normalizeRoute(path))} />
+                </div>
+              ) : (
               <div className="grid gap-5 lg:grid-cols-2">
                 {featureCards.map((feature) => (
                   <section
@@ -1554,6 +1581,7 @@ export default function App() {
                   </section>
                 ))}
               </div>
+              )}
 
               <div className="rounded-[28px] border border-stone-200 bg-stone-900 px-6 py-6 text-stone-100">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
