@@ -339,6 +339,7 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             <span className="truncate">{label}</span>
             {label === 'AI电商配置' ? <NewFeatureBadge title="AI电商配置" requirement="AI电商配置管理" summary="按 function_code 和 scene 查询、编辑配置，并支持清理对应功能缓存。" addedAt="2026-10-22" /> : null}
             {label === '搜索引导管理' ? <NewFeatureBadge title="搜索引导管理" requirement="搜索引导管理" summary="维护引导词节点、节点关系，并查询实际映射配置。" addedAt="2026-10-22" /> : null}
+            {label === '会员套餐管理' ? <NewFeatureBadge title="积分量发放配置" requirement="新增套餐积分量、发放单位和发放周期配置。" summary="积分量为必填项，支持按每人或团队、按月或一次性发放；历史套餐未填写时按照所属会员等级的积分量发放。" addedAt="2026-10-24" /> : null}
           </span>
           {hasChildren ? <ChevronDown className={`h-3 w-3 shrink-0 opacity-80 transition-transform ${isExpanded ? '' : '-rotate-90'}`} /> : null}
         </button>
