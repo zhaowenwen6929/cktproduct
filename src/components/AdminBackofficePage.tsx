@@ -21,6 +21,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
+import { RequirementDocumentDrawer } from './RequirementDocumentPage';
 
 type SkillOption = {
   label: string;
@@ -508,7 +509,7 @@ function JsonCodeView({ config }: { config: SkillConfig }) {
   );
 }
 
-export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onOpenRequirement, onNavigateToRequirement }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPackages?: () => void; onNavigateToMembershipPageConfig?: () => void; onOpenRequirement?: () => void; onNavigateToRequirement?: (path: string) => void }) {
+export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { onBackToDirectory: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPackages?: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
   const [config, setConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
   const [functionCode, setFunctionCode] = useState('');
   const [scene, setScene] = useState('');
@@ -542,6 +543,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
   const [draftConfig, setDraftConfig] = useState<SkillConfig>(DEFAULT_SKILL_CONFIG);
   const [jsonError, setJsonError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [requirementDrawerOpen, setRequirementDrawerOpen] = useState(false);
 
   const isFound = hasQueried && queryStatus === 'success';
   const canClearCache = functionCode.trim().length > 0;
@@ -689,7 +691,7 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
           <div className="mb-4 flex items-center gap-2 text-[12px] text-[#9aa3b1]"><span>灵感社区</span><ChevronRight className="h-3.5 w-3.5" /><span>玩法管理</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4f5b6f]">AI电商配置</span></div>
 
           <section className="mb-4 rounded-[3px] bg-white p-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]">
-            <div className="mb-4 flex items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">AI电商配置</h1><p className="mt-1 text-[12px] text-[#a1a9b5]">按功能标识（function_code）和场景（scene）查询并管理 AI 电商配置</p></div>{onOpenRequirement ? <button type="button" onClick={onOpenRequirement} className="inline-flex h-9 shrink-0 items-center rounded-[5px] border border-[#ff8b83] bg-[#fff0ee] px-4 text-[12px] font-semibold text-[#e84b43] shadow-[0_3px_10px_rgba(232,75,67,.12)] transition hover:border-[#f05b53] hover:bg-[#ffe2df] hover:text-[#d9362e]">需求说明</button> : null}</div>
+            <div className="mb-4 flex items-start justify-between gap-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">AI电商配置</h1><p className="mt-1 text-[12px] text-[#a1a9b5]">按功能标识（function_code）和场景（scene）查询并管理 AI 电商配置</p></div><button type="button" onClick={() => setRequirementDrawerOpen(true)} className="inline-flex h-9 shrink-0 items-center rounded-[5px] border border-[#ff8b83] bg-[#fff0ee] px-4 text-[12px] font-semibold text-[#e84b43] shadow-[0_3px_10px_rgba(232,75,67,.12)] transition hover:border-[#f05b53] hover:bg-[#ffe2df] hover:text-[#d9362e]">需求说明</button></div>
             <div className="relative flex flex-wrap items-center gap-3">
               <label className="flex h-10 w-[360px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">功能标识（function_code）</span><input value={functionCode} onFocus={() => setHistoryOpen(true)} onChange={(event) => setFunctionCode(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === 'Enter') void runQuery(); }} placeholder="请输入功能标识" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
               <label className="flex h-10 w-[280px] items-center rounded-[3px] border border-[#dfe3ea] bg-white px-3 focus-within:border-[#328ff0]"><span className="mr-3 whitespace-nowrap text-[12px] text-[#7d8797]">场景（scene）</span><input value={scene} onFocus={() => setHistoryOpen(true)} onChange={(event) => setScene(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === 'Enter') void runQuery(); }} placeholder="可留空（默认场景）" className="min-w-0 flex-1 text-[12px] text-[#354052] outline-none placeholder:text-[#b6bdc8]" /></label>
@@ -751,6 +753,8 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
           </div>
         </div>
       ) : null}
+
+      {requirementDrawerOpen ? <RequirementDocumentDrawer kind="ai-ecommerce" onClose={() => setRequirementDrawerOpen(false)} /> : null}
     </div>
   );
 }

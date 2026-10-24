@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
+import { RequirementDocumentDrawer } from './RequirementDocumentPage';
 
 type TabKey = 'nodes' | 'edges' | 'mapping';
 type ImportKind = 'nodes' | 'edges';
@@ -247,7 +248,7 @@ function formatUpdatedAt() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 }
 
-export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToMembershipPageConfig, onOpenRequirement, onNavigateToRequirement }: { onBackToDirectory: () => void; onNavigateToSkillConfig: () => void; onNavigateToMembershipPageConfig?: () => void; onOpenRequirement?: () => void; onNavigateToRequirement?: (path: string) => void }) {
+export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { onBackToDirectory: () => void; onNavigateToSkillConfig: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
   const [activeTab, setActiveTab] = useState<TabKey>('nodes');
   const [nodes, setNodes] = useState(nodeRows);
   const [edges, setEdges] = useState(edgeRows);
@@ -258,6 +259,7 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
   const [mappingQuery, setMappingQuery] = useState('');
   const [mappingRegion, setMappingRegion] = useState('CN');
   const [mappingLanguage, setMappingLanguage] = useState('zh');
+  const [requirementDrawerOpen, setRequirementDrawerOpen] = useState(false);
   const [mappingQueried, setMappingQueried] = useState(false);
   const [mappingType, setMappingType] = useState('');
   const [mappingSource, setMappingSource] = useState('');
@@ -355,13 +357,14 @@ export function GuidedSearchConfigPage({ onBackToDirectory, onNavigateToSkillCon
       <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="搜索引导管理" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
       <TopHeader />
       <main className="ml-[228px] min-h-screen pt-[62px]">
-        <div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#9aa3b1]"><span>内容运营管理</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4f5b6f]">搜索引导管理</span></div><section className="rounded-[3px] bg-white p-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-[20px] font-semibold text-[#283244]">搜索引导管理</h1><p className="mt-1.5 text-[12px] text-[#8e98a8]">维护引导词节点、节点关系，并按业务搜索词查询实际映射配置</p></div><button type="button" onClick={onOpenRequirement} className="inline-flex h-9 shrink-0 items-center rounded-[5px] border border-[#ff8b83] bg-[#fff0ee] px-4 text-[12px] font-semibold text-[#e84b43] shadow-[0_3px_10px_rgba(232,75,67,.12)] transition hover:border-[#f05b53] hover:bg-[#ffe2df] hover:text-[#d9362e]">需求说明</button></div><div className="mt-5 flex items-center gap-1 border-b border-[#e9edf3]"><TabButton active={activeTab === 'nodes'} onClick={() => setActiveTab('nodes')} icon={Table2}>引导词节点</TabButton><TabButton active={activeTab === 'edges'} onClick={() => setActiveTab('edges')} icon={Network}>引导词关系</TabButton><TabButton active={activeTab === 'mapping'} onClick={() => setActiveTab('mapping')} icon={Search}>查询映射</TabButton></div><div className="pt-5">{activeTab === 'nodes' ? renderNodeTab() : activeTab === 'edges' ? renderEdgeTab() : renderMappingTab()}</div></section></div>
+        <div className="px-6 py-5"><div className="mb-4 flex items-center gap-2 text-[12px] text-[#9aa3b1]"><span>内容运营管理</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4f5b6f]">搜索引导管理</span></div><section className="rounded-[3px] bg-white p-5 shadow-[0_2px_8px_rgba(44,57,83,.04)]"><div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-[20px] font-semibold text-[#283244]">搜索引导管理</h1><p className="mt-1.5 text-[12px] text-[#8e98a8]">维护引导词节点、节点关系，并按业务搜索词查询实际映射配置</p></div><button type="button" onClick={() => setRequirementDrawerOpen(true)} className="inline-flex h-9 shrink-0 items-center rounded-[5px] border border-[#ff8b83] bg-[#fff0ee] px-4 text-[12px] font-semibold text-[#e84b43] shadow-[0_3px_10px_rgba(232,75,67,.12)] transition hover:border-[#f05b53] hover:bg-[#ffe2df] hover:text-[#d9362e]">需求说明</button></div><div className="mt-5 flex items-center gap-1 border-b border-[#e9edf3]"><TabButton active={activeTab === 'nodes'} onClick={() => setActiveTab('nodes')} icon={Table2}>引导词节点</TabButton><TabButton active={activeTab === 'edges'} onClick={() => setActiveTab('edges')} icon={Network}>引导词关系</TabButton><TabButton active={activeTab === 'mapping'} onClick={() => setActiveTab('mapping')} icon={Search}>查询映射</TabButton></div><div className="pt-5">{activeTab === 'nodes' ? renderNodeTab() : activeTab === 'edges' ? renderEdgeTab() : renderMappingTab()}</div></section></div>
       </main>
       {toast ? <div className="fixed bottom-7 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]"><Check className="h-4 w-4 text-[#65d49b]" />{toast}</div> : null}
       {importKind ? <ImportDialog kind={importKind} onClose={() => setImportKind(null)} onConfirm={handleImportConfirm} /> : null}
       {editTarget?.kind === 'nodes' ? <NodeEditDialog key={`node-${editTarget.row.node_id}`} row={editTarget.row} nodeOptions={nodes} onClose={() => setEditTarget(null)} onSave={handleEditSave} /> : null}
       {editTarget?.kind === 'edges' ? <EdgeEditDialog key={`edge-${editTarget.row.edge_id}`} row={editTarget.row} onClose={() => setEditTarget(null)} onSave={handleEditSave} /> : null}
       {deleteTarget ? <DeleteConfirmDialog label={deleteTarget.label} onClose={() => setDeleteTarget(null)} onConfirm={handleDeleteConfirm} /> : null}
+      {requirementDrawerOpen ? <RequirementDocumentDrawer kind="search-guide" onClose={() => setRequirementDrawerOpen(false)} /> : null}
     </div>
   );
 }

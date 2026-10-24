@@ -1618,7 +1618,6 @@ export default function App() {
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
       onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
       onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
-      onOpenRequirement={() => navigateTo('/admin-backoffice/requirements/search-guide')}
     />;
   }
 
@@ -1649,7 +1648,6 @@ export default function App() {
       onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
       onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
       onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
-      onOpenRequirement={() => navigateTo('/admin-backoffice/requirements/ai-ecommerce')}
     />;
   }
 
