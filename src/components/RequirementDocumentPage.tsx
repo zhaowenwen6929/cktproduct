@@ -253,9 +253,9 @@ export function RequirementDocumentDrawer({ kind, onClose }: { kind: Requirement
   };
 
   return (
-    <div className="fixed inset-0 z-[80]">
-      <button type="button" aria-label="关闭需求说明" onClick={onClose} className="absolute inset-0 bg-[#1f2937]/35 backdrop-blur-[1px]" />
-      <aside role="dialog" aria-modal="true" aria-label={`${spec.title}需求说明`} className={`absolute flex flex-col overflow-hidden border border-[#dfe6f0] bg-[#f4f6f9] shadow-[-12px_0_38px_rgba(28,45,70,.18)] transition-[inset,width,border-radius] duration-200 ${isFullScreen ? 'inset-4 rounded-[16px]' : 'inset-y-0 right-0 w-[min(760px,calc(100vw-16px))]'}`}>
+    <div className="pointer-events-none fixed inset-0 z-[80]">
+      {isFullScreen ? <button type="button" aria-label="关闭需求说明" onClick={onClose} className="pointer-events-auto absolute inset-0 bg-[#1f2937]/35 backdrop-blur-[1px]" /> : null}
+      <aside role="dialog" aria-modal="true" aria-label={`${spec.title}需求说明`} style={isFullScreen ? undefined : { width: 'min(520px, max(320px, calc(100vw - 244px)))' }} className={`pointer-events-auto absolute flex flex-col overflow-hidden border border-[#dfe6f0] bg-[#f4f6f9] shadow-[-12px_0_38px_rgba(28,45,70,.18)] transition-[inset,width,border-radius] duration-200 ${isFullScreen ? 'inset-4 rounded-[16px]' : 'inset-y-0 right-0'}`}>
         <header className="flex h-[62px] shrink-0 items-center justify-between border-b border-[#e4e8ef] bg-white px-5">
           <div className="flex min-w-0 items-center gap-2"><FileText className="h-4 w-4 shrink-0 text-[#4f8fe5]" /><span className="text-[14px] font-semibold text-[#29364d]">需求说明</span><span className="truncate text-[12px] text-[#8a96a8]">· {spec.title}</span></div>
           <div className="flex items-center gap-2"><button type="button" onClick={() => setIsFullScreen((current) => !current)} className="inline-flex h-8 items-center gap-1.5 rounded-[5px] border border-[#dce5f1] bg-white px-3 text-[11px] font-medium text-[#5d7392] transition hover:border-[#a9c8ee] hover:bg-[#f5f9ff] hover:text-[#278fee]">{isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}{isFullScreen ? '退出全屏' : '全屏查看'}</button><button type="button" onClick={onClose} aria-label="关闭" className="flex h-8 w-8 items-center justify-center rounded-[5px] text-[#8c97a6] transition hover:bg-[#f2f5f8] hover:text-[#334155]"><X className="h-4 w-4" /></button></div>

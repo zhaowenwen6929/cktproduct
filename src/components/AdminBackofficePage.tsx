@@ -485,9 +485,9 @@ export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig
   );
 }
 
-export function TopHeader() {
+export function TopHeader({ rightOffset }: { rightOffset?: string } = {}) {
   return (
-    <header className="fixed left-[228px] right-0 top-0 z-20 flex h-[62px] items-center justify-between border-b border-[#e6e9ef] bg-white px-5 shadow-[0_1px_4px_rgba(41,53,77,.03)]">
+    <header style={rightOffset ? { right: rightOffset } : undefined} className="fixed left-[228px] right-0 top-0 z-20 flex h-[62px] items-center justify-between border-b border-[#e6e9ef] bg-white px-5 shadow-[0_1px_4px_rgba(41,53,77,.03)] transition-[right] duration-200">
       <button type="button" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#657084] hover:bg-[#f3f5f8]" aria-label="收起菜单"><Menu className="h-5 w-5" /></button>
       <div className="absolute left-1/2 -translate-x-1/2 text-[12px] text-[#7b8493]">Admin账号跟自己使用，请勿泄露！ <span className="ml-1 text-[#9ca4b0]">By·李辰晨</span></div>
       <div className="flex items-center gap-5 text-[#737d8e]">
@@ -682,10 +682,12 @@ export function AdminBackofficePage({ onBackToDirectory, onNavigateToGuidedSearc
     setSaved(true);
   };
 
+  const requirementDrawerWidth = 'min(520px, max(320px, calc(100vw - 244px)))';
+
   return (
-    <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
+    <div style={requirementDrawerOpen ? { marginRight: requirementDrawerWidth } : undefined} className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838] transition-[margin-right] duration-200">
       <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="AI电商配置" onNavigateToRequirement={onNavigateToRequirement} onNavigate={(item) => { if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
-      <TopHeader />
+      <TopHeader rightOffset={requirementDrawerOpen ? requirementDrawerWidth : undefined} />
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-6 py-5">
           <div className="mb-4 flex items-center gap-2 text-[12px] text-[#9aa3b1]"><span>灵感社区</span><ChevronRight className="h-3.5 w-3.5" /><span>玩法管理</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4f5b6f]">AI电商配置</span></div>
