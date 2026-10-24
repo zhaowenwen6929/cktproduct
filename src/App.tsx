@@ -9,7 +9,7 @@ import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
 import { TemplateCenterPage } from './components/TemplateCenterPage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
-import { AdminBackofficePage } from './components/AdminBackofficePage';
+import { AdminBackofficePage, RequirementListPage } from './components/AdminBackofficePage';
 import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { MembershipPackagePage } from './components/MembershipPackagePage';
 import { MembershipPageConfigPage } from './components/MembershipPageConfigPage';
@@ -17,7 +17,7 @@ import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
 type ExportRequest =
   | {
@@ -63,6 +63,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/design-app') return '/design-app';
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
+  if (pathname === '/admin-backoffice/requirements') return '/admin-backoffice/requirements';
   if (pathname === '/admin-backoffice/requirements/ai-ecommerce') return '/admin-backoffice/requirements/ai-ecommerce';
   if (pathname === '/admin-backoffice/requirements/search-guide') return '/admin-backoffice/requirements/search-guide';
   if (pathname === '/admin-backoffice/guided-search') return '/admin-backoffice/guided-search';
@@ -1363,6 +1364,10 @@ export default function App() {
         title: '创客贴管理后台｜会员页面配置',
         description: '配置网页版和移动端会员页面的套餐、权益及说明内容。',
       },
+      '/admin-backoffice/requirements': {
+        title: '创客贴管理后台｜需求列表',
+        description: '按新增时间倒序查看后台功能需求明细，并进入对应功能页面。',
+      },
       '/admin-backoffice/requirements/ai-ecommerce': {
         title: 'AI电商配置｜需求说明',
         description: 'AI电商配置的需求背景、功能说明、交互流程和验收标准。',
@@ -1573,6 +1578,18 @@ export default function App() {
       initialWorkTitle={designAppSelectedWork}
       initialNewConversation={designAppStartsNew}
       additionalWorkTitles={designAppCustomWorkTitles}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/requirements') {
+    return <RequirementListPage
+      onBackToDirectory={() => navigateTo('/')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigateToMembershipPackages={() => navigateTo('/admin-backoffice/membership-packages')}
+      onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+      onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
+      onNavigateToRequirementList={() => navigateTo('/admin-backoffice/requirements')}
     />;
   }
 

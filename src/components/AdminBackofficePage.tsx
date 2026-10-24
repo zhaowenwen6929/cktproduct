@@ -259,16 +259,18 @@ const NEW_REQUIREMENT_NAV_ITEMS = new Set(['AI电商配置', '搜索引导管理
 type RequirementNavItem = {
   id: string;
   title: string;
+  requirement: string;
   summary: string;
+  details: string[];
   addedAt: string;
   path: string;
 };
 
 const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = [
-  { id: 'membership-packages', title: '会员套餐管理', summary: '新增套餐积分量、发放单位和发放周期配置。', addedAt: '2026-10-24', path: '/admin-backoffice/membership-packages' },
-  { id: 'membership-page-config', title: '会员页面配置', summary: '配置网页版和移动端会员页面的套餐、权益和说明内容。', addedAt: '2026-10-24', path: '/admin-backoffice/membership-page-config' },
-  { id: 'guided-search', title: '搜索引导管理', summary: '维护引导词节点、节点关系，并查询实际映射配置。', addedAt: '2026-10-22', path: '/admin-backoffice/guided-search' },
-  { id: 'ai-ecommerce', title: 'AI电商配置', summary: '按 function_code 和 scene 查询、编辑 AI 电商配置。', addedAt: '2026-10-22', path: '/admin-backoffice' },
+  { id: 'membership-packages', title: '会员套餐管理', requirement: '新增套餐积分量、发放单位和发放周期配置。', summary: '会员套餐支持补充积分发放规则，历史套餐保持兼容。', details: ['积分量为必填项，已创建套餐展示积分量且不可修改。', '支持按每人或团队发放，周期支持按月或一次性。', '历史套餐未填写积分量时，按照所属会员等级的积分量发放。'], addedAt: '2026-10-24', path: '/admin-backoffice/membership-packages' },
+  { id: 'membership-page-config', title: '会员页面配置', requirement: '配置网页版和移动端会员页面的套餐、权益和说明内容。', summary: '会员页配置拆分个人使用和企业使用，并支持各模块 JSON 配置。', details: ['支持网页版和移动端两个端配置，默认进入网页版。', '支持套餐、权益概览、权益明细、模型消耗、商用授权和常见问题模块。', '会员套餐价格和积分沿用真实套餐管理数据。'], addedAt: '2026-10-24', path: '/admin-backoffice/membership-page-config' },
+  { id: 'guided-search', title: '搜索引导管理', requirement: '维护引导词节点、节点关系，并查询实际映射配置。', summary: '支持引导词、关系和映射结果的查询与维护。', details: ['支持节点、关系和映射三个管理视图。', '可按关键词、层级、关系类型和状态筛选数据。', '支持导入、编辑、启停和删除操作。'], addedAt: '2026-10-22', path: '/admin-backoffice/guided-search' },
+  { id: 'ai-ecommerce', title: 'AI电商配置', requirement: '按 function_code 和 scene 查询、编辑 AI 电商配置。', summary: '面向 AI 电商技能配置的查询、编辑和缓存管理。', details: ['支持按功能标识和场景查询配置。', '支持 JSON 草稿编辑、格式校验和保存。', '支持清理对应功能缓存，并保留最近查询记录。'], addedAt: '2026-10-22', path: '/admin-backoffice' },
 ].sort((left, right) => right.addedAt.localeCompare(left.addedAt));
 
 function containsNewRequirement(item: NavItem): boolean {
@@ -311,6 +313,7 @@ type AdminSidebarProps = {
   activeItem?: string;
   onNavigate?: (item: string) => void;
   onNavigateToRequirement?: (path: string) => void;
+  onNavigateToRequirementList?: () => void;
 };
 
 function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: string; requirement: string; summary: string; addedAt: string }) {
@@ -330,7 +333,7 @@ function NewFeatureBadge({ title, requirement, summary, addedAt }: { title: stri
   );
 }
 
-export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate, onNavigateToRequirement }: AdminSidebarProps) {
+export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = 'AI电商配置', onNavigate, onNavigateToRequirement, onNavigateToRequirementList }: AdminSidebarProps) {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     灵感社区: false,
     内容运营管理: false,
@@ -338,12 +341,9 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
   });
   const [activeItem, setActiveItem] = useState('AI电商配置');
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
-  const [requirementsOpen, setRequirementsOpen] = useState(true);
-  const [selectedRequirementId, setSelectedRequirementId] = useState(REQUIREMENT_NAV_ITEMS[0]?.id ?? '');
 
   useEffect(() => {
     setActiveItem(activeItemProp);
-    setSelectedRequirementId(REQUIREMENT_NAV_ITEMS.find((item) => item.title === activeItemProp)?.id ?? REQUIREMENT_NAV_ITEMS[0]?.id ?? '');
   }, [activeItemProp]);
 
   const renderNavItems = (items: NavItem[], level = 0): ReactNode => items.map((item, index) => {
@@ -388,20 +388,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
 
       <div className="flex-1 overflow-y-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <section className="mx-3 mb-3 border-b border-white/[.12] pb-3">
-          <button type="button" onClick={() => setRequirementsOpen((current) => !current)} className="flex w-full items-center justify-between rounded-[7px] border border-[#f1d36a] bg-[#fff2b8] px-3 py-2.5 text-left text-[12px] font-semibold text-[#8a5a00] shadow-[0_3px_10px_rgba(242,193,55,.14)] transition hover:bg-[#ffef9e]">
+          <button type="button" onClick={() => { if (onNavigateToRequirementList) { onNavigateToRequirementList(); return; } if (typeof window !== 'undefined') { window.history.pushState({}, '', '/admin-backoffice/requirements'); window.dispatchEvent(new PopStateEvent('popstate')); } }} className={`flex w-full items-center justify-between rounded-[7px] border border-[#f1d36a] px-3 py-2.5 text-left text-[12px] font-semibold text-[#8a5a00] shadow-[0_3px_10px_rgba(242,193,55,.14)] transition ${activeItem === '需求列表' ? 'bg-[#ffe89a]' : 'bg-[#fff2b8] hover:bg-[#ffef9e]'}`}>
             <span className="flex items-center gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f6c744] text-[10px] text-white">!</span><span>需求列表</span><span className="rounded-full bg-[#f6d768] px-1.5 py-0.5 text-[10px] font-medium text-[#795000]">{REQUIREMENT_NAV_ITEMS.length}</span></span>
-            <ChevronDown className={`h-3.5 w-3.5 text-[#9b6d00] transition-transform ${requirementsOpen ? '' : '-rotate-90'}`} />
+            <ChevronRight className="h-3.5 w-3.5 text-[#9b6d00]" />
           </button>
-          {requirementsOpen ? <div className="mt-2 space-y-1.5">
-            {REQUIREMENT_NAV_ITEMS.map((requirement, index) => {
-              const isSelected = requirement.id === selectedRequirementId;
-              return <button key={requirement.id} type="button" onClick={() => { setSelectedRequirementId(requirement.id); onNavigateToRequirement?.(requirement.path); }} className={`flex w-full items-start gap-2 rounded-[6px] px-2.5 py-2 text-left transition ${isSelected ? 'bg-[#ffe89a] text-[#704900]' : 'text-[#d8c98b] hover:bg-white/[.08] hover:text-[#fff4c2]'}`}>
-                <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold ${isSelected ? 'bg-[#e4aa22] text-white' : 'bg-white/[.12] text-[#d8c98b]'}`}>{index + 1}</span>
-                <span className="min-w-0 flex-1"><span className="block truncate text-[11px] font-medium">{requirement.title}</span><span className={`mt-0.5 block truncate text-[10px] ${isSelected ? 'text-[#9a6c0a]' : 'text-[#9e9a7e]'}`}>{requirement.summary}</span></span>
-                <span className={`shrink-0 pt-0.5 text-[9px] ${isSelected ? 'text-[#9a6c0a]' : 'text-[#9e9a7e]'}`}>{requirement.addedAt.slice(5)}</span>
-              </button>;
-            })}
-          </div> : null}
         </section>
         {NAV_GROUPS.map((group) => {
           const Icon = group.icon;
@@ -424,6 +414,39 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
 
       <div className="border-t border-white/[.08] px-5 py-4 text-[11px] text-[#8097ab]">需求目录 · 原型预览</div>
     </aside>
+  );
+}
+
+type RequirementListPageProps = {
+  onBackToDirectory: () => void;
+  onNavigateToSkillConfig?: () => void;
+  onNavigateToGuidedSearch?: () => void;
+  onNavigateToMembershipPackages?: () => void;
+  onNavigateToMembershipPageConfig?: () => void;
+  onNavigateToRequirement?: (path: string) => void;
+  onNavigateToRequirementList?: () => void;
+};
+
+export function RequirementListPage({ onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPackages, onNavigateToMembershipPageConfig, onNavigateToRequirement, onNavigateToRequirementList }: RequirementListPageProps) {
+  return (
+    <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#263247]">
+      <AdminSidebar onBackToDirectory={onBackToDirectory} activeItem="需求列表" onNavigateToRequirement={onNavigateToRequirement} onNavigateToRequirementList={onNavigateToRequirementList} onNavigate={(item) => { if (item === 'AI电商配置') onNavigateToSkillConfig?.(); if (item === '搜索引导管理') onNavigateToGuidedSearch?.(); if (item === '会员套餐管理') onNavigateToMembershipPackages?.(); if (item === '会员页面配置') onNavigateToMembershipPageConfig?.(); }} />
+      <TopHeader />
+      <main className="ml-[228px] min-h-screen pt-[62px]">
+        <div className="px-6 py-5">
+          <div className="mb-4 flex items-center gap-2 text-[12px] text-[#98a2b2]"><span>需求中心</span><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#4d5b70]">需求列表</span></div>
+          <section className="overflow-hidden rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
+            <header className="flex items-center justify-between border-b border-[#e8edf3] px-5 py-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">需求列表</h1><p className="mt-1 text-[12px] text-[#98a2b2]">按需求新增时间倒序展示，点击“进入页面”查看对应功能。</p></div><span className="rounded-[5px] bg-[#fff4c8] px-3 py-1.5 text-[12px] font-medium text-[#986a00]">共 {REQUIREMENT_NAV_ITEMS.length} 项</span></header>
+            <div className="space-y-3 p-5">
+              {REQUIREMENT_NAV_ITEMS.map((item, index) => <article key={item.id} className="rounded-[8px] border border-[#e5eaf1] bg-white p-4 transition hover:border-[#b9d7f7] hover:shadow-[0_5px_16px_rgba(52,111,171,.08)]">
+                <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#fff2b8] text-[12px] font-semibold text-[#a16b00]">{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="text-[15px] font-semibold text-[#27344a]">{item.title}</h2><span className="rounded-[4px] bg-[#fff1ee] px-2 py-0.5 text-[10px] font-medium text-[#e85a4f]">NEW</span></div><p className="mt-2 text-[12px] leading-5 text-[#4d5b70]"><span className="font-medium text-[#7c899b]">需求：</span>{item.requirement}</p><p className="mt-1 text-[12px] leading-5 text-[#8b96a7]"><span className="font-medium text-[#a2adbb]">概述：</span>{item.summary}</p></div></div><div className="flex shrink-0 items-center gap-3"><span className="text-[11px] text-[#9aa5b5]">新增于 {item.addedAt}</span><button type="button" onClick={() => onNavigateToRequirement?.(item.path)} className="inline-flex h-8 items-center gap-1 rounded-[4px] bg-[#278fee] px-3.5 text-[12px] font-medium text-white shadow-[0_3px_8px_rgba(39,143,238,.16)] transition hover:bg-[#167fdc]">进入页面<ChevronRight className="h-3.5 w-3.5" /></button></div></div>
+                <div className="mt-4 border-t border-[#edf0f4] pt-3"><div className="mb-2 text-[12px] font-medium text-[#526075]">需求明细</div><ul className="grid gap-1.5 md:grid-cols-3">{item.details.map((detail) => <li key={detail} className="flex items-start gap-2 text-[11px] leading-5 text-[#7e8a9c]"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#278fee]" />{detail}</li>)}</ul></div>
+              </article>)}
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
   );
 }
 
