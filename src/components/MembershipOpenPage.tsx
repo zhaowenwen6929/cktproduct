@@ -17,6 +17,7 @@ type MembershipPanel = '开通会员' | '购买席位' | '历史记录';
 
 const inputClassName = 'h-[42px] rounded-[3px] border border-[#d9dfe7] bg-white px-3 text-[13px] text-[#303b4d] outline-none transition placeholder:text-[#c6cbd3] focus:border-[#278fee] focus:shadow-[0_0_0_2px_rgba(39,143,238,.08)]';
 const selectClassName = `${inputClassName} appearance-none pr-10`;
+const OPEN_POINTS_REQUIREMENT_NAME = '开通会员新增积分量';
 
 function FormRow({ label, required = false, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
@@ -156,7 +157,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
 
                     <FormRow label="积分量" required>
                       <div className="relative rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 pb-2 pt-3">
-                        <div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={POINTS_REQUIREMENT} /></div>
+                        <div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={POINTS_REQUIREMENT} requirementName={OPEN_POINTS_REQUIREMENT_NAME} /></div>
                         <div className="flex w-[425px] max-w-full items-center gap-2">
                           <input type="number" min="0" step="1" required value={form.points} onChange={(event) => { setPointsError(''); updateForm('points', event.currentTarget.value.replace(/\D/g, '')); }} placeholder="请输入积分量" className={`${inputClassName} min-w-0 flex-1`} />
                           <div className="relative w-[96px] shrink-0">
