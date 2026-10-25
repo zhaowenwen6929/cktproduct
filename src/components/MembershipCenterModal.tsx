@@ -113,8 +113,8 @@ function getPackageDescriptions(row: WebPackageDetail) {
   const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim()).filter(Boolean);
   return {
     saleDescription: saleDescriptionParts[0] ?? '',
-    pointsDescription: saleDescriptionParts[1] ?? row.pointsDescription?.trim() ?? '',
-    priceDescription: saleDescriptionParts.length > 2 ? saleDescriptionParts.slice(2).join('^') : '',
+    priceDescription: saleDescriptionParts[1] ?? '',
+    pointsDescription: saleDescriptionParts.length > 2 ? saleDescriptionParts.slice(2).join('^') : row.pointsDescription?.trim() ?? '',
   };
 }
 

@@ -229,7 +229,7 @@ function getDefaultSaleDescription(member: string, points: number, price: Pick<N
     contractPrice: price.renewalPrice == null ? '-' : `续费${price.renewalPrice}`,
     packageType: price.packageType ?? '普通套餐',
   });
-  return [promotionDescription, pointsDescription || getDefaultPointsDescription(member, points), priceDescription].join('^');
+  return [promotionDescription, priceDescription, pointsDescription || getDefaultPointsDescription(member, points)].join('^');
 }
 
 function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
@@ -381,9 +381,16 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
     return Array.isArray(rows) ? (rows as PackageDetailRow[]).map((row) => {
       const pointsDescription = row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0);
       const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim()).filter(Boolean);
-      const saleDescription = packageId === WEB_PACKAGE_ID && saleDescriptionParts.length < 3
-        ? [saleDescriptionParts[0] ?? '一次性购买', pointsDescription, getDefaultPriceDescription(row)].join('^')
-        : row.saleDescription;
+      const isLegacyDescriptionOrder = saleDescriptionParts.length >= 3
+        && /生成|图片|视频|积分/.test(saleDescriptionParts[1])
+        && /首充|续费|一次性购买|有效期|可随时取消/.test(saleDescriptionParts.slice(2).join('^'));
+      const saleDescription = packageId !== WEB_PACKAGE_ID
+        ? row.saleDescription
+        : saleDescriptionParts.length < 3
+          ? [saleDescriptionParts[0] ?? '一次性购买', getDefaultPriceDescription(row), pointsDescription].join('^')
+          : isLegacyDescriptionOrder
+            ? [saleDescriptionParts[0], saleDescriptionParts.slice(2).join('^'), saleDescriptionParts[1]].join('^')
+            : row.saleDescription;
       return {
         ...row,
         memberLevel: row.memberLevel ?? getMemberLevelByName(row.member),
