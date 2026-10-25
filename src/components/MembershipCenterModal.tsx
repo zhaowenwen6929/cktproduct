@@ -70,6 +70,27 @@ function formatPackageDiscount(discount: number) {
   return String(Number(value.toFixed(1)));
 }
 
+function parseRenewalPrice(contractPrice: string) {
+  const explicitRenewal = contractPrice.match(/续费\s*[¥￥]?\s*([\d,.]+)/);
+  if (explicitRenewal?.[1]) return explicitRenewal[1].replace(/,/g, '');
+  const legacyContract = contractPrice.match(/^\s*[\d,.]+\s*[-~～]\s*([\d,.]+)\s*$/);
+  return legacyContract?.[1]?.replace(/,/g, '');
+}
+
+function formatExpiryDate(durationDays?: number) {
+  if (!durationDays || durationDays <= 0) return null;
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + durationDays);
+  return `${expiryDate.getFullYear()}-${expiryDate.getMonth() + 1}-${expiryDate.getDate()}`;
+}
+
+function getRenewalPeriod(period: string) {
+  if (period.includes('月')) return '每月';
+  if (period.includes('季')) return '每季';
+  if (period.includes('年')) return '每年';
+  return period;
+}
+
 function getCyclePackageRows(memberType: string, cycle: MembershipCycleConfig, packageDetails: WebPackageDetail[]) {
   const duration = Number.parseInt(cycle.duration, 10);
   const rows = packageDetails.filter((row) => row.status === '显示' && (row.member.includes('（个人）') || row.member.includes('（企业）')) && row.member === memberType && row.duration === duration && row.points != null);
@@ -97,6 +118,9 @@ function createWebPackagePlanData(memberType: string, planKey: string, cycleOpti
       points: row.points == null ? '-' : row.points.toLocaleString('en-US'),
       pointsNote: `${row.pointsUnit ?? '每人'} · ${row.pointsCycle === '一次性' ? '一次性发放' : '按月发放'}`,
       monthlyPrice: formatPackageMonthlyPrice(row.currentPrice, row.duration),
+      renewalPrice: parseRenewalPrice(row.contractPrice),
+      durationDays: row.duration,
+      packageType: row.packageType,
     }));
     const firstRow = rows[0];
     return [cycle.key, {
@@ -107,6 +131,9 @@ function createWebPackagePlanData(memberType: string, planKey: string, cycleOpti
       pointsNote: `${firstRow.pointsUnit ?? '每人'} · ${firstRow.pointsCycle === '一次性' ? '一次性发放' : '按月发放'}`,
       monthlyPrice: formatPackageMonthlyPrice(firstRow.currentPrice, firstRow.duration),
       discount: formatPackageDiscount(firstRow.discount),
+      renewalPrice: parseRenewalPrice(firstRow.contractPrice),
+      durationDays: firstRow.duration,
+      packageType: firstRow.packageType,
       tierOptions: tierOptions.length > 1 ? tierOptions : undefined,
     }];
   }));
@@ -283,6 +310,11 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   const displayPoints = activeTier ? `${activeTier.points} 积分每月` : cycleData.points;
   const displayPointsNote = activeTier?.pointsNote ?? cycleData.pointsNote;
   const displayMonthlyPrice = activeTier?.monthlyPrice ?? cycleData.monthlyPrice;
+  const renewalPrice = activeTier?.renewalPrice ?? cycleData.renewalPrice;
+  const durationDays = activeTier?.durationDays ?? cycleData.durationDays;
+  const packageType = activeTier?.packageType ?? cycleData.packageType;
+  const expiryDate = formatExpiryDate(durationDays);
+  const isContractPlan = packageType === '订阅套餐' && Boolean(renewalPrice) && Boolean(expiryDate);
   const totalPrice = multiplyMoney(displayPrice, seats);
   const totalMonthlyPrice = multiplyMoney(displayMonthlyPrice, seats);
   const tierProgress = cycleData.tierOptions ? (tierIndex / (cycleData.tierOptions.length - 1)) * 100 : 0;
@@ -305,7 +337,7 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
     </div>
     {cycleData.tierOptions ? <div className="mx-5 mt-1 h-[64px] px-0"><div className="mb-1.5 flex items-center justify-between text-[10px] text-[#586474]">{cycleData.tierOptions.map((tier, index) => <button type="button" key={tier.quotaLabel} onClick={() => onTierChange?.(index)} className={`cursor-pointer ${index === tierIndex ? 'font-semibold text-[#202938]' : 'hover:text-[#168ff2]'}`}>{tier.quotaLabel}</button>)}</div><div className="relative h-5"><div className="absolute left-0 right-0 top-2 h-[4px] rounded-full bg-[#4b4f55]" /><span className="pointer-events-none absolute top-0 h-4 w-4 -translate-x-1/2 rounded-full border border-[#6f747b] bg-white shadow-[0_1px_3px_rgba(31,41,55,.16)]" style={{ left: `${tierProgress}%` }} /><input type="range" min={0} max={cycleData.tierOptions.length - 1} step={1} value={tierIndex} onChange={(event) => onTierChange?.(Number(event.currentTarget.value))} aria-label="高级会员积分档位" className="absolute inset-0 h-5 w-full cursor-pointer opacity-0" /></div></div> : <div className="mx-5 mt-1 h-[64px]" aria-hidden="true" />}
     <div className={`mx-4 rounded-[12px] px-4 py-3 ${emphasized ? isOrange ? 'bg-[#fff0dc]' : isBlue ? 'bg-[#eaf4ff]' : 'bg-[#eef1f5]' : 'bg-[#f7f8fa]'}`}><div className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: emphasized ? accent : '#3e4858' }}><Sparkles className="h-3.5 w-3.5" />{enterprise ? `${displayPoints.replace('积分每月', '积分/席/月')}` : displayPoints}</div><p className="mt-1 text-[10px] text-[#8e98a7]">{displayPointsNote}</p></div>
-    <div className="px-4 pt-4"><button ref={purchaseButtonRef} type="button" className={`h-9 w-full rounded-full text-[12px] font-medium transition ${emphasized ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'bg-[#202938] text-white shadow-[0_5px_12px_rgba(32,41,56,.16)] hover:bg-[#111827]'}`}>立即开通</button><p className="mt-2 text-center text-[10px] text-[#9aa2ae]">{displayMonthlyPrice === '-' ? '一次性购买' : `折算 ¥${enterprise ? totalMonthlyPrice : displayMonthlyPrice}/月${enterprise ? ' · 多席位按人数计算' : ` · 首年${cycleData.discount}折`}`}</p></div>
+    <div className="px-4 pt-4"><button ref={purchaseButtonRef} type="button" className={`h-9 w-full rounded-full text-[12px] font-medium transition ${emphasized ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'bg-[#202938] text-white shadow-[0_5px_12px_rgba(32,41,56,.16)] hover:bg-[#111827]'}`}>立即开通</button>{isContractPlan ? <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] leading-4 text-[#90a0b7]"><span>开通后有效期至：{expiryDate}</span><span>到期后将按{getRenewalPeriod(cycleData.period)}{renewalPrice}元自动续费，可随时取消</span><span aria-label="续费说明" title="续费说明" className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#edf0f4] text-[10px] font-semibold text-[#8793a5]">?</span></div> : <p className="mt-2 text-center text-[10px] text-[#9aa2ae]">{displayMonthlyPrice === '-' ? '一次性购买' : `折算 ¥${enterprise ? totalMonthlyPrice : displayMonthlyPrice}/月${enterprise ? ' · 多席位按人数计算' : ` · 首年${cycleData.discount}折`}`}</p>}</div>
     <div className="mt-5 flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5">
       {benefitSections.map((section, sectionIndex) => <section key={`${section.title}-${sectionIndex}`} className={sectionIndex > 0 ? 'mt-5' : ''}>
         <div className="flex items-center justify-between gap-2">
