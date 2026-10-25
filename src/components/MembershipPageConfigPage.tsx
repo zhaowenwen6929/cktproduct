@@ -91,9 +91,11 @@ const migratePlansJson = (value: unknown, fallback: string) => {
       const isPersonal = tab.key === 'personal' || tab.name === '个人订阅';
       const isEnterprise = tab.key === 'enterprise' || tab.key === 'team' || tab.name === '团队订阅';
       const rawOptions = Array.isArray(tab.options) ? tab.options as Array<Record<string, unknown>> : null;
-      const options = isEnterprise && rawOptions?.some((option) => option.key === 'team-monthly')
-        ? fallbackTab.options
-        : rawOptions ?? fallbackTab.options;
+      const isLegacyOptions = rawOptions != null && (
+        (isPersonal && rawOptions.length <= 4 && rawOptions.some((option) => option.key === 'single'))
+        || (isEnterprise && rawOptions.length <= 3 && rawOptions.some((option) => option.key === 'team-quarterly'))
+      );
+      const options = isLegacyOptions ? fallbackTab.options : rawOptions ?? fallbackTab.options;
       return {
         ...fallbackTab,
         ...tab,

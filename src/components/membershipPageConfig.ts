@@ -20,6 +20,8 @@ export type MembershipPlanDisplayConfig = {
   benefitSections?: MembershipBenefitSection[];
 };
 
+const LIFETIME_MEMBER_DAYS = 99 * 365;
+
 export function getDefaultMembershipPlanMemberType(tabKey: 'personal' | 'enterprise', planKey: string) {
   const memberTypes = tabKey === 'personal'
     ? { basic: '基础版（个人）', advanced: '专业版（个人）', professional: '专业版（个人）' }
@@ -413,9 +415,14 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         memberLevel: { level: 'personal' },
         options: [
           { key: 'yearly', name: '连续包年', guideText: '限时4.5折', duration: '365天', highlighted: true },
+          { key: 'yearly-one-time', name: '1年', guideText: '', duration: '365天' },
           { key: 'monthly', name: '连续包月', guideText: '4.8折', duration: '30天' },
+          { key: 'monthly-one-time', name: '月度', guideText: '', duration: '30天' },
           { key: 'quarterly', name: '连续包季', guideText: '限时4.3折', duration: '90天' },
-          { key: 'single', name: '单月购买', guideText: '', duration: '30天' },
+          { key: 'quarterly-one-time', name: '季度', guideText: '', duration: '90天' },
+          { key: 'two-year', name: '2年', guideText: '', duration: '730天' },
+          { key: 'bonus-year', name: '2年送1年', guideText: '', duration: '1095天' },
+          { key: 'lifetime', name: '终身', guideText: '', duration: `${LIFETIME_MEMBER_DAYS}天` },
         ],
         plans: personalPlans,
       },
@@ -424,8 +431,12 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         name: '企业使用',
         memberLevel: { level: 'enterprise' },
         options: [
-          { key: 'team-two-year', name: '2年送1年', guideText: '', duration: '1095天', highlighted: true },
+          { key: 'team-three-year', name: '3年', guideText: '', duration: '1095天', highlighted: true },
           { key: 'team-yearly', name: '1年', guideText: '', duration: '365天' },
+          { key: 'team-two-year', name: '2年', guideText: '', duration: '730天' },
+          { key: 'team-monthly', name: '连续包月', guideText: '', duration: '30天' },
+          { key: 'team-monthly-one-time', name: '月度', guideText: '', duration: '30天' },
+          { key: 'team-quarterly-subscription', name: '连续包季', guideText: '', duration: '90天' },
           { key: 'team-quarterly', name: '季度', guideText: '', duration: '90天' },
         ],
         plans: enterprisePlans,
@@ -759,9 +770,11 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
       if (!rawTab) return clone(fallbackTab);
       const rawPlans = Array.isArray(rawTab.plans) ? rawTab.plans : fallbackTab.plans;
       const rawOptions = Array.isArray(rawTab.options) ? rawTab.options : null;
-      const options = fallbackTab.key === 'enterprise' && rawOptions?.some((option) => (option as { key?: string })?.key === 'team-monthly')
-        ? clone(fallbackTab.options)
-        : rawOptions ?? fallbackTab.options;
+      const isLegacyOptions = rawOptions != null && (
+        (fallbackTab.key === 'personal' && rawOptions.length <= 4 && rawOptions.some((option) => (option as { key?: string })?.key === 'single'))
+        || (fallbackTab.key === 'enterprise' && rawOptions.length <= 3 && rawOptions.some((option) => (option as { key?: string })?.key === 'team-quarterly'))
+      );
+      const options = isLegacyOptions ? clone(fallbackTab.options) : rawOptions ?? fallbackTab.options;
       return {
         ...fallbackTab,
         ...rawTab,
