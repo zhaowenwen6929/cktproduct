@@ -92,8 +92,10 @@ type RetentionPurchaseModalProps = {
   activeCycleKey: string;
   plans: MembershipPlan[];
   selectedPlanIndex: number;
+  membershipType: 'personal' | 'enterprise';
   onCycleChange: (index: number) => void;
   onPlanChange: (index: number) => void;
+  onPurchase: (plan: MembershipPlan) => void;
   onContinue: () => void;
   onClose: () => void;
 };
@@ -624,11 +626,84 @@ function AnimatedDiscountedPrice({ price, couponDiscount }: { price: string; cou
   return <strong className="text-[33px] font-semibold leading-none tracking-[-.05em]">{formatMoney(displayPrice)}</strong>;
 }
 
-function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, plans, selectedPlanIndex, onCycleChange, onPlanChange, onContinue, onClose }: RetentionPurchaseModalProps) {
+function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, plans, selectedPlanIndex, membershipType, onCycleChange, onPlanChange, onPurchase, onContinue, onClose }: RetentionPurchaseModalProps) {
   const selectedPlan = plans[selectedPlanIndex] ?? plans[0];
   if (!selectedPlan) return null;
 
-  return <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#162033]/55 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="挽留购买"><div className="relative w-[min(820px,calc(100vw-32px))] overflow-hidden rounded-[20px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.28)]"><div className="flex h-[62px] items-center justify-between border-b border-[#edf0f4] px-6"><div><h2 className="text-[17px] font-semibold text-[#202938]">先别急着离开</h2><p className="mt-1 text-[11px] text-[#8c96a6]">选择适合你的会员方案，立即解锁更多权益</p></div><button type="button" onClick={onClose} aria-label="关闭挽留购买弹框" className="flex h-8 w-8 items-center justify-center rounded-full text-[#9aa4b2] transition hover:bg-[#f3f5f8] hover:text-[#273144]"><X className="h-4 w-4" /></button></div><div className="px-6 py-6"><div className="rounded-[16px] bg-[#f6f8fb] p-4"><div className="text-center text-[12px] font-semibold text-[#273144]">选择套餐时长</div><div className="mt-4 grid grid-cols-2 gap-2 rounded-[12px] bg-[#e9edf3] p-1 sm:grid-cols-4">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => onCycleChange(index)} className={`min-w-0 rounded-[9px] px-2 py-2.5 text-[11px] transition ${selectedCycle === index ? 'bg-white font-semibold text-[#168ff2] shadow-[0_2px_7px_rgba(38,60,92,.1)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className="ml-1 text-[10px]" style={{ color: cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}</button>)}</div><div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">{plans.map((plan, index) => { const planCycleData = plan.cyclePricing?.[activeCycleKey] ?? plan; return <button type="button" key={`${plan.planKey}-${index}`} onClick={() => onPlanChange(index)} className={`min-w-0 rounded-[12px] border px-3.5 py-4 text-left transition ${selectedPlanIndex === index ? 'border-[#168ff2] bg-[#edf6ff] shadow-[0_3px_10px_rgba(22,143,242,.1)]' : 'border-[#e4e9f0] bg-white hover:border-[#a9c9ee]'}`}><span className={`block truncate text-[13px] font-semibold ${selectedPlanIndex === index ? 'text-[#168ff2]' : 'text-[#273144]'}`}>{plan.name}</span><span className="mt-1 block truncate text-[10px] text-[#8d98a8]">{plan.subtitle}</span><span className="mt-3 flex items-end gap-1 text-[#202938]"><span className="mb-1 text-[11px]">¥</span><strong className="text-[25px] leading-none tracking-[-.04em]">{planCycleData.price}</strong><span className="mb-0.5 text-[10px] text-[#8994a4]">/{planCycleData.period.replace('每', '')}</span></span><span className="mt-2 block text-[10px] text-[#7f8b9d]">{planCycleData.originalPrice ? <del className="mr-1">¥{planCycleData.originalPrice}</del> : null}{planCycleData.discount}折 · {planCycleData.points}</span></button>; })}</div></div></div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-6 py-4"><button type="button" onClick={onContinue} className="h-9 rounded-[6px] border border-[#dce3ed] px-5 text-[12px] text-[#697587] transition hover:border-[#b7c5d7] hover:text-[#273144]">继续浏览</button><button type="button" onClick={onClose} className="h-9 rounded-[6px] bg-[#168ff2] px-6 text-[12px] font-medium text-white shadow-[0_5px_12px_rgba(22,143,242,.18)] transition hover:bg-[#087edc]">立即开通{selectedPlan.name ? ` ${selectedPlan.name}` : ''}</button></div></div></div>;
+  const cycleData = getCyclePlanData(selectedPlan, activeCycleKey);
+  const selectedTier = cycleData.tierOptions?.[0];
+  const displayPrice = selectedTier?.price ?? cycleData.price;
+  const originalPrice = selectedTier?.originalPrice ?? cycleData.originalPrice;
+  const durationDays = selectedTier?.durationDays ?? cycleData.durationDays;
+  const expiryDate = formatExpiryDate(durationDays);
+  const periodLabel = (selectedTier?.period ?? cycleData.period).replace('每', '');
+  const memberLevelName = selectedPlan.memberType ?? selectedPlan.name;
+  const packageName = selectedPlan.name;
+  const pointsLabel = selectedTier?.points ?? cycleData.points;
+  const planDescription = selectedPlan.subtitle || '选择适合你的会员套餐';
+
+  return <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#162033]/55 p-4 backdrop-blur-[2px] sm:p-8" role="dialog" aria-modal="true" aria-label="挽留购买">
+    <div className="relative flex max-h-[calc(100vh-48px)] w-[min(1640px,calc(100vw-48px))] flex-col overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.28)]">
+      <div className="flex h-[122px] shrink-0 items-start justify-between border-b border-[#edf0f4] px-12 py-7">
+        <div>
+          <h2 className="text-[30px] font-semibold tracking-[-.04em] text-[#202938]">先别急着离开</h2>
+          <p className="mt-3 text-[17px] text-[#8c96a6]">选择适合你的会员方案，立即解锁更多权益</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label="关闭挽留购买" className="flex h-9 w-9 items-center justify-center rounded-full text-[#9aa4b2] transition hover:bg-[#f3f5f8] hover:text-[#273144]"><X className="h-6 w-6" strokeWidth={1.7} /></button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-12 py-12">
+        <div className="rounded-[20px] bg-[#f6f8fb] px-8 py-8">
+          <h3 className="text-center text-[22px] font-semibold text-[#273144]">选择套餐时长</h3>
+          <div className="mt-7 flex min-w-0 flex-nowrap gap-2 overflow-x-auto rounded-[16px] bg-[#e9edf3] p-1.5">
+            {cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => onCycleChange(index)} className={`flex min-w-[142px] shrink-0 items-center justify-center whitespace-nowrap rounded-[11px] px-5 py-4 text-[20px] transition ${selectedCycle === index ? 'bg-white font-semibold text-[#168ff2] shadow-[0_3px_12px_rgba(38,60,92,.1)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className="ml-2 text-[15px]" style={{ color: cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}</button>)}
+          </div>
+
+          <div className="mt-8 flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-[22px] font-semibold text-[#273144]">选择会员等级</h3>
+              <p className="mt-2 text-[13px] text-[#8c96a6]">当前展示{membershipType === 'enterprise' ? '企业使用' : '个人使用'}的会员套餐</p>
+            </div>
+            <span className="text-[13px] text-[#8c96a6]">默认选择第1个套餐</span>
+          </div>
+          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {plans.map((plan, index) => {
+              const planCycleData = getCyclePlanData(plan, activeCycleKey);
+              const planTier = planCycleData.tierOptions?.[0];
+              const planPrice = planTier?.price ?? planCycleData.price;
+              const planOriginalPrice = planTier?.originalPrice ?? planCycleData.originalPrice;
+              const levelName = plan.memberType ?? plan.name;
+              return <button type="button" key={`${plan.planKey}-${index}`} onClick={() => onPlanChange(index)} className={`min-w-0 rounded-[16px] border px-6 py-6 text-left transition ${selectedPlanIndex === index ? 'border-[#168ff2] bg-[#edf6ff] shadow-[0_8px_20px_rgba(22,143,242,.12)]' : 'border-[#dfe5ee] bg-white hover:border-[#a9c9ee]'}`}>
+                <span className={`block truncate text-[20px] font-semibold ${selectedPlanIndex === index ? 'text-[#168ff2]' : 'text-[#273144]'}`}>{levelName}</span>
+                <span className="mt-2 block truncate text-[14px] font-medium text-[#53617a]">{plan.name}套餐</span>
+                <span className="mt-2 block min-h-[40px] text-[13px] leading-5 text-[#8d98a8]">{plan.subtitle}</span>
+                <span className="mt-6 flex items-end gap-1 text-[#202938]"><span className="mb-1 text-[15px]">¥</span><strong className="text-[36px] leading-none tracking-[-.05em]">{planPrice}</strong><span className="mb-1 text-[14px] text-[#8994a4]">/{(planTier?.period ?? planCycleData.period).replace('每', '')}</span></span>
+                <span className="mt-3 block text-[13px] text-[#7f8b9d]">{planOriginalPrice ? <del className="mr-2">¥{planOriginalPrice}</del> : null}{planTier?.discount ?? planCycleData.discount}折 · {planTier?.points ?? planCycleData.points}</span>
+              </button>;
+            })}
+          </div>
+
+          <div className="mt-8 grid items-center gap-8 border-t border-[#e4e9f0] pt-8 lg:grid-cols-[minmax(0,1fr)_220px]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-end gap-3"><span className="text-[16px] text-[#202938]">当前选择</span><strong className="text-[24px] font-semibold text-[#202938]">{memberLevelName}</strong><span className="text-[15px] text-[#687487]">· {packageName}套餐</span></div>
+              <div className="mt-5 flex items-end gap-2"><span className="mb-1 text-[18px] text-[#202938]">¥</span><strong className="text-[42px] font-semibold leading-none tracking-[-.05em] text-[#ff493d]">{displayPrice}</strong><span className="mb-1 text-[15px] text-[#8994a4]">/{periodLabel}</span>{originalPrice ? <del className="mb-1 ml-2 text-[14px] text-[#aeb5bf]">¥{originalPrice}</del> : null}</div>
+              <p className="mt-3 text-[14px] text-[#7f8b9d]">{pointsLabel} · {planDescription}</p>
+              {expiryDate ? <p className="mt-3 text-[14px] text-[#7f8b9d]">购买后有效期至：{expiryDate}</p> : null}
+              <p className="mt-5 text-[12px] leading-5 text-[#9aa3af]">支付即代表您已同意《创客贴会员服务协议》与《授权许可》，支付后可在订单中心开具发票</p>
+            </div>
+            <div className="flex flex-col items-center justify-self-end">
+              <PaymentQrCode />
+              <p className="mt-3 text-[14px] font-medium text-[#53617a]">扫码支付</p>
+              <div className="mt-2 flex items-center gap-2 text-[12px] text-[#9aa3af]"><PaymentMethodMark type="wechat" /><span>微信</span><span>/</span><PaymentMethodMark type="alipay" /><span>支付宝</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center justify-end gap-5 border-t border-[#edf0f4] px-12 py-6">
+        <button type="button" onClick={onContinue} className="h-14 rounded-[10px] border border-[#dce3ed] px-10 text-[20px] text-[#697587] transition hover:border-[#b7c5d7] hover:text-[#273144]">继续浏览</button>
+        <button type="button" onClick={() => onPurchase(selectedPlan)} className="h-14 rounded-[10px] bg-[#168ff2] px-12 text-[20px] font-medium text-white shadow-[0_8px_18px_rgba(22,143,242,.2)] transition hover:bg-[#087edc]">立即开通 {selectedPlan.name}</button>
+      </div>
+    </div>
+  </div>;
 }
 
 function StickyCycleDropdown({ options, selectedIndex, onChange }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void }) {
@@ -1219,8 +1294,7 @@ export function MembershipCenterModal({ onClose, currentMember }: MembershipCent
     setPaymentSelection({ plan, cycleKey, cycleName, tierIndex, enterprise, seats });
   };
   const requestClose = () => {
-    const preferredIndex = membershipType === 'enterprise' ? 3 : 2;
-    setRetentionPlanIndex(Math.min(preferredIndex, Math.max(visiblePlans.length - 1, 0)));
+    setRetentionPlanIndex(0);
     setRetentionOpen(true);
   };
 
@@ -1269,7 +1343,7 @@ export function MembershipCenterModal({ onClose, currentMember }: MembershipCent
       </main>
       </div>
       {toastMessage ? <div role="status" className="pointer-events-none fixed bottom-8 left-1/2 z-[220] -translate-x-1/2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]">{toastMessage}</div> : null}
-      {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} onCycleChange={(index) => { setActiveCycle(index); setRetentionPlanIndex(0); }} onPlanChange={setRetentionPlanIndex} onContinue={() => setRetentionOpen(false)} onClose={onClose} /> : null}
+      {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} membershipType={membershipType} onCycleChange={(index) => { setActiveCycle(index); setRetentionPlanIndex(0); }} onPlanChange={setRetentionPlanIndex} onPurchase={(plan) => { setRetentionOpen(false); openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, 0, membershipType === 'enterprise', membershipType === 'enterprise' ? getEnterpriseSeatCount(plan.planKey) : 1); }} onContinue={() => setRetentionOpen(false)} onClose={onClose} /> : null}
       {paymentSelection ? <MembershipPaymentModal selection={paymentSelection} coupons={availableCoupons} onClose={() => setPaymentSelection(null)} /> : null}
       {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
       {couponModalOpen ? <MembershipCouponModal coupons={availableCoupons} onClose={() => setCouponModalOpen(false)} /> : null}
