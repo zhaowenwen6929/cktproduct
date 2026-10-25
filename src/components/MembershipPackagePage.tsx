@@ -442,7 +442,7 @@ export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'ente
       key: `${row.duration}-${row.displayName}`,
       name: row.displayName,
       guideText: guideText[row.displayName] ?? '',
-      guideTextColor: '#8993a2',
+      guideTextColor: row.displayName === '连续包年' ? '#ff4d4f' : '#8993a2',
       duration: `${row.duration}天`,
       highlighted: index === 0,
     }));

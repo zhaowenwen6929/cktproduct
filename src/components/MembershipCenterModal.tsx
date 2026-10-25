@@ -341,7 +341,7 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
 
   const renderCycleLabel = (cycle: MembershipCycleConfig) => <>
     <span>{cycle.name}</span>
-    {cycle.guideText ? <span style={{ color: cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}
+    {cycle.guideText ? <span style={{ color: cycle.name === '连续包年' ? '#ff4d4f' : cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}
   </>;
 
   const selectCycle = (index: number) => {
@@ -352,7 +352,7 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
   return <div ref={selectorRef} className="relative mx-auto mt-4 w-[calc(100%-32px)] max-w-[960px] text-[11px] text-[#4e5868]">
     <div ref={barRef} className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
       <div className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
-        {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
+        {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
       </div>
       {extraOptions.length ? <div className="relative shrink-0">
         <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[92px] max-w-[280px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-[12px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">

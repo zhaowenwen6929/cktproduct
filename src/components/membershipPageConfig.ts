@@ -538,7 +538,7 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         memberLevel: { level: 'personal' },
         viplevel: DEFAULT_PERSONAL_VIP_LEVELS,
         options: [
-          { key: 'yearly', name: '连续包年', guideText: '限时4.5折', guideTextColor: '#8993a2', duration: '365天', highlighted: true },
+          { key: 'yearly', name: '连续包年', guideText: '限时4.5折', guideTextColor: '#ff4d4f', duration: '365天', highlighted: true },
           { key: 'yearly-one-time', name: '1年', guideText: '', guideTextColor: '#8993a2', duration: '365天' },
           { key: 'monthly', name: '连续包月', guideText: '4.8折', guideTextColor: '#8993a2', duration: '30天' },
           { key: 'monthly-one-time', name: '月度', guideText: '', guideTextColor: '#8993a2', duration: '30天' },
@@ -1008,9 +1008,11 @@ const normalizeCycleOptions = (value: unknown, fallback: MembershipCycleConfig[]
       key: typeof rawOption.key === 'string' ? rawOption.key : fallbackOption.key,
       name: typeof rawOption.name === 'string' ? rawOption.name : fallbackOption.name,
       guideText: typeof rawOption.guideText === 'string' ? rawOption.guideText : fallbackOption.guideText,
-      guideTextColor: typeof rawOption.guideTextColor === 'string' && rawOption.guideTextColor.trim()
-        ? rawOption.guideTextColor
-        : fallbackOption.guideTextColor ?? '#8993a2',
+      guideTextColor: rawOption.name === '连续包年'
+        ? '#ff4d4f'
+        : typeof rawOption.guideTextColor === 'string' && rawOption.guideTextColor.trim()
+          ? rawOption.guideTextColor
+          : fallbackOption.guideTextColor ?? '#8993a2',
       duration: typeof rawOption.duration === 'string' ? rawOption.duration : fallbackOption.duration,
       highlighted: typeof rawOption.highlighted === 'boolean' ? rawOption.highlighted : fallbackOption.highlighted,
     };
