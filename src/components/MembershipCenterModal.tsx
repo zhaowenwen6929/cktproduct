@@ -224,16 +224,59 @@ function StickyPurchaseBar({ plans, cycleKey, membershipType, onMembershipTypeCh
 
 function CycleOptionSelector({ options, selectedIndex, onChange }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void }) {
   const selectorRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
-  const optionSignature = options.map((option) => option.key).join('|');
-  const primaryOptions = options.length > 3 ? options.slice(0, 3) : options;
-  const extraOptions = options.length > 3 ? options.slice(3) : [];
-  const selectedExtraOption = extraOptions.find((_, index) => index + primaryOptions.length === selectedIndex);
-  const moreOption = selectedExtraOption ?? extraOptions[0];
+  const [visibleCount, setVisibleCount] = useState(options.length);
+  const optionSignature = options.map((option) => `${option.key}:${option.name}:${option.guideText}`).join('|');
+  const primaryOptions = options.slice(0, visibleCount);
+  const extraOptions = options.slice(visibleCount);
+  const selectedExtraOption = selectedIndex >= visibleCount ? options[selectedIndex] : undefined;
 
   useEffect(() => {
     setExpanded(false);
+    setVisibleCount(options.length);
   }, [optionSignature]);
+
+  useEffect(() => {
+    const bar = barRef.current;
+    const measure = measureRef.current;
+    if (!bar || !measure) return undefined;
+
+    const updateVisibleCount = () => {
+      const availableWidth = Math.max(bar.clientWidth - 8, 0);
+      const optionWidths = Array.from(measure.querySelectorAll<HTMLElement>('[data-cycle-measure]')).map((element) => element.offsetWidth);
+      const moreMeasure = selectedExtraOption
+        ? measure.querySelector<HTMLElement>('[data-more-measure="selected"]')
+        : measure.querySelector<HTMLElement>('[data-more-measure="default"]');
+      const moreWidth = moreMeasure?.offsetWidth ?? 0;
+      const gap = 4;
+      const allOptionsWidth = optionWidths.reduce((sum, width) => sum + width, 0) + Math.max(optionWidths.length - 1, 0) * gap;
+
+      if (allOptionsWidth <= availableWidth) {
+        setVisibleCount(options.length);
+        return;
+      }
+
+      let fittedCount = 0;
+      let fittedWidth = 0;
+      for (const optionWidth of optionWidths) {
+        const nextWidth = fittedWidth + optionWidth + (fittedCount ? gap : 0);
+        const widthWithMore = nextWidth + gap + moreWidth;
+        if (widthWithMore > availableWidth) break;
+        fittedWidth = nextWidth;
+        fittedCount += 1;
+      }
+
+      setVisibleCount(Math.max(fittedCount, 1));
+    };
+
+    updateVisibleCount();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(updateVisibleCount);
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, [optionSignature, options.length, selectedExtraOption, selectedIndex, visibleCount]);
 
   useEffect(() => {
     if (!expanded) return undefined;
@@ -255,14 +298,14 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
   };
 
   return <div ref={selectorRef} className="relative mx-auto mt-4 w-full max-w-[1240px] text-[11px] text-[#4e5868]">
-    <div className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
+    <div ref={barRef} className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
       <div className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
         {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
       </div>
-      {moreOption ? <div className="relative shrink-0">
-        <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[190px] max-w-[280px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-[12px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
-          <span>更多选择–</span>
-          {renderCycleLabel(moreOption)}
+      {extraOptions.length ? <div className="relative shrink-0">
+        <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[92px] max-w-[280px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-[12px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
+          <span>{selectedExtraOption ? '更多–' : '更多'}</span>
+          {selectedExtraOption ? renderCycleLabel(selectedExtraOption) : null}
           <ChevronDown className={`ml-1 h-4 w-4 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </button>
         {expanded ? <div role="listbox" className="absolute right-0 top-[calc(100%+8px)] z-40 w-[250px] overflow-hidden rounded-[20px] border border-[#e6e8ec] bg-white p-2 shadow-[0_12px_32px_rgba(31,50,81,.16)]">
@@ -273,6 +316,11 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
           })}
         </div> : null}
       </div> : null}
+    </div>
+    <div ref={measureRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 -z-10 flex w-max gap-1 whitespace-nowrap opacity-0">
+      {options.map((cycle) => <span data-cycle-measure="true" key={cycle.key} className="flex items-center gap-1 rounded-full px-3 py-2.5 text-[11px]">{renderCycleLabel(cycle)}</span>)}
+      <span data-more-measure="default" className="rounded-full px-5 py-2.5 text-[12px] font-semibold">更多</span>
+      {selectedExtraOption ? <span data-more-measure="selected" className="rounded-full px-5 py-2.5 text-[12px] font-semibold">更多–{renderCycleLabel(selectedExtraOption)}</span> : null}
     </div>
   </div>;
 }
