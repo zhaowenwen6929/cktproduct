@@ -217,18 +217,27 @@ function getDefaultSaleDescription(member: string, points: number, pointsDescrip
   return [tag, banner, pointsDescription || getDefaultPointsDescription(member, points), color].join('^');
 }
 
+function getNewMemberOriginalPrice(currentPrice: number) {
+  return Math.round(currentPrice * 1.3);
+}
+
+function getNewMemberDiscount(currentPrice: number, originalPrice: number) {
+  return originalPrice > 0 ? Math.round((currentPrice / originalPrice) * 100) : 0;
+}
+
 function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
   const pointsUnit = member.includes('企业') ? '团队' : '每人';
   const memberLevel = getMemberLevelByName(member);
   return prices.map((price, index): PackageDetailRow => {
     const pointsDescription = price.pointsDescription ?? getDefaultPointsDescription(member, points);
+    const originalPrice = getNewMemberOriginalPrice(price.price);
     return {
       id: startId + index,
       name: `web-${member}-${price.displayName}（${price.renewalPrice == null ? price.price : `首充${price.price}，续费${price.renewalPrice}`}）`,
       displayName: price.displayName,
       duration: price.duration,
-      originalPrice: price.renewalPrice ?? price.price,
-      discount: 100,
+      originalPrice,
+      discount: getNewMemberDiscount(price.price, originalPrice),
       currentPrice: price.price,
       contractPrice: price.renewalPrice == null ? '-' : `首充${price.price}，续费${price.renewalPrice}`,
       packageType: price.packageType ?? '普通套餐',
@@ -344,6 +353,14 @@ export const WEB_NEW_MEMBER_PACKAGE_DETAILS: PackageDetailRow[] = [
 
 export const MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY = 'admin-membership-package-details';
 
+const NEW_WEB_MEMBER_NAMES = new Set([
+  '基础版（个人）',
+  '专业版（个人）',
+  '基础版（企业）',
+  '专业版（企业）',
+  '旗舰版（企业）',
+]);
+
 export type WebMembershipCycleOption = {
   key: string;
   name: string;
@@ -363,7 +380,8 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
   try {
     const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY) ?? '{}') as Record<string, unknown>;
     const rows = stored[String(packageId)];
-    return Array.isArray(rows) ? (rows as PackageDetailRow[]).map((row) => {
+    if (!Array.isArray(rows)) return fallback;
+    const normalizedRows = (rows as PackageDetailRow[]).map((row) => {
       const pointsDescription = row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0);
       const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim());
       const isLegacyDescriptionOrder = saleDescriptionParts.length >= 3
@@ -378,13 +396,32 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
           : saleDescriptionParts.length === 3
             ? `${row.saleDescription}^`
             : row.saleDescription;
+      const isNewWebMember = packageId === WEB_PACKAGE_ID && NEW_WEB_MEMBER_NAMES.has(row.member);
+      const originalPrice = isNewWebMember
+        ? getNewMemberOriginalPrice(row.currentPrice)
+        : row.originalPrice;
       return {
         ...row,
         memberLevel: row.memberLevel ?? getMemberLevelByName(row.member),
+        originalPrice,
+        discount: isNewWebMember ? getNewMemberDiscount(row.currentPrice, originalPrice) : row.discount,
         saleDescription,
         pointsDescription,
       };
-    }) : fallback;
+    });
+
+    // 兼容已写入浏览器缓存的旧新会员套餐数据，首次读取时同步成新的原价规则。
+    const hasPricingChanges = normalizedRows.some((row, index) => {
+      const previousRow = rows[index] as PackageDetailRow;
+      return row.originalPrice !== previousRow.originalPrice || row.discount !== previousRow.discount;
+    });
+    if (hasPricingChanges && packageId === WEB_PACKAGE_ID) {
+      window.localStorage.setItem(
+        MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY,
+        JSON.stringify({ ...stored, [String(packageId)]: normalizedRows }),
+      );
+    }
+    return normalizedRows;
   } catch {
     return fallback;
   }
