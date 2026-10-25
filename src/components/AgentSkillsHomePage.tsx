@@ -224,6 +224,32 @@ const homepageFeatureCards = [
   { title: '高级感A+图', desc: '全方位展示细节，还原产品真实属性', art: 'detail' },
 ];
 
+const agentQuickCards = [
+  { title: '海报设计', desc: '一键生成创意海报', art: 'poster', category: '海报设计' },
+  { title: '电商设计', desc: '全套素材快捷生成', art: 'commerce-set', category: '电商设计' },
+  { title: '视频创作', desc: '一键输出创意大片', art: 'video', category: '视频处理' },
+  { title: '自媒体营销', desc: '速出多平台内容', art: 'recruitment', category: '新媒体运营' },
+  { title: '办公设计', desc: '图文创作随心而会', art: 'ppt', category: '企业办公' },
+  { title: '品牌IP形象', desc: '让创意秒变现实', art: 'cutout', category: '品牌营销' },
+];
+
+const agentFeaturedCards = [
+  { title: '商品海报', desc: '突出商品核心卖点', art: 'commerce-set', skillId: 'promo-image' },
+  { title: '营销海报', desc: '助力营销增长', art: 'poster', skillId: 'marketing-poster' },
+  { title: '通知与日常物料', desc: '一键输出行政物料', art: 'ppt', skillId: 'daily-notice' },
+  { title: 'A+详情页', desc: '全方位展示细节', art: 'detail', skillId: 'a-plus' },
+  { title: '商品套图', desc: '一键出全套商品图', art: 'commerce-set', skillId: 'product-set' },
+  { title: '知识卡片', desc: '图文表达随时生成', art: 'recruitment', skillId: 'daily-notice' },
+];
+
+const agentSameStyleCards = [
+  { title: '海报设计', tone: 'from-[#f8bc18] via-[#f5a700] to-[#e36d00]', kicker: 'CRISPY FRIES' },
+  { title: '电商设计', tone: 'from-[#24120d] via-[#6b2d12] to-[#c08042]', kicker: 'NEW BURGER' },
+  { title: '视频创作', tone: 'from-[#e4d4f6] via-[#c7a5e4] to-[#efe1fb]', kicker: '“你”够清爽' },
+  { title: '自媒体营销', tone: 'from-[#0b8b9e] via-[#35bbbf] to-[#9ce9d4]', kicker: 'TROPIC COOL' },
+  { title: '办公设计', tone: 'from-[#fff0e7] via-[#ffd3c9] to-[#f3b5ad]', kicker: '梅好夏日' },
+];
+
 const aiSkillRows = [
   ['product-set', 'viral-remake', 'sku-variants', 'competitor-analysis', 'product-copy', 'daily-notice'],
   ['a-plus', 'white-background', 'promo-image', 'keyword-analysis', 'marketing-poster', 'poster-beautify'],
@@ -656,7 +682,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             const Icon = item.icon;
             return <React.Fragment key={item.label}>
               {item.label === '我的' ? <div className="my-1 h-px w-[52px] bg-[#e1e7f1]" /> : null}
-              <button type="button" onClick={() => item.label === '模板' ? onOpenTemplates() : item.label === 'AI工具' ? setMode('agent') : item.label === '首页' ? setMode('templates') : undefined} className={`flex w-[62px] flex-col items-center gap-1 rounded-[12px] py-2 text-[11px] transition ${item.active && mode === 'templates' ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : item.label === 'AI工具' && mode === 'agent' ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'text-[#596986] hover:bg-white/80'}`}><Icon className="h-[22px] w-[22px]" /><span>{item.label}</span></button>
+              <button type="button" onClick={() => item.label === '模板' ? onOpenTemplates() : item.label === 'AI工具' ? setMode('agent') : item.label === '首页' ? setMode('templates') : undefined} className={`flex w-[62px] flex-col items-center gap-1 rounded-[12px] py-2 text-[11px] transition ${item.active ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'text-[#596986] hover:bg-white/80'}`}><Icon className="h-[22px] w-[22px]" /><span>{item.label}</span></button>
             </React.Fragment>;
           })}
         </div>
@@ -700,73 +726,68 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               <button type="button" className="h-[58px] w-[100px] shrink-0 rounded-[16px] bg-[#1478fa] text-[17px] font-semibold text-white shadow-[0_5px_12px_rgba(20,120,250,0.2)]">搜索</button>
             </div>
           ) : (
-            <div className="relative z-10 mx-auto mt-[92px] max-w-[900px] rounded-[20px] border-2 border-[#7166ff] bg-white px-5 pb-4 pt-4 shadow-[0_12px_25px_rgba(87,92,197,0.14)]">
-              <textarea value={homePrompt} onChange={(event) => setHomePrompt(event.currentTarget.value)} placeholder="上传参考图片，描述下您想要的内容，我们会为您呈现~" className="h-[58px] w-full resize-none bg-transparent text-[12px] leading-5 text-[#394156] outline-none placeholder:text-[#a7b0c3]" />
+            <div className="relative z-10 mx-auto mt-[92px] h-[226px] max-w-[1160px] rounded-[31px] border-[3px] border-[#7166ff] bg-white px-5 pb-5 pt-5 shadow-[0_16px_34px_rgba(87,92,197,0.14)]">
+              <textarea value={homePrompt} onChange={(event) => setHomePrompt(event.currentTarget.value)} placeholder="上传参考图片，描述下您想要的内容，我们会为您呈现~" className="h-[145px] w-full resize-none bg-transparent text-[18px] leading-7 text-[#394156] outline-none placeholder:text-[#9ba9c0]" />
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5">
-                  <button type="button" className="flex h-7 w-7 items-center justify-center rounded-full border border-[#edf0f5] text-[#8490a5]"><Plus className="h-4 w-4" /></button>
-                  {homeAttachments.length > 0 ? <span className="text-[10px] text-[#758198]">已添加 {homeAttachments.length} 张参考图</span> : null}
-                  <button type="button" onClick={() => openSkillPicker()} className="flex h-7 items-center gap-1.5 rounded-[9px] border border-[#eef0f5] px-2.5 text-[11px] font-medium text-[#3c4353] hover:border-[#cbc7ff] hover:text-[#5c5cfc]"><Sparkles className="h-3.5 w-3.5" />Agent模式</button>
-                  <button type="button" className="flex h-7 items-center gap-1.5 rounded-[9px] border border-[#eef0f5] px-2.5 text-[11px] text-[#555d70]"><FileImage className="h-3.5 w-3.5" />自动</button>
+                  <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full border border-[#edf0f5] text-[#8490a5] transition hover:border-[#bdb5ff] hover:text-[#6b5ef4]"><Plus className="h-5 w-5" /></button>
+                  {homeAttachments.length > 0 ? <span className="text-[12px] text-[#758198]">已添加 {homeAttachments.length} 张参考图</span> : null}
+                  <button type="button" onClick={() => openSkillPicker()} className="flex h-10 items-center gap-2 rounded-[12px] border border-[#eef0f5] px-4 text-[16px] font-medium text-[#3c4353] hover:border-[#cbc7ff] hover:text-[#5c5cfc]"><Sparkles className="h-[18px] w-[18px]" />Agent模式</button>
+                  <button type="button" className="flex h-10 items-center gap-2 rounded-[12px] border border-[#eef0f5] px-4 text-[16px] text-[#555d70]"><FileImage className="h-[18px] w-[18px]" />自动</button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button type="button" aria-label="润色" className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#edf0f5] text-[#7f8cff]"><WandSparkles className="h-4 w-4" /></button>
-                  <button type="button" disabled={!homePrompt.trim()} onClick={() => onStartCanvasGeneration(homePrompt.trim(), homeAttachments)} className={`rounded-[8px] px-3.5 py-1.5 text-[11px] font-semibold text-white ${homePrompt.trim() ? 'bg-[#695cff] hover:bg-[#5c50ee]' : 'bg-[#d6d7dc]'}`}>生成</button>
+                  <button type="button" aria-label="润色" className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#edf0f5] text-[#7f8cff]"><WandSparkles className="h-5 w-5" /></button>
+                  <button type="button" disabled={!homePrompt.trim()} onClick={() => onStartCanvasGeneration(homePrompt.trim(), homeAttachments)} className={`rounded-[12px] px-5 py-2.5 text-[16px] font-semibold text-white ${homePrompt.trim() ? 'bg-[#695cff] hover:bg-[#5c50ee]' : 'bg-[#dedcff]'}`}>生成</button>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="relative z-10 mx-auto mt-4 flex max-w-[1160px] flex-wrap items-center justify-center gap-3">
-            {(mode === 'templates'
-              ? ['🍁秋日特辑', '🚩喜报', '🌕日签', '无限画布', 'AI电商', '✨展架·次日达', '🗓️2027台历模板']
-              : ['🔔 提示词库', '🛍 商品套图Agent', '👗 服饰穿搭Agent', '🎨 海报Agent', '🎬 视频Agent']).map((tag, index) => {
-              const skillId = ['product-set', 'apparel-styling', 'poster', 'video-agent'][index - 1];
-              return (
-                <button key={tag} type="button" onClick={() => skillId ? selectSkillFromChip(skillId) : openSkillPicker()} className="rounded-[7px] bg-[#f4f6fb] px-2.5 py-1 text-[10px] font-medium text-[#687187] hover:bg-[#eaf0ff] hover:text-[#4d63bd]">{tag}</button>
-              );
-            })}
-          </div>
+          {mode === 'templates' ? (
+            <div className="relative z-10 mx-auto mt-4 flex max-w-[1160px] flex-wrap items-center justify-center gap-3">
+              {['🍁秋日特辑', '🚩喜报', '🌕日签', '无限画布', 'AI电商', '✨展架·次日达', '🗓️2027台历模板'].map((tag) => <button key={tag} type="button" onClick={() => openSkillPicker()} className="rounded-[7px] bg-[#f4f6fb] px-2.5 py-1 text-[10px] font-medium text-[#687187] hover:bg-[#eaf0ff] hover:text-[#4d63bd]">{tag}</button>)}
+            </div>
+          ) : (
+            <div className="relative z-10 mx-auto mt-4 grid max-w-[1160px] grid-cols-2 gap-3 xl:grid-cols-6">
+              {agentQuickCards.map((card) => (
+                <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className="flex h-[86px] min-w-0 items-center justify-between rounded-[16px] border border-[#e7ebf4] bg-white px-4 text-left shadow-[0_2px_8px_rgba(70,88,130,0.035)] transition hover:-translate-y-0.5 hover:border-[#c7d5ff] hover:shadow-[0_8px_18px_rgba(70,88,130,0.1)]">
+                  <span className="min-w-0 pr-2"><span className="block truncate text-[15px] font-semibold text-[#29364f]">{card.title}</span><span className="mt-1 block truncate text-[12px] text-[#a0aec2]">{card.desc}</span></span>
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${card.art === 'poster' ? 'bg-[#dfeaff] text-[#458dff]' : card.art === 'commerce-set' ? 'bg-[#fff0e4] text-[#ff9359]' : card.art === 'video' ? 'bg-[#e9e6ff] text-[#756cf4]' : card.art === 'recruitment' ? 'bg-[#ffe5e8] text-[#f15b6a]' : card.art === 'ppt' ? 'bg-[#e7e9ff] text-[#706cf5]' : 'bg-[#e0f7e8] text-[#5bc47c]'}`}>{card.art === 'poster' ? <ImageIcon className="h-5 w-5" /> : card.art === 'commerce-set' ? <Shirt className="h-5 w-5" /> : card.art === 'video' ? <Video className="h-5 w-5" /> : card.art === 'recruitment' ? <UserRound className="h-5 w-5" /> : card.art === 'ppt' ? <FileImage className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
         {mode === 'agent' ? (
-          <section className="mx-auto max-w-[1920px] px-6 pb-7">
-            <div className="mb-2 flex items-center gap-4">
-              <div className="flex min-w-0 flex-1 items-center gap-5 overflow-x-auto whitespace-nowrap text-[11px] font-medium [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {skillCategories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => {
-                      setActiveHomeSkillCategory(category);
-                      skillsRailRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
-                    }}
-                    aria-pressed={activeHomeSkillCategory === category}
-                    className={`relative shrink-0 py-1.5 transition-colors ${activeHomeSkillCategory === category ? 'text-[#303749] after:absolute after:-bottom-0.5 after:left-0 after:h-[2px] after:w-full after:bg-[#8377ff]' : 'text-[#7d879a] hover:text-[#303749]'}`}
-                  >
-                    {category}
+          <section className="mx-auto max-w-[1920px] space-y-10 px-[42px] pb-16">
+            <section>
+              <div className="mb-4 flex items-center justify-between"><h2 className="text-[24px] font-semibold text-[#28344c]">精选技能</h2><button type="button" onClick={() => openSkillPicker('全部技能')} className="flex items-center gap-1 text-[13px] text-[#8490a6] transition hover:text-[#4b77d3]">更多<ChevronRight className="h-4 w-4" /></button></div>
+              <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex w-max gap-5 pb-1">
+                  {agentFeaturedCards.map((card) => (
+                    <button key={card.title} type="button" onClick={() => selectSkillFromChip(card.skillId)} className="relative flex h-[118px] w-[310px] shrink-0 items-center justify-between overflow-hidden rounded-[18px] bg-[#f3f6fc] px-5 py-3.5 text-left transition hover:-translate-y-0.5 hover:bg-[#edf3ff]">
+                      <span className="min-w-0 pr-2"><span className="block truncate text-[17px] font-semibold text-[#29364f]">{card.title}</span><span className="mt-2 block truncate text-[13px] text-[#9aa8bf]">{card.desc}</span></span>
+                      <FeatureArt kind={card.art} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="mb-4 text-[24px] font-semibold text-[#28344c]">一键同款</h2>
+              <div className="mb-5 flex flex-wrap gap-3">
+                {agentQuickCards.map((card, index) => <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className={`rounded-full px-4 py-2 text-[14px] font-medium ${index === 0 ? 'bg-[#eef0ff] text-[#5c64ca]' : 'bg-[#f2f4f9] text-[#69758c]'} transition hover:bg-[#e7edff]`}>{index === 0 ? '🎨' : index === 1 ? '💰' : index === 2 ? '🎬' : index === 3 ? '🔥' : index === 4 ? '📄' : '🟢'}{card.title}</button>)}
+              </div>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                {agentSameStyleCards.map((card) => (
+                  <button key={card.title} type="button" onClick={() => openSkillPicker('海报设计')} className="group relative overflow-hidden rounded-[16px] bg-[#f3f5f9] p-2 text-left transition hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(54,70,107,0.14)]">
+                    <div className={`relative flex aspect-[1.1] items-center justify-center overflow-hidden rounded-[11px] bg-gradient-to-br ${card.tone} p-4 text-center text-white`}><span className="absolute inset-3 rounded border border-white/25" /><span className="relative drop-shadow-lg"><span className="block text-[11px] font-medium tracking-[0.12em]">{card.kicker}</span><span className="mt-4 block text-[24px] font-black leading-tight">{card.title}</span><span className="mt-3 block text-[9px] opacity-85">CREATE · INSPIRE</span></span><span className="absolute -bottom-6 -right-2 h-24 w-24 rounded-full bg-white/20 blur-xl" /></div>
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={() => openSkillPicker('全部技能')} className="flex shrink-0 items-center gap-0.5 py-1.5 text-[11px] font-medium text-[#7d879a] hover:text-[#5c5cfc]">
-                全部技能<ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <div className="relative overflow-hidden rounded-[16px] bg-[#f5f6f9] p-2">
-              <div ref={skillsRailRef} className="space-y-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {homepageSkillRows.map((row, rowIndex) => (
-                  <div key={rowIndex} className="flex w-max gap-2.5">
-                    {row.map((skill, columnIndex) => (
-                      <div key={skill.id} className="w-[300px] shrink-0">
-                        <SkillCard skill={skill} index={columnIndex + 2} hot={columnIndex === 0} onClick={() => selectSkillFromChip(skill.id)} />
-                      </div>
-                    ))}
-                  </div>
-                ))}
-                {homepageSkillRows.length === 0 ? <div className="flex h-[170px] w-full items-center justify-center rounded-[12px] bg-white text-[12px] text-[#9ba3b2]">该分类下暂无技能</div> : null}
-              </div>
-              <button type="button" onClick={() => skillsRailRef.current?.scrollBy({ left: 620, behavior: 'smooth' })} aria-label="查看更多 skills" className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#525b6d] shadow-[0_4px_14px_rgba(52,65,92,0.18)]"><ChevronRight className="h-4 w-4" /></button>
-            </div>
+            </section>
           </section>
         ) : (
           <section className="mx-auto grid max-w-[1920px] grid-cols-1 gap-5 px-[42px] pb-10 xl:grid-cols-[minmax(400px,0.82fr)_minmax(760px,1.7fr)] 2xl:gap-6">
