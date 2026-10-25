@@ -83,6 +83,16 @@ function formatPackageMonthlyPrice(price: number, duration: number) {
   return months ? String(Number((price / months).toFixed(2))) : '-';
 }
 
+function formatPackagePointPrice(monthlyPrice: string, pointsText: string) {
+  const monthlyPriceValue = Number(monthlyPrice.replace(/,/g, ''));
+  const pointValues = pointsText.replace(/,/g, '').match(/\d+(?:\.\d+)?/g) ?? [];
+  if (!Number.isFinite(monthlyPriceValue) || pointValues.length !== 1) return '-';
+
+  const points = Number(pointValues[0]);
+  if (!Number.isFinite(points) || points <= 0) return '-';
+  return String(Number((monthlyPriceValue / points).toFixed(4)));
+}
+
 function formatPackageDiscount(discount: number) {
   const value = discount > 10 ? discount / 10 : discount;
   return String(Number(value.toFixed(1)));
@@ -503,9 +513,10 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   const displayPoints = activeTier ? `${activeTier.points} 积分每月` : cycleData.points;
   const displayPointsNote = activeTier?.pointsNote ?? cycleData.pointsNote;
   const displayPointsDescription = activeTier?.pointsDescription || cycleData.pointsDescription;
-  const displayPriceDescription = activeTier?.priceDescription || cycleData.priceDescription;
   const displayMonthlyPrice = activeTier?.monthlyPrice ?? cycleData.monthlyPrice;
-  const displaySaleDescription = activeTier?.saleDescription || cycleData.saleDescription;
+  const pointPrice = formatPackagePointPrice(displayMonthlyPrice, activeTier?.points ?? displayPoints);
+  const monthlyPriceLabel = displayMonthlyPrice === '-' ? '单月价格暂无' : `单月 ¥${displayMonthlyPrice}${enterprise ? '/席位' : ''}`;
+  const pointPriceLabel = pointPrice === '-' ? '每积分价格暂无' : `每积分 ¥${pointPrice}`;
   const renewalPrice = activeTier?.renewalPrice ?? cycleData.renewalPrice;
   const durationDays = activeTier?.durationDays ?? cycleData.durationDays;
   const packageType = activeTier?.packageType ?? cycleData.packageType;
@@ -528,7 +539,7 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
     <div className="px-5 pb-4 pt-5">
       <div className="flex items-start justify-between gap-2"><div><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 text-[11px] text-[#8590a0]">{plan.subtitle}</p></div>{promoTag ? <span className="rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.backgroundColor, color: promoTag.textColor }}>{promoTag.text}</span> : null}</div>
       <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><strong className="text-[33px] font-semibold leading-none tracking-[-.05em]">{displayPrice}</strong>{enterprise ? <span className="mb-1 text-[11px] text-[#7f8999]">/席位/{cycleData.period}</span> : <span className="mb-1 text-[10px] text-[#7f8999]">{cycleData.period}</span>}{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
-      <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">{displayPriceDescription || displaySaleDescription || (enterprise ? `¥${displayMonthlyPrice}/月/席位 · 单席位价格按当前套餐数据计算` : `首年${displayPrice} · 次年续费金额按当前价格计算 · 包年可随时取消`)}</p>
+      <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">{monthlyPriceLabel}<span className="mx-1 text-[#c1c7d0]">·</span>{pointPriceLabel}</p>
       {enterprise ? <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-[#566274]"><div className="flex items-center overflow-hidden rounded-[9px] border border-[#eef0f3] bg-white"><button type="button" aria-label="减少席位" disabled={seats <= 1} onClick={() => onSeatChange?.(-1)} className="flex h-8 w-8 items-center justify-center text-[16px] text-[#aab2bd] disabled:cursor-not-allowed disabled:opacity-40 hover:text-[#168ff2]">−</button><span className="min-w-[54px] text-center font-medium text-[#374255]">{seats} 席位</span><button type="button" aria-label="增加席位" onClick={() => onSeatChange?.(1)} className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[16px] text-[#566274] shadow-[0_1px_5px_rgba(34,48,70,.06)] hover:text-[#168ff2]">＋</button></div><span className="whitespace-nowrap text-[#6d7888]">合计 <b className="text-[13px] text-[#293548]">{totalPrice}元</b></span></div> : null}
     </div>
     {cycleData.tierOptions ? <div className="mx-5 mt-1 h-[64px] px-0"><div className="mb-1.5 flex items-center justify-between text-[10px] text-[#586474]">{cycleData.tierOptions.map((tier, index) => <button type="button" key={tier.quotaLabel} onClick={() => onTierChange?.(index)} className={`cursor-pointer ${index === tierIndex ? 'font-semibold text-[#202938]' : 'hover:text-[#168ff2]'}`}>{tier.quotaLabel}</button>)}</div><div className="relative h-5"><div className="absolute left-0 right-0 top-2 h-[4px] rounded-full bg-[#4b4f55]" /><span className="pointer-events-none absolute top-0 h-4 w-4 -translate-x-1/2 rounded-full border border-[#6f747b] bg-white shadow-[0_1px_3px_rgba(31,41,55,.16)]" style={{ left: `${tierProgress}%` }} /><input type="range" min={0} max={cycleData.tierOptions.length - 1} step={1} value={tierIndex} onChange={(event) => onTierChange?.(Number(event.currentTarget.value))} aria-label="高级会员积分档位" className="absolute inset-0 h-5 w-full cursor-pointer opacity-0" /></div></div> : <div className="mx-5 mt-1 h-[64px]" aria-hidden="true" />}
