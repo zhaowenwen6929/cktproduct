@@ -50,6 +50,19 @@ type MembershipPaymentModalProps = {
   onClose: () => void;
 };
 
+type MembershipPointsPackage = {
+  id: string;
+  points: number;
+  price: number;
+  originalPrice: number;
+  outputText: string;
+  tag?: string;
+};
+
+type MembershipPointsPurchaseModalProps = {
+  onClose: () => void;
+};
+
 export type MembershipCoupon = {
   id?: string;
   amount: number;
@@ -230,6 +243,52 @@ function MembershipPaymentModal({ selection, coupons, onClose }: MembershipPayme
         <div className="mt-3 flex justify-center text-[13px] text-[#818b9a]"><button type="button" className="transition hover:text-[#168ff2]">对公转账</button></div>
       </div>
       <div className="border-t border-[#edf0f4] bg-[#f7f8fa] px-4 py-3.5 text-center text-[12px] leading-5 text-[#9aa3af] sm:px-6">支付即视为您同意 <button type="button" className="text-[#4f5968]">《服务协议》</button> 与 <button type="button" className="text-[#4f5968]">《授权许可》</button>，支付后可在订单中心开具发票</div>
+    </div>
+  </div>;
+}
+
+const MEMBERSHIP_POINTS_PACKAGES: MembershipPointsPackage[] = [
+  { id: 'points-1500', points: 1500, price: 100, originalPrice: 200, outputText: '约生150~375张图' },
+  { id: 'points-3000', points: 3000, price: 199, originalPrice: 420, outputText: '约生300~750张图', tag: '限时特惠' },
+  { id: 'points-900', points: 900, price: 60, originalPrice: 100, outputText: '约生90~225张图', tag: '入门首选' },
+  { id: 'points-7500', points: 7500, price: 495, originalPrice: 1100, outputText: '约生750~1875张图' },
+];
+
+function MembershipPointsPurchaseModal({ onClose }: MembershipPointsPurchaseModalProps) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedPackage = MEMBERSHIP_POINTS_PACKAGES[selectedIndex] ?? MEMBERSHIP_POINTS_PACKAGES[0];
+  const expiryDate = formatExpiryDate(365);
+
+  return <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#101827]/65 p-4 backdrop-blur-[3px]" role="dialog" aria-modal="true" aria-label="购买积分">
+    <div className="relative flex h-[min(760px,calc(100vh-32px))] w-[min(1080px,calc(100vw-32px))] flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.32)]">
+      <header className="flex h-[68px] shrink-0 items-center justify-between border-b border-[#edf0f4] bg-[linear-gradient(110deg,#f1f1ff,#ffffff)] px-6 sm:px-10">
+        <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6961f4] text-white">✦</span><div><h2 className="text-[20px] font-semibold text-[#202938]">购买积分</h2><p className="mt-0.5 text-[11px] text-[#8791a1]">适用于所有生成式 AI 功能</p></div></div>
+        <button type="button" onClick={onClose} aria-label="关闭积分购买弹框" className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#6d7890] shadow-[0_2px_10px_rgba(38,53,79,.1)] transition hover:text-[#202938]"><X className="h-5 w-5" /></button>
+      </header>
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-5 sm:flex-row sm:p-8">
+        <aside className="w-full shrink-0 rounded-[16px] bg-[#f2f4ff] p-5 text-[#53617a] sm:w-[230px]">
+          <div className="text-[18px] font-semibold text-[#273143]">AI积分</div>
+          <p className="mt-2 text-[13px] leading-6">适用于所有生成式AI功能</p>
+          <div className="my-5 h-px bg-[#e1e5f1]" />
+          <div className="space-y-5 text-[13px] leading-6"><div><h3 className="font-semibold text-[#273143]">AI 智能体创作</h3><p className="mt-1">AI Agent无限画布、AI生图片、生设计、生视频、生实物、AI 3D等</p></div><div><h3 className="font-semibold text-[#273143]">AI绘画</h3><p className="mt-1">AI生绘本、生背景图、生素材、生字体等</p></div><div><h3 className="font-semibold text-[#273143]">AI图片处理</h3><p className="mt-1">主体抓取、智能消除、智能改图、图片变清晰、图片翻译等</p></div><div><h3 className="font-semibold text-[#273143]">AI LOGO</h3><p className="mt-1">智能生成LOGO</p></div></div>
+        </aside>
+        <main className="min-w-0 flex-1">
+          <h2 className="text-[22px] font-semibold text-[#202938]">选择积分套餐</h2>
+          <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            {MEMBERSHIP_POINTS_PACKAGES.map((item, index) => <button type="button" key={item.id} onClick={() => setSelectedIndex(index)} className={`relative flex min-h-[220px] flex-col overflow-hidden rounded-[14px] border text-left transition ${selectedIndex === index ? 'border-[#6961f4] bg-[#f7f6ff] shadow-[0_8px_20px_rgba(105,97,244,.12)]' : 'border-[#e6eaf2] bg-white hover:border-[#b8b9ef]'}`}>
+              {item.tag ? <span className="absolute right-0 top-0 rounded-bl-[10px] bg-[#ff5b62] px-3 py-2 text-[11px] font-medium text-white">{item.tag}</span> : null}
+              <span className="mt-14 px-4 text-center text-[18px] font-semibold text-[#202938]">{item.points.toLocaleString('en-US')}积分/年</span>
+              <span className="mt-5 px-4 text-center text-[28px] font-semibold tracking-[-.04em] text-[#202938]">¥{item.price}</span>
+              <del className="mt-2 px-4 text-center text-[12px] text-[#a1a9b5]">原价 ¥{item.originalPrice}</del>
+              <span className={`mt-auto px-3 py-3 text-center text-[12px] ${selectedIndex === index ? 'bg-[#6961f4] text-white' : 'bg-[#f0f2f7] text-[#5e6879]'}`}>{item.outputText}</span>
+            </button>)}
+          </div>
+          <div className="mt-8 flex flex-col items-center border-t border-[#edf0f4] pt-7 sm:flex-row sm:items-center sm:justify-center sm:gap-8">
+            <PaymentQrCode />
+            <div className="min-w-[210px] text-center sm:text-left"><div className="text-[28px] font-semibold tracking-[-.04em] text-[#ff493d]">¥{selectedPackage.price}</div><div className="mt-2 text-[14px] text-[#8791a1]">购买后有效期至：{expiryDate}</div><div className="mt-5 flex items-center justify-center gap-1.5 text-[13px] text-[#9aa3af] sm:justify-start"><PaymentMethodMark type="alipay" /><span>支付宝</span><span>/</span><PaymentMethodMark type="wechat" /><span>微信</span><span>扫码完成支付</span></div><p className="mt-3 text-[11px] leading-5 text-[#9aa3af]">支付即代表您已同意《创客贴积分购买协议》，支付后可联系客服开具发票。</p></div>
+          </div>
+        </main>
+      </div>
     </div>
   </div>;
 }
@@ -552,7 +611,7 @@ function StickyPurchaseBar({ plans, details, packageDetails, membershipType, onM
   return <div className="sticky top-[48px] z-[9] border-b border-[#e4e9f0] bg-white/95 px-5 py-2 shadow-[0_8px_18px_rgba(38,53,79,.1)] backdrop-blur-md"><div className="mx-auto max-w-[1240px] overflow-x-auto"><div className="flex min-w-[700px] items-end gap-3"><div className="w-[176px] shrink-0 pb-0.5"><div className="flex rounded-full bg-[#eef1f5] p-0.5"><button type="button" onClick={() => onMembershipTypeChange('personal')} className={`flex-1 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] leading-4 transition ${membershipType === 'personal' ? 'bg-white font-semibold text-[#273144] shadow-[0_1px_4px_rgba(38,53,79,.1)]' : 'text-[#8792a2] hover:text-[#273144]'}`}>个人使用</button><button type="button" onClick={() => onMembershipTypeChange('enterprise')} className={`flex-1 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] leading-4 transition ${membershipType === 'enterprise' ? 'bg-white font-semibold text-[#273144] shadow-[0_1px_4px_rgba(38,53,79,.1)]' : 'text-[#8792a2] hover:text-[#273144]'}`}>企业使用</button></div></div><div className="grid min-w-0 flex-1 gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(plans.length, 1)}, minmax(128px, 1fr))` }}>{plans.map((plan) => { const detailColumn = details?.columns.find((column) => column.key === plan.planKey); const stickyTag = plan.planKey === 'flagship' ? undefined : detailColumn?.tag; const lowestPackage = getLowestPackagePrice(plan.memberLevel, packageDetails); const monthlyPrice = lowestPackage ? formatPackageMonthlyPrice(Number(lowestPackage.currentPrice), lowestPackage.duration) : null; return <div key={plan.planKey} className="min-w-0 text-center"><div className="truncate text-[12px] font-semibold leading-4 text-[#202938]">{detailColumn?.label ?? plan.name}{stickyTag ? <span className="ml-1 text-[9px] font-normal text-[#168ff2]">{stickyTag}</span> : null}</div><div className="mt-0.5 text-[11px] leading-4 text-[#4e5a6c]">{monthlyPrice == null || monthlyPrice === '-' ? '暂无价格' : `¥${monthlyPrice}/月起`}</div><button type="button" onClick={() => onPurchase(plan)} className="mt-1.5 h-7 w-full max-w-[108px] rounded-[5px] bg-[#168ff2] px-2 text-[10px] font-medium text-white transition hover:bg-[#087edc]">立即开通</button></div>; })}</div></div></div></div>;
 }
 
-function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys = new Set<string>() }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void; couponCycleKeys?: Set<string> }) {
+function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys = new Set<string>(), className }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void; couponCycleKeys?: Set<string>; className?: string }) {
   const selectorRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -632,7 +691,7 @@ function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys
     setExpanded(false);
   };
 
-  return <div ref={selectorRef} style={selectorWidth ? { width: `${selectorWidth}px` } : undefined} className="relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))] text-[11px] text-[#4e5868]">
+  return <div ref={selectorRef} style={selectorWidth ? { width: `${selectorWidth}px` } : undefined} className={`${className ?? 'relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))]'} text-[11px] text-[#4e5868]`}>
     <div ref={barRef} className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
       <div className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
         {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
@@ -944,6 +1003,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const [retentionOpen, setRetentionOpen] = useState(false);
   const [retentionPlanIndex, setRetentionPlanIndex] = useState(0);
   const [couponModalOpen, setCouponModalOpen] = useState(false);
+  const [pointsPurchaseOpen, setPointsPurchaseOpen] = useState(false);
   const [paymentSelection, setPaymentSelection] = useState<MembershipPaymentSelection | null>(null);
   const [enterprisePurchaseContactOpen, setEnterprisePurchaseContactOpen] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<MembershipCoupon[]>(() => readAvailableMembershipCoupons());
@@ -1053,11 +1113,11 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   return <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1f2937]/35 p-4 text-[#202938] sm:p-8" role="dialog" aria-modal="true" aria-label="会员中心">
     <div className="relative h-[calc(100vh-32px)] w-[90vw] overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.24)] sm:h-[calc(100vh-64px)]">
       <div ref={scrollContainerRef} className="h-full overflow-y-auto bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_58%,#f7f9fc_100%)]">
-      <header className="sticky top-0 z-10 border-b border-[#edf0f4] bg-white/95 backdrop-blur-md"><div className="mx-auto flex h-[48px] max-w-[1240px] items-center justify-between px-5"><div className="flex min-w-0 items-center gap-3 text-[12px] text-[#657084]"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#efc7b4,#91a9c1)] text-[10px] text-white">营</span><span className="font-medium text-[#364052]">营萱</span><span>免费版</span><span className="text-[#d2d6dd]">|</span><span className="whitespace-nowrap">积分 <b className="font-medium text-[#414b5b]">✦ 66</b></span><ChevronRight className="h-3.5 w-3.5 shrink-0" /></div><div className="flex shrink-0 items-center gap-4 text-[12px] text-[#657084]"><button type="button" onClick={() => setCouponModalOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">优惠券/码</button><button type="button" className="whitespace-nowrap hover:text-[#168ff2]">购买积分</button><button type="button" onClick={() => setEnterprisePurchaseContactOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">咨询客服</button><button type="button" onClick={requestClose} aria-label="关闭会员中心" className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e5e9ef] bg-white text-[#7e8999] shadow-[0_4px_14px_rgba(38,53,79,.08)] transition hover:border-[#bdc7d7] hover:text-[#263247]"><X className="h-4 w-4" /></button></div></div></header>
-      {showStickyPurchase ? <StickyPurchaseBar plans={visiblePlans} details={activeDetails} packageDetails={packageDetails} membershipType={membershipType} onMembershipTypeChange={(type) => { setMembershipType(type); setActiveCycle(0); }} onPurchase={() => { const root = scrollContainerRef.current; const packageSection = packageSectionRef.current; if (root && packageSection) root.scrollTo({ top: Math.max(packageSection.offsetTop - 48, 0), behavior: 'smooth' }); }} /> : null}
+      <header className="sticky top-0 z-10 border-b border-[#edf0f4] bg-white/95 backdrop-blur-md"><div className="mx-auto flex h-[48px] max-w-[1240px] items-center justify-between px-5"><div className="flex min-w-0 items-center gap-3 text-[12px] text-[#657084]"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#efc7b4,#91a9c1)] text-[10px] text-white">营</span><span className="font-medium text-[#364052]">营萱</span><span>免费版</span><span className="text-[#d2d6dd]">|</span><span className="whitespace-nowrap">积分 <b className="font-medium text-[#414b5b]">✦ 66</b></span><ChevronRight className="h-3.5 w-3.5 shrink-0" /></div><div className="flex shrink-0 items-center gap-4 text-[12px] text-[#657084]"><button type="button" onClick={() => setCouponModalOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">优惠券/码</button><button type="button" onClick={() => setEnterprisePurchaseContactOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">咨询客服</button><button type="button" onClick={requestClose} aria-label="关闭会员中心" className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e5e9ef] bg-white text-[#7e8999] shadow-[0_4px_14px_rgba(38,53,79,.08)] transition hover:border-[#bdc7d7] hover:text-[#263247]"><X className="h-4 w-4" /></button></div></div></header>
+      {showStickyPurchase ? <StickyPurchaseBar plans={visiblePlans} details={activeDetails} packageDetails={packageDetails} membershipType={membershipType} onMembershipTypeChange={(type) => { setMembershipType(type); setActiveCycle(0); }} onPurchase={() => { scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }} /> : null}
       <main className="mx-auto max-w-[1240px] px-5 pb-20 pt-0">
         <section className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(112deg,#1588ee_0%,#1b94f7_48%,#ffd57d_100%)] px-6 py-5 shadow-[0_14px_34px_rgba(39,143,238,.17)]"><div className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full bg-white/25 blur-3xl" /><div className="pointer-events-none absolute right-[17%] top-0 h-32 w-32 rounded-full bg-[#fff3d0]/40 blur-2xl" /><div className="relative flex min-h-[82px] items-center justify-between gap-6"><div><div className="mb-3 flex items-center gap-2"><span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-[#293548]">✦ Seedance 2.5</span><span className="rounded-full bg-white px-2 py-1 text-[10px] font-medium text-[#293548]">四重福利</span></div><p className="text-[17px] font-semibold text-white">🎟 ¥0.19超低单秒价备战双11</p><p className="mt-1 text-[15px] font-medium text-[#ffe74d]">最高额外加赠2个月会员、4万+积分</p></div><div className="hidden items-center gap-1.5 sm:flex"><CountdownBox value={countdown.days} label="天" /><CountdownBox value={countdown.hours} label="小时" /><CountdownBox value={countdown.minutes} label="分钟" /><CountdownBox value={countdown.seconds} label="秒" /></div></div></section>
-      <section className="pt-6"><div className="flex items-center justify-center gap-10 text-[17px] font-semibold"><button type="button" onClick={() => { setMembershipType('personal'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalTab?.name ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button><button type="button" onClick={() => { setMembershipType('enterprise'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseTab?.name ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button></div><CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={setActiveCycle} couponCycleKeys={couponCycleKeys} /></section>
+        <section className="pt-6"><div className="flex items-center justify-center gap-10 text-[17px] font-semibold"><button type="button" onClick={() => { setMembershipType('personal'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalTab?.name ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button><button type="button" onClick={() => { setMembershipType('enterprise'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseTab?.name ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button></div><div className="flex flex-wrap items-center justify-center gap-3 px-5"><CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={setActiveCycle} couponCycleKeys={couponCycleKeys} className="relative mx-0 mt-4 w-fit max-w-[min(960px,calc(100%-32px))]" /><button type="button" onClick={() => setPointsPurchaseOpen(true)} className="mt-4 shrink-0 whitespace-nowrap rounded-full border border-[#dfe4ec] bg-white px-4 py-2.5 text-[11px] font-medium text-[#4e5a6c] shadow-[0_2px_8px_rgba(31,50,81,.08)] transition hover:border-[#aabff0] hover:text-[#168ff2]">购买积分</button></div></section>
         <section ref={packageSectionRef} className={`mt-[68px] ${visiblePlans.length === 1 ? 'flex justify-center' : ''}`} style={visiblePlans.length === 1 ? { display: 'flex', justifyContent: 'center' } : undefined}><div className={`grid w-full grid-cols-1 gap-4 sm:grid-cols-2 ${visiblePlans.length === 1 ? 'max-w-[720px] xl:grid-cols-1' : visiblePlans.length === 2 ? 'mx-auto max-w-[1120px] xl:grid-cols-2' : visiblePlans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`} style={visiblePlans.length === 1 ? { width: '100%', maxWidth: '720px', margin: '0 auto', gridTemplateColumns: 'minmax(0, 1fr)' } : undefined}>{visiblePlans.map((plan, index) => { const tierKey = `${membershipType}:${plan.memberType ?? plan.planKey}:${activeCycleKey}`; const cycleData = getCyclePlanData(plan, activeCycleKey); const hasTiers = Boolean(cycleData.tierOptions?.length); return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} cycleName={selectedCycleConfig?.name ?? cycleData.period} tierIndex={tierSelections[tierKey] ?? 0} onTierChange={hasTiers ? (value) => setTierSelections((current) => ({ ...current, [tierKey]: value })) : undefined} enterprise={membershipType === 'enterprise'} seats={enterpriseSeats[plan.planKey] ?? 1} onSeatChange={membershipType === 'enterprise' ? (delta) => setEnterpriseSeats((current) => ({ ...current, [plan.planKey]: Math.max(1, (current[plan.planKey] ?? 1) + delta) })) : undefined} onContactAdvisor={() => setEnterprisePurchaseContactOpen(true)} onPurchase={() => openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? cycleData.period, tierSelections[tierKey] ?? 0, membershipType === 'enterprise', enterpriseSeats[plan.planKey] ?? 1)} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} coupons={availableCoupons} />; })}</div></section>
         <section className="mx-auto mt-12 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} /> : <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section>
         <section className="mx-auto mt-4 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.modelConsumption.title}</h2><p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section>
@@ -1067,6 +1127,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
       </div>
       {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} onCycleChange={(index) => { setActiveCycle(index); setRetentionPlanIndex(0); }} onPlanChange={setRetentionPlanIndex} onContinue={() => setRetentionOpen(false)} onClose={onClose} /> : null}
       {paymentSelection ? <MembershipPaymentModal selection={paymentSelection} coupons={availableCoupons} onClose={() => setPaymentSelection(null)} /> : null}
+      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
       {couponModalOpen ? <MembershipCouponModal coupons={availableCoupons} onClose={() => setCouponModalOpen(false)} /> : null}
       {enterprisePurchaseContactOpen ? <EnterprisePurchaseContactModal config={pageConfig.commercialLicense.enterprisePurchaseContact} onClose={() => setEnterprisePurchaseContactOpen(false)} /> : null}
     </div>
