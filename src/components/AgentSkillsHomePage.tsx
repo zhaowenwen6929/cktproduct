@@ -811,7 +811,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               </div>
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
                 {homepageFeatureCards.map((card) => (
-                  <div key={card.title} className="relative flex h-[84px] min-w-0 items-center justify-between overflow-hidden rounded-[15px] bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(58,71,101,0.025)]">
+                  <div key={card.title} className="relative flex h-[94px] min-w-0 items-center justify-between overflow-hidden rounded-[15px] bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(58,71,101,0.025)]">
                     <div className="relative z-10 min-w-0 pr-2">
                       <div className="truncate text-[15px] font-semibold text-[#273248]">{card.title}</div>
                       <div className="mt-1 line-clamp-2 text-[11px] leading-4.5 text-[#98a6bd]">{card.desc}</div>
