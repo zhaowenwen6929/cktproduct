@@ -159,11 +159,11 @@ function createWebPackagePlanData(memberLevel: number | undefined, planKey: stri
   return { ...fallback, ...(firstCycle ?? {}), cyclePricing };
 }
 
-function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[], memberLevelDisplay: Record<string, MembershipMemberLevelDisplayConfig>): MembershipPlan {
+function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[], memberLevelDisplay?: MembershipMemberLevelDisplayConfig): MembershipPlan {
   const memberType = resolveMemberType(plan, membershipType);
   const memberLevel = resolveMemberLevel(plan, membershipType);
   const data = createWebPackagePlanData(memberLevel, plan.planKey, cycleOptions, packageDetails);
-  return { ...data, ...plan, memberType, memberLevel, memberLevelDisplay: memberLevel == null ? undefined : memberLevelDisplay[String(memberLevel)] };
+  return { ...data, ...plan, memberType, memberLevel, memberLevelDisplay };
 }
 
 const promotionDurationMs = (((4 * 24 + 1) * 60 + 51) * 60 + 59) * 1000;
@@ -446,7 +446,11 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
     .map((plan) => {
       const memberLevel = resolveMemberLevel(plan, membershipType);
       const vipLevel = memberLevel == null ? undefined : activeVipLevels.get(memberLevel);
-      return hydratePlan(vipLevel ? { ...plan, name: vipLevel.displayName, memberType: vipLevel.memberName, memberLevel: vipLevel.level } : plan, membershipType, cycleOptions, packageDetails, pageConfig.plans.memberLevelDisplay);
+      const displayPlan = vipLevel
+        ? { ...plan, name: vipLevel.displayName, subtitle: vipLevel.subtitle, memberType: vipLevel.memberName, memberLevel: vipLevel.level }
+        : plan;
+      const memberLevelDisplay = vipLevel ?? (memberLevel == null ? undefined : pageConfig.plans.memberLevelDisplay?.[String(memberLevel)]);
+      return hydratePlan(displayPlan, membershipType, cycleOptions, packageDetails, memberLevelDisplay);
     })
     .filter((plan) => activeMemberLevels.size === 0 || activeMemberLevels.has(plan.memberLevel))
     .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberLevel, selectedCycleConfig, packageDetails).length > 0)

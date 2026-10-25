@@ -84,7 +84,7 @@ const persistVersions = (versions: MembershipPageVersion[]) => {
 const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = false) => {
   if (typeof value !== 'string') return fallback;
   try {
-    const parsed = JSON.parse(value) as { tabs?: Array<Record<string, unknown>> };
+    const parsed = JSON.parse(value) as { tabs?: Array<Record<string, unknown>>; memberLevelDisplay?: unknown };
     const fallbackConfig = JSON.parse(fallback) as { tabs: Array<Record<string, unknown>> };
     if (!Array.isArray(parsed.tabs)) return value;
     const tabs = fallbackConfig.tabs.map((fallbackTab, index) => {
@@ -103,18 +103,27 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
         ? tab.viplevel
         : Array.isArray(tab.memberLevels) ? tab.memberLevels : null;
       const fallbackVipLevels = Array.isArray(fallbackTab.viplevel) ? fallbackTab.viplevel as Array<Record<string, unknown>> : [];
+      const legacyMemberLevelDisplay = parsed.memberLevelDisplay && typeof parsed.memberLevelDisplay === 'object'
+        ? parsed.memberLevelDisplay as Record<string, Record<string, unknown>>
+        : {};
       const viplevel = rawVipLevel
         ? rawVipLevel.map((item, vipIndex) => {
           const raw = item && typeof item === 'object' ? item as Record<string, unknown> : {};
           const fallbackVipLevel = fallbackVipLevels[vipIndex] ?? {};
+          const level = typeof raw.level === 'number' ? raw.level : Number(raw.level ?? fallbackVipLevel.level);
+          const memberName = typeof raw.memberName === 'string'
+            ? raw.memberName
+            : typeof raw.memberType === 'string' ? raw.memberType : fallbackVipLevel.memberName;
+          const legacyDisplay = legacyMemberLevelDisplay[String(level)] ?? legacyMemberLevelDisplay[memberName as string];
           return {
-            level: typeof raw.level === 'number' ? raw.level : Number(raw.level ?? fallbackVipLevel.level),
-            memberName: typeof raw.memberName === 'string'
-              ? raw.memberName
-              : typeof raw.memberType === 'string' ? raw.memberType : fallbackVipLevel.memberName,
+            level,
+            memberName,
             displayName: typeof raw.displayName === 'string' && raw.displayName.trim()
               ? raw.displayName
               : fallbackVipLevel.displayName,
+            subtitle: typeof raw.subtitle === 'string' && raw.subtitle.trim() ? raw.subtitle : fallbackVipLevel.subtitle,
+            banner: raw.banner ?? legacyDisplay?.banner ?? fallbackVipLevel.banner,
+            tag: raw.tag ?? legacyDisplay?.tag ?? fallbackVipLevel.tag,
           };
         })
         : fallbackVipLevels;
@@ -139,7 +148,9 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
         options,
       };
     });
-    return JSON.stringify({ ...fallbackConfig, ...parsed, tabs }, null, 2);
+    const migratedConfig = { ...fallbackConfig, ...parsed, tabs } as Record<string, unknown>;
+    delete migratedConfig.memberLevelDisplay;
+    return JSON.stringify(migratedConfig, null, 2);
   } catch {
     return value;
   }
