@@ -208,32 +208,59 @@ function getDefaultPointsDescription(member: string, points: number) {
   return '';
 }
 
+function getDefaultPriceDescription(price: Pick<PackageDetailRow, 'displayName' | 'duration' | 'currentPrice' | 'contractPrice' | 'packageType'>) {
+  if (price.displayName === '终身' || price.duration >= LIFETIME_MEMBER_DAYS) return '一次性购买 · 会员权益长期有效';
+  if (price.displayName.includes('送')) return `一次性购买 · 享${Math.max(1, Math.round(price.duration / 365))}年权益`;
+  if (price.packageType === '订阅套餐') {
+    const renewalPrice = price.contractPrice.match(/续费\s*[¥￥]?\s*([\d,.]+)/)?.[1];
+    return renewalPrice
+      ? `首充¥${price.currentPrice} · 续费¥${renewalPrice} · 可随时取消`
+      : `首充¥${price.currentPrice} · 后续按当前套餐价格续费 · 可随时取消`;
+  }
+  return `一次性购买 · 有效期按套餐时长计算`;
+}
+
+function getDefaultSaleDescription(member: string, points: number, price: Pick<NewWebSkuPrice, 'displayName' | 'duration' | 'price' | 'renewalPrice' | 'packageType'>, pointsDescription: string) {
+  const promotionDescription = price.packageType === '订阅套餐' ? '连续订阅优惠' : '一次性购买';
+  const priceDescription = getDefaultPriceDescription({
+    displayName: price.displayName,
+    duration: price.duration,
+    currentPrice: price.price,
+    contractPrice: price.renewalPrice == null ? '-' : `续费${price.renewalPrice}`,
+    packageType: price.packageType ?? '普通套餐',
+  });
+  return [promotionDescription, pointsDescription || getDefaultPointsDescription(member, points), priceDescription].join('^');
+}
+
 function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
   const pointsUnit = member.includes('企业') ? '团队' : '每人';
   const memberLevel = getMemberLevelByName(member);
-  return prices.map((price, index): PackageDetailRow => ({
-    id: startId + index,
-    name: `web-${member}-${price.displayName}（${price.renewalPrice == null ? price.price : `首充${price.price}，续费${price.renewalPrice}`}）`,
-    displayName: price.displayName,
-    duration: price.duration,
-    originalPrice: price.renewalPrice ?? price.price,
-    discount: 100,
-    currentPrice: price.price,
-    contractPrice: price.renewalPrice == null ? '-' : `首充${price.price}，续费${price.renewalPrice}`,
-    packageType: price.packageType ?? '普通套餐',
-    member,
-    memberLevel,
-    sort: index,
-    trialDays: 0,
-    segment: '/',
-    displayTime: '/',
-    status: '显示',
-    points,
-    pointsUnit,
-    pointsCycle: price.duration === LIFETIME_MEMBER_DAYS ? '一次性' : '按月',
-    saleDescription: price.saleDescription ?? '',
-    pointsDescription: price.pointsDescription ?? getDefaultPointsDescription(member, points),
-  }));
+  return prices.map((price, index): PackageDetailRow => {
+    const pointsDescription = price.pointsDescription ?? getDefaultPointsDescription(member, points);
+    return {
+      id: startId + index,
+      name: `web-${member}-${price.displayName}（${price.renewalPrice == null ? price.price : `首充${price.price}，续费${price.renewalPrice}`}）`,
+      displayName: price.displayName,
+      duration: price.duration,
+      originalPrice: price.renewalPrice ?? price.price,
+      discount: 100,
+      currentPrice: price.price,
+      contractPrice: price.renewalPrice == null ? '-' : `首充${price.price}，续费${price.renewalPrice}`,
+      packageType: price.packageType ?? '普通套餐',
+      member,
+      memberLevel,
+      sort: index,
+      trialDays: 0,
+      segment: '/',
+      displayTime: '/',
+      status: '显示',
+      points,
+      pointsUnit,
+      pointsCycle: price.duration === LIFETIME_MEMBER_DAYS ? '一次性' : '按月',
+      saleDescription: price.saleDescription ?? getDefaultSaleDescription(member, points, price, pointsDescription),
+      pointsDescription,
+    };
+  });
 }
 
 const flagshipWebSkuPrices: NewWebSkuPrice[] = [
@@ -351,11 +378,19 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
   try {
     const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY) ?? '{}') as Record<string, unknown>;
     const rows = stored[String(packageId)];
-    return Array.isArray(rows) ? (rows as PackageDetailRow[]).map((row) => ({
-      ...row,
-      memberLevel: row.memberLevel ?? getMemberLevelByName(row.member),
-      pointsDescription: row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0),
-    })) : fallback;
+    return Array.isArray(rows) ? (rows as PackageDetailRow[]).map((row) => {
+      const pointsDescription = row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0);
+      const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim()).filter(Boolean);
+      const saleDescription = packageId === WEB_PACKAGE_ID && saleDescriptionParts.length < 3
+        ? [saleDescriptionParts[0] ?? '一次性购买', pointsDescription, getDefaultPriceDescription(row)].join('^')
+        : row.saleDescription;
+      return {
+        ...row,
+        memberLevel: row.memberLevel ?? getMemberLevelByName(row.member),
+        saleDescription,
+        pointsDescription,
+      };
+    }) : fallback;
   } catch {
     return fallback;
   }
