@@ -719,11 +719,11 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
           <h1 className="relative z-10 text-center text-[31px] font-semibold tracking-[0.035em] text-[#18233d]">今天你想做些什么？</h1>
 
           {mode === 'templates' ? (
-            <div className="relative z-10 mx-auto mt-[150px] flex h-[84px] max-w-[1160px] items-center gap-4 rounded-[31px] border-[3px] border-[#3287ff] bg-white px-4 shadow-[0_16px_35px_rgba(63,116,220,0.16)]">
-              <Search className="ml-1 h-6 w-6 shrink-0 text-[#c4cad5]" />
-              <input value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="输入关键词搜索你想要的模板或素材" className="min-w-0 flex-1 text-[18px] outline-none placeholder:text-[#aab4c7]" />
-              <Camera className="h-6 w-6 shrink-0 text-[#c4cad5]" />
-              <button type="button" className="h-[58px] w-[100px] shrink-0 rounded-[16px] bg-[#1478fa] text-[17px] font-semibold text-white shadow-[0_5px_12px_rgba(20,120,250,0.2)]">搜索</button>
+            <div className="relative z-10 mx-auto mt-[150px] flex h-[58px] max-w-[900px] items-center gap-2.5 rounded-[24px] border-2 border-[#3287ff] bg-white px-3 shadow-[0_12px_25px_rgba(63,116,220,0.14)]">
+              <Search className="ml-1 h-5 w-5 shrink-0 text-[#c4cad5]" />
+              <input value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="输入关键词搜索你想要的模板或素材" className="min-w-0 flex-1 text-[14px] outline-none placeholder:text-[#aab4c7]" />
+              <Camera className="h-5 w-5 shrink-0 text-[#c4cad5]" />
+              <button type="button" className="h-[42px] w-[74px] shrink-0 rounded-[12px] bg-[#1478fa] text-[14px] font-semibold text-white shadow-[0_4px_10px_rgba(20,120,250,0.18)]">搜索</button>
             </div>
           ) : (
             <div className="relative z-10 mx-auto mt-[92px] h-[226px] max-w-[1160px] rounded-[31px] border-[3px] border-[#7166ff] bg-white px-5 pb-5 pt-5 shadow-[0_16px_34px_rgba(87,92,197,0.14)]">
@@ -791,30 +791,30 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
           </section>
         ) : (
           <section className="mx-auto grid max-w-[1920px] grid-cols-1 gap-5 px-[42px] pb-10 xl:grid-cols-[minmax(400px,0.82fr)_minmax(760px,1.7fr)] 2xl:gap-6">
-            <div className="grid grid-cols-2 grid-rows-[218px_165px] gap-5">
-              <button type="button" className="relative col-span-2 overflow-hidden rounded-[22px] border border-[#e8e9f5] bg-[linear-gradient(115deg,#f2f2ff_0%,#f9f9ff_66%,#fff_100%)] px-8 py-8 text-left shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
-                <span className="block text-[21px] font-semibold text-[#35405a]">创建设计</span>
-                <span className="mt-2 block text-[14px] text-[#94a3be]">高频创作场景一键直达</span>
-                <span className="absolute bottom-9 left-8 flex h-9 w-9 items-center justify-center rounded-full border border-[#e8edff] bg-white text-[25px] leading-none text-[#7a74ff] shadow-sm">›</span>
-                <span className="absolute bottom-7 right-9 flex h-[116px] w-[114px] items-center justify-center rounded-[15px] border border-[#e0e9ff] bg-white/75 shadow-[0_8px_24px_rgba(77,127,255,0.1)]"><span className="relative flex h-[80px] w-[72px] items-center justify-center border-2 border-dashed border-[#78a8ff] text-[#3985ff]"><span className="absolute -right-2 -top-2 h-3 w-3 rounded-sm border-2 border-[#3985ff] bg-white" /><span className="absolute -bottom-2 -left-2 h-3 w-3 rounded-sm border-2 border-[#3985ff] bg-white" /><Plus className="h-8 w-8" /></span></span>
+            <div className="grid grid-cols-2 grid-rows-[160px_120px] gap-3">
+              <button type="button" className="relative col-span-2 overflow-hidden rounded-[18px] border border-[#e8e9f5] bg-[linear-gradient(115deg,#f2f2ff_0%,#f9f9ff_66%,#fff_100%)] px-6 py-6 text-left shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
+                <span className="block text-[18px] font-semibold text-[#35405a]">创建设计</span>
+                <span className="mt-1.5 block text-[12px] text-[#94a3be]">高频创作场景一键直达</span>
+                <span className="absolute bottom-6 left-6 flex h-8 w-8 items-center justify-center rounded-full border border-[#e8edff] bg-white text-[22px] leading-none text-[#7a74ff] shadow-sm">›</span>
+                <span className="absolute bottom-5 right-7 flex h-[94px] w-[94px] items-center justify-center rounded-[13px] border border-[#e0e9ff] bg-white/75 shadow-[0_8px_24px_rgba(77,127,255,0.1)]"><span className="relative flex h-[64px] w-[58px] items-center justify-center border-2 border-dashed border-[#78a8ff] text-[#3985ff]"><span className="absolute -right-2 -top-2 h-2.5 w-2.5 rounded-sm border-2 border-[#3985ff] bg-white" /><span className="absolute -bottom-2 -left-2 h-2.5 w-2.5 rounded-sm border-2 border-[#3985ff] bg-white" /><Plus className="h-7 w-7" /></span></span>
               </button>
-              <button type="button" onClick={onOpenCanvas} className="rounded-[22px] border border-[#eceff4] bg-[radial-gradient(circle_at_25%_20%,#edf8ff_0%,#fff_58%)] px-7 py-7 text-left shadow-[0_3px_12px_rgba(85,101,154,0.025)] transition hover:border-[#c9d9ff]"><span className="block text-[19px] font-semibold text-[#35405a]">无限画布</span><span className="mt-2 block text-[14px] text-[#96a5be]">点击即可快速开始</span></button>
-              <button type="button" className="rounded-[22px] border border-[#eceff4] bg-[radial-gradient(circle_at_80%_20%,#f0f3ff_0%,#fff_58%)] px-7 py-7 text-left shadow-[0_3px_12px_rgba(85,101,154,0.025)] transition hover:border-[#c9d9ff]"><span className="block text-[19px] font-semibold text-[#35405a]">图片编辑</span><span className="mt-2 block text-[14px] text-[#96a5be]">点击即可快速开始</span></button>
+              <button type="button" onClick={onOpenCanvas} className="rounded-[18px] border border-[#eceff4] bg-[radial-gradient(circle_at_25%_20%,#edf8ff_0%,#fff_58%)] px-6 py-5 text-left shadow-[0_3px_12px_rgba(85,101,154,0.025)] transition hover:border-[#c9d9ff]"><span className="block text-[17px] font-semibold text-[#35405a]">无限画布</span><span className="mt-1.5 block text-[12px] text-[#96a5be]">点击即可快速开始</span></button>
+              <button type="button" className="rounded-[18px] border border-[#eceff4] bg-[radial-gradient(circle_at_80%_20%,#f0f3ff_0%,#fff_58%)] px-6 py-5 text-left shadow-[0_3px_12px_rgba(85,101,154,0.025)] transition hover:border-[#c9d9ff]"><span className="block text-[17px] font-semibold text-[#35405a]">图片编辑</span><span className="mt-1.5 block text-[12px] text-[#96a5be]">点击即可快速开始</span></button>
             </div>
 
-            <div className="rounded-[22px] bg-[#f2f5fb] p-4 shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
-              <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="h-[292px] rounded-[18px] bg-[#f2f5fb] p-3 shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
+              <div className="mb-2.5 flex items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-6 text-[14px] font-medium text-[#75829a]">
                   {['热门推荐', '海报上新', '视频创作', 'AI电商', '印刷制作', '图片处理'].map((tab, index) => <button key={tab} type="button" className={index === 0 ? 'relative font-semibold text-[#263148] after:absolute after:-bottom-2 after:left-0 after:h-[3px] after:w-9 after:rounded-full after:bg-[#8077ff]' : 'transition hover:text-[#263148]'}>{tab}</button>)}
                 </div>
                 <button type="button" className="shrink-0 text-[12px] text-[#8490a6] transition hover:text-[#3e79d7]">更多 ›</button>
               </div>
-              <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
                 {homepageFeatureCards.map((card) => (
-                  <div key={card.title} className="relative flex h-[116px] min-w-0 items-center justify-between overflow-hidden rounded-[18px] bg-white px-5 py-3.5 shadow-[0_2px_8px_rgba(58,71,101,0.025)]">
+                  <div key={card.title} className="relative flex h-[94px] min-w-0 items-center justify-between overflow-hidden rounded-[15px] bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(58,71,101,0.025)]">
                     <div className="relative z-10 min-w-0 pr-2">
-                      <div className="truncate text-[17px] font-semibold text-[#273248]">{card.title}</div>
-                      <div className="mt-1.5 line-clamp-2 text-[12px] leading-5 text-[#98a6bd]">{card.desc}</div>
+                      <div className="truncate text-[15px] font-semibold text-[#273248]">{card.title}</div>
+                      <div className="mt-1 line-clamp-2 text-[11px] leading-4.5 text-[#98a6bd]">{card.desc}</div>
                     </div>
                     <FeatureArt kind={card.art} />
                   </div>
@@ -1157,7 +1157,7 @@ function SkillCard({ skill, index, hot = index < 2, onClick }: { skill: SkillDef
 }
 
 function FeatureArt({ kind }: { kind: string }) {
-  const common = 'relative ml-2 flex h-[94px] w-[136px] shrink-0 items-center justify-center overflow-hidden rounded-[13px]';
+  const common = 'relative ml-2 flex h-[72px] w-[104px] shrink-0 items-center justify-center overflow-hidden rounded-[11px]';
   if (kind === 'calendar') return <div className={`${common} bg-[linear-gradient(135deg,#c1e6ff,#82b8f2)]`}><div className="grid h-[70px] w-[88px] grid-cols-3 gap-1 rounded-lg bg-white/90 p-2 shadow-sm">{Array.from({ length: 9 }, (_, i) => <i key={i} className={`rounded-sm ${i === 4 ? 'bg-[#43a4ff]' : 'bg-[#d5e9ff]'}`} />)}</div><span className="absolute right-2 top-2 h-3 w-3 rounded-full bg-[#ffd34e]" /></div>;
   if (kind === 'video') return <div className={`${common} bg-[#e8edf5]`}><div className="flex h-[70px] w-[95px] items-center justify-center rounded-lg border border-white bg-[linear-gradient(135deg,#d7e4f4,#a7c7e8)]"><Video className="h-9 w-9 text-[#557594]" /><span className="absolute rounded-full bg-white/80 p-1.5"><Video className="h-4 w-4 text-[#6b58ef]" /></span></div></div>;
   if (kind === 'poster') return <div className={`${common} bg-[#ddf5f3]`}><div className="h-[70px] w-[48px] rounded-[6px] bg-[linear-gradient(180deg,#fbffff,#a8d4ff)] p-2 shadow-sm"><span className="block h-3 rounded-sm bg-[#5d93ff]"/><span className="mt-2 block h-1.5 w-7 rounded bg-[#9dbaff]"/></div><div className="ml-2 h-[70px] w-[48px] rounded-[6px] bg-[linear-gradient(180deg,#fef8ed,#ffa689)] p-2 shadow-sm"><span className="block h-3 rounded-sm bg-[#ff795d]"/><span className="mt-2 block h-1.5 w-7 rounded bg-[#ffc38f]"/></div></div>;
