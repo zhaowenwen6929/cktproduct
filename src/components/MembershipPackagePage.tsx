@@ -33,6 +33,8 @@ export type PackageDetailRow = {
   points?: number;
   pointsUnit?: '每人' | '团队';
   pointsCycle?: '按月' | '一次性';
+  saleDescription?: string;
+  pointsDescription?: string;
 };
 
 const initialPackages: PackageRow[] = [
@@ -192,7 +194,19 @@ type NewWebSkuPrice = {
   price: number;
   renewalPrice?: number;
   packageType?: '普通套餐' | '订阅套餐';
+  saleDescription?: string;
+  pointsDescription?: string;
 };
+
+function getDefaultPointsDescription(member: string, points: number) {
+  const isPersonal = member.includes('个人') || member.includes('单人');
+  const isEnterprise = member.includes('企业') || member.includes('团队');
+  if (member.includes('基础版') && isPersonal && points === 200) return '最多可生成约50张图片';
+  if (member.includes('基础版') && isEnterprise && points === 400) return '最多可生成约100张图片';
+  if (member.includes('专业版') && isPersonal && points === 1200) return '最多可生成约300张图片或15个视频';
+  if ((member.includes('专业版') || member.includes('旗舰版')) && points >= 1200) return '最多可生成约500张图片或6个视频';
+  return '';
+}
 
 function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
   const pointsUnit = member.includes('企业') ? '团队' : '每人';
@@ -217,6 +231,8 @@ function createWebSkuDetails(startId: number, member: string, points: number, pr
     points,
     pointsUnit,
     pointsCycle: price.duration === LIFETIME_MEMBER_DAYS ? '一次性' : '按月',
+    saleDescription: price.saleDescription ?? '',
+    pointsDescription: price.pointsDescription ?? getDefaultPointsDescription(member, points),
   }));
 }
 
@@ -338,6 +354,7 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
     return Array.isArray(rows) ? (rows as PackageDetailRow[]).map((row) => ({
       ...row,
       memberLevel: row.memberLevel ?? getMemberLevelByName(row.member),
+      pointsDescription: row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0),
     })) : fallback;
   } catch {
     return fallback;
@@ -426,6 +443,8 @@ const blankPackageDetail: PackageDetailRow = {
   points: 0,
   pointsUnit: '每人',
   pointsCycle: '按月',
+  saleDescription: '',
+  pointsDescription: '',
 };
 
 type DetailEditValues = {
@@ -643,7 +662,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
     id: row.id,
     name: row.name,
     displayName: row.displayName,
-    saleDescription: isCreate ? '' : '限时加赠1年~低至￥0.54元/人',
+    saleDescription: row.saleDescription ?? '',
     member: row.member,
     packageType: row.packageType,
     duration: initialDuration,
@@ -744,9 +763,9 @@ function MembershipPackageDetailPage({ packageId, packageName, onBack, onBackToD
     updateDetails((current) => {
       if (values.id === 0) {
         const nextId = Math.max(...current.map((row) => row.id), 0) + 1;
-        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', memberLevel: getMemberLevelByName(values.member), sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: isHistoricalMemberType(values.member) ? undefined : Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人', pointsCycle: values.pointsCycle === '一次性' ? '一次性' : '按月' }, ...current];
+        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', memberLevel: getMemberLevelByName(values.member), sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: isHistoricalMemberType(values.member) ? undefined : Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人', pointsCycle: values.pointsCycle === '一次性' ? '一次性' : '按月', saleDescription: values.saleDescription.trim(), pointsDescription: getDefaultPointsDescription(values.member, Number(values.points) || 0) }, ...current];
       }
-      return current.map((row) => row.id === values.id ? { ...row, name: values.name, discount: Number(values.discount) || row.discount, sort: Number(values.sort) || 0, segment: values.segment || '/' } : row);
+      return current.map((row) => row.id === values.id ? { ...row, name: values.name, discount: Number(values.discount) || row.discount, sort: Number(values.sort) || 0, segment: values.segment || '/', saleDescription: values.saleDescription.trim() } : row);
     });
     setDetailEditor(null);
   };
