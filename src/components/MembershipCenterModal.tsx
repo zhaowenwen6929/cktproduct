@@ -223,33 +223,57 @@ function StickyPurchaseBar({ plans, cycleKey, membershipType, onMembershipTypeCh
 }
 
 function CycleOptionSelector({ options, selectedIndex, onChange }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void }) {
-  const rowRef = useRef<HTMLDivElement>(null);
+  const selectorRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
   const optionSignature = options.map((option) => option.key).join('|');
+  const primaryOptions = options.length > 3 ? options.slice(0, 3) : options;
+  const extraOptions = options.length > 3 ? options.slice(3) : [];
+  const selectedExtraOption = extraOptions.find((_, index) => index + primaryOptions.length === selectedIndex);
+  const moreOption = selectedExtraOption ?? extraOptions[0];
 
   useEffect(() => {
     setExpanded(false);
   }, [optionSignature]);
 
   useEffect(() => {
-    if (expanded) return undefined;
-    const row = rowRef.current;
-    if (!row) return undefined;
+    if (!expanded) return undefined;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!selectorRef.current?.contains(event.target as Node)) setExpanded(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [expanded]);
 
-    const updateOverflow = () => setIsOverflowing(row.scrollWidth > row.clientWidth + 1);
-    updateOverflow();
-    if (typeof ResizeObserver === 'undefined') return undefined;
-    const observer = new ResizeObserver(updateOverflow);
-    observer.observe(row);
-    return () => observer.disconnect();
-  }, [expanded, optionSignature]);
+  const renderCycleLabel = (cycle: MembershipCycleConfig) => <>
+    <span>{cycle.name}</span>
+    {cycle.guideText ? <span style={{ color: cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}
+  </>;
 
-  return <div className={`mx-auto mt-4 flex w-full max-w-[1240px] items-start bg-[#eef0f4] p-1 text-[11px] text-[#4e5868] shadow-inner ${expanded ? 'rounded-[16px]' : 'rounded-full'}`}>
-    <div ref={rowRef} className={`min-w-0 flex-1 ${expanded ? 'flex flex-wrap items-center justify-center' : 'flex overflow-hidden'}`}>
-      {options.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => onChange(index)} className={`flex shrink-0 items-center justify-center gap-1 rounded-full px-4 py-2.5 transition ${selectedIndex === index ? 'bg-[#e4e7eb] font-semibold text-[#253043]' : 'hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span style={{ color: cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}</button>)}
+  const selectCycle = (index: number) => {
+    onChange(index);
+    setExpanded(false);
+  };
+
+  return <div ref={selectorRef} className="relative mx-auto mt-4 w-full max-w-[1240px] text-[11px] text-[#4e5868]">
+    <div className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
+      <div className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
+        {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
+      </div>
+      {moreOption ? <div className="relative shrink-0">
+        <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[190px] max-w-[280px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-[12px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
+          <span>更多选择–</span>
+          {renderCycleLabel(moreOption)}
+          <ChevronDown className={`ml-1 h-4 w-4 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        </button>
+        {expanded ? <div role="listbox" className="absolute right-0 top-[calc(100%+8px)] z-40 w-[250px] overflow-hidden rounded-[20px] border border-[#e6e8ec] bg-white p-2 shadow-[0_12px_32px_rgba(31,50,81,.16)]">
+          {extraOptions.map((cycle, index) => {
+            const optionIndex = primaryOptions.length + index;
+            const isSelected = selectedIndex === optionIndex;
+            return <button type="button" role="option" aria-selected={isSelected} key={cycle.key} onClick={() => selectCycle(optionIndex)} className={`flex w-full items-center gap-2 rounded-[16px] px-4 py-3 text-left text-[14px] transition ${isSelected ? 'bg-[#f1f2f4] font-semibold text-[#252a31]' : 'text-[#252a31] hover:bg-[#f6f7f9]'}`}>{renderCycleLabel(cycle)}</button>;
+          })}
+        </div> : null}
+      </div> : null}
     </div>
-    {isOverflowing ? <button type="button" onClick={() => setExpanded((current) => !current)} aria-label={expanded ? '收起剩余时长' : '展开剩余时长'} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#7e8999] transition hover:bg-white/70 hover:text-[#168ff2]"><ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''}`} /></button> : null}
   </div>;
 }
 
