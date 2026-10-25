@@ -30,15 +30,28 @@ export type MembershipCoupon = {
   amount: number;
   available?: boolean;
   expiresAt?: string;
+  memberLevel?: number;
+  durationDays?: number;
+  packageType?: string;
 };
 
 export const MEMBERSHIP_AVAILABLE_COUPON_STORAGE_KEY = 'membership-available-coupon';
+const DEMO_MEMBERSHIP_COUPON: MembershipCoupon = {
+  id: 'demo-basic-yearly-coupon',
+  amount: 20,
+  available: true,
+  memberLevel: 240,
+  durationDays: 365,
+  packageType: '普通套餐',
+};
 
 function readAvailableMembershipCoupon(): MembershipCoupon | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_AVAILABLE_COUPON_STORAGE_KEY) ?? 'null') as unknown;
+    const storedValue = window.localStorage.getItem(MEMBERSHIP_AVAILABLE_COUPON_STORAGE_KEY);
+    if (storedValue == null) return DEMO_MEMBERSHIP_COUPON;
+    const stored = JSON.parse(storedValue) as unknown;
     const candidates = Array.isArray(stored) ? stored : [stored];
     const candidate = candidates.find((item) => {
       if (!item || typeof item !== 'object') return false;
@@ -58,6 +71,9 @@ function readAvailableMembershipCoupon(): MembershipCoupon | null {
       amount: Math.round(amount * 100) / 100,
       available: true,
       expiresAt: typeof record.expiresAt === 'string' ? record.expiresAt : undefined,
+      memberLevel: typeof record.memberLevel === 'number' ? record.memberLevel : undefined,
+      durationDays: typeof record.durationDays === 'number' ? record.durationDays : undefined,
+      packageType: typeof record.packageType === 'string' ? record.packageType : undefined,
     };
   } catch {
     return null;
@@ -278,8 +294,11 @@ function formatMoney(value: number) {
   return value.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-function getCouponDiscount(price: string, coupon?: MembershipCoupon | null) {
+function getCouponDiscount(price: string, coupon?: MembershipCoupon | null, packageInfo?: { memberLevel?: number; durationDays?: number; packageType?: string }) {
   const amount = Number(price.replace(/,/g, '')) || 0;
+  if (coupon?.memberLevel != null && coupon.memberLevel !== packageInfo?.memberLevel) return 0;
+  if (coupon?.durationDays != null && coupon.durationDays !== packageInfo?.durationDays) return 0;
+  if (coupon?.packageType != null && coupon.packageType !== packageInfo?.packageType) return 0;
   return coupon ? Math.min(Math.max(coupon.amount, 0), amount) : 0;
 }
 
@@ -618,7 +637,7 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   const expiryDate = formatExpiryDate(durationDays);
   const isContractPlan = (packageType === '订阅套餐' || packageType === '低价试用且订阅套餐') && Boolean(expiryDate);
   const renewalPriceText = renewalPrice ? `${renewalPrice}元` : '当前套餐价格';
-  const couponDiscount = getCouponDiscount(displayPrice, coupon);
+  const couponDiscount = getCouponDiscount(displayPrice, coupon, { memberLevel: plan.memberLevel, durationDays, packageType });
   const discountedDisplayPrice = Math.max(0, (Number(displayPrice.replace(/,/g, '')) || 0) - couponDiscount);
   const totalPrice = multiplyMoney(displayPrice, seats);
   const discountedTotalPrice = formatMoney(discountedDisplayPrice * seats);
