@@ -642,7 +642,7 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         { key: 'basic', label: '基础版' },
         { key: 'advanced', label: '高级版' },
         { key: 'professional', label: '专业版' },
-        { key: 'flagship', label: '旗舰版', tag: 'New' },
+        { key: 'flagship', label: '旗舰版' },
       ],
       sections: [
         {
