@@ -6,6 +6,7 @@ import { Canvas } from './components/Canvas';
 import { PluginPrototypePage } from './components/PluginPrototypePage';
 import { ConnectorAuthPrototypePage } from './components/ConnectorAuthPrototypePage';
 import { AgentSkillsHomePage } from './components/AgentSkillsHomePage';
+import { MembershipUpgradePage } from './components/MembershipUpgradePage';
 import { TemplateCenterPage } from './components/TemplateCenterPage';
 import { DesignAppHomePage } from './components/DesignAppHomePage';
 import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
@@ -21,10 +22,11 @@ import { UserAuthorizationPage } from './components/UserAuthorizationPage';
 import { UserAuthorizationViewPage } from './components/UserAuthorizationViewPage';
 import { MembershipActivationPage } from './components/MembershipActivationPage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
+import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
 type ExportRequest =
   | {
@@ -68,6 +70,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/connector-auth') return '/connector-auth';
   if (pathname === '/agent-skills-home/templates') return '/agent-skills-home/templates';
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
+  if (pathname === '/membership-upgrade') return '/membership-upgrade';
   if (pathname === '/design-app') return '/design-app';
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
   if (pathname === '/admin-backoffice/ai-ecommerce') return '/admin-backoffice/ai-ecommerce';
@@ -112,6 +115,7 @@ export default function App() {
   const [autoGenerateRequest, setAutoGenerateRequest] = useState<{ requestId: number; prompt: string; attachments: GenerationAttachment[] } | null>(null);
   const [designAppSelectedWork, setDesignAppSelectedWork] = useState<string>();
   const [designAppStartsNew, setDesignAppStartsNew] = useState(false);
+  const [membershipUpgradeMember, setMembershipUpgradeMember] = useState<MembershipCurrentMember>();
   const [designAppCustomWorkTitles, setDesignAppCustomWorkTitles] = useState<string[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -1359,6 +1363,10 @@ export default function App() {
         title: '模板中心｜Agent skills',
         description: '创客贴模板中心，按分类浏览和搜索优质设计模板。',
       },
+      '/membership-upgrade': {
+        title: '会员补差价升级',
+        description: '根据补差价升级套餐组选择会员升级方案。',
+      },
       '/design-app': {
         title: '创客贴设计 APP',
         description: '创客贴设计 APP 首页，提供设计创建、AI 工具和模板推荐入口。',
@@ -1635,6 +1643,10 @@ export default function App() {
         onBackToDirectory={() => navigateTo('/')}
         onOpenCanvas={() => navigateTo('/canvas')}
         onOpenTemplates={() => navigateTo('/agent-skills-home/templates')}
+        onOpenMembershipUpgrade={(currentMember) => {
+          setMembershipUpgradeMember(currentMember);
+          navigateTo('/membership-upgrade');
+        }}
         onStartCanvasGeneration={(prompt, attachments = []) => {
           setAgentInput(prompt);
           setAutoGenerateRequest({ requestId: Date.now(), prompt, attachments });
@@ -1642,6 +1654,10 @@ export default function App() {
         }}
       />
     );
+  }
+
+  if (currentRoute === '/membership-upgrade') {
+    return <MembershipUpgradePage currentMember={membershipUpgradeMember} onBack={() => navigateTo('/agent-skills-home')} />;
   }
 
   if (currentRoute === '/design-app') {

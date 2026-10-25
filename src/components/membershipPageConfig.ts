@@ -224,7 +224,7 @@ export type MembershipCommercialLicenseConfig = {
 
 export type MembershipFaqConfig = {
   title: string;
-  items: Array<{ question: string; answer: string; openByDefault?: boolean }>;
+  items: Array<{ question: string; answer: string; openByDefault?: boolean; action?: 'membership-upgrade' }>;
 };
 
 export type MembershipPageContent = {
@@ -991,7 +991,7 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
       { question: '05.积分扣减有疑问怎么办？', answer: '可以先在生成记录中查看对应任务的模型、规格和积分消耗明细。如果确认扣减异常，请保留任务信息并联系在线客服或专属顾问核查。' },
       { question: '06.可以充值获得积分吗？', answer: '支持通过积分购买入口充值获得积分。不同模型和规格的消耗标准可能不同，提交前请确认购买数量、有效期和使用规则。' },
       { question: '07.如何申请发票？需要多长时间？', answer: '购买成功后可在订单或会员中心提交发票申请，填写发票抬头及税务信息即可。审核和开具时间以订单页面提示为准，通常需要 1-7 个工作日。' },
-      { question: '08.低版本套餐费升级为高版本套餐，如何折算？', answer: '升级时会结合原套餐剩余有效期、已支付金额和目标套餐价格折算应补差价，具体金额以升级页面实时计算结果为准。' },
+      { question: '08.低版本套餐费升级为高版本套餐，如何折算？', answer: '升级时会结合原套餐剩余有效期、已支付金额和目标套餐价格折算应补差价，具体金额以升级页面实时计算结果为准，请点击此处。', action: 'membership-upgrade' },
       { question: '09.购买VIP后是否可以退货退款？', answer: '会员和积分属于虚拟服务，购买前请确认版本、时长和授权范围。已经使用或已生效的虚拟权益通常不支持无理由退款，特殊情况请联系在线客服处理。' },
       { question: '10.是否支持多人同时使用？', answer: '个人版仅限购买账号本人使用，不支持多人共享；企业版支持按席位购买和管理，具体并发使用规则以对应企业套餐说明为准。' },
       { question: '11.积分可以转赠给其他账号吗？', answer: '当前积分仅限购买账号或对应团队使用，不能直接转赠或提现。团队积分按照企业套餐规则由团队管理员统一管理。' },

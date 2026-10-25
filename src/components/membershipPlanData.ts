@@ -2,6 +2,8 @@ export type MembershipTierData = {
   quotaLabel: string;
   price: string;
   originalPrice: string;
+  period?: string;
+  discount?: string;
   points: string;
   pointsNote: string;
   pointsDescription?: string;
@@ -11,6 +13,7 @@ export type MembershipTierData = {
   renewalPrice?: string;
   durationDays?: number;
   packageType?: string;
+  seatUnitPrice?: number;
 };
 
 export type MembershipCyclePlanData = {
@@ -27,6 +30,7 @@ export type MembershipCyclePlanData = {
   renewalPrice?: string;
   durationDays?: number;
   packageType?: string;
+  seatUnitPrice?: number;
   tierOptions?: MembershipTierData[];
 };
 

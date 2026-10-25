@@ -29,7 +29,16 @@ import {
   X,
 } from 'lucide-react';
 import { GenerationAttachment } from '../types';
-import { MembershipCenterModal } from './MembershipCenterModal';
+import { MembershipCenterModal, type MembershipCurrentMember } from './MembershipCenterModal';
+import { RequirementHint, type RequirementSection } from './MembershipPackagePage';
+
+const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME = '首页会员中心入口改版';
+const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS: RequirementSection[] = [
+  { title: '入口位置', items: ['创客贴首页 > 顶部导航 > 会员中心。'] },
+  { title: '入口文案', items: ['右上角原“开通会员”改为“会员中心”，点击后打开会员中心弹框。'] },
+  { title: '需求标识', items: ['改动区域沿用 2026年10月会员改版标识 V2610，标识不遮挡入口按钮。'] },
+];
+const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT = MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 
 type SkillField =
   | { id: string; label: string; type: 'upload'; required?: boolean; max?: number; description?: string }
@@ -496,10 +505,11 @@ interface AgentSkillsHomePageProps {
   onBackToDirectory: () => void;
   onOpenCanvas: () => void;
   onOpenTemplates: () => void;
+  onOpenMembershipUpgrade: (currentMember?: MembershipCurrentMember) => void;
   onStartCanvasGeneration: (prompt: string, attachments?: GenerationAttachment[]) => void;
 }
 
-export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTemplates, onStartCanvasGeneration }: AgentSkillsHomePageProps) {
+export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTemplates, onOpenMembershipUpgrade, onStartCanvasGeneration }: AgentSkillsHomePageProps) {
   const [mode, setMode] = useState<HomeMode>('templates');
   const [searchTerm, setSearchTerm] = useState('');
   const [homePrompt, setHomePrompt] = useState('');
@@ -740,7 +750,11 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
           <button type="button" className="text-[15px] transition hover:text-[#1677f8]">印刷店</button>
           <Grid2x2 className="h-[21px] w-[21px]" />
           <span className="relative"><Bell className="h-[23px] w-[23px]" /><i className="absolute -right-2 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff5e58] px-1 text-[11px] font-medium not-italic text-white">4</i></span>
-          <button type="button" onClick={() => setMembershipOpen(true)} className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>开通会员</button>
+          <div className="relative">
+            <div className="pointer-events-none absolute -inset-1 rounded-[16px] border border-dashed border-[#ff665b]" aria-hidden="true" />
+            <span className="absolute -right-5 -top-3 z-10"><RequirementHint text={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT} requirementName={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME} sections={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS} /></span>
+            <button type="button" onClick={() => setMembershipOpen(true)} aria-label="会员中心" className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>会员中心</button>
+          </div>
           <span className="relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#ead1b3,#7d9eb7)] text-white shadow-sm"><UserRound className="h-6 w-6" /><i className="absolute bottom-0 right-0 rounded-full bg-[#4b8eea] px-1 text-[9px] not-italic">团</i></span>
         </div>
       </header>
@@ -948,7 +962,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         </div>
       ) : null}
 
-      {membershipOpen ? <MembershipCenterModal onClose={() => setMembershipOpen(false)} /> : null}
+      {membershipOpen ? <MembershipCenterModal onClose={() => setMembershipOpen(false)} onOpenUpgradePage={(currentMember) => { setMembershipOpen(false); onOpenMembershipUpgrade(currentMember); }} /> : null}
 
       {selectedSkill ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1b2335]/40 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>
