@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type Ref } from 'react';
 import { Check, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
-import { WEB_NEW_MEMBER_PACKAGE_DETAILS } from './MembershipPackagePage';
+import { readWebMembershipPackageDetails, type PackageDetailRow } from './MembershipPackagePage';
 
 type MembershipCenterModalProps = {
   onClose: () => void;
@@ -23,7 +23,7 @@ type RetentionPurchaseModalProps = {
 };
 
 type MembershipType = 'personal' | 'enterprise';
-type WebPackageDetail = typeof WEB_NEW_MEMBER_PACKAGE_DETAILS[number];
+type WebPackageDetail = PackageDetailRow;
 
 const DEFAULT_MEMBER_TYPE_BY_PLAN: Record<MembershipType, Record<string, string>> = {
   personal: {
@@ -70,9 +70,9 @@ function formatPackageDiscount(discount: number) {
   return String(Number(value.toFixed(1)));
 }
 
-function getCyclePackageRows(memberType: string, cycle: MembershipCycleConfig) {
+function getCyclePackageRows(memberType: string, cycle: MembershipCycleConfig, packageDetails: WebPackageDetail[]) {
   const duration = Number.parseInt(cycle.duration, 10);
-  const rows = WEB_NEW_MEMBER_PACKAGE_DETAILS.filter((row) => row.member === memberType && row.duration === duration && row.points != null);
+  const rows = packageDetails.filter((row) => row.status === '显示' && row.member === memberType && row.duration === duration && row.points != null);
   const wantsSubscription = cycle.name.includes('连续');
   const preferredRows = rows.filter((row) => wantsSubscription ? row.packageType === '订阅套餐' : row.packageType !== '订阅套餐');
   const sourceRows = preferredRows.length ? preferredRows : rows;
@@ -83,10 +83,10 @@ function getCyclePackageRows(memberType: string, cycle: MembershipCycleConfig) {
   return [...uniqueRows.values()].sort((left, right) => (left.points ?? 0) - (right.points ?? 0));
 }
 
-function createWebPackagePlanData(memberType: string, planKey: string, cycleOptions: MembershipCycleConfig[]): MembershipPlanData {
+function createWebPackagePlanData(memberType: string, planKey: string, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[]): MembershipPlanData {
   const fallback = REAL_MEMBERSHIP_PLAN_DATA[planKey] ?? REAL_MEMBERSHIP_PLAN_DATA.basic;
   const cyclePricing = Object.fromEntries(cycleOptions.map((cycle) => {
-    const rows = getCyclePackageRows(memberType, cycle);
+    const rows = getCyclePackageRows(memberType, cycle, packageDetails);
     const fallbackCycle = fallback.cyclePricing?.[normalizeCycleKey(cycle.key)] ?? fallback;
     if (!rows.length) return [cycle.key, { ...fallbackCycle, period: cycle.name }];
 
@@ -114,9 +114,9 @@ function createWebPackagePlanData(memberType: string, planKey: string, cycleOpti
   return { ...fallback, ...(firstCycle ?? {}), cyclePricing };
 }
 
-function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[]): MembershipPlan {
+function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[]): MembershipPlan {
   const memberType = resolveMemberType(plan, membershipType);
-  const data = createWebPackagePlanData(memberType, plan.planKey, cycleOptions);
+  const data = createWebPackagePlanData(memberType, plan.planKey, cycleOptions, packageDetails);
   return { ...data, ...plan, memberType };
 }
 
@@ -347,6 +347,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const [tierSelections, setTierSelections] = useState<Record<string, number>>({});
   const [enterpriseSeats, setEnterpriseSeats] = useState<Record<string, number>>({});
   const [pageConfig, setPageConfig] = useState<MembershipPageContent>(() => readMembershipPageConfig('web'));
+  const [packageDetails, setPackageDetails] = useState<PackageDetailRow[]>(() => readWebMembershipPackageDetails());
   const [promotionDeadline] = useState(() => Date.now() + promotionDurationMs);
   const [remainingMs, setRemainingMs] = useState(promotionDurationMs);
   const [retentionOpen, setRetentionOpen] = useState(false);
@@ -364,13 +365,18 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   }, [promotionDeadline]);
 
   useEffect(() => {
-    const reloadPageConfig = () => setPageConfig(readMembershipPageConfig('web'));
+    const reloadPageConfig = () => {
+      setPageConfig(readMembershipPageConfig('web'));
+      setPackageDetails(readWebMembershipPackageDetails());
+    };
     window.addEventListener('storage', reloadPageConfig);
     window.addEventListener('membership-page-config-updated', reloadPageConfig);
+    window.addEventListener('membership-package-details-updated', reloadPageConfig);
 
     return () => {
       window.removeEventListener('storage', reloadPageConfig);
       window.removeEventListener('membership-page-config-updated', reloadPageConfig);
+      window.removeEventListener('membership-package-details-updated', reloadPageConfig);
     };
   }, []);
 
@@ -382,8 +388,8 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
   const selectedCycleConfig = cycleOptions[selectedCycle];
   const visiblePlans = (pageConfig.overview.planCards?.[membershipType] ?? [])
-    .map((plan) => hydratePlan(plan, membershipType, cycleOptions))
-    .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberType ?? '', selectedCycleConfig).length > 0)
+    .map((plan) => hydratePlan(plan, membershipType, cycleOptions, packageDetails))
+    .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberType ?? '', selectedCycleConfig, packageDetails).length > 0)
     .filter((plan, index, plans) => plans.findIndex((item) => item.memberType === plan.memberType) === index);
   const activeCycleKey = cycleOptions[selectedCycle]?.key ?? 'yearly';
   const activeDetails = pageConfig.details[membershipType];
@@ -416,7 +422,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
       <button type="button" onClick={requestClose} aria-label="关闭会员中心" className="absolute right-3 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e9ef] bg-white text-[#7e8999] shadow-[0_4px_14px_rgba(38,53,79,.08)] transition hover:border-[#bdc7d7] hover:text-[#263247]"><X className="h-4 w-4" /></button>
       <main className="mx-auto max-w-[1240px] px-5 pb-20 pt-0">
         <section className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(112deg,#1588ee_0%,#1b94f7_48%,#ffd57d_100%)] px-6 py-5 shadow-[0_14px_34px_rgba(39,143,238,.17)]"><div className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full bg-white/25 blur-3xl" /><div className="pointer-events-none absolute right-[17%] top-0 h-32 w-32 rounded-full bg-[#fff3d0]/40 blur-2xl" /><div className="relative flex min-h-[82px] items-center justify-between gap-6"><div><div className="mb-3 flex items-center gap-2"><span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-[#293548]">✦ Seedance 2.5</span><span className="rounded-full bg-white px-2 py-1 text-[10px] font-medium text-[#293548]">四重福利</span></div><p className="text-[17px] font-semibold text-white">🎟 ¥0.19超低单秒价备战双11</p><p className="mt-1 text-[15px] font-medium text-[#ffe74d]">最高额外加赠2个月会员、4万+积分</p></div><div className="hidden items-center gap-1.5 sm:flex"><CountdownBox value={countdown.days} label="天" /><CountdownBox value={countdown.hours} label="小时" /><CountdownBox value={countdown.minutes} label="分钟" /><CountdownBox value={countdown.seconds} label="秒" /></div></div></section>
-      <section className="pt-6"><div className="flex items-center justify-center gap-10 text-[17px] font-semibold"><button type="button" onClick={() => { setMembershipType('personal'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalTab?.name ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button><button type="button" onClick={() => { setMembershipType('enterprise'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseTab?.name ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button></div><div className="mx-auto mt-4 max-w-[1120px] overflow-x-auto rounded-full bg-[#eef0f4] p-1 text-[11px] text-[#4e5868] shadow-inner"><div className="flex min-w-max items-center gap-1">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => setActiveCycle(index)} className={`flex shrink-0 items-center justify-center gap-1 rounded-full px-4 py-2.5 transition ${selectedCycle === index ? 'bg-[#e4e7eb] font-semibold text-[#253043]' : 'hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className={selectedCycle === index ? 'text-[#168ff2]' : 'text-[#8993a2]'}>{cycle.guideText}</span> : null}</button>)}</div></div></section>
+      <section className="pt-6"><div className="flex items-center justify-center gap-10 text-[17px] font-semibold"><button type="button" onClick={() => { setMembershipType('personal'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalTab?.name ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button><button type="button" onClick={() => { setMembershipType('enterprise'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseTab?.name ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button></div><div className="mx-auto mt-4 w-fit max-w-full overflow-x-auto rounded-full bg-[#eef0f4] p-1 text-[11px] text-[#4e5868] shadow-inner"><div className="flex w-max min-w-max items-center gap-1">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => setActiveCycle(index)} className={`flex shrink-0 items-center justify-center gap-1 rounded-full px-4 py-2.5 transition ${selectedCycle === index ? 'bg-[#e4e7eb] font-semibold text-[#253043]' : 'hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className={selectedCycle === index ? 'text-[#168ff2]' : 'text-[#8993a2]'}>{cycle.guideText}</span> : null}</button>)}</div></div></section>
         <section className={`mt-[68px] grid grid-cols-1 gap-4 sm:grid-cols-2 ${visiblePlans.length === 1 ? 'mx-auto w-full max-w-[560px] xl:grid-cols-1' : visiblePlans.length === 2 ? 'mx-auto w-full max-w-[1120px] xl:grid-cols-2' : visiblePlans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}>{visiblePlans.map((plan, index) => { const tierKey = `${membershipType}:${plan.memberType ?? plan.planKey}:${activeCycleKey}`; const cycleData = getCyclePlanData(plan, activeCycleKey); const hasTiers = Boolean(cycleData.tierOptions?.length); return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} tierIndex={tierSelections[tierKey] ?? 0} onTierChange={hasTiers ? (value) => setTierSelections((current) => ({ ...current, [tierKey]: value })) : undefined} enterprise={membershipType === 'enterprise'} seats={enterpriseSeats[plan.planKey] ?? 1} onSeatChange={membershipType === 'enterprise' ? (delta) => setEnterpriseSeats((current) => ({ ...current, [plan.planKey]: Math.max(1, (current[plan.planKey] ?? 1) + delta) })) : undefined} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} />; })}</section>
         <section className="mx-auto mt-12 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} /> : <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section>
         <section className="mx-auto mt-4 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.modelConsumption.title}</h2><p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section>

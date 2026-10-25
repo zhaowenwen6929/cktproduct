@@ -299,6 +299,76 @@ export const WEB_NEW_MEMBER_PACKAGE_DETAILS: PackageDetailRow[] = [
   ...[1200, 2000, 4000, 10000, 50000, 100000].flatMap((points, index) => createWebSkuDetails(3591 + index * 10, '旗舰版（企业）', points, flagshipWebSkuPrices)),
 ];
 
+export const MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY = 'admin-membership-package-details';
+
+export type WebMembershipCycleOption = {
+  key: string;
+  name: string;
+  guideText: string;
+  duration: string;
+  highlighted?: boolean;
+};
+
+const getDefaultPackageDetails = (packageId: number) => packageId === WEB_PACKAGE_ID
+  ? [...initialPackageDetails, ...WEB_NEW_MEMBER_PACKAGE_DETAILS]
+  : [...initialPackageDetails];
+
+export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): PackageDetailRow[] {
+  const fallback = getDefaultPackageDetails(packageId);
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY) ?? '{}') as Record<string, unknown>;
+    const rows = stored[String(packageId)];
+    return Array.isArray(rows) ? rows as PackageDetailRow[] : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function readWebMembershipPackageDetails() {
+  return readMembershipPackageDetails(WEB_PACKAGE_ID);
+}
+
+export function persistMembershipPackageDetails(packageId: number, rows: PackageDetailRow[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY) ?? '{}') as Record<string, unknown>;
+    window.localStorage.setItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY, JSON.stringify({ ...stored, [String(packageId)]: rows }));
+    window.dispatchEvent(new Event('membership-package-details-updated'));
+  } catch {
+    // Keep the prototype usable when browser storage is unavailable.
+  }
+}
+
+export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'enterprise', details = readWebMembershipPackageDetails()): WebMembershipCycleOption[] {
+  const memberMatches = (member: string) => membershipType === 'personal'
+    ? member.includes('（个人）')
+    : membershipType === 'enterprise'
+      ? member.includes('（企业）')
+      : member.includes('（个人）') || member.includes('（企业）');
+  const guideText: Record<string, string> = {
+    连续包年: '限时4.5折',
+    连续包月: '4.8折',
+    连续包季: '限时4.3折',
+  };
+  const seen = new Set<string>();
+  return details
+    .filter((row) => row.status === '显示' && row.points != null && memberMatches(row.member))
+    .filter((row) => {
+      const key = `${row.duration}-${row.displayName}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map((row, index) => ({
+      key: `${row.duration}-${row.displayName}`,
+      name: row.displayName,
+      guideText: guideText[row.displayName] ?? '',
+      duration: `${row.duration}天`,
+      highlighted: index === 0,
+    }));
+}
+
 export function formatPointsDisplay(points?: number, pointsUnit?: '每人' | '团队', pointsCycle?: '按月' | '一次性') {
   return points == null ? '按会员等级发' : `${points}/${pointsUnit ?? '每人'}/${pointsCycle ?? '按月'}`;
 }
@@ -306,7 +376,7 @@ export function formatPointsDisplay(points?: number, pointsUnit?: '每人' | '�
 export function getPackagePointsDisplay(member: string, duration?: string | number) {
   const packageDetail = initialPackageDetails.find((row) => row.member === member);
   const configuredPoints = packageDetail?.points == null ? getMemberPointsConfigForDuration(member, duration ?? packageDetail?.duration ?? '') : packageDetail;
-  if (packageDetail?.points == null && configuredPoints?.display) return configuredPoints.display;
+  if (packageDetail?.points == null && configuredPoints && 'display' in configuredPoints && configuredPoints.display) return configuredPoints.display;
   return formatPointsDisplay(configuredPoints?.points, configuredPoints?.pointsUnit, configuredPoints?.pointsCycle);
 }
 
@@ -627,16 +697,24 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
 }
 
 function MembershipPackageDetailPage({ packageId, packageName, onBack, onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { packageId: number; packageName: string; onBack: () => void; onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
-  const [details, setDetails] = useState(() => packageId === WEB_PACKAGE_ID ? [...initialPackageDetails, ...WEB_NEW_MEMBER_PACKAGE_DETAILS] : initialPackageDetails);
+  const [details, setDetails] = useState(() => readMembershipPackageDetails(packageId));
   const [nameQuery, setNameQuery] = useState('');
   const [memberType, setMemberType] = useState('');
   const [submittedName, setSubmittedName] = useState('');
   const [detailEditor, setDetailEditor] = useState<{ mode: 'edit' | 'create'; row: PackageDetailRow } | null>(null);
   const filteredDetails = useMemo(() => details.filter((row) => (!submittedName.trim() || row.name.includes(submittedName.trim())) && (!memberType || row.member === memberType)), [details, memberType, submittedName]);
 
-  const toggleDisplay = (id: number) => setDetails((current) => current.map((row) => row.id === id ? { ...row, status: row.status === '显示' ? '隐藏' : '显示' } : row));
-  const saveDetail = (values: DetailEditValues) => {
+  const updateDetails = (updater: (current: PackageDetailRow[]) => PackageDetailRow[]) => {
     setDetails((current) => {
+      const next = updater(current);
+      persistMembershipPackageDetails(packageId, next);
+      return next;
+    });
+  };
+
+  const toggleDisplay = (id: number) => updateDetails((current) => current.map((row) => row.id === id ? { ...row, status: row.status === '显示' ? '隐藏' : '显示' } : row));
+  const saveDetail = (values: DetailEditValues) => {
+    updateDetails((current) => {
       if (values.id === 0) {
         const nextId = Math.max(...current.map((row) => row.id), 0) + 1;
         return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: isHistoricalMemberType(values.member) ? undefined : Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人', pointsCycle: values.pointsCycle === '一次性' ? '一次性' : '按月' }, ...current];
@@ -653,7 +731,7 @@ function MembershipPackageDetailPage({ packageId, packageName, onBack, onBackToD
       <main className="ml-[228px] min-h-screen pt-[62px]">
         <div className="px-[25px] pt-[25px]"><div className="flex items-center gap-2 text-[13px] text-[#8b9199]"><RequirementEntryFrame text={POINTS_REQUIREMENT} requirementName={POINTS_REQUIREMENT_NAME}><button type="button" onClick={onBack} className="hover:text-[#278fee]">会员套餐管理</button></RequirementEntryFrame><ChevronRight className="h-3.5 w-3.5" /><span className="text-[#2d2d2d]">{packageName}</span></div>
           <section className="mt-[25px] min-h-[calc(100vh-130px)] bg-white px-[25px] pb-8">
-            <div className="flex items-center justify-end gap-5 border-b border-[#f0f0f0] py-4"><button type="button" className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">推荐套餐配置</button><input value={nameQuery} onChange={(event) => setNameQuery(event.currentTarget.value)} placeholder="名称" className="h-[33px] w-[240px] rounded-[2px] border border-[#d9d9d9] px-3 text-[12px] outline-none focus:border-[#278fee]" /><MemberTypeDropdown value={memberType} onChange={setMemberType} /><button type="button" onClick={() => setSubmittedName(nameQuery)} className="h-[33px] rounded-[2px] bg-[#278fee] px-5 text-[12px] text-white hover:bg-[#167fdc]">查询</button><RequirementEntryFrame text={POINTS_REQUIREMENT} requirementName={POINTS_REQUIREMENT_NAME}><button type="button" onClick={() => setDetailEditor({ mode: 'create', row: blankPackageDetail })} className="inline-flex h-[33px] items-center gap-2 rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]"><span>＋ 新增套餐</span></button></RequirementEntryFrame><button type="button" onClick={() => setDetails((current) => [...current])} className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">刷新缓存</button></div>
+            <div className="flex items-center justify-end gap-5 border-b border-[#f0f0f0] py-4"><button type="button" className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">推荐套餐配置</button><input value={nameQuery} onChange={(event) => setNameQuery(event.currentTarget.value)} placeholder="名称" className="h-[33px] w-[240px] rounded-[2px] border border-[#d9d9d9] px-3 text-[12px] outline-none focus:border-[#278fee]" /><MemberTypeDropdown value={memberType} onChange={setMemberType} /><button type="button" onClick={() => setSubmittedName(nameQuery)} className="h-[33px] rounded-[2px] bg-[#278fee] px-5 text-[12px] text-white hover:bg-[#167fdc]">查询</button><RequirementEntryFrame text={POINTS_REQUIREMENT} requirementName={POINTS_REQUIREMENT_NAME}><button type="button" onClick={() => setDetailEditor({ mode: 'create', row: blankPackageDetail })} className="inline-flex h-[33px] items-center gap-2 rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]"><span>＋ 新增套餐</span></button></RequirementEntryFrame><button type="button" onClick={() => setDetails(readMembershipPackageDetails(packageId))} className="h-[33px] rounded-[2px] bg-[#278fee] px-4 text-[12px] text-white hover:bg-[#167fdc]">刷新缓存</button></div>
           <div className="mt-[23px] overflow-x-auto pt-5"><table className="w-full min-w-[1420px] table-fixed border-collapse text-center text-[13px]"><colgroup><col className="w-[5%]" /><col className="w-[13%]" /><col className="w-[8%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[6%]" /><col className="w-[7%]" /><col className="w-[7%]" /><col className="w-[8%]" /><col className="w-[5%]" /><col className="w-[6%]" /><col className="w-[10%]" /><col className="w-[6%]" /><col className="w-[6%]" /><col className="w-[5%]" /><col className="w-[11%]" /></colgroup><thead className="h-[76px] bg-[#fafafa] text-[#222]"><tr>{['ID', '名称', '显示名称', '时长\n(天)', '原价', '套餐折\n扣率', '现价', '签约价\n格', '套餐\n类型', '所属会员', '排\n序', '试用\n天数', '积分量', '显示分\n群', '显示\n时间', '状\n态', '操作'].map((label) => <th key={label} className={`relative whitespace-pre-line px-2 font-normal leading-5 ${label === '积分量' ? 'border-x border-t border-dashed border-[#ff665b] bg-[#fff7f5]' : ''}`}>{label === '积分量' ? <><div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2"><RequirementHint text={POINTS_REQUIREMENT} /></div><span>积分量</span></> : label}</th>)}</tr></thead><tbody>{filteredDetails.map((row, rowIndex) => <tr key={row.id} className="h-[97px] border-b border-[#ededed] text-[#3b3b3b] hover:bg-[#fcfdff]"><td className="px-2">{row.id}</td><td className="px-2 leading-5">{row.name}</td><td className="px-2 leading-5">{row.displayName}</td><td className="px-2">{row.duration}</td><td className="px-2">{row.originalPrice}</td><td className="px-2">{row.discount}</td><td className="px-2">{row.currentPrice}</td><td className="px-2">{row.contractPrice}</td><td className="px-2 leading-5">{row.packageType}</td><td className="px-2 leading-5">{row.member}</td><td className="px-2">{row.sort}</td><td className="px-2">{row.trialDays}</td><td className={`border-x border-dashed border-[#ff665b] bg-[#fff7f5] px-2 whitespace-nowrap ${rowIndex === filteredDetails.length - 1 ? 'border-b' : ''}`}>{row.points == null ? getPackagePointsDisplay(row.member, row.duration) : formatPointsDisplay(row.points, row.pointsUnit, isLifetimeDuration(row.duration) ? '一次性' : row.pointsCycle)}</td><td className="px-2">{row.segment}</td><td className="px-2">{row.displayTime}</td><td className="px-2 leading-5">{row.status}</td><td className="px-2"><div className="flex flex-wrap items-center justify-center gap-2"><button type="button" onClick={() => setDetailEditor({ mode: 'edit', row })} className="h-[33px] rounded-[2px] border border-[#d8dce1] bg-white px-4 text-[12px] text-[#333] hover:border-[#278fee] hover:text-[#278fee]">编辑</button><button type="button" onClick={() => toggleDisplay(row.id)} className={`h-[33px] rounded-[2px] px-4 text-[12px] text-white ${row.status === '显示' ? 'bg-[#ff4b55] hover:bg-[#ed3b45]' : 'bg-[#278fee] hover:bg-[#167fdc]'}`}>{row.status === '显示' ? '隐藏' : '显示'}</button><button type="button" className="h-[33px] rounded-[2px] bg-[#ff4b55] px-4 text-[12px] text-white hover:bg-[#ed3b45]">关闭</button></div></td></tr>)}</tbody></table>{filteredDetails.length === 0 ? <div className="py-20 text-center text-[13px] text-[#9ba3ad]">暂无匹配的套餐</div> : null}</div>
           </section>
         </div>

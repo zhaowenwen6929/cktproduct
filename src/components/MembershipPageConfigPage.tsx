@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, Plus, Save, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { DEFAULT_MEMBERSHIP_PAGE_CONFIG, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
+import { getMembershipPageConfigDefaults, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
 
 type PlatformKey = 'web' | 'mobile';
 type ModuleKey = 'plans' | 'overview' | 'details' | 'model-consumption' | 'commercial-license' | 'faq';
@@ -22,18 +22,21 @@ const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
   { key: 'faq', label: '常见问题', description: '配置会员弹框中的常见问题及答案' },
 ];
 
-const createDefaultConfig = (): PlatformConfig => ({
-  json: {
-    plans: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.plans, null, 2),
-    overview: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.overview, null, 2),
-    details: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.details, null, 2),
-    'model-consumption': JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.modelConsumption, null, 2),
-    'commercial-license': JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.commercialLicense, null, 2),
-    faq: JSON.stringify(DEFAULT_MEMBERSHIP_PAGE_CONFIG.faq, null, 2),
-  },
-});
+const createDefaultConfig = (platform: PlatformKey): PlatformConfig => {
+  const defaultConfig = getMembershipPageConfigDefaults(platform);
+  return {
+    json: {
+      plans: JSON.stringify(defaultConfig.plans, null, 2),
+      overview: JSON.stringify(defaultConfig.overview, null, 2),
+      details: JSON.stringify(defaultConfig.details, null, 2),
+      'model-consumption': JSON.stringify(defaultConfig.modelConsumption, null, 2),
+      'commercial-license': JSON.stringify(defaultConfig.commercialLicense, null, 2),
+      faq: JSON.stringify(defaultConfig.faq, null, 2),
+    },
+  };
+};
 
-const createDefaultState = (): ConfigState => ({ web: createDefaultConfig(), mobile: createDefaultConfig() });
+const createDefaultState = (): ConfigState => ({ web: createDefaultConfig('web'), mobile: createDefaultConfig('mobile') });
 const STORAGE_KEY = MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY;
 
 type MembershipPageVersion = {
@@ -78,7 +81,7 @@ const persistVersions = (versions: MembershipPageVersion[]) => {
   }
 };
 
-const migratePlansJson = (value: unknown, fallback: string) => {
+const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = false) => {
   if (typeof value !== 'string') return fallback;
   try {
     const parsed = JSON.parse(value) as { tabs?: Array<Record<string, unknown>> };
@@ -95,7 +98,9 @@ const migratePlansJson = (value: unknown, fallback: string) => {
         (isPersonal && rawOptions.length <= 4 && rawOptions.some((option) => option.key === 'single'))
         || (isEnterprise && rawOptions.length <= 3 && rawOptions.some((option) => option.key === 'team-quarterly'))
       );
-      const options = isLegacyOptions ? fallbackTab.options : rawOptions ?? fallbackTab.options;
+      const options = syncToPackageData
+        ? fallbackTab.options
+        : isLegacyOptions ? fallbackTab.options : rawOptions ?? fallbackTab.options;
       return {
         key: isPersonal ? 'personal' : isEnterprise ? 'enterprise' : fallbackTab.key,
         name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof tab.name === 'string' ? tab.name : fallbackTab.name,
@@ -223,12 +228,12 @@ const readStoredState = (): ConfigState => {
     if (!stored) return createDefaultState();
     const parsed = JSON.parse(stored) as Partial<ConfigState>;
     const defaults = createDefaultState();
-    const mergePlatform = (storedConfig: PlatformConfig | undefined, defaultConfig: PlatformConfig) => storedConfig
-      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans), overview: migrateOverviewJson(storedConfig.json?.overview, defaultConfig.json.overview, storedConfig.json?.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']), 'commercial-license': migrateCommercialLicenseJson(storedConfig.json?.['commercial-license'], defaultConfig.json['commercial-license']), faq: migrateFaqJson(storedConfig.json?.faq, defaultConfig.json.faq) } }
+    const mergePlatform = (storedConfig: PlatformConfig | undefined, defaultConfig: PlatformConfig, platform: PlatformKey) => storedConfig
+      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans, platform === 'web'), overview: migrateOverviewJson(storedConfig.json?.overview, defaultConfig.json.overview, storedConfig.json?.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']), 'commercial-license': migrateCommercialLicenseJson(storedConfig.json?.['commercial-license'], defaultConfig.json['commercial-license']), faq: migrateFaqJson(storedConfig.json?.faq, defaultConfig.json.faq) } }
       : defaultConfig;
     return {
-      web: mergePlatform(parsed.web, defaults.web),
-      mobile: mergePlatform(parsed.mobile, defaults.mobile),
+      web: mergePlatform(parsed.web, defaults.web, 'web'),
+      mobile: mergePlatform(parsed.mobile, defaults.mobile, 'mobile'),
     };
   } catch {
     return createDefaultState();

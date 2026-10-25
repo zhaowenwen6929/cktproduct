@@ -1,3 +1,5 @@
+import { getWebMembershipCycleOptions } from './MembershipPackagePage';
+
 export type PlatformKey = 'web' | 'mobile';
 
 export type MembershipCycleConfig = {
@@ -693,6 +695,24 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
   },
 };
 
+/**
+ * 读取会员页配置默认值。网页版的时长结构以会员套餐管理中的 Web 新版实际套餐为准，
+ * 这样新增、隐藏套餐后，会员页配置和会员弹框会使用同一组时长数据。
+ */
+export function getMembershipPageConfigDefaults(platform: PlatformKey = 'web'): MembershipPageContent {
+  const fallback = clone(DEFAULT_MEMBERSHIP_PAGE_CONFIG);
+  if (platform !== 'web') return fallback;
+  const optionsByType = {
+    personal: getWebMembershipCycleOptions('personal'),
+    enterprise: getWebMembershipCycleOptions('enterprise'),
+  };
+  fallback.plans.tabs = fallback.plans.tabs.map((tab) => ({
+    ...tab,
+    options: optionsByType[tab.key],
+  }));
+  return fallback;
+}
+
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const parseJson = <T,>(value: unknown, fallback: T): T => {
@@ -809,8 +829,7 @@ const normalizeOverview = (value: unknown, fallback: MembershipOverviewConfig): 
   };
 };
 
-const normalizePlans = (value: unknown): MembershipPlansConfig => {
-  const fallback = DEFAULT_MEMBERSHIP_PAGE_CONFIG.plans;
+const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToPackageData = false): MembershipPlansConfig => {
   const rawTabs = (value as { tabs?: unknown } | null)?.tabs;
   if (!Array.isArray(rawTabs)) return clone(fallback);
 
@@ -823,7 +842,9 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
         (fallbackTab.key === 'personal' && rawOptions.length <= 4 && rawOptions.some((option) => (option as { key?: string })?.key === 'single'))
         || (fallbackTab.key === 'enterprise' && rawOptions.length <= 3 && rawOptions.some((option) => (option as { key?: string })?.key === 'team-quarterly'))
       );
-      const options = isLegacyOptions ? clone(fallbackTab.options) : rawOptions ?? fallbackTab.options;
+      const options = syncToPackageData
+        ? clone(fallbackTab.options)
+        : isLegacyOptions ? clone(fallbackTab.options) : rawOptions ?? fallbackTab.options;
       const rawTabKey = (rawTab as { key?: string }).key;
       const isPersonal = rawTabKey === 'personal' || rawTab.name === '个人订阅';
       const isEnterprise = rawTabKey === 'enterprise' || rawTabKey === 'team' || rawTab.name === '团队订阅';
@@ -838,14 +859,14 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
 };
 
 export function readMembershipPageConfig(platform: PlatformKey = 'web'): MembershipPageContent {
-  const fallback = clone(DEFAULT_MEMBERSHIP_PAGE_CONFIG);
+  const fallback = getMembershipPageConfigDefaults(platform);
   if (typeof window === 'undefined') return fallback;
 
   try {
     const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY) ?? '{}') as { [key in PlatformKey]?: { json?: Record<string, unknown> } };
     const json = stored[platform]?.json ?? {};
     return {
-      plans: normalizePlans(parseJson(json.plans, fallback.plans)),
+      plans: normalizePlans(parseJson(json.plans, fallback.plans), fallback.plans, platform === 'web'),
       overview: normalizeOverview(parseJson(json.overview, fallback.overview), fallback.overview),
       details: normalizeDetails(parseJson(json.details, fallback.details), fallback.details),
       modelConsumption: normalizeModelConsumption(parseJson(json['model-consumption'], fallback.modelConsumption), fallback.modelConsumption),
