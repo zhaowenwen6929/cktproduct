@@ -4,6 +4,7 @@ export type MembershipTierData = {
   originalPrice: string;
   points: string;
   pointsNote: string;
+  pointsDescription?: string;
   saleDescription?: string;
   monthlyPrice: string;
   renewalPrice?: string;
@@ -17,6 +18,7 @@ export type MembershipCyclePlanData = {
   period: string;
   points: string;
   pointsNote: string;
+  pointsDescription?: string;
   saleDescription?: string;
   monthlyPrice: string;
   discount: string;
