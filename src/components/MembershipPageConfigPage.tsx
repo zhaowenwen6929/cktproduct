@@ -99,6 +99,25 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
         (isPersonal && rawOptions.length <= 4 && rawOptions.some((option) => option.key === 'single'))
         || (isEnterprise && rawOptions.length <= 3 && rawOptions.some((option) => option.key === 'team-quarterly'))
       );
+      const rawVipLevel = Array.isArray(tab.viplevel)
+        ? tab.viplevel
+        : Array.isArray(tab.memberLevels) ? tab.memberLevels : null;
+      const fallbackVipLevels = Array.isArray(fallbackTab.viplevel) ? fallbackTab.viplevel as Array<Record<string, unknown>> : [];
+      const viplevel = rawVipLevel
+        ? rawVipLevel.map((item, vipIndex) => {
+          const raw = item && typeof item === 'object' ? item as Record<string, unknown> : {};
+          const fallbackVipLevel = fallbackVipLevels[vipIndex] ?? {};
+          return {
+            level: typeof raw.level === 'number' ? raw.level : Number(raw.level ?? fallbackVipLevel.level),
+            memberName: typeof raw.memberName === 'string'
+              ? raw.memberName
+              : typeof raw.memberType === 'string' ? raw.memberType : fallbackVipLevel.memberName,
+            displayName: typeof raw.displayName === 'string' && raw.displayName.trim()
+              ? raw.displayName
+              : fallbackVipLevel.displayName,
+          };
+        })
+        : fallbackVipLevels;
       const options = syncToPackageData
         ? fallbackOptions.map((packageOption) => {
           const configuredOption = rawOptions?.find((option) => option.key === packageOption.key
@@ -116,7 +135,7 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
         key: isPersonal ? 'personal' : isEnterprise ? 'enterprise' : fallbackTab.key,
         name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof tab.name === 'string' ? tab.name : fallbackTab.name,
         memberLevel: tab.memberLevel ?? fallbackTab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
-        memberLevels: Array.isArray(tab.memberLevels) ? tab.memberLevels : fallbackTab.memberLevels,
+        viplevel,
         options,
       };
     });

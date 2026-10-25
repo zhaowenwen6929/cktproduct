@@ -74,11 +74,20 @@ export type MembershipBenefitSection = {
   };
 };
 
+export type MembershipVipLevelConfig = {
+  /** 管理后台 Web 新版套餐对应的真实会员等级数字。 */
+  level: number;
+  /** 管理后台套餐列表中的真实会员名称。 */
+  memberName: string;
+  /** 会员购买页展示的会员等级名称。 */
+  displayName: string;
+};
+
 export type MembershipTabConfig = {
   key: 'personal' | 'enterprise';
   name: string;
   memberLevel: { level: string };
-  memberLevels: Array<{ memberType: string; level: number }>;
+  viplevel: MembershipVipLevelConfig[];
   options: MembershipCycleConfig[];
 };
 
@@ -475,9 +484,9 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         key: 'personal',
         name: '个人使用',
         memberLevel: { level: 'personal' },
-        memberLevels: [
-          { memberType: '基础版（个人）', level: 240 },
-          { memberType: '专业版（个人）', level: 241 },
+        viplevel: [
+          { level: 240, memberName: '基础版（个人）', displayName: '基础版' },
+          { level: 241, memberName: '专业版（个人）', displayName: '专业版' },
         ],
         options: [
           { key: 'yearly', name: '连续包年', guideText: '限时4.5折', guideTextColor: '#8993a2', duration: '365天', highlighted: true },
@@ -495,10 +504,10 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         key: 'enterprise',
         name: '企业使用',
         memberLevel: { level: 'enterprise' },
-        memberLevels: [
-          { memberType: '基础版（企业）', level: 310 },
-          { memberType: '专业版（企业）', level: 311 },
-          { memberType: '旗舰版（企业）', level: 220 },
+        viplevel: [
+          { level: 310, memberName: '基础版（企业）', displayName: '基础版' },
+          { level: 311, memberName: '专业版（企业）', displayName: '专业版' },
+          { level: 220, memberName: '旗舰版（企业）', displayName: '旗舰版' },
         ],
         options: [
           { key: 'team-three-year', name: '3年', guideText: '', guideTextColor: '#8993a2', duration: '1095天', highlighted: true },
@@ -962,15 +971,23 @@ const normalizeCycleOptions = (value: unknown, fallback: MembershipCycleConfig[]
   }).filter((option): option is MembershipCycleConfig => Boolean(option));
 };
 
-const normalizeMemberLevels = (value: unknown, fallback: Array<{ memberType: string; level: number }>) => {
+const normalizeVipLevels = (value: unknown, fallback: MembershipVipLevelConfig[]): MembershipVipLevelConfig[] => {
   if (!Array.isArray(value)) return clone(fallback);
   const levels = value
-    .filter((item): item is { memberType?: unknown; level?: unknown } => Boolean(item) && typeof item === 'object')
+    .filter((item): item is { displayName?: unknown; memberName?: unknown; memberType?: unknown; level?: unknown } => Boolean(item) && typeof item === 'object')
     .map((item) => ({
-      memberType: typeof item.memberType === 'string' ? item.memberType : '',
+      displayName: typeof item.displayName === 'string' ? item.displayName : '',
+      memberName: typeof item.memberName === 'string'
+        ? item.memberName
+        : typeof item.memberType === 'string' ? item.memberType : '',
       level: typeof item.level === 'number' ? item.level : Number(item.level),
     }))
-    .filter((item) => item.memberType && Number.isFinite(item.level));
+    .map((item, index) => ({
+      level: item.level,
+      memberName: item.memberName || fallback[index]?.memberName || '',
+      displayName: item.displayName || fallback[index]?.displayName || item.memberName || '',
+    }))
+    .filter((item) => item.memberName && item.displayName && Number.isFinite(item.level));
   return levels.length ? levels : clone(fallback);
 };
 
@@ -980,7 +997,7 @@ const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToP
 
   return {
     tabs: fallback.tabs.map((fallbackTab) => {
-      const rawTab = rawTabs.find((item) => (item as { key?: string })?.key === fallbackTab.key) as Partial<MembershipTabConfig> | undefined;
+      const rawTab = rawTabs.find((item) => (item as { key?: string })?.key === fallbackTab.key) as (Partial<MembershipTabConfig> & { memberLevels?: unknown }) | undefined;
       if (!rawTab) return clone(fallbackTab);
       const rawOptions = Array.isArray(rawTab.options) ? rawTab.options : null;
       const isLegacyOptions = rawOptions != null && (
@@ -1010,7 +1027,7 @@ const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToP
         key: fallbackTab.key,
         name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof rawTab.name === 'string' ? rawTab.name : fallbackTab.name,
         memberLevel: { ...fallbackTab.memberLevel, ...(rawTab.memberLevel ?? {}) },
-        memberLevels: normalizeMemberLevels(rawTab.memberLevels, fallbackTab.memberLevels),
+        viplevel: normalizeVipLevels(rawTab.viplevel ?? rawTab.memberLevels, fallbackTab.viplevel),
         options: normalizeCycleOptions(options, fallbackTab.options),
       };
     }),

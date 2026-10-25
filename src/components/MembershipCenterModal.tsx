@@ -438,11 +438,16 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const enterpriseTab = pageConfig.plans.tabs.find((tab) => tab.key === 'enterprise');
   const activeTab = pageConfig.plans.tabs.find((tab) => tab.key === membershipType) ?? pageConfig.plans.tabs[0];
   const cycleOptions = activeTab?.options ?? [];
-  const activeMemberLevels = new Set(activeTab?.memberLevels?.map((member) => member.level) ?? []);
+  const activeVipLevels = new Map(activeTab?.viplevel?.map((vipLevel) => [vipLevel.level, vipLevel]) ?? []);
+  const activeMemberLevels = new Set(activeVipLevels.keys());
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
   const selectedCycleConfig = cycleOptions[selectedCycle];
   const visiblePlans = cycleOptions.length === 0 ? [] : (pageConfig.overview.planCards?.[membershipType] ?? [])
-    .map((plan) => hydratePlan(plan, membershipType, cycleOptions, packageDetails, pageConfig.plans.memberLevelDisplay))
+    .map((plan) => {
+      const memberLevel = resolveMemberLevel(plan, membershipType);
+      const vipLevel = memberLevel == null ? undefined : activeVipLevels.get(memberLevel);
+      return hydratePlan(vipLevel ? { ...plan, name: vipLevel.displayName, memberType: vipLevel.memberName, memberLevel: vipLevel.level } : plan, membershipType, cycleOptions, packageDetails, pageConfig.plans.memberLevelDisplay);
+    })
     .filter((plan) => activeMemberLevels.size === 0 || activeMemberLevels.has(plan.memberLevel))
     .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberLevel, selectedCycleConfig, packageDetails).length > 0)
     .filter((plan, index, plans) => plans.findIndex((item) => item.memberLevel === plan.memberLevel) === index);
