@@ -226,7 +226,7 @@ function getNewMemberDiscount(currentPrice: number, originalPrice: number) {
 }
 
 function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
-  const pointsUnit = member.includes('企业') ? '团队' : '每人';
+  const pointsUnit = member === '基础版（企业）' ? '团队' : '每人';
   const memberLevel = getMemberLevelByName(member);
   return prices.map((price, index): PackageDetailRow => {
     const pointsDescription = price.pointsDescription ?? getDefaultPointsDescription(member, points);
@@ -383,6 +383,7 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
     if (!Array.isArray(rows)) return fallback;
     const normalizedRows = (rows as PackageDetailRow[]).map((row) => {
       const pointsDescription = row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0);
+      const memberLevel = row.memberLevel ?? getMemberLevelByName(row.member);
       const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim());
       const isLegacyDescriptionOrder = saleDescriptionParts.length >= 3
         && /生成|图片|视频|积分/.test(saleDescriptionParts[1])
@@ -397,23 +398,29 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
             ? `${row.saleDescription}^`
             : row.saleDescription;
       const isNewWebMember = packageId === WEB_PACKAGE_ID && NEW_WEB_MEMBER_NAMES.has(row.member);
+      const pointsUnit = isNewWebMember
+        ? (memberLevel === 310 ? '团队' : '每人')
+        : row.pointsUnit;
       const originalPrice = isNewWebMember
         ? getNewMemberOriginalPrice(row.currentPrice)
         : row.originalPrice;
       return {
         ...row,
-        memberLevel: row.memberLevel ?? getMemberLevelByName(row.member),
+        memberLevel,
         originalPrice,
         discount: isNewWebMember ? getNewMemberDiscount(row.currentPrice, originalPrice) : row.discount,
         saleDescription,
         pointsDescription,
+        pointsUnit,
       };
     });
 
     // 兼容已写入浏览器缓存的旧新会员套餐数据，首次读取时同步成新的原价规则。
     const hasPricingChanges = normalizedRows.some((row, index) => {
       const previousRow = rows[index] as PackageDetailRow;
-      return row.originalPrice !== previousRow.originalPrice || row.discount !== previousRow.discount;
+      return row.originalPrice !== previousRow.originalPrice
+        || row.discount !== previousRow.discount
+        || row.pointsUnit !== previousRow.pointsUnit;
     });
     if (hasPricingChanges && packageId === WEB_PACKAGE_ID) {
       window.localStorage.setItem(
