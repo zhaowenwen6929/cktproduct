@@ -535,8 +535,8 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   const displayPointsDescription = activeTier?.pointsDescription || cycleData.pointsDescription;
   const displayMonthlyPrice = activeTier?.monthlyPrice ?? cycleData.monthlyPrice;
   const pointPrice = formatPackagePointPrice(displayMonthlyPrice, activeTier?.points ?? displayPoints);
-  const monthlyPriceLabel = displayMonthlyPrice === '-' ? '单月价格暂无' : `单月 ¥${displayMonthlyPrice}${enterprise ? '/席位' : ''}`;
-  const pointPriceLabel = pointPrice === '-' ? '每积分价格暂无' : `每积分 ¥${pointPrice}`;
+  const monthlyPriceLabel = displayMonthlyPrice === '-' ? '月价暂无' : `¥${displayMonthlyPrice}${enterprise ? '/席位' : ''}/月`;
+  const pointPriceLabel = pointPrice === '-' ? '积分价暂无' : `¥${pointPrice}/积分`;
   const renewalPrice = activeTier?.renewalPrice ?? cycleData.renewalPrice;
   const durationDays = activeTier?.durationDays ?? cycleData.durationDays;
   const packageType = activeTier?.packageType ?? cycleData.packageType;
