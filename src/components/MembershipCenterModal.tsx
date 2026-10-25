@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type Ref } from 'react';
 import { Check, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
+import { WEB_NEW_MEMBER_PACKAGE_DETAILS } from './MembershipPackagePage';
 
 type MembershipCenterModalProps = {
   onClose: () => void;
@@ -21,9 +22,100 @@ type RetentionPurchaseModalProps = {
   onClose: () => void;
 };
 
-function hydratePlan(plan: MembershipPlanDisplayConfig): MembershipPlan {
-  const data = REAL_MEMBERSHIP_PLAN_DATA[plan.planKey] ?? REAL_MEMBERSHIP_PLAN_DATA.basic;
-  return { ...data, ...plan };
+type MembershipType = 'personal' | 'enterprise';
+type WebPackageDetail = typeof WEB_NEW_MEMBER_PACKAGE_DETAILS[number];
+
+const DEFAULT_MEMBER_TYPE_BY_PLAN: Record<MembershipType, Record<string, string>> = {
+  personal: {
+    basic: '基础版（个人）',
+    advanced: '专业版（个人）',
+    professional: '专业版（个人）',
+  },
+  enterprise: {
+    basic: '基础版（企业）',
+    advanced: '专业版（企业）',
+    professional: '专业版（企业）',
+    flagship: '旗舰版（企业）',
+  },
+};
+
+function resolveMemberType(plan: MembershipPlanDisplayConfig, membershipType: MembershipType) {
+  return plan.memberType ?? DEFAULT_MEMBER_TYPE_BY_PLAN[membershipType][plan.planKey] ?? plan.memberType ?? '';
+}
+
+function normalizeCycleKey(cycleKey: string) {
+  const key = cycleKey.replace(/^team-/, '');
+  return key === 'two-year' ? 'yearly' : key;
+}
+
+function getCyclePlanData(plan: MembershipPlan, cycleKey: string): MembershipPlanData {
+  return plan.cyclePricing?.[cycleKey] ?? plan.cyclePricing?.[normalizeCycleKey(cycleKey)] ?? plan;
+}
+
+function getPackageMonths(duration: number) {
+  if (duration >= 365) return Math.max(1, Math.round(duration / 365) * 12);
+  if (duration === 90) return 3;
+  if (duration === 30) return 1;
+  return Math.max(1, Math.round(duration / 30));
+}
+
+function formatPackageMonthlyPrice(price: number, duration: number) {
+  return String(Number((price / getPackageMonths(duration)).toFixed(2)));
+}
+
+function formatPackageDiscount(discount: number) {
+  const value = discount > 10 ? discount / 10 : discount;
+  return String(Number(value.toFixed(1)));
+}
+
+function getCyclePackageRows(memberType: string, cycle: MembershipCycleConfig) {
+  const duration = Number.parseInt(cycle.duration, 10);
+  const rows = WEB_NEW_MEMBER_PACKAGE_DETAILS.filter((row) => row.member === memberType && row.duration === duration && row.points != null);
+  const wantsSubscription = cycle.name.includes('连续');
+  const preferredRows = rows.filter((row) => wantsSubscription ? row.packageType === '订阅套餐' : row.packageType !== '订阅套餐');
+  const sourceRows = preferredRows.length ? preferredRows : rows;
+  const uniqueRows = new Map<number, WebPackageDetail>();
+  sourceRows.forEach((row) => {
+    if (row.points != null && !uniqueRows.has(row.points)) uniqueRows.set(row.points, row);
+  });
+  return [...uniqueRows.values()].sort((left, right) => (left.points ?? 0) - (right.points ?? 0));
+}
+
+function createWebPackagePlanData(memberType: string, planKey: string, cycleOptions: MembershipCycleConfig[]): MembershipPlanData {
+  const fallback = REAL_MEMBERSHIP_PLAN_DATA[planKey] ?? REAL_MEMBERSHIP_PLAN_DATA.basic;
+  const cyclePricing = Object.fromEntries(cycleOptions.map((cycle) => {
+    const rows = getCyclePackageRows(memberType, cycle);
+    const fallbackCycle = fallback.cyclePricing?.[normalizeCycleKey(cycle.key)] ?? fallback;
+    if (!rows.length) return [cycle.key, { ...fallbackCycle, period: cycle.name }];
+
+    const tierOptions = rows.map((row) => ({
+      quotaLabel: row.points == null ? '-' : row.points.toLocaleString('en-US'),
+      price: String(row.currentPrice),
+      originalPrice: String(row.originalPrice),
+      points: row.points == null ? '-' : row.points.toLocaleString('en-US'),
+      pointsNote: `${row.pointsUnit ?? '每人'} · ${row.pointsCycle === '一次性' ? '一次性发放' : '按月发放'}`,
+      monthlyPrice: formatPackageMonthlyPrice(row.currentPrice, row.duration),
+    }));
+    const firstRow = rows[0];
+    return [cycle.key, {
+      price: String(firstRow.currentPrice),
+      originalPrice: String(firstRow.originalPrice),
+      period: cycle.name,
+      points: `${firstRow.points?.toLocaleString('en-US') ?? '-'} ${firstRow.pointsCycle === '一次性' ? '积分' : '积分每月'}`,
+      pointsNote: `${firstRow.pointsUnit ?? '每人'} · ${firstRow.pointsCycle === '一次性' ? '一次性发放' : '按月发放'}`,
+      monthlyPrice: formatPackageMonthlyPrice(firstRow.currentPrice, firstRow.duration),
+      discount: formatPackageDiscount(firstRow.discount),
+      tierOptions: tierOptions.length > 1 ? tierOptions : undefined,
+    }];
+  }));
+  const firstCycle = cycleOptions[0] ? cyclePricing[cycleOptions[0].key] : undefined;
+  return { ...fallback, ...(firstCycle ?? {}), cyclePricing };
+}
+
+function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[]): MembershipPlan {
+  const memberType = resolveMemberType(plan, membershipType);
+  const data = createWebPackagePlanData(memberType, plan.planKey, cycleOptions);
+  return { ...data, ...plan, memberType };
 }
 
 const promotionDurationMs = (((4 * 24 + 1) * 60 + 51) * 60 + 59) * 1000;
@@ -180,7 +272,7 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   const isBlue = plan.color === 'blue';
   const isOrange = plan.color === 'orange';
   const isFeatured = isBlue || isOrange;
-  const cycleData = plan.cyclePricing?.[cycleKey] ?? plan;
+  const cycleData = getCyclePlanData(plan, cycleKey);
   const activeTier = cycleData.tierOptions?.[tierIndex] ?? cycleData.tierOptions?.[0];
   const displayPrice = activeTier?.price ?? cycleData.price;
   const displayOriginalPrice = activeTier?.originalPrice ?? cycleData.originalPrice;
@@ -250,7 +342,7 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
 export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const [membershipType, setMembershipType] = useState<'personal' | 'enterprise'>('personal');
   const [activeCycle, setActiveCycle] = useState(0);
-  const [advancedTier, setAdvancedTier] = useState(1);
+  const [tierSelections, setTierSelections] = useState<Record<string, number>>({});
   const [enterpriseSeats, setEnterpriseSeats] = useState<Record<string, number>>({});
   const [pageConfig, setPageConfig] = useState<MembershipPageContent>(() => readMembershipPageConfig('web'));
   const [promotionDeadline] = useState(() => Date.now() + promotionDurationMs);
@@ -284,11 +376,12 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const personalTab = pageConfig.plans.tabs.find((tab) => tab.key === 'personal');
   const enterpriseTab = pageConfig.plans.tabs.find((tab) => tab.key === 'enterprise');
   const activeTab = pageConfig.plans.tabs.find((tab) => tab.key === membershipType) ?? pageConfig.plans.tabs[0];
-  const visiblePlans = activeTab?.plans.map(hydratePlan) ?? [];
   const cycleOptions = activeTab?.options ?? [];
+  const visiblePlans = (activeTab?.plans ?? [])
+    .map((plan) => hydratePlan(plan, membershipType, cycleOptions))
+    .filter((plan, index, plans) => plans.findIndex((item) => item.memberType === plan.memberType) === index);
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
-  const rawCycleKey = cycleOptions[selectedCycle]?.key?.replace(/^team-/, '') ?? 'yearly';
-  const activeCycleKey = rawCycleKey === 'two-year' ? 'yearly' : rawCycleKey;
+  const activeCycleKey = cycleOptions[selectedCycle]?.key ?? 'yearly';
   const activeDetails = pageConfig.details[membershipType];
   const requestClose = () => {
     const preferredIndex = membershipType === 'enterprise' ? 3 : 2;
@@ -320,7 +413,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
       <main className="mx-auto max-w-[1240px] px-5 pb-20 pt-0">
         <section className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(112deg,#1588ee_0%,#1b94f7_48%,#ffd57d_100%)] px-6 py-5 shadow-[0_14px_34px_rgba(39,143,238,.17)]"><div className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full bg-white/25 blur-3xl" /><div className="pointer-events-none absolute right-[17%] top-0 h-32 w-32 rounded-full bg-[#fff3d0]/40 blur-2xl" /><div className="relative flex min-h-[82px] items-center justify-between gap-6"><div><div className="mb-3 flex items-center gap-2"><span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-[#293548]">✦ Seedance 2.5</span><span className="rounded-full bg-white px-2 py-1 text-[10px] font-medium text-[#293548]">四重福利</span></div><p className="text-[17px] font-semibold text-white">🎟 ¥0.19超低单秒价备战双11</p><p className="mt-1 text-[15px] font-medium text-[#ffe74d]">最高额外加赠2个月会员、4万+积分</p></div><div className="hidden items-center gap-1.5 sm:flex"><CountdownBox value={countdown.days} label="天" /><CountdownBox value={countdown.hours} label="小时" /><CountdownBox value={countdown.minutes} label="分钟" /><CountdownBox value={countdown.seconds} label="秒" /></div></div></section>
         <section className="pt-6"><div className="flex items-center justify-center gap-10 text-[17px] font-semibold"><button type="button" onClick={() => { setMembershipType('personal'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalTab?.name ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button><button type="button" onClick={() => { setMembershipType('enterprise'); setActiveCycle(0); }} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseTab?.name ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button></div><div className="mx-auto mt-4 flex max-w-[560px] items-center justify-between rounded-full bg-[#eef0f4] p-1 text-[11px] text-[#4e5868] shadow-inner">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => setActiveCycle(index)} className={`flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 py-2.5 transition ${selectedCycle === index ? 'bg-[#e4e7eb] font-semibold text-[#253043]' : 'hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className={selectedCycle === index ? 'text-[#168ff2]' : 'text-[#8993a2]'}>{cycle.guideText}</span> : null}</button>)}</div></section>
-        <section className={`mt-[68px] grid grid-cols-1 gap-4 sm:grid-cols-2 ${visiblePlans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}>{visiblePlans.map((plan, index) => <PlanCard key={`${plan.name}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={(membershipType === 'personal' && index === 2) || (membershipType === 'enterprise' && index === 3)} tierIndex={plan.color === 'blue' ? advancedTier : 0} onTierChange={plan.color === 'blue' ? setAdvancedTier : undefined} enterprise={membershipType === 'enterprise'} seats={enterpriseSeats[plan.planKey] ?? 1} onSeatChange={membershipType === 'enterprise' ? (delta) => setEnterpriseSeats((current) => ({ ...current, [plan.planKey]: Math.max(1, (current[plan.planKey] ?? 1) + delta) })) : undefined} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} />)}</section>
+        <section className={`mt-[68px] grid grid-cols-1 gap-4 sm:grid-cols-2 ${visiblePlans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}>{visiblePlans.map((plan, index) => { const tierKey = `${membershipType}:${plan.memberType ?? plan.planKey}:${activeCycleKey}`; const cycleData = getCyclePlanData(plan, activeCycleKey); const hasTiers = Boolean(cycleData.tierOptions?.length); return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} tierIndex={tierSelections[tierKey] ?? 0} onTierChange={hasTiers ? (value) => setTierSelections((current) => ({ ...current, [tierKey]: value })) : undefined} enterprise={membershipType === 'enterprise'} seats={enterpriseSeats[plan.planKey] ?? 1} onSeatChange={membershipType === 'enterprise' ? (delta) => setEnterpriseSeats((current) => ({ ...current, [plan.planKey]: Math.max(1, (current[plan.planKey] ?? 1) + delta) })) : undefined} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} />; })}</section>
         <section className="mx-auto mt-12 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} /> : <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section>
         <section className="mx-auto mt-4 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.modelConsumption.title}</h2><p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section>
         <CommercialLicenseOverview config={pageConfig.commercialLicense} />

@@ -10,6 +10,8 @@ export type MembershipCycleConfig = {
 
 export type MembershipPlanDisplayConfig = {
   planKey: string;
+  /** 对应会员套餐管理 Web端-新版中的所属会员名称。 */
+  memberType?: string;
   name: string;
   subtitle: string;
   color: 'neutral' | 'blue' | 'orange';
@@ -17,6 +19,13 @@ export type MembershipPlanDisplayConfig = {
   features: string[];
   benefitSections?: MembershipBenefitSection[];
 };
+
+export function getDefaultMembershipPlanMemberType(tabKey: 'personal' | 'enterprise', planKey: string) {
+  const memberTypes = tabKey === 'personal'
+    ? { basic: '基础版（个人）', advanced: '专业版（个人）', professional: '专业版（个人）' }
+    : { basic: '基础版（企业）', advanced: '专业版（企业）', professional: '专业版（企业）', flagship: '旗舰版（企业）' };
+  return memberTypes[planKey as keyof typeof memberTypes];
+}
 
 export type MembershipBenefitItem = {
   label: string;
@@ -271,6 +280,7 @@ const personalProfessionalBenefits: MembershipBenefitSection[] = [
 const personalPlans: MembershipPlanDisplayConfig[] = [
   {
     planKey: 'basic',
+    memberType: '基础版（个人）',
     name: '基础版',
     subtitle: '适合初次探索 AI 创作',
     color: 'neutral',
@@ -278,15 +288,8 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
     benefitSections: personalBasicBenefits,
   },
   {
-    planKey: 'advanced',
-    name: '高级版',
-    subtitle: '适合高频创作与持续产出',
-    color: 'neutral',
-    features: ['Seedance 2.0 VIP', '标准生成通道', '生成作品去除品牌水印'],
-    benefitSections: personalAdvancedBenefits,
-  },
-  {
     planKey: 'professional',
+    memberType: '专业版（个人）',
     name: '专业版',
     subtitle: '适合大批量稳定产出与交付',
     color: 'blue',
@@ -386,10 +389,12 @@ const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
 const enterprisePlans: MembershipPlanDisplayConfig[] = [
   ...personalPlans.map((plan) => ({
     ...plan,
-    benefitSections: plan.planKey === 'flagship' ? enterpriseFlagshipBenefits : enterpriseCommonBenefits,
+    memberType: plan.planKey === 'basic' ? '基础版（企业）' : '专业版（企业）',
+    benefitSections: enterpriseCommonBenefits,
   })),
   {
     planKey: 'flagship',
+    memberType: '旗舰版（企业）',
     name: '旗舰版',
     subtitle: '为极限产出而生',
     color: 'orange',
@@ -768,6 +773,7 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
           return {
             ...fallbackPlan,
             planKey: rawPlan.planKey ?? fallbackPlan.planKey,
+            memberType: rawPlan.memberType ?? getDefaultMembershipPlanMemberType(fallbackTab.key, String(rawPlan.planKey ?? fallbackPlan.planKey)) ?? fallbackPlan.memberType,
             name: rawPlan.name ?? fallbackPlan.name,
             subtitle: rawPlan.subtitle ?? fallbackPlan.subtitle,
             color: rawPlan.color ?? fallbackPlan.color,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, Plus, Save, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { DEFAULT_MEMBERSHIP_PAGE_CONFIG, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
+import { DEFAULT_MEMBERSHIP_PAGE_CONFIG, getDefaultMembershipPlanMemberType, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
 
 type PlatformKey = 'web' | 'mobile';
 type ModuleKey = 'plans' | 'overview' | 'details' | 'model-consumption' | 'commercial-license' | 'faq';
@@ -108,6 +108,9 @@ const migratePlansJson = (value: unknown, fallback: string) => {
           return {
             ...fallbackPlan,
             planKey: rawPlan.planKey ?? fallbackPlan.planKey,
+            memberType: rawPlan.memberType
+              ?? getDefaultMembershipPlanMemberType(isEnterprise ? 'enterprise' : 'personal', String(rawPlan.planKey ?? fallbackPlan.planKey))
+              ?? fallbackPlan.memberType,
             name: rawPlan.name ?? fallbackPlan.name,
             subtitle: rawPlan.subtitle ?? fallbackPlan.subtitle,
             color: rawPlan.color ?? fallbackPlan.color,

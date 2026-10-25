@@ -13,7 +13,7 @@ type PackageRow = {
   status: '使用中' | '停止使用';
 };
 
-type PackageDetailRow = {
+export type PackageDetailRow = {
   id: number;
   name: string;
   displayName: string;
@@ -215,7 +215,7 @@ const flagshipWebSkuPrices: NewWebSkuPrice[] = [
   { displayName: '3年', duration: 1095, price: 759 },
 ];
 
-const newWebSkuDetails: PackageDetailRow[] = [
+export const WEB_NEW_MEMBER_PACKAGE_DETAILS: PackageDetailRow[] = [
   ...createWebSkuDetails(3501, '基础版（个人）', 200, [
     { displayName: '连续包月', duration: 30, price: 39, packageType: '订阅套餐' },
     { displayName: '月度', duration: 30, price: 49 },
@@ -627,7 +627,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
 }
 
 function MembershipPackageDetailPage({ packageId, packageName, onBack, onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { packageId: number; packageName: string; onBack: () => void; onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
-  const [details, setDetails] = useState(() => packageId === WEB_PACKAGE_ID ? [...initialPackageDetails, ...newWebSkuDetails] : initialPackageDetails);
+  const [details, setDetails] = useState(() => packageId === WEB_PACKAGE_ID ? [...initialPackageDetails, ...WEB_NEW_MEMBER_PACKAGE_DETAILS] : initialPackageDetails);
   const [nameQuery, setNameQuery] = useState('');
   const [memberType, setMemberType] = useState('');
   const [submittedName, setSubmittedName] = useState('');
