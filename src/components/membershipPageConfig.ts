@@ -21,8 +21,18 @@ export type MembershipPlanDisplayConfig = {
   subtitle: string;
   color: 'neutral' | 'blue' | 'orange';
   tag?: string;
+  /** 套餐卡片按钮下方有效期/续费说明区域的样式。 */
+  purchaseInfoStyle?: MembershipPurchaseInfoStyleConfig;
   features: string[];
   benefitSections?: MembershipBenefitSection[];
+};
+
+export type MembershipPurchaseInfoStyleConfig = {
+  textColor?: string;
+  dateColor?: string;
+  secondaryColor?: string;
+  backgroundColor?: string;
+  borderColor?: string;
 };
 
 export type MembershipMemberLevelBadgeConfig = {
@@ -67,11 +77,24 @@ export type MembershipBenefitSection = {
   badge?: string;
   actionLabel?: string;
   items: MembershipBenefitItem[];
+  /** 标色突出应用于整个权益分组区域，而不是单条权益。 */
+  highlightStyle?: MembershipBenefitSectionStyleConfig;
   highlight?: {
     title: string;
     items: Array<{ label: string; badge?: string }>;
     tone: 'blue' | 'orange';
   };
+};
+
+export type MembershipBenefitSectionStyleConfig = {
+  enabled?: boolean;
+  backgroundColor?: string;
+  borderColor?: string;
+  titleColor?: string;
+  textColor?: string;
+  iconColor?: string;
+  badgeBackgroundColor?: string;
+  badgeTextColor?: string;
 };
 
 export type MembershipVipLevelConfig = {
@@ -316,7 +339,17 @@ const personalProfessionalBenefits: MembershipBenefitSection[] = [
     ],
   },
   {
-    title: '专享权益（标色突出）',
+    title: '专享权益',
+    highlightStyle: {
+      enabled: true,
+      backgroundColor: '#f7fbff',
+      borderColor: '#d7eaff',
+      titleColor: '#273143',
+      textColor: '#5d6878',
+      iconColor: '#168ff2',
+      badgeBackgroundColor: '#eaf4ff',
+      badgeTextColor: '#168ff2',
+    },
     items: [
       benefitItem('智能Image2.5 Pro', true, '高质通道'),
       benefitItem('Seedream5.0 Pro', true, '限时特惠'),
@@ -335,6 +368,7 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
     name: '基础版',
     subtitle: '100万模板在线编辑，快速出图',
     color: 'neutral',
+    purchaseInfoStyle: { textColor: '#9aa2ae', dateColor: '#8998ad', secondaryColor: '#9aa2ae' },
     features: ['Seedance 2.0 VIP', '标准生成通道', '生成作品去除品牌水印'],
     benefitSections: personalBasicBenefits,
   },
@@ -346,6 +380,7 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
     subtitle: '100万模板+AI全能创作',
     color: 'blue',
     tag: '限时5折',
+    purchaseInfoStyle: { textColor: '#90a0b7', dateColor: '#7f91aa', secondaryColor: '#90a0b7' },
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印'],
     benefitSections: personalProfessionalBenefits,
   },
@@ -457,7 +492,17 @@ const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
     ],
   },
   {
-    title: '更多的企业管理权益（标色突出）',
+    title: '更多的企业管理权益',
+    highlightStyle: {
+      enabled: true,
+      backgroundColor: '#fffaf0',
+      borderColor: '#f1dfad',
+      titleColor: '#7c5a11',
+      textColor: '#6b5b35',
+      iconColor: '#d89a1b',
+      badgeBackgroundColor: '#fff0c7',
+      badgeTextColor: '#a8750e',
+    },
     items: [
       benefitItem('品牌设置，支持多品牌logo、主题色、品牌字体等'),
       benefitItem('内容审批，支持设计审批、保障合规安全'),
@@ -506,6 +551,7 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
     subtitle: '适合于大型企业（跨地域/多分公司、子公司的企业）灵活的算力配额，支持20以上席位灵活配置',
     color: 'orange',
     tag: '加赠2个月会员',
+    purchaseInfoStyle: { textColor: '#a08f7c', dateColor: '#9a815f', secondaryColor: '#a08f7c' },
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印', 'API 服务购买'],
     benefitSections: enterpriseFlagshipBenefits,
   },
@@ -963,6 +1009,23 @@ const normalizePlanCardList = (
   fallback: MembershipPlanDisplayConfig[],
   membershipType: 'personal' | 'enterprise',
 ) => {
+  const normalizeBenefitSections = (value: unknown, fallbackSections: MembershipBenefitSection[] = []) => {
+    const rawSections = Array.isArray(value) ? value : fallbackSections;
+    return rawSections.map((section, index) => {
+      const fallbackSection = fallbackSections.find((item) => item.title === (section as Partial<MembershipBenefitSection>)?.title) ?? fallbackSections[index];
+      if (!section || typeof section !== 'object') return fallbackSection;
+      const rawSection = section as Partial<MembershipBenefitSection>;
+      return {
+        ...(fallbackSection ? clone(fallbackSection) : {}),
+        ...rawSection,
+        title: rawSection.title === '专享权益（标色突出）' || rawSection.title === '更多的企业管理权益（标色突出）'
+          ? fallbackSection?.title ?? rawSection.title
+          : rawSection.title,
+        items: Array.isArray(rawSection.items) ? rawSection.items : fallbackSection?.items ?? [],
+        highlightStyle: rawSection.highlightStyle ?? fallbackSection?.highlightStyle,
+      };
+    }).filter((section): section is MembershipBenefitSection => Boolean(section));
+  };
   const rawPlans = Array.isArray(value) ? value : fallback;
   return rawPlans.map((plan, index) => {
     const fallbackPlan = fallback[index] ?? fallback[0];
@@ -981,8 +1044,11 @@ const normalizePlanCardList = (
       subtitle: typeof rawPlan.subtitle === 'string' ? rawPlan.subtitle : fallbackPlan.subtitle,
       color: rawPlan.color === 'blue' || rawPlan.color === 'orange' || rawPlan.color === 'neutral' ? rawPlan.color : fallbackPlan.color,
       tag: typeof rawPlan.tag === 'string' ? rawPlan.tag : fallbackPlan.tag,
+      purchaseInfoStyle: rawPlan.purchaseInfoStyle && typeof rawPlan.purchaseInfoStyle === 'object'
+        ? rawPlan.purchaseInfoStyle
+        : fallbackPlan.purchaseInfoStyle,
       features: Array.isArray(rawPlan.features) ? rawPlan.features : fallbackPlan.features,
-      benefitSections: Array.isArray(rawPlan.benefitSections) ? rawPlan.benefitSections : fallbackPlan.benefitSections,
+      benefitSections: normalizeBenefitSections(rawPlan.benefitSections, fallbackPlan.benefitSections),
     };
   }).filter((plan): plan is MembershipPlanDisplayConfig => Boolean(plan));
 };

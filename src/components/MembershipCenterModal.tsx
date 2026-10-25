@@ -651,6 +651,13 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   const accent = isOrange ? '#ff7910' : '#168ff2';
   const emphasized = selected || isFeatured;
   const benefitSections = plan.benefitSections ?? [{ title: '专享权益', items: plan.features.map((feature) => ({ label: feature, enabled: true, badge: '专属通道' })) }];
+  const purchaseInfoStyle = plan.purchaseInfoStyle ?? {};
+  const purchaseInfoHasContainerStyle = Boolean(purchaseInfoStyle.backgroundColor || purchaseInfoStyle.borderColor);
+  const purchaseInfoInlineStyle = {
+    color: purchaseInfoStyle.textColor ?? '#9aa2ae',
+    backgroundColor: purchaseInfoStyle.backgroundColor,
+    borderColor: purchaseInfoStyle.borderColor,
+  };
 
   return <article className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`}>
     {promoBanner ? <div className="h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7" style={{ backgroundColor: promoBanner.color, color: '#ffffff' }}>{promoBanner.text}</div> : null}
@@ -662,11 +669,19 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
     </div>
     {cycleData.tierOptions ? <div className="mx-5 mt-1 h-[64px] px-0"><div className="mb-1.5 flex items-center justify-between text-[10px] text-[#586474]">{cycleData.tierOptions.map((tier, index) => <button type="button" key={tier.quotaLabel} onClick={() => onTierChange?.(index)} className={`cursor-pointer ${index === tierIndex ? 'font-semibold text-[#202938]' : 'hover:text-[#168ff2]'}`}>{tier.quotaLabel}</button>)}</div><div className="relative h-5"><div className="absolute left-0 right-0 top-2 h-[4px] rounded-full bg-[#4b4f55]" /><span className="pointer-events-none absolute top-0 h-4 w-4 -translate-x-1/2 rounded-full border border-[#6f747b] bg-white shadow-[0_1px_3px_rgba(31,41,55,.16)]" style={{ left: `${tierProgress}%` }} /><input type="range" min={0} max={cycleData.tierOptions.length - 1} step={1} value={tierIndex} onChange={(event) => onTierChange?.(Number(event.currentTarget.value))} aria-label="高级会员积分档位" className="absolute inset-0 h-5 w-full cursor-pointer opacity-0" /></div></div> : <div className="mx-5 mt-1 h-[64px]" aria-hidden="true" />}
     <div className={`mx-4 rounded-[12px] px-4 py-3 ${emphasized ? isOrange ? 'bg-[#fff0dc]' : isBlue ? 'bg-[#eaf4ff]' : 'bg-[#eef1f5]' : 'bg-[#f7f8fa]'}`}><div className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: emphasized ? accent : '#3e4858' }}><Sparkles className="h-3.5 w-3.5" />{enterprise ? `${displayPoints.replace('积分每月', '积分/席/月')}` : displayPoints}</div><p className="mt-1 text-[10px] text-[#8e98a7]">{displayPointsDescription || displayPointsNote}</p></div>
-    <div className="px-4 pt-4"><button ref={purchaseButtonRef} type="button" className={`h-9 w-full rounded-full text-[12px] font-medium transition ${emphasized ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'bg-[#202938] text-white shadow-[0_5px_12px_rgba(32,41,56,.16)] hover:bg-[#111827]'}`}>立即开通</button>{isContractPlan ? <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] leading-4 text-[#90a0b7]"><span>开通后有效期至：{expiryDate}</span><span>到期后将按{getRenewalPeriod(cycleData.period)}{renewalPriceText}自动续费，可随时取消</span><span aria-label="续费说明" title="续费说明" className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#edf0f4] text-[10px] font-semibold text-[#8793a5]">?</span></div> : <p className="mt-2 text-center text-[10px] text-[#9aa2ae]">{displayMonthlyPrice === '-' ? '一次性购买' : `折算 ¥${enterprise ? totalMonthlyPrice : displayMonthlyPrice}/月${enterprise ? ' · 多席位按人数计算' : ` · 首年${cycleData.discount}折`}`}</p>}</div>
+    <div className="px-4 pt-4"><button ref={purchaseButtonRef} type="button" className={`h-9 w-full rounded-full text-[12px] font-medium transition ${emphasized ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'bg-[#202938] text-white shadow-[0_5px_12px_rgba(32,41,56,.16)] hover:bg-[#111827]'}`}>立即开通</button>{isContractPlan ? <div className={`mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] leading-4 ${purchaseInfoHasContainerStyle ? 'rounded-[5px] border px-2 py-1' : ''}`} style={purchaseInfoInlineStyle}><span style={{ color: purchaseInfoStyle.dateColor ?? purchaseInfoStyle.textColor ?? '#90a0b7' }}>开通后有效期至：{expiryDate}</span><span style={{ color: purchaseInfoStyle.secondaryColor ?? purchaseInfoStyle.textColor ?? '#90a0b7' }}>到期后将按{getRenewalPeriod(cycleData.period)}{renewalPriceText}自动续费，可随时取消</span><span aria-label="续费说明" title="续费说明" className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#edf0f4] text-[10px] font-semibold text-[#8793a5]">?</span></div> : expiryDate ? <div className={`mt-2 text-center text-[10px] leading-4 ${purchaseInfoHasContainerStyle ? 'rounded-[5px] border px-2 py-1' : ''}`} style={purchaseInfoInlineStyle}><span style={{ color: purchaseInfoStyle.dateColor ?? purchaseInfoStyle.textColor ?? '#9aa2ae' }}>购买后有效期至：{expiryDate}</span></div> : <p className={`mt-2 text-center text-[10px] ${purchaseInfoHasContainerStyle ? 'rounded-[5px] border px-2 py-1' : ''}`} style={purchaseInfoInlineStyle}>一次性购买</p>}</div>
     <div className="mt-5 flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5">
-      {benefitSections.map((section, sectionIndex) => <section key={`${section.title}-${sectionIndex}`} className={sectionIndex > 0 ? 'mt-5' : ''}>
+      {benefitSections.map((section, sectionIndex) => {
+        const sectionStyle = section.highlightStyle;
+        const highlightedSection = Boolean(sectionStyle && sectionStyle.enabled !== false);
+        const sectionContainerStyle = highlightedSection ? {
+          backgroundColor: sectionStyle?.backgroundColor,
+          borderColor: sectionStyle?.borderColor,
+        } : undefined;
+        const sectionTitleStyle = highlightedSection ? { color: sectionStyle?.titleColor } : undefined;
+        return <section key={`${section.title}-${sectionIndex}`} className={`${sectionIndex > 0 ? 'mt-5' : ''} ${highlightedSection ? 'rounded-[14px] border px-3 py-3' : ''}`} style={sectionContainerStyle}>
         <div className="flex items-center justify-between gap-2">
-          <h4 className="text-[12px] font-semibold text-[#273143]">{section.title}</h4>
+          <h4 className="text-[12px] font-semibold text-[#273143]" style={sectionTitleStyle}>{section.title}</h4>
           <div className="flex items-center gap-2">
             {section.badge ? <span className="rounded-[4px] bg-[#f1f3f6] px-1.5 py-0.5 text-[9px] text-[#929baa]">{section.badge}</span> : null}
             {section.actionLabel ? <button type="button" className={`text-[11px] font-medium ${isOrange ? 'text-[#ff6f2a]' : 'text-[#168ff2]'}`}>{section.actionLabel}</button> : null}
@@ -675,12 +690,15 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
         <ul className="mt-3 space-y-2.5">
           {section.items.map((item, itemIndex) => {
             const enabled = item.enabled !== false;
-            return <li key={`${item.label}-${itemIndex}`} className={`flex items-start gap-2 text-[11px] leading-4 ${enabled ? 'text-[#5d6878]' : 'text-[#a6afbc]'}`}>
-              {enabled ? <Check className="mt-[2px] h-3.5 w-3.5 shrink-0" style={{ color: isFeatured || selected ? accent : '#697789' }} /> : <X className="mt-[2px] h-3.5 w-3.5 shrink-0 text-[#b9c0ca]" />}
+            const itemTextStyle = enabled && highlightedSection ? { color: sectionStyle?.textColor } : undefined;
+            const itemIconStyle = enabled ? { color: highlightedSection ? sectionStyle?.iconColor : isFeatured || selected ? accent : '#697789' } : undefined;
+            const itemBadgeStyle = highlightedSection ? { backgroundColor: sectionStyle?.badgeBackgroundColor, color: sectionStyle?.badgeTextColor } : undefined;
+            return <li key={`${item.label}-${itemIndex}`} className={`flex items-start gap-2 text-[11px] leading-4 ${enabled ? 'text-[#5d6878]' : 'text-[#a6afbc]'}`} style={itemTextStyle}>
+              {enabled ? <Check className="mt-[2px] h-3.5 w-3.5 shrink-0" style={itemIconStyle} /> : <X className="mt-[2px] h-3.5 w-3.5 shrink-0 text-[#b9c0ca]" />}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-start gap-1.5">
                   <span>{item.label}</span>
-                  {item.badge ? <span className="rounded-[4px] bg-[#f1f3f6] px-1 py-0.5 text-[9px] leading-3 text-[#929baa]">{item.badge}</span> : null}
+                  {item.badge ? <span className="rounded-[4px] px-1 py-0.5 text-[9px] leading-3" style={itemBadgeStyle ?? { backgroundColor: '#f1f3f6', color: '#929baa' }}>{item.badge}</span> : null}
                 </div>
                 {item.detail ? <div className="mt-0.5 text-[10px] leading-4 text-[#ff6f4a]">{item.detail}</div> : null}
               </div>
@@ -695,7 +713,8 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
             </li>)}
           </ul>
         </div> : null}
-      </section>)}
+      </section>;
+      })}
     </div>
   </article>;
 }

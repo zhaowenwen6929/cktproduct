@@ -165,6 +165,37 @@ const migrateOverviewJson = (value: unknown, fallback: string, legacyPlansValue?
     const isLegacyOverview = parsed.version !== 2;
     let planCards = hasPlanCards && !isLegacyOverview ? parsed.planCards : fallbackConfig.planCards;
 
+    const defaultPlanCards = fallbackConfig.planCards as Record<string, unknown>;
+    const mergeBenefitStyles = (candidate: unknown) => {
+      const candidateCards = candidate && typeof candidate === 'object' ? candidate as Record<string, unknown> : {};
+      return Object.fromEntries(['personal', 'enterprise'].map((key) => {
+        const fallbackPlans = Array.isArray(defaultPlanCards[key]) ? defaultPlanCards[key] as Array<Record<string, unknown>> : [];
+        const rawPlans = Array.isArray(candidateCards[key]) ? candidateCards[key] as Array<Record<string, unknown>> : fallbackPlans;
+        return [key, rawPlans.map((rawPlan, index) => {
+          const fallbackPlan = fallbackPlans[index] ?? {};
+          const fallbackSections = Array.isArray(fallbackPlan.benefitSections) ? fallbackPlan.benefitSections as Array<Record<string, unknown>> : [];
+          const rawSections = Array.isArray(rawPlan?.benefitSections) ? rawPlan.benefitSections as Array<Record<string, unknown>> : fallbackSections;
+          return {
+            ...fallbackPlan,
+            ...rawPlan,
+            purchaseInfoStyle: rawPlan?.purchaseInfoStyle ?? fallbackPlan.purchaseInfoStyle,
+            benefitSections: rawSections.map((rawSection, sectionIndex) => {
+              const fallbackSection = fallbackSections.find((section) => section.title === rawSection?.title) ?? fallbackSections[sectionIndex] ?? {};
+              return {
+                ...fallbackSection,
+                ...rawSection,
+                title: rawSection?.title === '专享权益（标色突出）' || rawSection?.title === '更多的企业管理权益（标色突出）'
+                  ? fallbackSection.title ?? rawSection.title
+                  : rawSection?.title,
+                highlightStyle: rawSection?.highlightStyle ?? fallbackSection.highlightStyle,
+              };
+            }),
+          };
+        })];
+      }));
+    };
+    planCards = mergeBenefitStyles(planCards);
+
     if (!hasPlanCards && typeof legacyPlansValue === 'string') {
       try {
         const legacyPlans = JSON.parse(legacyPlansValue) as { tabs?: Array<Record<string, unknown>> };
