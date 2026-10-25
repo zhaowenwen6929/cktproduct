@@ -555,6 +555,16 @@ const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
       label: '扫码咨询',
       description: '专属顾问',
     },
+    highlightStyle: {
+      enabled: true,
+      backgroundColor: '#fffaf4',
+      borderColor: '#ffe1c8',
+      titleColor: '#273143',
+      textColor: '#6b6878',
+      iconColor: '#ff7910',
+      badgeBackgroundColor: '#fff0dc',
+      badgeTextColor: '#d96616',
+    },
     items: [
       benefitItem('支持积分灵活定制'),
       benefitItem('支持私有化部署与内容定制'),
