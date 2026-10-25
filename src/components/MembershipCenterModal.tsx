@@ -543,6 +543,7 @@ function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionC
   const groups = config.groups ?? [];
   const columnCount = Math.max(columns.length, 1);
   const gridStyle = { gridTemplateColumns: `minmax(260px,1.45fr) repeat(${columnCount}, minmax(96px,1fr))` };
+  const formatQuota = (quota: string | number) => typeof quota === 'number' ? quota.toLocaleString('en-US') : quota;
 
   if (!groups.length) {
     return <div className="mt-4 divide-y divide-[#edf0f4] overflow-hidden rounded-[12px] border border-[#edf0f4]">{(config.models ?? []).map((model, index) => <div key={`${model.name}-${index}`} className="flex items-center justify-between px-4 py-3 text-[12px]"><span className="text-[#4b5667]">{model.name}</span><span className="font-medium text-[#273144]">{model.quota} {model.unit}</span></div>)}</div>;
@@ -561,8 +562,8 @@ function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionC
         return <section key={group.key}>
           <div className="flex items-center gap-3 border-t border-[#edf0f4] bg-white px-4 py-3"><span className="h-4 w-1 rounded-full bg-[#202938]" /><h3 className="text-[14px] font-semibold text-[#202938]">{group.title}</h3></div>
           {visibleRows.map((row, rowIndex) => <div key={`${row.name}-${rowIndex}`} className="grid items-center border-t border-[#edf0f4] px-4 py-3.5" style={gridStyle}>
-            <div className="flex min-w-0 items-center gap-3 pl-2"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#dce1e8] text-[11px] text-[#7e8998]">✣</span><div className="min-w-0"><div className="truncate text-[12px] font-medium text-[#273144]">{row.name}</div><div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-[#8994a3]"><span>{row.cost}</span>{row.badge ? <span className="rounded-[3px] bg-[#eaf1ff] px-1 py-0.5 text-[9px] text-[#266dff]">{row.badge} ⓘ</span> : null}</div></div></div>
-            {columns.map((column, columnIndex) => <div key={`${column.label}-${columnIndex}`} className="text-center text-[13px] font-medium text-[#273144]">{row.quotas[columnIndex] ?? '—'} <span className="text-[11px] font-normal text-[#5e6979]">{row.unit}</span></div>)}
+            <div className="flex min-w-0 items-center gap-3 pl-2"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#dce1e8] text-[11px] text-[#7e8998]">✣</span><div className="min-w-0"><div className="truncate text-[12px] font-medium text-[#273144]">{row.name}</div>{row.cost || row.badge ? <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-[#8994a3]"><span>{row.cost}</span>{row.badge ? <span className="rounded-[3px] bg-[#eaf1ff] px-1 py-0.5 text-[9px] text-[#266dff]">{row.badge} ⓘ</span> : null}</div> : null}</div></div>
+            {columns.map((column, columnIndex) => <div key={`${column.label}-${columnIndex}`} className="text-center text-[13px] font-medium text-[#273144]">{formatQuota(row.quotas[columnIndex] ?? '—')} <span className="text-[11px] font-normal text-[#5e6979]">{row.unit}</span></div>)}
           </div>)}
           {group.rows.length > previewRowCount ? <div className="border-t border-[#edf0f4] px-4 py-3"><button type="button" onClick={() => setExpandedGroups((current) => ({ ...current, [group.key]: !expanded }))} className="flex items-center gap-1 text-[12px] font-medium text-[#7b8797] transition hover:text-[#168ff2]">{expanded ? '收起' : '查看更多'}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></div> : null}
         </section>;

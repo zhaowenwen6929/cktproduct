@@ -231,8 +231,13 @@ const migrateModelConsumptionJson = (value: unknown, fallback: string) => {
   if (typeof value !== 'string') return fallback;
   try {
     const parsed = JSON.parse(value) as Record<string, unknown>;
-    if (Array.isArray(parsed.groups)) return value;
     const fallbackConfig = JSON.parse(fallback) as Record<string, unknown>;
+    const legacyColumns = ['300', '500', '1,000', '2,000', '3,000'];
+    const isLegacyConfig = Array.isArray(parsed.columns)
+      && parsed.columns.length === legacyColumns.length
+      && parsed.columns.every((column, index) => String((column as Record<string, unknown>)?.label ?? '') === legacyColumns[index]);
+    if (isLegacyConfig) return JSON.stringify(fallbackConfig, null, 2);
+    if (Array.isArray(parsed.groups)) return value;
     return JSON.stringify({
       ...fallbackConfig,
       title: typeof parsed.title === 'string' ? parsed.title : fallbackConfig.title,

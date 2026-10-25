@@ -798,37 +798,73 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
   },
   modelConsumption: {
     title: 'AI 模型消耗',
-    description: 'AI 创作会员 / AI 大会员积分额度档位对应的模型生成数量',
+    description: '各模型预估生成数量：图片按张数、视频按单视频 5 秒/次估算（视频时长最高支持输入输出各 15 秒）',
     columns: [
-      { label: '300', subLabel: '积分/月' },
-      { label: '500', subLabel: '积分/月' },
-      { label: '1,000', subLabel: '积分/月' },
-      { label: '2,000', subLabel: '积分/月' },
-      { label: '3,000', subLabel: '积分/月' },
+      { label: '1,200', subLabel: '积分/月' },
+      { label: '2,500', subLabel: '积分/月' },
+      { label: '4,000', subLabel: '积分/月' },
+      { label: '10,000', subLabel: '积分/月' },
+      { label: '50,000', subLabel: '积分/月' },
+      { label: '100,000', subLabel: '积分/月' },
     ],
     groups: [
       {
         key: 'image',
         title: '图片模型',
         rows: [
-          { name: '智能图像 2K', cost: '3积分/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
-          { name: '智能图像 4K', cost: '4积分/次', unit: '张图片', quotas: [75, 125, 250, 500, 750] },
-          { name: '全能图像 2.1 1K', cost: '2积分/次', unit: '张图片', quotas: [150, 250, 500, '1,000', '1,500'] },
-          { name: '全能图像 2.1 2K', cost: '3积分/次', unit: '张图片', quotas: [100, 166, 333, 666, '1,000'] },
-          { name: '全能图像 2.1 4K', cost: '7积分/次', unit: '张图片', quotas: [42, 71, 142, 285, 428] },
-          { name: '灵动图像 2.5 Fast 2K', cost: '8积分/次', unit: '张图片', quotas: [37, 62, 125, 250, 375] },
+          { name: 'Seedream3.0', cost: '', unit: '张图片', quotas: [300, 625, 1000, 2500, 12500, 25000] },
+          { name: 'Seedream4.0', cost: '', unit: '张图片', quotas: [120, 250, 400, 1000, 5000, 10000] },
+          { name: 'Seedream4.5', cost: '', unit: '张图片', quotas: [120, 250, 400, 1000, 5000, 10000] },
+          { name: 'Seedream5.0 Lite', cost: '', unit: '张图片', quotas: [48, 100, 160, 400, 2000, 4000] },
+          { name: '全能图像pro', cost: '', unit: '张图片', quotas: [34, 71, 114, 286, 1429, 2857] },
+          { name: '全能图像2.0', cost: '', unit: '张图片', quotas: [34, 71, 114, 286, 1429, 2857] },
+          { name: '千问image3.0 Pro', cost: '', unit: '张图片', quotas: [20, 42, 67, 167, 833, 1667] },
+          { name: '千问image3.0', cost: '', unit: '张图片', quotas: [60, 125, 200, 500, 2500, 5000] },
+          { name: 'Seedream5.0 Pro', cost: '', unit: '张图片', quotas: [16, 33, 53, 133, 667, 1333] },
+          { name: 'Seedream5.0 Flash', cost: '', unit: '张图片', quotas: [48, 100, 160, 400, 2000, 4000] },
+          { name: '智能Image2.5 Pro', cost: '', unit: '张图片', quotas: [24, 50, 80, 200, 1000, 2000] },
+          { name: '智能Image2.5 Fast', cost: '', unit: '张图片', quotas: [30, 63, 100, 250, 1250, 2500] },
+          { name: '智能Image2.0', cost: '', unit: '张图片', quotas: [34, 71, 114, 286, 1429, 2857] },
+          { name: '智能Image2.1', cost: '', unit: '张图片', quotas: [34, 71, 114, 286, 1429, 2857] },
         ],
       },
       {
         key: 'video',
         title: '视频模型',
         rows: [
-          { name: 'Seedance 2.0 Fast 480P', cost: '8积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [37, 62, 125, 250, 375] },
-          { name: 'Seedance 2.0 Fast 720P', cost: '12积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [25, 41, 83, 166, 250] },
-          { name: '万相 3.0 480P', cost: '6~135积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [50, 83, 166, 333, 500] },
-          { name: '万相 3.0 720P', cost: '10~225积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [30, 50, 100, 200, 300] },
-          { name: '万相 3.0 1080P', cost: '18~405积分/次', unit: '个视频', badge: '最高限时 6 折', quotas: [16, 27, 55, 111, 166] },
-          { name: 'Seedance 2.5 720P', cost: '18积分/次', unit: '个视频', badge: '限时福利', quotas: [16, 27, 55, 111, 166] },
+          { name: 'Seedance2.5 720P', cost: '', unit: '个视频', quotas: [13, 27, 44, 110, 549, 1099] },
+          { name: 'Seedance2.5 1080P', cost: '', unit: '个视频', quotas: [5, 11, 18, 44, 221, 442] },
+          { name: 'Seedance2.0 720P', cost: '', unit: '个视频', quotas: [31, 64, 103, 256, 1282, 2564] },
+          { name: 'Seedance2.0 1080P', cost: '', unit: '个视频', quotas: [14, 29, 46, 115, 575, 1149] },
+          { name: 'Seedance2.0-Mini 720P', cost: '', unit: '个视频', quotas: [63, 132, 211, 526, 2632, 5263] },
+          { name: 'Seedance2.0-Mini 1080P', cost: '', unit: '个视频', quotas: [29, 61, 98, 244, 1220, 2439] },
+          { name: 'Wan3.0 Prime 480P', cost: '', unit: '个视频', quotas: [52, 109, 174, 435, 2174, 4348] },
+          { name: 'Wan3.0 Prime 720P', cost: '', unit: '个视频', quotas: [26, 53, 85, 213, 1064, 2128] },
+          { name: 'Wan3.0 Prime 1080P', cost: '', unit: '个视频', quotas: [13, 27, 43, 106, 532, 1064] },
+          { name: 'Wan3.0 480P', cost: '', unit: '个视频', quotas: [86, 179, 286, 714, 3571, 7143] },
+          { name: 'Wan3.0 720P', cost: '', unit: '个视频', quotas: [44, 93, 148, 370, 1852, 3704] },
+          { name: 'Wan3.0 1080P', cost: '', unit: '个视频', quotas: [22, 46, 74, 185, 926, 1852] },
+          { name: 'MinMax H3 768P', cost: '', unit: '个视频', quotas: [36, 76, 121, 303, 1515, 3030] },
+          { name: 'MinMax H3 2K', cost: '', unit: '个视频', quotas: [23, 47, 75, 189, 943, 1887] },
+          { name: 'PixVerse V6 720P', cost: '', unit: '个视频', quotas: [71, 147, 235, 588, 2941, 5882] },
+          { name: 'PixVerse V6 1080P', cost: '', unit: '个视频', quotas: [40, 83, 133, 333, 1667, 3333] },
+          { name: 'Kling V2.6', cost: '', unit: '个视频', quotas: [46, 96, 154, 385, 1923, 3846] },
+          { name: 'Kling V2.5-Turbo', cost: '', unit: '个视频', quotas: [89, 185, 296, 741, 3704, 7407] },
+          { name: 'Hailuo 2.0 768P', cost: '', unit: '个视频', quotas: [90, 188, 300, 750, 3750, 7500] },
+          { name: 'Hailuo 2.0 1080P', cost: '', unit: '个视频', quotas: [60, 125, 200, 500, 2500, 5000] },
+          { name: 'Hailuo2.3 768P', cost: '', unit: '个视频', quotas: [90, 188, 300, 750, 3750, 7500] },
+          { name: 'Hailuo2.3 1080P', cost: '', unit: '个视频', quotas: [60, 125, 200, 500, 2500, 5000] },
+          { name: 'Hailuo2.3-Fast 768P', cost: '', unit: '个视频', quotas: [144, 300, 480, 1200, 6000, 12000] },
+          { name: 'Hailuo2.3-Fast 1080P', cost: '', unit: '个视频', quotas: [90, 188, 300, 750, 3750, 7500] },
+          { name: 'Vidu Q2 540P', cost: '', unit: '个视频', quotas: [22, 46, 74, 185, 926, 1852] },
+          { name: 'Vidu Q2 720P', cost: '', unit: '个视频', quotas: [16, 33, 53, 132, 658, 1316] },
+          { name: 'Vidu Q2 1080P', cost: '', unit: '个视频', quotas: [11, 23, 36, 91, 455, 909] },
+          { name: 'Vidu Q2-Pro 720P', cost: '', unit: '个视频', quotas: [126, 263, 421, 1053, 5263, 10526] },
+          { name: 'Vidu Q2-Pro 1080P', cost: '', unit: '个视频', quotas: [59, 123, 198, 494, 2469, 4938] },
+          { name: 'HappyHorse1.1 720P', cost: '', unit: '个视频', quotas: [80, 167, 267, 667, 3333, 6667] },
+          { name: 'HappyHorse1.1 1080P', cost: '', unit: '个视频', quotas: [60, 125, 200, 500, 2500, 5000] },
+          { name: 'HappyHorse 720P', cost: '', unit: '个视频', quotas: [92, 192, 308, 769, 3846, 7692] },
+          { name: 'HappyHorse 1080P', cost: '', unit: '个视频', quotas: [60, 125, 200, 500, 2500, 5000] },
         ],
       },
     ],
@@ -943,9 +979,17 @@ const parseJson = <T,>(value: unknown, fallback: T): T => {
   }
 };
 
+const LEGACY_MODEL_COLUMNS = ['300', '500', '1,000', '2,000', '3,000'];
+
+const isLegacyModelConsumption = (value: Partial<MembershipModelConsumptionConfig>) => {
+  if (!Array.isArray(value.columns) || value.columns.length !== LEGACY_MODEL_COLUMNS.length) return false;
+  return value.columns.every((column, index) => String(column?.label ?? '') === LEGACY_MODEL_COLUMNS[index]);
+};
+
 const normalizeModelConsumption = (value: unknown, fallback: MembershipModelConsumptionConfig): MembershipModelConsumptionConfig => {
   if (!value || typeof value !== 'object') return clone(fallback);
   const raw = value as Partial<MembershipModelConsumptionConfig>;
+  if (isLegacyModelConsumption(raw)) return clone(fallback);
   if (!Array.isArray(raw.groups)) {
     return {
       ...clone(fallback),
