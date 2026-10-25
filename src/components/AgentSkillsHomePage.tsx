@@ -53,8 +53,19 @@ interface UploadedFile {
 
 type FieldValue = string | UploadedFile[];
 
-const skillCategories = ['电商设计', '海报设计', '品牌营销', '企业宣传', '新媒体运营', '文案策划', '企业办公', '专业内容', '图片处理', '视频处理', '服饰穿戴', '文旅娱乐', '产品包装'];
-const skillPickerCategories = ['最近使用', ...skillCategories, '全部技能'];
+const agentCategoryOptions = [
+  { label: '海报设计', value: '海报设计' },
+  { label: '电商设计', value: '电商设计' },
+  { label: '视频创作', value: '视频处理' },
+  { label: '自媒体营销', value: '新媒体运营' },
+  { label: '办公设计', value: '企业办公' },
+  { label: '品牌IP形象', value: '品牌营销' },
+];
+
+const skillPickerCategories = ['最近使用', ...agentCategoryOptions.map((item) => item.label), '全部技能'];
+
+const resolveSkillCategory = (category: string) => agentCategoryOptions.find((item) => item.value === category || item.label === category)?.value ?? category;
+const getSkillCategoryLabel = (category: string) => agentCategoryOptions.find((item) => item.value === category || item.label === category)?.label ?? category;
 
 const skills: SkillDefinition[] = [
   {
@@ -243,11 +254,12 @@ const agentFeaturedCards = [
 ];
 
 const agentSameStyleCards = [
-  { title: '海报设计', tone: 'from-[#f8bc18] via-[#f5a700] to-[#e36d00]', kicker: 'CRISPY FRIES' },
-  { title: '电商设计', tone: 'from-[#24120d] via-[#6b2d12] to-[#c08042]', kicker: 'NEW BURGER' },
-  { title: '视频创作', tone: 'from-[#e4d4f6] via-[#c7a5e4] to-[#efe1fb]', kicker: '“你”够清爽' },
-  { title: '自媒体营销', tone: 'from-[#0b8b9e] via-[#35bbbf] to-[#9ce9d4]', kicker: 'TROPIC COOL' },
-  { title: '办公设计', tone: 'from-[#fff0e7] via-[#ffd3c9] to-[#f3b5ad]', kicker: '梅好夏日' },
+  { title: '海报设计', category: '海报设计', tone: 'from-[#f8bc18] via-[#f5a700] to-[#e36d00]', kicker: 'CRISPY FRIES' },
+  { title: '电商设计', category: '电商设计', tone: 'from-[#24120d] via-[#6b2d12] to-[#c08042]', kicker: 'NEW BURGER' },
+  { title: '视频创作', category: '视频处理', tone: 'from-[#e4d4f6] via-[#c7a5e4] to-[#efe1fb]', kicker: '“你”够清爽' },
+  { title: '自媒体营销', category: '新媒体运营', tone: 'from-[#0b8b9e] via-[#35bbbf] to-[#9ce9d4]', kicker: 'TROPIC COOL' },
+  { title: '办公设计', category: '企业办公', tone: 'from-[#fff0e7] via-[#ffd3c9] to-[#f3b5ad]', kicker: '梅好夏日' },
+  { title: '品牌IP形象', category: '品牌营销', tone: 'from-[#d9e9ff] via-[#c5d1f7] to-[#e9e4ff]', kicker: 'BRAND · IP' },
 ];
 
 const aiSkillRows = [
@@ -494,7 +506,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   const [homeAttachments, setHomeAttachments] = useState<GenerationAttachment[]>([]);
   const [skillPickerOpen, setSkillPickerOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('最近使用');
-  const [activeHomeSkillCategory, setActiveHomeSkillCategory] = useState('电商设计');
+  const [activeHomeSkillCategory, setActiveHomeSkillCategory] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
   const [membershipOpen, setMembershipOpen] = useState(false);
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, FieldValue>>>({});
@@ -505,16 +517,35 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
       ? recentSkillIds.map((id) => skills.find((item) => item.id === id)).filter((item): item is SkillDefinition => Boolean(item))
       : activeCategory === '全部技能'
         ? skills
-        : skills.filter((item) => item.category === activeCategory);
+        : skills.filter((item) => item.category === resolveSkillCategory(activeCategory));
     if (!searchTerm.trim()) return base;
     return base.filter((item) => `${item.title}${item.description}`.includes(searchTerm.trim()));
   }, [activeCategory, searchTerm]);
   const homepageSkillRows = useMemo(() => {
-    const filteredSkills = activeHomeSkillCategory === '全部技能'
-      ? aiSkillRows.flat().map((id) => skills.find((skill) => skill.id === id)).filter((skill): skill is SkillDefinition => Boolean(skill))
-      : skills.filter((skill) => skill.category === activeHomeSkillCategory);
+    const filteredSkills = activeHomeSkillCategory === null
+      ? agentFeaturedCards.map((card) => skills.find((skill) => skill.id === card.skillId)).filter((skill): skill is SkillDefinition => Boolean(skill))
+      : activeHomeSkillCategory === '全部技能'
+        ? skills
+        : skills.filter((skill) => skill.category === resolveSkillCategory(activeHomeSkillCategory));
     return Array.from({ length: Math.ceil(filteredSkills.length / 6) }, (_, index) => filteredSkills.slice(index * 6, index * 6 + 6));
   }, [activeHomeSkillCategory]);
+  const homepageFeaturedCards = useMemo(() => homepageSkillRows.flat().map((skill, index) => {
+    const original = agentFeaturedCards.find((card) => card.skillId === skill.id);
+    return {
+      title: skill.title,
+      desc: original?.desc ?? skill.description,
+      art: original?.art ?? ['poster', 'commerce-set', 'ppt', 'detail', 'recruitment', 'cutout'][index % 6],
+      skillId: skill.id,
+    };
+  }), [homepageSkillRows]);
+  const homepageSkillHeading = activeHomeSkillCategory === null
+    ? '精选技能'
+    : activeHomeSkillCategory === '全部技能'
+      ? '全部技能'
+      : `${getSkillCategoryLabel(activeHomeSkillCategory)}技能`;
+  const visibleSameStyleCards = activeHomeSkillCategory === null
+    ? agentSameStyleCards
+    : agentSameStyleCards.filter((card) => card.category === resolveSkillCategory(activeHomeSkillCategory));
 
   const selectedValues = selectedSkill ? fieldValues[selectedSkill.id] ?? {} : {};
   const promptPreview = selectedSkill ? makePrompt(selectedSkill, selectedValues) : '';
@@ -540,9 +571,17 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
     return typeof value === 'string' && value.trim().length > 0;
   }) ?? false;
 
+  const setPickerCategory = (category: string) => {
+    const resolvedCategory = resolveSkillCategory(category);
+    setActiveCategory(category === '最近使用' || category === '全部技能' ? category : getSkillCategoryLabel(resolvedCategory));
+    if (agentCategoryOptions.some((item) => item.value === resolvedCategory)) {
+      setActiveHomeSkillCategory(resolvedCategory);
+    }
+  };
+
   const openSkillPicker = (category = '最近使用') => {
     setSelectedSkill(null);
-    setActiveCategory(category);
+    setPickerCategory(category);
     setSearchTerm('');
     setSkillPickerOpen(true);
   };
@@ -707,10 +746,10 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
       </header>
 
       <main className="ml-[92px] pt-[86px]">
-        <section className={`relative ${mode === 'templates' ? 'min-h-[430px]' : 'min-h-[390px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-10 pt-[54px]`}>
+        <section className={`relative ${mode === 'templates' ? 'min-h-[382px]' : 'min-h-[360px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-8 pt-[42px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
-          <div className="absolute left-1/2 top-[193px] z-0 -translate-x-1/2 opacity-[0.64]">
+          <div className="absolute left-1/2 top-[156px] z-0 -translate-x-1/2 opacity-[0.64]">
             <button type="button" onClick={() => setMode('templates')} aria-pressed={templateTabActive} className={`pointer-events-auto absolute -left-[230px] flex items-center justify-between overflow-hidden border-2 border-white bg-white/50 text-left shadow-[0_10px_18px_rgba(102,128,187,0.12)] backdrop-blur-sm transition-all hover:opacity-100 hover:shadow-[0_10px_22px_rgba(74,111,190,0.22)] ${templateTabActive ? 'top-0 z-[1] h-[77px] w-[266px] rounded-[18px] pl-4 pr-2' : 'top-[27px] z-0 h-[50px] w-[231px] rounded-[14px] pl-3 pr-2'}`}>
               <span className="relative z-10 min-w-0 flex-1"><span className={`block truncate font-bold leading-none ${templateTabActive ? 'text-[17px] text-[#e4e8f5]' : 'text-[13px] text-[#e4e8f5]'}`}>Template</span><span className={`mt-1.5 block truncate font-semibold leading-none ${templateTabActive ? 'text-[13px] text-[#3c465d]' : 'text-[10px] text-[#3c465d]'}`}>设计模板</span></span>
               {templateTabActive ? <span className="relative flex h-[88px] w-[99px] shrink-0 -rotate-[8deg] items-center justify-center overflow-hidden rounded-[15px] border-2 border-white/80 bg-[linear-gradient(145deg,#d9f0ff_0%,#76b6ef_58%,#5279c9_100%)] shadow-[0_6px_14px_rgba(72,126,214,0.2)]"><span className="absolute -right-3 -top-4 h-16 w-16 rounded-full bg-white/35 blur-md" /><span className="absolute left-3 top-3 text-[27px] font-semibold leading-none text-white/85">✿</span><span className="absolute bottom-3 left-3 text-[8px] font-semibold tracking-[0.12em] text-white/90 [writing-mode:vertical-rl]">迎光向前</span><span className="absolute bottom-2 right-3 text-[19px] text-white/80">✧</span></span> : null}
@@ -720,17 +759,21 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               {agentTabActive ? <span className="relative flex h-[66px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[12px] border border-white/70 bg-[linear-gradient(145deg,#f3e8ff,#d6ddff)]"><span className="absolute -right-2 -top-3 h-12 w-12 rounded-full bg-white/55 blur-md" /><span className="flex h-10 w-7 -rotate-[8deg] items-end justify-center rounded-[5px] border-2 border-white bg-[linear-gradient(160deg,#9fa7ff,#f2d4e7)] pb-0.5 text-[18px] text-white shadow-sm">✦</span><span className="absolute bottom-1.5 right-1.5 h-3 w-3 rounded-full bg-white/70" /></span> : null}
             </button>
           </div>
+          <div className="pointer-events-none absolute left-1/2 top-[156px] z-20 -translate-x-1/2" aria-hidden="true">
+            <button type="button" tabIndex={-1} onClick={() => setMode('templates')} className="pointer-events-auto absolute -left-[230px] top-0 h-[77px] w-[170px] opacity-0" />
+            <button type="button" tabIndex={-1} onClick={() => setMode('agent')} className="pointer-events-auto absolute left-[5px] top-0 h-[77px] w-[170px] opacity-0" />
+          </div>
           <h1 className="relative z-10 text-center text-[31px] font-semibold tracking-[0.035em] text-[#18233d]">今天你想做些什么？</h1>
 
           {mode === 'templates' ? (
-            <div className="relative z-10 mx-auto mt-[160px] flex h-[84px] max-w-[1200px] items-center gap-3 rounded-[29px] border-[3px] border-[#3287ff] bg-white px-4 shadow-[0_12px_25px_rgba(63,116,220,0.14)]">
+            <div className="relative z-10 mx-auto mt-[112px] flex h-[84px] max-w-[1200px] items-center gap-3 rounded-[29px] border-[3px] border-[#3287ff] bg-white px-4 shadow-[0_12px_25px_rgba(63,116,220,0.14)]">
               <Search className="ml-1 h-6 w-6 shrink-0 text-[#c4cad5]" />
               <input value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="输入关键词搜索你想要的模板或素材" className="min-w-0 flex-1 text-[18px] outline-none placeholder:text-[#aab4c7]" />
               <Camera className="h-6 w-6 shrink-0 text-[#c4cad5]" />
               <button type="button" className="h-[50px] w-[104px] shrink-0 rounded-[14px] bg-[#1478fa] text-[16px] font-semibold text-white shadow-[0_4px_10px_rgba(20,120,250,0.18)]">搜索</button>
             </div>
           ) : (
-            <div className="relative z-10 mx-auto mt-[160px] h-[232px] max-w-[1200px] rounded-[29px] border-[3px] border-[#7166ff] bg-white px-6 pb-6 pt-5 shadow-[0_14px_30px_rgba(87,92,197,0.14)]">
+            <div className="relative z-10 mx-auto mt-[112px] h-[232px] max-w-[1200px] rounded-[29px] border-[3px] border-[#7166ff] bg-white px-6 pb-6 pt-5 shadow-[0_14px_30px_rgba(87,92,197,0.14)]">
               <textarea value={homePrompt} onChange={(event) => setHomePrompt(event.currentTarget.value)} placeholder="上传参考图片，描述下您想要的内容，我们会为您呈现~" className="h-[138px] w-full resize-none bg-transparent text-[18px] leading-7 text-[#9ba9c0] outline-none placeholder:text-[#9ba9c0]" />
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5">
@@ -752,11 +795,11 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               {['🍁秋日特辑', '🚩喜报', '🌕日签', '无限画布', 'AI电商', '✨展架·次日达', '🗓️2027台历模板'].map((tag) => <button key={tag} type="button" onClick={() => openSkillPicker()} className="rounded-[7px] bg-[#f4f6fb] px-2.5 py-1 text-[10px] font-medium text-[#687187] hover:bg-[#eaf0ff] hover:text-[#4d63bd]">{tag}</button>)}
             </div>
           ) : (
-            <div className="relative z-10 mx-auto mt-4 grid max-w-[1600px] grid-cols-2 gap-3 xl:grid-cols-6">
+            <div className="relative z-10 mx-auto mt-3 grid max-w-[1600px] grid-cols-2 gap-2.5 xl:grid-cols-6">
               {agentQuickCards.map((card) => (
-                <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className="flex h-[86px] min-w-0 items-center justify-between rounded-[16px] border border-[#e7ebf4] bg-white px-4 text-left shadow-[0_2px_8px_rgba(70,88,130,0.035)] transition hover:-translate-y-0.5 hover:border-[#c7d5ff] hover:shadow-[0_8px_18px_rgba(70,88,130,0.1)]">
-                  <span className="min-w-0 pr-2"><span className="block truncate text-[15px] font-semibold text-[#29364f]">{card.title}</span><span className="mt-1 block truncate text-[12px] text-[#a0aec2]">{card.desc}</span></span>
-                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${card.art === 'poster' ? 'bg-[#dfeaff] text-[#458dff]' : card.art === 'commerce-set' ? 'bg-[#fff0e4] text-[#ff9359]' : card.art === 'video' ? 'bg-[#e9e6ff] text-[#756cf4]' : card.art === 'recruitment' ? 'bg-[#ffe5e8] text-[#f15b6a]' : card.art === 'ppt' ? 'bg-[#e7e9ff] text-[#706cf5]' : 'bg-[#e0f7e8] text-[#5bc47c]'}`}>{card.art === 'poster' ? <ImageIcon className="h-5 w-5" /> : card.art === 'commerce-set' ? <Shirt className="h-5 w-5" /> : card.art === 'video' ? <Video className="h-5 w-5" /> : card.art === 'recruitment' ? <UserRound className="h-5 w-5" /> : card.art === 'ppt' ? <FileImage className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}</span>
+                <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className="flex h-[72px] min-w-0 items-center justify-between rounded-[14px] border border-[#e7ebf4] bg-white px-3.5 text-left shadow-[0_2px_8px_rgba(70,88,130,0.035)] transition hover:-translate-y-0.5 hover:border-[#c7d5ff] hover:shadow-[0_8px_18px_rgba(70,88,130,0.1)]">
+                  <span className="min-w-0 pr-2"><span className="block truncate text-[13px] font-semibold text-[#29364f]">{card.title}</span><span className="mt-0.5 block truncate text-[11px] text-[#a0aec2]">{card.desc}</span></span>
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] ${card.art === 'poster' ? 'bg-[#dfeaff] text-[#458dff]' : card.art === 'commerce-set' ? 'bg-[#fff0e4] text-[#ff9359]' : card.art === 'video' ? 'bg-[#e9e6ff] text-[#756cf4]' : card.art === 'recruitment' ? 'bg-[#ffe5e8] text-[#f15b6a]' : card.art === 'ppt' ? 'bg-[#e7e9ff] text-[#706cf5]' : 'bg-[#e0f7e8] text-[#5bc47c]'}`}>{card.art === 'poster' ? <ImageIcon className="h-4 w-4" /> : card.art === 'commerce-set' ? <Shirt className="h-4 w-4" /> : card.art === 'video' ? <Video className="h-4 w-4" /> : card.art === 'recruitment' ? <UserRound className="h-4 w-4" /> : card.art === 'ppt' ? <FileImage className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}</span>
                 </button>
               ))}
             </div>
@@ -764,17 +807,18 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         </section>
 
         {mode === 'agent' ? (
-          <section className="mx-auto max-w-[1920px] space-y-10 px-[42px] pb-16">
+          <section className="mx-auto max-w-[1920px] space-y-8 px-[42px] pb-16">
             <section>
-              <div className="mb-4 flex items-center justify-between"><h2 className="text-[24px] font-semibold text-[#28344c]">精选技能</h2><button type="button" onClick={() => openSkillPicker('全部技能')} className="flex items-center gap-1 text-[13px] text-[#8490a6] transition hover:text-[#4b77d3]">更多<ChevronRight className="h-4 w-4" /></button></div>
+              <div className="mb-4 flex items-center justify-between"><h2 className="text-[24px] font-semibold text-[#28344c]">{homepageSkillHeading}</h2><button type="button" onClick={() => openSkillPicker('全部技能')} className="flex items-center gap-1 text-[13px] text-[#8490a6] transition hover:text-[#4b77d3]">更多<ChevronRight className="h-4 w-4" /></button></div>
               <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex w-max gap-5 pb-1">
-                  {agentFeaturedCards.map((card) => (
+                  {homepageFeaturedCards.map((card) => (
                     <button key={card.title} type="button" onClick={() => selectSkillFromChip(card.skillId)} className="relative flex h-[118px] w-[310px] shrink-0 items-center justify-between overflow-hidden rounded-[18px] bg-[#f3f6fc] px-5 py-3.5 text-left transition hover:-translate-y-0.5 hover:bg-[#edf3ff]">
                       <span className="min-w-0 pr-2"><span className="block truncate text-[17px] font-semibold text-[#29364f]">{card.title}</span><span className="mt-2 block truncate text-[13px] text-[#9aa8bf]">{card.desc}</span></span>
                       <FeatureArt kind={card.art} />
                     </button>
                   ))}
+                  {homepageFeaturedCards.length === 0 ? <div className="rounded-[16px] bg-[#f3f6fc] px-5 py-8 text-[13px] text-[#9aa8bf]">当前分类暂无技能</div> : null}
                 </div>
               </div>
             </section>
@@ -782,11 +826,14 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             <section>
               <h2 className="mb-4 text-[24px] font-semibold text-[#28344c]">一键同款</h2>
               <div className="mb-5 flex flex-wrap gap-3">
-                {agentQuickCards.map((card, index) => <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className={`rounded-full px-4 py-2 text-[14px] font-medium ${index === 0 ? 'bg-[#eef0ff] text-[#5c64ca]' : 'bg-[#f2f4f9] text-[#69758c]'} transition hover:bg-[#e7edff]`}>{index === 0 ? '🎨' : index === 1 ? '💰' : index === 2 ? '🎬' : index === 3 ? '🔥' : index === 4 ? '📄' : '🟢'}{card.title}</button>)}
+                {agentQuickCards.map((card, index) => {
+                  const active = activeHomeSkillCategory === card.category || (activeHomeSkillCategory === null && index === 0);
+                  return <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className={`rounded-full px-4 py-2 text-[14px] font-medium ${active ? 'bg-[#eef0ff] text-[#5c64ca]' : 'bg-[#f2f4f9] text-[#69758c]'} transition hover:bg-[#e7edff]`}>{index === 0 ? '🎨' : index === 1 ? '💰' : index === 2 ? '🎬' : index === 3 ? '🔥' : index === 4 ? '📄' : '🟢'}{card.title}</button>;
+                })}
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-                {agentSameStyleCards.map((card) => (
-                  <button key={card.title} type="button" onClick={() => openSkillPicker('海报设计')} className="group relative overflow-hidden rounded-[16px] bg-[#f3f5f9] p-2 text-left transition hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(54,70,107,0.14)]">
+                {visibleSameStyleCards.map((card) => (
+                  <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className="group relative overflow-hidden rounded-[16px] bg-[#f3f5f9] p-2 text-left transition hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(54,70,107,0.14)]">
                     <div className={`relative flex aspect-[1.1] items-center justify-center overflow-hidden rounded-[11px] bg-gradient-to-br ${card.tone} p-4 text-center text-white`}><span className="absolute inset-3 rounded border border-white/25" /><span className="relative drop-shadow-lg"><span className="block text-[11px] font-medium tracking-[0.12em]">{card.kicker}</span><span className="mt-4 block text-[24px] font-black leading-tight">{card.title}</span><span className="mt-3 block text-[9px] opacity-85">CREATE · INSPIRE</span></span><span className="absolute -bottom-6 -right-2 h-24 w-24 rounded-full bg-white/20 blur-xl" /></div>
                   </button>
                 ))}
@@ -862,18 +909,18 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
 
       {skillPickerOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#172035]/35 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) { setSkillPickerOpen(false); setSelectedSkill(null); } }}>
-          <div className="relative flex h-[min(640px,calc(100vh-48px))] w-[min(1120px,calc(100vw-48px))] overflow-hidden rounded-[24px] bg-[#f7f8fb] shadow-[0_30px_90px_rgba(21,31,55,0.26)]">
-            <aside className="w-[190px] shrink-0 overflow-y-auto border-r border-[#eaedf3] bg-[#f4f5f8] px-3 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="relative flex h-[min(580px,calc(100vh-64px))] w-[min(980px,calc(100vw-64px))] overflow-hidden rounded-[20px] bg-[#f7f8fb] shadow-[0_26px_72px_rgba(21,31,55,0.24)]">
+            <aside className="w-[168px] shrink-0 overflow-y-auto border-r border-[#eaedf3] bg-[#f4f5f8] px-2.5 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {skillPickerCategories.map((category) => (
-                <button key={category} type="button" onClick={() => setActiveCategory(category)} className={`mb-1.5 flex h-[43px] w-full items-center gap-3 rounded-[11px] px-3 text-left text-[13px] ${activeCategory === category ? 'bg-[#eaedf4] font-medium text-[#293142]' : 'text-[#41495a] hover:bg-white/75'}`}>
-                  {category === '最近使用' ? <Clock3 className="h-[17px] w-[17px]" /> : category === '全部技能' ? <Grid2x2 className="h-[17px] w-[17px]" /> : <Puzzle className="h-[17px] w-[17px]" />}{category}
+                <button key={category} type="button" onClick={() => setPickerCategory(category)} className={`mb-1 flex h-[38px] w-full items-center gap-2.5 rounded-[10px] px-2.5 text-left text-[12px] ${activeCategory === category ? 'bg-[#eaedf4] font-medium text-[#293142]' : 'text-[#41495a] hover:bg-white/75'}`}>
+                  {category === '最近使用' ? <Clock3 className="h-4 w-4" /> : category === '全部技能' ? <Grid2x2 className="h-4 w-4" /> : <Puzzle className="h-4 w-4" />}{category}
                 </button>
               ))}
             </aside>
-            <div className="min-w-0 flex-1 overflow-y-auto px-8 py-6">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <div className="text-[16px] font-semibold text-[#252b37]">{activeCategory}</div>
-                <div className="flex h-9 w-[220px] items-center gap-2 rounded-[10px] bg-white px-3 text-[#9ba3b3]"><Search className="h-4 w-4" /><input value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="搜索 Agent skills" className="min-w-0 flex-1 text-[12px] text-[#333b4c] outline-none placeholder:text-[#a0a7b4]" /></div>
+            <div className="min-w-0 flex-1 overflow-y-auto px-6 py-5">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div className="text-[15px] font-semibold text-[#252b37]">{activeCategory}</div>
+                <div className="flex h-8 w-[190px] items-center gap-2 rounded-[9px] bg-white px-2.5 text-[#9ba3b3]"><Search className="h-3.5 w-3.5" /><input value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="搜索 Agent skills" className="min-w-0 flex-1 text-[11px] text-[#333b4c] outline-none placeholder:text-[#a0a7b4]" /></div>
               </div>
               {activeCategory === '最近使用' && !searchTerm ? (
                 <>
@@ -896,7 +943,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
                 </div>
               )}
             </div>
-            <button type="button" onClick={() => { setSkillPickerOpen(false); setSelectedSkill(null); }} aria-label="关闭" className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#202634] shadow"><X className="h-4 w-4" /></button>
+            <button type="button" onClick={() => { setSkillPickerOpen(false); setSelectedSkill(null); }} aria-label="关闭" className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#202634] shadow"><X className="h-3.5 w-3.5" /></button>
           </div>
         </div>
       ) : null}
@@ -905,22 +952,22 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
 
       {selectedSkill ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1b2335]/40 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>
-          <section className="relative flex h-[min(760px,calc(100vh-40px))] w-[min(1080px,calc(100vw-40px))] overflow-hidden rounded-[22px] bg-white shadow-[0_28px_90px_rgba(25,35,57,0.28)]">
-            <aside className="hidden w-[42%] shrink-0 flex-col border-r border-[#eceff4] bg-[#f5f6f9] p-6 lg:flex">
+          <section className="relative flex h-[min(660px,calc(100vh-72px))] w-[min(960px,calc(100vw-72px))] overflow-hidden rounded-[20px] bg-white shadow-[0_24px_72px_rgba(25,35,57,0.25)]">
+            <aside className="hidden w-[40%] shrink-0 flex-col border-r border-[#eceff4] bg-[#f5f6f9] p-5 lg:flex">
               <SkillResultPreview skill={selectedSkill} />
             </aside>
             <div className="relative flex min-w-0 flex-1 flex-col bg-white">
-              <div className="flex h-[66px] shrink-0 items-center border-b border-[#f0f1f4] px-5 sm:px-6">
+              <div className="flex h-[58px] shrink-0 items-center border-b border-[#f0f1f4] px-4 sm:px-5">
                 <button type="button" onClick={() => setSelectedSkill(null)} className="mr-2 rounded-full p-1 text-[#1f2632] hover:bg-[#f3f4f7]" aria-label="返回技能分类"><ChevronLeft className="h-5 w-5" /></button>
                 <h2 className="text-[16px] font-semibold text-[#202631]">{selectedSkill.title}</h2>
                 <button type="button" onClick={() => { setSelectedSkill(null); setSkillPickerOpen(false); }} className="ml-auto rounded-full p-2 text-[#6b7280] hover:bg-[#f4f5f7]" aria-label="关闭"><X className="h-4 w-4" /></button>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-28 pt-5 sm:px-7">
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-24 pt-4 sm:px-5">
                 {renderSkillFields()}
               </div>
-              <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 border-t border-[#eff0f2] bg-white px-5 py-4 sm:px-7">
-                <button type="button" onClick={bringIntoPrompt} className="h-[44px] shrink-0 rounded-[12px] bg-[#f3f4f6] px-4 text-[13px] font-medium text-[#8d929a] transition hover:bg-[#e9ebf0] hover:text-[#3b4353]">带入输入框</button>
-                <button type="button" disabled={!hasRequiredValues} onClick={startGeneration} className={`h-[44px] flex-1 rounded-[12px] text-[13px] font-semibold text-white transition ${hasRequiredValues ? 'bg-[#615cff] hover:bg-[#514bea]' : 'cursor-not-allowed bg-[#d9d9dc]'}`}>开始生成</button>
+              <div className="absolute inset-x-0 bottom-0 flex items-center gap-2.5 border-t border-[#eff0f2] bg-white px-4 py-3 sm:px-5">
+                <button type="button" onClick={bringIntoPrompt} className="h-[40px] shrink-0 rounded-[11px] bg-[#f3f4f6] px-3.5 text-[12px] font-medium text-[#8d929a] transition hover:bg-[#e9ebf0] hover:text-[#3b4353]">带入输入框</button>
+                <button type="button" disabled={!hasRequiredValues} onClick={startGeneration} className={`h-[40px] flex-1 rounded-[11px] text-[12px] font-semibold text-white transition ${hasRequiredValues ? 'bg-[#615cff] hover:bg-[#514bea]' : 'cursor-not-allowed bg-[#d9d9dc]'}`}>开始生成</button>
               </div>
             </div>
           </section>
