@@ -381,7 +381,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const cycleOptions = activeTab?.options ?? [];
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
   const selectedCycleConfig = cycleOptions[selectedCycle];
-  const visiblePlans = (activeTab?.plans ?? [])
+  const visiblePlans = (pageConfig.overview.planCards?.[membershipType] ?? [])
     .map((plan) => hydratePlan(plan, membershipType, cycleOptions))
     .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberType ?? '', selectedCycleConfig).length > 0)
     .filter((plan, index, plans) => plans.findIndex((item) => item.memberType === plan.memberType) === index);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, Plus, Save, X } from 'lucide-react';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
-import { DEFAULT_MEMBERSHIP_PAGE_CONFIG, getDefaultMembershipPlanMemberType, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
+import { DEFAULT_MEMBERSHIP_PAGE_CONFIG, MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY } from './membershipPageConfig';
 
 type PlatformKey = 'web' | 'mobile';
 type ModuleKey = 'plans' | 'overview' | 'details' | 'model-consumption' | 'commercial-license' | 'faq';
@@ -14,12 +14,12 @@ type PlatformConfig = {
 type ConfigState = Record<PlatformKey, PlatformConfig>;
 
 const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
-  { key: 'plans', label: '套餐', description: '配置套餐展示顺序、会员等级、周期和页面文案；价格与积分沿用真实套餐数据' },
-  { key: 'overview', label: '权益概览', description: '配置会员页上方的权益概览卡片' },
-  { key: 'details', label: '权益明细', description: '配置权益明细及权益说明' },
-  { key: 'model-consumption', label: '模型消耗', description: '配置模型消耗、额度和计费说明' },
-  { key: 'commercial-license', label: '商用授权', description: '配置商用授权范围和说明' },
-  { key: 'faq', label: '常见问题', description: '配置会员页常见问题及答案' },
+  { key: 'plans', label: '套餐显示结构', description: '仅配置个人、企业及套餐时长；价格、积分和会员等级来自新版套餐数据' },
+  { key: 'overview', label: '权益概览', description: '配置个人、企业各会员等级的套餐卡片、权益和卡片文案' },
+  { key: 'details', label: '权益明细', description: '配置会员弹框中按会员类型展示的详细权益对比' },
+  { key: 'model-consumption', label: '模型消耗', description: '配置会员弹框中的模型消耗、额度和计费说明' },
+  { key: 'commercial-license', label: '商用授权', description: '配置会员弹框中的商用授权范围和说明' },
+  { key: 'faq', label: '常见问题', description: '配置会员弹框中的常见问题及答案' },
 ];
 
 const createDefaultConfig = (): PlatformConfig => ({
@@ -97,33 +97,51 @@ const migratePlansJson = (value: unknown, fallback: string) => {
       );
       const options = isLegacyOptions ? fallbackTab.options : rawOptions ?? fallbackTab.options;
       return {
-        ...fallbackTab,
-        ...tab,
-        ...(isPersonal ? { key: 'personal', name: '个人使用' } : {}),
-        ...(isEnterprise ? { key: 'enterprise', name: '企业使用' } : {}),
+        key: isPersonal ? 'personal' : isEnterprise ? 'enterprise' : fallbackTab.key,
+        name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof tab.name === 'string' ? tab.name : fallbackTab.name,
         memberLevel: tab.memberLevel ?? fallbackTab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
         options,
-        plans: ((Array.isArray(tab.plans) ? tab.plans : Array.isArray(fallbackTab.plans) ? fallbackTab.plans : []) as Array<Record<string, unknown>>).map((plan, planIndex) => {
-          const fallbackPlans = Array.isArray(fallbackTab.plans) ? fallbackTab.plans as Array<Record<string, unknown>> : [];
-          const fallbackPlan = fallbackPlans[planIndex] ?? fallbackPlans[0] ?? {};
-          const rawPlan = plan as Record<string, unknown>;
-          return {
-            ...fallbackPlan,
-            planKey: rawPlan.planKey ?? fallbackPlan.planKey,
-            memberType: rawPlan.memberType
-              ?? getDefaultMembershipPlanMemberType(isEnterprise ? 'enterprise' : 'personal', String(rawPlan.planKey ?? fallbackPlan.planKey))
-              ?? fallbackPlan.memberType,
-            name: rawPlan.name ?? fallbackPlan.name,
-            subtitle: rawPlan.subtitle ?? fallbackPlan.subtitle,
-            color: rawPlan.color ?? fallbackPlan.color,
-            tag: rawPlan.tag ?? fallbackPlan.tag,
-            features: Array.isArray(rawPlan.features) ? rawPlan.features : fallbackPlan.features,
-            benefitSections: Array.isArray(rawPlan.benefitSections) ? rawPlan.benefitSections : fallbackPlan.benefitSections,
-          };
-        }),
       };
     });
     return JSON.stringify({ ...parsed, tabs }, null, 2);
+  } catch {
+    return value;
+  }
+};
+
+const migrateOverviewJson = (value: unknown, fallback: string, legacyPlansValue?: unknown) => {
+  if (typeof value !== 'string') return fallback;
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    const fallbackConfig = JSON.parse(fallback) as Record<string, unknown>;
+    const hasPlanCards = parsed.planCards && typeof parsed.planCards === 'object';
+    let planCards = hasPlanCards ? parsed.planCards : fallbackConfig.planCards;
+
+    if (!hasPlanCards && typeof legacyPlansValue === 'string') {
+      try {
+        const legacyPlans = JSON.parse(legacyPlansValue) as { tabs?: Array<Record<string, unknown>> };
+        const findLegacyPlans = (key: string) => legacyPlans.tabs?.find((tab) => tab.key === key)?.plans;
+        const personal = findLegacyPlans('personal');
+        const enterprise = findLegacyPlans('enterprise');
+        if (Array.isArray(personal) || Array.isArray(enterprise)) {
+          planCards = {
+            personal: Array.isArray(personal) ? personal : (fallbackConfig.planCards as Record<string, unknown>).personal,
+            enterprise: Array.isArray(enterprise) ? enterprise : (fallbackConfig.planCards as Record<string, unknown>).enterprise,
+          };
+        }
+      } catch {
+        // Keep the default plan cards when the legacy plan config cannot be read.
+      }
+    }
+
+    return JSON.stringify({
+      ...fallbackConfig,
+      ...parsed,
+      title: typeof parsed.title === 'string' ? parsed.title : fallbackConfig.title,
+      subtitle: typeof parsed.subtitle === 'string' ? parsed.subtitle : fallbackConfig.subtitle,
+      items: Array.isArray(parsed.items) ? parsed.items : fallbackConfig.items,
+      planCards,
+    }, null, 2);
   } catch {
     return value;
   }
@@ -206,7 +224,7 @@ const readStoredState = (): ConfigState => {
     const parsed = JSON.parse(stored) as Partial<ConfigState>;
     const defaults = createDefaultState();
     const mergePlatform = (storedConfig: PlatformConfig | undefined, defaultConfig: PlatformConfig) => storedConfig
-      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']), 'commercial-license': migrateCommercialLicenseJson(storedConfig.json?.['commercial-license'], defaultConfig.json['commercial-license']), faq: migrateFaqJson(storedConfig.json?.faq, defaultConfig.json.faq) } }
+      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans), overview: migrateOverviewJson(storedConfig.json?.overview, defaultConfig.json.overview, storedConfig.json?.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']), 'commercial-license': migrateCommercialLicenseJson(storedConfig.json?.['commercial-license'], defaultConfig.json['commercial-license']), faq: migrateFaqJson(storedConfig.json?.faq, defaultConfig.json.faq) } }
       : defaultConfig;
     return {
       web: mergePlatform(parsed.web, defaults.web),

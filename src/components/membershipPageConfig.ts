@@ -53,7 +53,6 @@ export type MembershipTabConfig = {
   name: string;
   memberLevel: { level: string };
   options: MembershipCycleConfig[];
-  plans: MembershipPlanDisplayConfig[];
 };
 
 export type MembershipPlansConfig = {
@@ -63,6 +62,11 @@ export type MembershipPlansConfig = {
 export type MembershipOverviewConfig = {
   title: string;
   subtitle: string;
+  /** 会员弹框顶部套餐卡片及对应会员等级权益。 */
+  planCards: {
+    personal: MembershipPlanDisplayConfig[];
+    enterprise: MembershipPlanDisplayConfig[];
+  };
   items: Array<{ title: string; description: string }>;
 };
 
@@ -424,7 +428,6 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
           { key: 'bonus-year', name: '2年送1年', guideText: '', duration: '1095天' },
           { key: 'lifetime', name: '终身', guideText: '', duration: `${LIFETIME_MEMBER_DAYS}天` },
         ],
-        plans: personalPlans,
       },
       {
         key: 'enterprise',
@@ -439,13 +442,16 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
           { key: 'team-quarterly-subscription', name: '连续包季', guideText: '', duration: '90天' },
           { key: 'team-quarterly', name: '季度', guideText: '', duration: '90天' },
         ],
-        plans: enterprisePlans,
       },
     ],
   },
   overview: {
     title: '哪个计划更适合你',
     subtitle: '根据你的创作频率和团队规模，选择合适的会员权益',
+    planCards: {
+      personal: personalPlans,
+      enterprise: enterprisePlans,
+    },
     items: [
       { title: '个人创作', description: '适合日常设计、AI 图片和视频创作。' },
       { title: '高频产出', description: '适合营销活动、商品内容和持续交付。' },
@@ -759,6 +765,50 @@ const normalizeFaq = (value: unknown, fallback: MembershipFaqConfig): Membership
   };
 };
 
+const normalizePlanCardList = (
+  value: unknown,
+  fallback: MembershipPlanDisplayConfig[],
+  membershipType: 'personal' | 'enterprise',
+) => {
+  const rawPlans = Array.isArray(value) ? value : fallback;
+  return rawPlans.map((plan, index) => {
+    const fallbackPlan = fallback[index] ?? fallback[0];
+    if (!fallbackPlan || !plan || typeof plan !== 'object') return fallbackPlan;
+    const rawPlan = plan as Partial<MembershipPlanDisplayConfig>;
+    return {
+      ...clone(fallbackPlan),
+      planKey: typeof rawPlan.planKey === 'string' ? rawPlan.planKey : fallbackPlan.planKey,
+      memberType: typeof rawPlan.memberType === 'string'
+        ? rawPlan.memberType
+        : getDefaultMembershipPlanMemberType(membershipType, String(rawPlan.planKey ?? fallbackPlan.planKey)) ?? fallbackPlan.memberType,
+      name: typeof rawPlan.name === 'string' ? rawPlan.name : fallbackPlan.name,
+      subtitle: typeof rawPlan.subtitle === 'string' ? rawPlan.subtitle : fallbackPlan.subtitle,
+      color: rawPlan.color === 'blue' || rawPlan.color === 'orange' || rawPlan.color === 'neutral' ? rawPlan.color : fallbackPlan.color,
+      tag: typeof rawPlan.tag === 'string' ? rawPlan.tag : fallbackPlan.tag,
+      features: Array.isArray(rawPlan.features) ? rawPlan.features : fallbackPlan.features,
+      benefitSections: Array.isArray(rawPlan.benefitSections) ? rawPlan.benefitSections : fallbackPlan.benefitSections,
+    };
+  }).filter((plan): plan is MembershipPlanDisplayConfig => Boolean(plan));
+};
+
+const normalizeOverview = (value: unknown, fallback: MembershipOverviewConfig): MembershipOverviewConfig => {
+  if (!value || typeof value !== 'object') return clone(fallback);
+  const raw = value as Partial<MembershipOverviewConfig>;
+  const rawPlanCards = raw.planCards && typeof raw.planCards === 'object'
+    ? raw.planCards as Partial<MembershipOverviewConfig['planCards']>
+    : {};
+  return {
+    ...clone(fallback),
+    title: typeof raw.title === 'string' ? raw.title : fallback.title,
+    subtitle: typeof raw.subtitle === 'string' ? raw.subtitle : fallback.subtitle,
+    items: Array.isArray(raw.items) ? raw.items : fallback.items,
+    planCards: {
+      personal: normalizePlanCardList(rawPlanCards.personal, fallback.planCards.personal, 'personal'),
+      enterprise: normalizePlanCardList(rawPlanCards.enterprise, fallback.planCards.enterprise, 'enterprise'),
+    },
+  };
+};
+
 const normalizePlans = (value: unknown): MembershipPlansConfig => {
   const fallback = DEFAULT_MEMBERSHIP_PAGE_CONFIG.plans;
   const rawTabs = (value as { tabs?: unknown } | null)?.tabs;
@@ -768,33 +818,20 @@ const normalizePlans = (value: unknown): MembershipPlansConfig => {
     tabs: fallback.tabs.map((fallbackTab) => {
       const rawTab = rawTabs.find((item) => (item as { key?: string })?.key === fallbackTab.key) as Partial<MembershipTabConfig> | undefined;
       if (!rawTab) return clone(fallbackTab);
-      const rawPlans = Array.isArray(rawTab.plans) ? rawTab.plans : fallbackTab.plans;
       const rawOptions = Array.isArray(rawTab.options) ? rawTab.options : null;
       const isLegacyOptions = rawOptions != null && (
         (fallbackTab.key === 'personal' && rawOptions.length <= 4 && rawOptions.some((option) => (option as { key?: string })?.key === 'single'))
         || (fallbackTab.key === 'enterprise' && rawOptions.length <= 3 && rawOptions.some((option) => (option as { key?: string })?.key === 'team-quarterly'))
       );
       const options = isLegacyOptions ? clone(fallbackTab.options) : rawOptions ?? fallbackTab.options;
+      const rawTabKey = (rawTab as { key?: string }).key;
+      const isPersonal = rawTabKey === 'personal' || rawTab.name === '个人订阅';
+      const isEnterprise = rawTabKey === 'enterprise' || rawTabKey === 'team' || rawTab.name === '团队订阅';
       return {
-        ...fallbackTab,
-        ...rawTab,
+        key: fallbackTab.key,
+        name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof rawTab.name === 'string' ? rawTab.name : fallbackTab.name,
         memberLevel: { ...fallbackTab.memberLevel, ...(rawTab.memberLevel ?? {}) },
         options,
-        plans: rawPlans.map((plan, index) => {
-          const fallbackPlan = fallbackTab.plans[index] ?? fallbackTab.plans[0];
-          const rawPlan = plan as Partial<MembershipPlanDisplayConfig>;
-          return {
-            ...fallbackPlan,
-            planKey: rawPlan.planKey ?? fallbackPlan.planKey,
-            memberType: rawPlan.memberType ?? getDefaultMembershipPlanMemberType(fallbackTab.key, String(rawPlan.planKey ?? fallbackPlan.planKey)) ?? fallbackPlan.memberType,
-            name: rawPlan.name ?? fallbackPlan.name,
-            subtitle: rawPlan.subtitle ?? fallbackPlan.subtitle,
-            color: rawPlan.color ?? fallbackPlan.color,
-            tag: rawPlan.tag ?? fallbackPlan.tag,
-            features: Array.isArray(rawPlan.features) ? rawPlan.features : fallbackPlan.features,
-            benefitSections: Array.isArray(rawPlan.benefitSections) ? rawPlan.benefitSections : fallbackPlan.benefitSections,
-          };
-        }),
       };
     }),
   };
@@ -809,7 +846,7 @@ export function readMembershipPageConfig(platform: PlatformKey = 'web'): Members
     const json = stored[platform]?.json ?? {};
     return {
       plans: normalizePlans(parseJson(json.plans, fallback.plans)),
-      overview: parseJson(json.overview, fallback.overview),
+      overview: normalizeOverview(parseJson(json.overview, fallback.overview), fallback.overview),
       details: normalizeDetails(parseJson(json.details, fallback.details), fallback.details),
       modelConsumption: normalizeModelConsumption(parseJson(json['model-consumption'], fallback.modelConsumption), fallback.modelConsumption),
       commercialLicense: normalizeCommercialLicense(parseJson(json['commercial-license'], fallback.commercialLicense), fallback.commercialLicense),
