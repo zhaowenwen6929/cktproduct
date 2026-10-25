@@ -352,7 +352,7 @@ export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'ente
     连续包季: '限时4.3折',
   };
   const seen = new Set<string>();
-  return details
+  const options = details
     .filter((row) => row.status === '显示' && row.points != null && memberMatches(row.member))
     .filter((row) => {
       const key = `${row.duration}-${row.displayName}`;
@@ -367,6 +367,13 @@ export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'ente
       duration: `${row.duration}天`,
       highlighted: index === 0,
     }));
+  if (membershipType !== 'personal') return options;
+
+  const preferredPersonalCycle = (name: string) => name.includes('2年') && name.includes('送1年') ? 0 : 1;
+  return options
+    .map((option, index) => ({ option, index }))
+    .sort((left, right) => preferredPersonalCycle(left.option.name) - preferredPersonalCycle(right.option.name) || left.index - right.index)
+    .map(({ option }, index) => ({ ...option, highlighted: index === 0 }));
 }
 
 export function formatPointsDisplay(points?: number, pointsUnit?: '每人' | '团队', pointsCycle?: '按月' | '一次性') {

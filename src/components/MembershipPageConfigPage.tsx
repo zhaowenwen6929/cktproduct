@@ -108,7 +108,7 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
         options,
       };
     });
-    return JSON.stringify({ ...parsed, tabs }, null, 2);
+    return JSON.stringify({ ...fallbackConfig, ...parsed, tabs }, null, 2);
   } catch {
     return value;
   }

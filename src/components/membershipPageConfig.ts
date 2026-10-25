@@ -22,6 +22,18 @@ export type MembershipPlanDisplayConfig = {
   benefitSections?: MembershipBenefitSection[];
 };
 
+export type MembershipMemberLevelBadgeConfig = {
+  enabled: boolean;
+  text: string;
+  backgroundColor: string;
+  textColor: string;
+};
+
+export type MembershipMemberLevelDisplayConfig = {
+  banner: MembershipMemberLevelBadgeConfig;
+  tag: MembershipMemberLevelBadgeConfig;
+};
+
 const LIFETIME_MEMBER_DAYS = 99 * 365;
 
 export function getDefaultMembershipPlanMemberType(tabKey: 'personal' | 'enterprise', planKey: string) {
@@ -59,6 +71,8 @@ export type MembershipTabConfig = {
 
 export type MembershipPlansConfig = {
   tabs: MembershipTabConfig[];
+  /** 按 Web 新版套餐的会员等级配置卡片顶部促销横条和右上角标签。 */
+  memberLevelDisplay: Record<string, MembershipMemberLevelDisplayConfig>;
 };
 
 export type MembershipOverviewConfig = {
@@ -412,6 +426,25 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
   },
 ];
 
+const createMemberLevelBadge = (text = '', backgroundColor = '#168ff2', textColor = '#ffffff', enabled = false): MembershipMemberLevelBadgeConfig => ({ enabled, text, backgroundColor, textColor });
+
+const DEFAULT_MEMBER_LEVEL_DISPLAY: Record<string, MembershipMemberLevelDisplayConfig> = {
+  '基础版（个人）': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '专业版（个人）': {
+    banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
+    tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
+  },
+  '基础版（企业）': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '专业版（企业）': {
+    banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
+    tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
+  },
+  '旗舰版（企业）': {
+    banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.19/秒', '#ff7910', '#ffffff', true),
+    tag: createMemberLevelBadge('加赠2个月会员', '#ff7910', '#ffffff', true),
+  },
+};
+
 export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
   plans: {
     tabs: [
@@ -446,6 +479,7 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         ],
       },
     ],
+    memberLevelDisplay: DEFAULT_MEMBER_LEVEL_DISPLAY,
   },
   overview: {
     title: '哪个计划更适合你',
@@ -829,6 +863,30 @@ const normalizeOverview = (value: unknown, fallback: MembershipOverviewConfig): 
   };
 };
 
+const normalizeMemberLevelBadge = (value: unknown, fallback: MembershipMemberLevelBadgeConfig): MembershipMemberLevelBadgeConfig => {
+  if (!value || typeof value !== 'object') return clone(fallback);
+  const raw = value as Partial<MembershipMemberLevelBadgeConfig>;
+  return {
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : fallback.enabled,
+    text: typeof raw.text === 'string' ? raw.text : fallback.text,
+    backgroundColor: typeof raw.backgroundColor === 'string' ? raw.backgroundColor : fallback.backgroundColor,
+    textColor: typeof raw.textColor === 'string' ? raw.textColor : fallback.textColor,
+  };
+};
+
+const normalizeMemberLevelDisplay = (value: unknown, fallback: Record<string, MembershipMemberLevelDisplayConfig>): Record<string, MembershipMemberLevelDisplayConfig> => {
+  const raw = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  const keys = new Set([...Object.keys(fallback), ...Object.keys(raw)]);
+  return Object.fromEntries([...keys].map((memberType) => {
+    const fallbackDisplay = fallback[memberType] ?? { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() };
+    const rawDisplay = raw[memberType] && typeof raw[memberType] === 'object' ? raw[memberType] as Partial<MembershipMemberLevelDisplayConfig> : {};
+    return [memberType, {
+      banner: normalizeMemberLevelBadge(rawDisplay.banner, fallbackDisplay.banner),
+      tag: normalizeMemberLevelBadge(rawDisplay.tag, fallbackDisplay.tag),
+    }];
+  })) as Record<string, MembershipMemberLevelDisplayConfig>;
+};
+
 const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToPackageData = false): MembershipPlansConfig => {
   const rawTabs = (value as { tabs?: unknown } | null)?.tabs;
   if (!Array.isArray(rawTabs)) return clone(fallback);
@@ -855,6 +913,7 @@ const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToP
         options,
       };
     }),
+    memberLevelDisplay: normalizeMemberLevelDisplay((value as { memberLevelDisplay?: unknown })?.memberLevelDisplay, fallback.memberLevelDisplay),
   };
 };
 
