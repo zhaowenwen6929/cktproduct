@@ -708,12 +708,12 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         <section className={`relative ${mode === 'templates' ? 'min-h-[430px]' : 'min-h-[390px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-10 pt-[54px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
-          <div className="absolute left-1/2 top-[132px] -translate-x-1/2 opacity-[0.64]">
-            <button type="button" onClick={() => setMode('templates')} aria-pressed={mode === 'templates'} className="pointer-events-auto absolute -left-[190px] top-0 h-[142px] w-[300px] -rotate-[3deg] rounded-[28px] border-2 border-white bg-white/50 p-5 text-left shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm transition hover:opacity-100 hover:shadow-[0_20px_44px_rgba(74,111,190,0.22)]">
-              <div className="text-[29px] font-bold text-[#e4e8f5]">Template</div><div className="mt-1 text-[20px] font-semibold text-[#3c465d]">设计模板</div><div className="mt-7 h-9 rounded-xl bg-[linear-gradient(135deg,#c7e6ff,#7aa7fa)]" />
+          <div className="absolute left-1/2 top-[112px] -translate-x-1/2 opacity-[0.64]">
+            <button type="button" onClick={() => setMode('templates')} aria-pressed={mode === 'templates'} className="pointer-events-auto absolute -left-[145px] top-0 h-[108px] w-[230px] -rotate-[3deg] rounded-[22px] border-2 border-white bg-white/50 p-4 text-left shadow-[0_16px_32px_rgba(102,128,187,0.12)] backdrop-blur-sm transition hover:opacity-100 hover:shadow-[0_16px_36px_rgba(74,111,190,0.22)]">
+              <div className="text-[23px] font-bold text-[#e4e8f5]">Template</div><div className="mt-0.5 text-[16px] font-semibold text-[#3c465d]">设计模板</div><div className="mt-4 h-6 rounded-lg bg-[linear-gradient(135deg,#c7e6ff,#7aa7fa)]" />
             </button>
-            <button type="button" onClick={() => setMode('agent')} aria-pressed={mode === 'agent'} className="pointer-events-auto absolute left-[80px] top-4 h-[142px] w-[300px] rotate-[3deg] rounded-[28px] border-2 border-white bg-white/45 p-5 text-left shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm transition hover:opacity-100 hover:shadow-[0_20px_44px_rgba(74,111,190,0.22)]">
-              <div className="text-[29px] font-bold text-white/70">AI creation</div><div className="mt-1 text-[20px] font-semibold text-[#68718b]">AI创作</div><div className="mt-7 h-9 rounded-xl bg-[linear-gradient(135deg,#f7d6dc,#cad8ff)]" />
+            <button type="button" onClick={() => setMode('agent')} aria-pressed={mode === 'agent'} className="pointer-events-auto absolute left-[62px] top-3 h-[108px] w-[230px] rotate-[3deg] rounded-[22px] border-2 border-white bg-white/45 p-4 text-left shadow-[0_16px_32px_rgba(102,128,187,0.12)] backdrop-blur-sm transition hover:opacity-100 hover:shadow-[0_16px_36px_rgba(74,111,190,0.22)]">
+              <div className="text-[23px] font-bold text-white/70">AI creation</div><div className="mt-0.5 text-[16px] font-semibold text-[#68718b]">AI创作</div><div className="mt-4 h-6 rounded-lg bg-[linear-gradient(135deg,#f7d6dc,#cad8ff)]" />
             </button>
           </div>
           <h1 className="relative z-10 text-center text-[31px] font-semibold tracking-[0.035em] text-[#18233d]">今天你想做些什么？</h1>
@@ -726,18 +726,18 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               <button type="button" className="h-[42px] w-[74px] shrink-0 rounded-[12px] bg-[#1478fa] text-[14px] font-semibold text-white shadow-[0_4px_10px_rgba(20,120,250,0.18)]">搜索</button>
             </div>
           ) : (
-            <div className="relative z-10 mx-auto mt-[92px] h-[226px] max-w-[1160px] rounded-[31px] border-[3px] border-[#7166ff] bg-white px-5 pb-5 pt-5 shadow-[0_16px_34px_rgba(87,92,197,0.14)]">
-              <textarea value={homePrompt} onChange={(event) => setHomePrompt(event.currentTarget.value)} placeholder="上传参考图片，描述下您想要的内容，我们会为您呈现~" className="h-[145px] w-full resize-none bg-transparent text-[18px] leading-7 text-[#394156] outline-none placeholder:text-[#9ba9c0]" />
+            <div className="relative z-10 mx-auto mt-[78px] h-[178px] max-w-[1040px] rounded-[25px] border-[3px] border-[#7166ff] bg-white px-4 pb-4 pt-4 shadow-[0_14px_30px_rgba(87,92,197,0.14)]">
+              <textarea value={homePrompt} onChange={(event) => setHomePrompt(event.currentTarget.value)} placeholder="上传参考图片，描述下您想要的内容，我们会为您呈现~" className="h-[104px] w-full resize-none bg-transparent text-[15px] leading-6 text-[#394156] outline-none placeholder:text-[#9ba9c0]" />
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5">
-                  <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full border border-[#edf0f5] text-[#8490a5] transition hover:border-[#bdb5ff] hover:text-[#6b5ef4]"><Plus className="h-5 w-5" /></button>
+                  <button type="button" className="flex h-8 w-8 items-center justify-center rounded-full border border-[#edf0f5] text-[#8490a5] transition hover:border-[#bdb5ff] hover:text-[#6b5ef4]"><Plus className="h-4 w-4" /></button>
                   {homeAttachments.length > 0 ? <span className="text-[12px] text-[#758198]">已添加 {homeAttachments.length} 张参考图</span> : null}
-                  <button type="button" onClick={() => openSkillPicker()} className="flex h-10 items-center gap-2 rounded-[12px] border border-[#eef0f5] px-4 text-[16px] font-medium text-[#3c4353] hover:border-[#cbc7ff] hover:text-[#5c5cfc]"><Sparkles className="h-[18px] w-[18px]" />Agent模式</button>
-                  <button type="button" className="flex h-10 items-center gap-2 rounded-[12px] border border-[#eef0f5] px-4 text-[16px] text-[#555d70]"><FileImage className="h-[18px] w-[18px]" />自动</button>
+                  <button type="button" onClick={() => openSkillPicker()} className="flex h-8 items-center gap-1.5 rounded-[10px] border border-[#eef0f5] px-3 text-[14px] font-medium text-[#3c4353] hover:border-[#cbc7ff] hover:text-[#5c5cfc]"><Sparkles className="h-4 w-4" />Agent模式</button>
+                  <button type="button" className="flex h-8 items-center gap-1.5 rounded-[10px] border border-[#eef0f5] px-3 text-[14px] text-[#555d70]"><FileImage className="h-4 w-4" />自动</button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button type="button" aria-label="润色" className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#edf0f5] text-[#7f8cff]"><WandSparkles className="h-5 w-5" /></button>
-                  <button type="button" disabled={!homePrompt.trim()} onClick={() => onStartCanvasGeneration(homePrompt.trim(), homeAttachments)} className={`rounded-[12px] px-5 py-2.5 text-[16px] font-semibold text-white ${homePrompt.trim() ? 'bg-[#695cff] hover:bg-[#5c50ee]' : 'bg-[#dedcff]'}`}>生成</button>
+                  <button type="button" aria-label="润色" className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[#edf0f5] text-[#7f8cff]"><WandSparkles className="h-4 w-4" /></button>
+                  <button type="button" disabled={!homePrompt.trim()} onClick={() => onStartCanvasGeneration(homePrompt.trim(), homeAttachments)} className={`rounded-[10px] px-4 py-2 text-[14px] font-semibold text-white ${homePrompt.trim() ? 'bg-[#695cff] hover:bg-[#5c50ee]' : 'bg-[#dedcff]'}`}>生成</button>
                 </div>
               </div>
             </div>
@@ -791,7 +791,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
           </section>
         ) : (
           <section className="mx-auto grid max-w-[1920px] grid-cols-1 gap-5 px-[42px] pb-10 xl:grid-cols-[minmax(400px,0.82fr)_minmax(760px,1.7fr)] 2xl:gap-6">
-            <div className="grid grid-cols-2 grid-rows-[160px_120px] gap-3">
+            <div className="grid grid-cols-2 grid-rows-[148px_108px] gap-3">
               <button type="button" className="relative col-span-2 overflow-hidden rounded-[18px] border border-[#e8e9f5] bg-[linear-gradient(115deg,#f2f2ff_0%,#f9f9ff_66%,#fff_100%)] px-6 py-6 text-left shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
                 <span className="block text-[18px] font-semibold text-[#35405a]">创建设计</span>
                 <span className="mt-1.5 block text-[12px] text-[#94a3be]">高频创作场景一键直达</span>
@@ -802,7 +802,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               <button type="button" className="rounded-[18px] border border-[#eceff4] bg-[radial-gradient(circle_at_80%_20%,#f0f3ff_0%,#fff_58%)] px-6 py-5 text-left shadow-[0_3px_12px_rgba(85,101,154,0.025)] transition hover:border-[#c9d9ff]"><span className="block text-[17px] font-semibold text-[#35405a]">图片编辑</span><span className="mt-1.5 block text-[12px] text-[#96a5be]">点击即可快速开始</span></button>
             </div>
 
-            <div className="h-[292px] rounded-[18px] bg-[#f2f5fb] p-3 shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
+            <div className="h-[272px] rounded-[18px] bg-[#f2f5fb] p-3 shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
               <div className="mb-2.5 flex items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-6 text-[14px] font-medium text-[#75829a]">
                   {['热门推荐', '海报上新', '视频创作', 'AI电商', '印刷制作', '图片处理'].map((tab, index) => <button key={tab} type="button" className={index === 0 ? 'relative font-semibold text-[#263148] after:absolute after:-bottom-2 after:left-0 after:h-[3px] after:w-9 after:rounded-full after:bg-[#8077ff]' : 'transition hover:text-[#263148]'}>{tab}</button>)}
@@ -811,7 +811,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               </div>
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
                 {homepageFeatureCards.map((card) => (
-                  <div key={card.title} className="relative flex h-[94px] min-w-0 items-center justify-between overflow-hidden rounded-[15px] bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(58,71,101,0.025)]">
+                  <div key={card.title} className="relative flex h-[84px] min-w-0 items-center justify-between overflow-hidden rounded-[15px] bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(58,71,101,0.025)]">
                     <div className="relative z-10 min-w-0 pr-2">
                       <div className="truncate text-[15px] font-semibold text-[#273248]">{card.title}</div>
                       <div className="mt-1 line-clamp-2 text-[11px] leading-4.5 text-[#98a6bd]">{card.desc}</div>
