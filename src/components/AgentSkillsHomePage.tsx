@@ -708,7 +708,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         <section className={`relative ${mode === 'templates' ? 'min-h-[430px]' : 'min-h-[390px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-10 pt-[54px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
-          <div className={`absolute left-1/2 ${mode === 'templates' ? 'top-[112px]' : 'top-[42px]'} -translate-x-1/2 opacity-[0.64]`}>
+          <div className="absolute left-1/2 top-[112px] -translate-x-1/2 opacity-[0.64]">
             <button type="button" onClick={() => setMode('templates')} aria-pressed={mode === 'templates'} className="pointer-events-auto absolute -left-[420px] top-0 z-20 flex h-[128px] w-[520px] -rotate-[3deg] items-center justify-between overflow-hidden rounded-[28px] border-2 border-white bg-white/50 pl-8 pr-5 text-left shadow-[0_16px_32px_rgba(102,128,187,0.12)] backdrop-blur-sm transition hover:opacity-100 hover:shadow-[0_16px_36px_rgba(74,111,190,0.22)]">
               <span className="relative z-10 min-w-0 flex-1"><span className="block text-[31px] font-bold leading-none text-[#e4e8f5]">Template</span><span className="mt-2 block text-[25px] font-semibold leading-none text-[#3c465d]">设计模板</span></span>
               <span className="relative flex h-[142px] w-[176px] shrink-0 -rotate-[8deg] items-center justify-center overflow-hidden rounded-[24px] border-2 border-white/80 bg-[linear-gradient(145deg,#d9f0ff_0%,#76b6ef_58%,#5279c9_100%)] shadow-[0_10px_24px_rgba(72,126,214,0.2)]"><span className="absolute -right-5 -top-7 h-24 w-24 rounded-full bg-white/35 blur-xl" /><span className="absolute left-7 top-7 text-[42px] font-semibold leading-none text-white/85">✿</span><span className="absolute bottom-7 left-5 text-[12px] font-semibold tracking-[0.12em] text-white/90 [writing-mode:vertical-rl]">迎光向前</span><span className="absolute bottom-4 right-5 text-[31px] text-white/80">✧</span></span>
@@ -728,7 +728,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
               <button type="button" className="h-[42px] w-[74px] shrink-0 rounded-[12px] bg-[#1478fa] text-[14px] font-semibold text-white shadow-[0_4px_10px_rgba(20,120,250,0.18)]">搜索</button>
             </div>
           ) : (
-            <div className="relative z-10 mx-auto mt-[78px] h-[178px] max-w-[1040px] rounded-[25px] border-[3px] border-[#7166ff] bg-white px-4 pb-4 pt-4 shadow-[0_14px_30px_rgba(87,92,197,0.14)]">
+            <div className="relative z-10 mx-auto mt-[150px] h-[178px] max-w-[1040px] rounded-[25px] border-[3px] border-[#7166ff] bg-white px-4 pb-4 pt-4 shadow-[0_14px_30px_rgba(87,92,197,0.14)]">
               <textarea value={homePrompt} onChange={(event) => setHomePrompt(event.currentTarget.value)} placeholder="上传参考图片，描述下您想要的内容，我们会为您呈现~" className="h-[104px] w-full resize-none bg-transparent text-[15px] leading-6 text-[#394156] outline-none placeholder:text-[#9ba9c0]" />
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5">
