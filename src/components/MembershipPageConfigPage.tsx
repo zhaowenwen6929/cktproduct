@@ -122,7 +122,7 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
               ? raw.displayName
               : fallbackVipLevel.displayName,
             subtitle: typeof raw.subtitle === 'string' && raw.subtitle.trim() ? raw.subtitle : fallbackVipLevel.subtitle,
-            banner: raw.banner ?? legacyDisplay?.banner ?? fallbackVipLevel.banner,
+            bannerTxt: raw.bannerTxt ?? raw.banner ?? legacyDisplay?.bannerTxt ?? legacyDisplay?.banner ?? fallbackVipLevel.bannerTxt ?? fallbackVipLevel.banner,
             tag: raw.tag ?? legacyDisplay?.tag ?? fallbackVipLevel.tag,
           };
         })

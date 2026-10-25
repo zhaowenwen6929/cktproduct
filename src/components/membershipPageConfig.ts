@@ -35,7 +35,7 @@ export type MembershipMemberLevelBadgeConfig = {
 export type MembershipMemberLevelDisplayConfig = {
   level: number;
   memberName: string;
-  banner: MembershipMemberLevelBadgeConfig;
+  bannerTxt: MembershipMemberLevelBadgeConfig;
   tag: MembershipMemberLevelBadgeConfig;
 };
 
@@ -83,7 +83,8 @@ export type MembershipVipLevelConfig = {
   displayName: string;
   /** 会员购买页会员名称下方的定位文案。 */
   subtitle: string;
-  banner: MembershipMemberLevelBadgeConfig;
+  /** 会员等级卡片顶部的文案条，避免与页面大 Banner 混淆。 */
+  bannerTxt: MembershipMemberLevelBadgeConfig;
   tag: MembershipMemberLevelBadgeConfig;
 };
 
@@ -460,24 +461,24 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
 const createMemberLevelBadge = (text = '', backgroundColor = '#168ff2', textColor = '#ffffff', enabled = false): MembershipMemberLevelBadgeConfig => ({ enabled, text, backgroundColor, textColor });
 
 const DEFAULT_MEMBER_LEVEL_DISPLAY: Record<string, MembershipMemberLevelDisplayConfig> = {
-  '240': { level: 240, memberName: '基础版（个人）', banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '240': { level: 240, memberName: '基础版（个人）', bannerTxt: createMemberLevelBadge(), tag: createMemberLevelBadge() },
   '241': {
     level: 241,
     memberName: '专业版（个人）',
-    banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
+    bannerTxt: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
     tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
   },
-  '310': { level: 310, memberName: '基础版（企业）', banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '310': { level: 310, memberName: '基础版（企业）', bannerTxt: createMemberLevelBadge(), tag: createMemberLevelBadge() },
   '311': {
     level: 311,
     memberName: '专业版（企业）',
-    banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
+    bannerTxt: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
     tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
   },
   '220': {
     level: 220,
     memberName: '旗舰版（企业）',
-    banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.19/秒', '#ff7910', '#ffffff', true),
+    bannerTxt: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.19/秒', '#ff7910', '#ffffff', true),
     tag: createMemberLevelBadge('加赠2个月会员', '#ff7910', '#ffffff', true),
   },
 };
@@ -488,7 +489,7 @@ const DEFAULT_PERSONAL_VIP_LEVELS: MembershipVipLevelConfig[] = [
     memberName: '基础版（个人）',
     displayName: '基础版',
     subtitle: '100万模板在线编辑，快速出图',
-    banner: DEFAULT_MEMBER_LEVEL_DISPLAY['240'].banner,
+    bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['240'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['240'].tag,
   },
   {
@@ -496,7 +497,7 @@ const DEFAULT_PERSONAL_VIP_LEVELS: MembershipVipLevelConfig[] = [
     memberName: '专业版（个人）',
     displayName: '专业版',
     subtitle: 'AI创作设计、视频，创意笔下生花',
-    banner: DEFAULT_MEMBER_LEVEL_DISPLAY['241'].banner,
+    bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['241'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['241'].tag,
   },
 ];
@@ -507,7 +508,7 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
     memberName: '基础版（企业）',
     displayName: '基础版',
     subtitle: '100万模板在线编辑，快速出图',
-    banner: DEFAULT_MEMBER_LEVEL_DISPLAY['310'].banner,
+    bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['310'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['310'].tag,
   },
   {
@@ -515,7 +516,7 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
     memberName: '专业版（企业）',
     displayName: '专业版',
     subtitle: 'AI创作能力&模型随心用，支持团队协作与共享',
-    banner: DEFAULT_MEMBER_LEVEL_DISPLAY['311'].banner,
+    bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['311'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['311'].tag,
   },
   {
@@ -523,7 +524,7 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
     memberName: '旗舰版（企业）',
     displayName: '旗舰版',
     subtitle: 'AI创作能力&模型随心用，支持团队协作与共享',
-    banner: DEFAULT_MEMBER_LEVEL_DISPLAY['220'].banner,
+    bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['220'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['220'].tag,
   },
 ];
@@ -981,14 +982,16 @@ const normalizeMemberLevelDisplay = (value: unknown, fallback: Record<string, Me
     const fallbackDisplay = fallback[memberType] ?? {
       level: Number(memberType),
       memberName: MEMBER_NAME_BY_LEVEL[memberType] ?? '',
-      banner: createMemberLevelBadge(),
+      bannerTxt: createMemberLevelBadge(),
       tag: createMemberLevelBadge(),
     };
-    const rawDisplay = raw[memberType] && typeof raw[memberType] === 'object' ? raw[memberType] as Partial<MembershipMemberLevelDisplayConfig> : {};
+    const rawDisplay = raw[memberType] && typeof raw[memberType] === 'object'
+      ? raw[memberType] as Partial<MembershipMemberLevelDisplayConfig> & { banner?: unknown }
+      : {};
     return [memberType, {
       level: typeof rawDisplay.level === 'number' && Number.isFinite(rawDisplay.level) ? rawDisplay.level : fallbackDisplay.level,
       memberName: typeof rawDisplay.memberName === 'string' && rawDisplay.memberName.trim() ? rawDisplay.memberName : fallbackDisplay.memberName,
-      banner: normalizeMemberLevelBadge(rawDisplay.banner, fallbackDisplay.banner),
+      bannerTxt: normalizeMemberLevelBadge(rawDisplay.bannerTxt ?? rawDisplay.banner, fallbackDisplay.bannerTxt),
       tag: normalizeMemberLevelBadge(rawDisplay.tag, fallbackDisplay.tag),
     }];
   })) as Record<string, MembershipMemberLevelDisplayConfig>;
@@ -1022,7 +1025,7 @@ const normalizeVipLevels = (
   const hasRawLevels = Array.isArray(value);
   const rawLevels = hasRawLevels ? value : fallback;
   const levels = rawLevels
-    .filter((item): item is { banner?: unknown; displayName?: unknown; memberName?: unknown; memberType?: unknown; level?: unknown; subtitle?: unknown; tag?: unknown } => Boolean(item) && typeof item === 'object')
+    .filter((item): item is { banner?: unknown; bannerTxt?: unknown; displayName?: unknown; memberName?: unknown; memberType?: unknown; level?: unknown; subtitle?: unknown; tag?: unknown } => Boolean(item) && typeof item === 'object')
     .map((item, index) => {
       const rawLevel = typeof item.level === 'number' ? item.level : Number(item.level);
       const fallbackLevel = fallback.find((level) => level.level === rawLevel) ?? fallback[index] ?? fallback[0];
@@ -1031,12 +1034,14 @@ const normalizeVipLevels = (
         ? item.memberName
         : typeof item.memberType === 'string' ? item.memberType : fallbackLevel?.memberName ?? '';
       const legacy = legacyDisplay[String(level)];
+      const rawBannerTxt = item.bannerTxt ?? item.banner;
+      const legacyBannerTxt = legacy?.bannerTxt ?? (legacy as MembershipMemberLevelDisplayConfig & { banner?: unknown } | undefined)?.banner;
       return {
         level,
         memberName,
         displayName: typeof item.displayName === 'string' && item.displayName.trim() ? item.displayName : fallbackLevel?.displayName ?? memberName,
         subtitle: typeof item.subtitle === 'string' && item.subtitle.trim() ? item.subtitle : fallbackLevel?.subtitle ?? '',
-        banner: normalizeMemberLevelBadge(hasRawLevels ? item.banner ?? legacy?.banner : legacy?.banner ?? item.banner, fallbackLevel?.banner ?? createMemberLevelBadge()),
+        bannerTxt: normalizeMemberLevelBadge(hasRawLevels ? rawBannerTxt ?? legacyBannerTxt : legacyBannerTxt ?? rawBannerTxt, fallbackLevel?.bannerTxt ?? createMemberLevelBadge()),
         tag: normalizeMemberLevelBadge(hasRawLevels ? item.tag ?? legacy?.tag : legacy?.tag ?? item.tag, fallbackLevel?.tag ?? createMemberLevelBadge()),
       };
     })

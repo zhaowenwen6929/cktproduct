@@ -319,7 +319,7 @@ function CommercialLicenseOverview({ config }: { config: MembershipCommercialLic
 function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enterprise = false, seats = 1, onSeatChange, purchaseButtonRef }: { plan: MembershipPlan; selected: boolean; cycleKey: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; onSeatChange?: (delta: number) => void; purchaseButtonRef?: Ref<HTMLButtonElement> }) {
   const isBlue = plan.color === 'blue';
   const isOrange = plan.color === 'orange';
-  const promoBanner = plan.memberLevelDisplay?.banner.enabled && plan.memberLevelDisplay.banner.text.trim() ? plan.memberLevelDisplay.banner : null;
+  const promoBanner = plan.memberLevelDisplay?.bannerTxt.enabled && plan.memberLevelDisplay.bannerTxt.text.trim() ? plan.memberLevelDisplay.bannerTxt : null;
   const promoTag = plan.memberLevelDisplay?.tag.enabled && plan.memberLevelDisplay.tag.text.trim() ? plan.memberLevelDisplay.tag : null;
   const isFeatured = isBlue || isOrange || Boolean(promoBanner);
   const cycleData = getCyclePlanData(plan, cycleKey);
