@@ -24,6 +24,7 @@ export type PackageDetailRow = {
   contractPrice: string;
   packageType: string;
   member: string;
+  memberLevel?: number;
   sort: number;
   trialDays: number;
   segment: string;
@@ -107,6 +108,18 @@ export const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
   { name: '旗舰版（企业）', level: 220 },
 ];
 
+export const MEMBER_LEVEL_BY_NAME: Record<string, number> = Object.fromEntries(
+  MEMBER_TYPE_OPTIONS.filter((option): option is MemberTypeOption & { level: number } => option.level != null)
+    .map((option) => [option.name, option.level]),
+);
+
+export function getMemberLevelByName(member: string) {
+  return MEMBER_LEVEL_BY_NAME[member];
+}
+
+const PERSONAL_MEMBER_LEVELS = new Set([240, 241]);
+const ENTERPRISE_MEMBER_LEVELS = new Set([220, 310, 311]);
+
 type MemberPointsConfig = Pick<PackageDetailRow, 'points' | 'pointsUnit' | 'pointsCycle'> & { display?: string };
 
 const LIFETIME_MEMBER_TYPES = new Set(['个人版VIP', '标准版(个人)', '通用版(个人)', '基础版(单人)']);
@@ -183,6 +196,7 @@ type NewWebSkuPrice = {
 
 function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
   const pointsUnit = member.includes('企业') ? '团队' : '每人';
+  const memberLevel = getMemberLevelByName(member);
   return prices.map((price, index): PackageDetailRow => ({
     id: startId + index,
     name: `web-${member}-${price.displayName}（${price.renewalPrice == null ? price.price : `首充${price.price}，续费${price.renewalPrice}`}）`,
@@ -194,6 +208,7 @@ function createWebSkuDetails(startId: number, member: string, points: number, pr
     contractPrice: price.renewalPrice == null ? '-' : `首充${price.price}，续费${price.renewalPrice}`,
     packageType: price.packageType ?? '普通套餐',
     member,
+    memberLevel,
     sort: index,
     trialDays: 0,
     segment: '/',
@@ -319,7 +334,10 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
   try {
     const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY) ?? '{}') as Record<string, unknown>;
     const rows = stored[String(packageId)];
-    return Array.isArray(rows) ? rows as PackageDetailRow[] : fallback;
+    return Array.isArray(rows) ? (rows as PackageDetailRow[]).map((row) => ({
+      ...row,
+      memberLevel: row.memberLevel ?? getMemberLevelByName(row.member),
+    })) : fallback;
   } catch {
     return fallback;
   }
@@ -341,11 +359,11 @@ export function persistMembershipPackageDetails(packageId: number, rows: Package
 }
 
 export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'enterprise', details = readWebMembershipPackageDetails()): WebMembershipCycleOption[] {
-  const memberMatches = (member: string) => membershipType === 'personal'
-    ? member.includes('（个人）')
+  const memberMatches = (memberLevel?: number) => membershipType === 'personal'
+    ? PERSONAL_MEMBER_LEVELS.has(memberLevel ?? -1)
     : membershipType === 'enterprise'
-      ? member.includes('（企业）')
-      : member.includes('（个人）') || member.includes('（企业）');
+      ? ENTERPRISE_MEMBER_LEVELS.has(memberLevel ?? -1)
+      : PERSONAL_MEMBER_LEVELS.has(memberLevel ?? -1) || ENTERPRISE_MEMBER_LEVELS.has(memberLevel ?? -1);
   const guideText: Record<string, string> = {
     连续包年: '限时4.5折',
     连续包月: '4.8折',
@@ -353,7 +371,7 @@ export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'ente
   };
   const seen = new Set<string>();
   const options = details
-    .filter((row) => row.status === '显示' && row.points != null && memberMatches(row.member))
+    .filter((row) => row.status === '显示' && row.points != null && memberMatches(row.memberLevel))
     .filter((row) => {
       const key = `${row.duration}-${row.displayName}`;
       if (seen.has(key)) return false;
@@ -724,7 +742,7 @@ function MembershipPackageDetailPage({ packageId, packageName, onBack, onBackToD
     updateDetails((current) => {
       if (values.id === 0) {
         const nextId = Math.max(...current.map((row) => row.id), 0) + 1;
-        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: isHistoricalMemberType(values.member) ? undefined : Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人', pointsCycle: values.pointsCycle === '一次性' ? '一次性' : '按月' }, ...current];
+        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', memberLevel: getMemberLevelByName(values.member), sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: isHistoricalMemberType(values.member) ? undefined : Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人', pointsCycle: values.pointsCycle === '一次性' ? '一次性' : '按月' }, ...current];
       }
       return current.map((row) => row.id === values.id ? { ...row, name: values.name, discount: Number(values.discount) || row.discount, sort: Number(values.sort) || 0, segment: values.segment || '/' } : row);
     });

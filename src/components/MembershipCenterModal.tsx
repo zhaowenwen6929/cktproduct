@@ -39,8 +39,26 @@ const DEFAULT_MEMBER_TYPE_BY_PLAN: Record<MembershipType, Record<string, string>
   },
 };
 
+const DEFAULT_MEMBER_LEVEL_BY_PLAN: Record<MembershipType, Record<string, number>> = {
+  personal: {
+    basic: 240,
+    advanced: 241,
+    professional: 241,
+  },
+  enterprise: {
+    basic: 310,
+    advanced: 311,
+    professional: 311,
+    flagship: 220,
+  },
+};
+
 function resolveMemberType(plan: MembershipPlanDisplayConfig, membershipType: MembershipType) {
   return plan.memberType ?? DEFAULT_MEMBER_TYPE_BY_PLAN[membershipType][plan.planKey] ?? plan.memberType ?? '';
+}
+
+function resolveMemberLevel(plan: MembershipPlanDisplayConfig, membershipType: MembershipType) {
+  return plan.memberLevel ?? DEFAULT_MEMBER_LEVEL_BY_PLAN[membershipType][plan.planKey];
 }
 
 function normalizeCycleKey(cycleKey: string) {
@@ -91,9 +109,9 @@ function getRenewalPeriod(period: string) {
   return period;
 }
 
-function getCyclePackageRows(memberType: string, cycle: MembershipCycleConfig, packageDetails: WebPackageDetail[]) {
+function getCyclePackageRows(memberLevel: number | undefined, cycle: MembershipCycleConfig, packageDetails: WebPackageDetail[]) {
   const duration = Number.parseInt(cycle.duration, 10);
-  const rows = packageDetails.filter((row) => row.status === '显示' && (row.member.includes('（个人）') || row.member.includes('（企业）')) && row.member === memberType && row.duration === duration && row.points != null);
+  const rows = packageDetails.filter((row) => row.status === '显示' && row.memberLevel === memberLevel && row.duration === duration && row.points != null);
   const wantsSubscription = cycle.name.includes('连续');
   const preferredRows = rows.filter((row) => wantsSubscription ? row.packageType === '订阅套餐' : row.packageType !== '订阅套餐');
   const sourceRows = preferredRows.length ? preferredRows : rows;
@@ -104,10 +122,10 @@ function getCyclePackageRows(memberType: string, cycle: MembershipCycleConfig, p
   return [...uniqueRows.values()].sort((left, right) => (left.points ?? 0) - (right.points ?? 0));
 }
 
-function createWebPackagePlanData(memberType: string, planKey: string, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[]): MembershipPlanData {
+function createWebPackagePlanData(memberLevel: number | undefined, planKey: string, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[]): MembershipPlanData {
   const fallback = REAL_MEMBERSHIP_PLAN_DATA[planKey] ?? REAL_MEMBERSHIP_PLAN_DATA.basic;
   const cyclePricing = Object.fromEntries(cycleOptions.map((cycle) => {
-    const rows = getCyclePackageRows(memberType, cycle, packageDetails);
+    const rows = getCyclePackageRows(memberLevel, cycle, packageDetails);
     const fallbackCycle = fallback.cyclePricing?.[normalizeCycleKey(cycle.key)] ?? fallback;
     if (!rows.length) return [cycle.key, { ...fallbackCycle, period: cycle.name }];
 
@@ -143,8 +161,9 @@ function createWebPackagePlanData(memberType: string, planKey: string, cycleOpti
 
 function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[], memberLevelDisplay: Record<string, MembershipMemberLevelDisplayConfig>): MembershipPlan {
   const memberType = resolveMemberType(plan, membershipType);
-  const data = createWebPackagePlanData(memberType, plan.planKey, cycleOptions, packageDetails);
-  return { ...data, ...plan, memberType, memberLevelDisplay: memberLevelDisplay[memberType] };
+  const memberLevel = resolveMemberLevel(plan, membershipType);
+  const data = createWebPackagePlanData(memberLevel, plan.planKey, cycleOptions, packageDetails);
+  return { ...data, ...plan, memberType, memberLevel, memberLevelDisplay: memberLevel == null ? undefined : memberLevelDisplay[String(memberLevel)] };
 }
 
 const promotionDurationMs = (((4 * 24 + 1) * 60 + 51) * 60 + 59) * 1000;
@@ -177,7 +196,7 @@ function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, p
   const selectedPlan = plans[selectedPlanIndex] ?? plans[0];
   if (!selectedPlan) return null;
 
-  return <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#162033]/55 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="挽留购买"><div className="relative w-[min(820px,calc(100vw-32px))] overflow-hidden rounded-[20px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.28)]"><div className="flex h-[62px] items-center justify-between border-b border-[#edf0f4] px-6"><div><h2 className="text-[17px] font-semibold text-[#202938]">先别急着离开</h2><p className="mt-1 text-[11px] text-[#8c96a6]">选择适合你的会员方案，立即解锁更多权益</p></div><button type="button" onClick={onClose} aria-label="关闭挽留购买弹框" className="flex h-8 w-8 items-center justify-center rounded-full text-[#9aa4b2] transition hover:bg-[#f3f5f8] hover:text-[#273144]"><X className="h-4 w-4" /></button></div><div className="px-6 py-6"><div className="rounded-[16px] bg-[#f6f8fb] p-4"><div className="text-center text-[12px] font-semibold text-[#273144]">选择套餐时长</div><div className="mt-4 grid grid-cols-2 gap-2 rounded-[12px] bg-[#e9edf3] p-1 sm:grid-cols-4">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => onCycleChange(index)} className={`min-w-0 rounded-[9px] px-2 py-2.5 text-[11px] transition ${selectedCycle === index ? 'bg-white font-semibold text-[#168ff2] shadow-[0_2px_7px_rgba(38,60,92,.1)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className="ml-1 text-[10px] text-[#8c98a9]">{cycle.guideText}</span> : null}</button>)}</div><div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">{plans.map((plan, index) => { const planCycleData = plan.cyclePricing?.[activeCycleKey] ?? plan; return <button type="button" key={`${plan.planKey}-${index}`} onClick={() => onPlanChange(index)} className={`min-w-0 rounded-[12px] border px-3.5 py-4 text-left transition ${selectedPlanIndex === index ? 'border-[#168ff2] bg-[#edf6ff] shadow-[0_3px_10px_rgba(22,143,242,.1)]' : 'border-[#e4e9f0] bg-white hover:border-[#a9c9ee]'}`}><span className={`block truncate text-[13px] font-semibold ${selectedPlanIndex === index ? 'text-[#168ff2]' : 'text-[#273144]'}`}>{plan.name}</span><span className="mt-1 block truncate text-[10px] text-[#8d98a8]">{plan.subtitle}</span><span className="mt-3 flex items-end gap-1 text-[#202938]"><span className="mb-1 text-[11px]">¥</span><strong className="text-[25px] leading-none tracking-[-.04em]">{planCycleData.price}</strong><span className="mb-0.5 text-[10px] text-[#8994a4]">/{planCycleData.period.replace('每', '')}</span></span><span className="mt-2 block text-[10px] text-[#7f8b9d]">{planCycleData.originalPrice ? <del className="mr-1">¥{planCycleData.originalPrice}</del> : null}{planCycleData.discount}折 · {planCycleData.points}</span></button>; })}</div></div></div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-6 py-4"><button type="button" onClick={onContinue} className="h-9 rounded-[6px] border border-[#dce3ed] px-5 text-[12px] text-[#697587] transition hover:border-[#b7c5d7] hover:text-[#273144]">继续浏览</button><button type="button" onClick={onClose} className="h-9 rounded-[6px] bg-[#168ff2] px-6 text-[12px] font-medium text-white shadow-[0_5px_12px_rgba(22,143,242,.18)] transition hover:bg-[#087edc]">立即开通{selectedPlan.name ? ` ${selectedPlan.name}` : ''}</button></div></div></div>;
+  return <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#162033]/55 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="挽留购买"><div className="relative w-[min(820px,calc(100vw-32px))] overflow-hidden rounded-[20px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.28)]"><div className="flex h-[62px] items-center justify-between border-b border-[#edf0f4] px-6"><div><h2 className="text-[17px] font-semibold text-[#202938]">先别急着离开</h2><p className="mt-1 text-[11px] text-[#8c96a6]">选择适合你的会员方案，立即解锁更多权益</p></div><button type="button" onClick={onClose} aria-label="关闭挽留购买弹框" className="flex h-8 w-8 items-center justify-center rounded-full text-[#9aa4b2] transition hover:bg-[#f3f5f8] hover:text-[#273144]"><X className="h-4 w-4" /></button></div><div className="px-6 py-6"><div className="rounded-[16px] bg-[#f6f8fb] p-4"><div className="text-center text-[12px] font-semibold text-[#273144]">选择套餐时长</div><div className="mt-4 grid grid-cols-2 gap-2 rounded-[12px] bg-[#e9edf3] p-1 sm:grid-cols-4">{cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => onCycleChange(index)} className={`min-w-0 rounded-[9px] px-2 py-2.5 text-[11px] transition ${selectedCycle === index ? 'bg-white font-semibold text-[#168ff2] shadow-[0_2px_7px_rgba(38,60,92,.1)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className="ml-1 text-[10px] text-[#8c98a9]">{cycle.guideText}</span> : null}</button>)}</div><div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">{plans.map((plan, index) => { const planCycleData = plan.cyclePricing?.[activeCycleKey] ?? plan; return <button type="button" key={`${plan.planKey}-${index}`} onClick={() => onPlanChange(index)} className={`min-w-0 rounded-[12px] border px-3.5 py-4 text-left transition ${selectedPlanIndex === index ? 'border-[#168ff2] bg-[#edf6ff] shadow-[0_3px_10px_rgba(22,143,242,.1)]' : 'border-[#e4e9f0] bg-white hover:border-[#a9c9ee]'}`}><span className={`block truncate text-[13px] font-semibold ${selectedPlanIndex === index ? 'text-[#168ff2]' : 'text-[#273144]'}`}>{plan.name}</span><span className="mt-1 block truncate text-[10px] text-[#8d98a8]">会员等级 {plan.memberLevel} · {plan.subtitle}</span><span className="mt-3 flex items-end gap-1 text-[#202938]"><span className="mb-1 text-[11px]">¥</span><strong className="text-[25px] leading-none tracking-[-.04em]">{planCycleData.price}</strong><span className="mb-0.5 text-[10px] text-[#8994a4]">/{planCycleData.period.replace('每', '')}</span></span><span className="mt-2 block text-[10px] text-[#7f8b9d]">{planCycleData.originalPrice ? <del className="mr-1">¥{planCycleData.originalPrice}</del> : null}{planCycleData.discount}折 · {planCycleData.points}</span></button>; })}</div></div></div><div className="flex items-center justify-end gap-3 border-t border-[#edf0f4] px-6 py-4"><button type="button" onClick={onContinue} className="h-9 rounded-[6px] border border-[#dce3ed] px-5 text-[12px] text-[#697587] transition hover:border-[#b7c5d7] hover:text-[#273144]">继续浏览</button><button type="button" onClick={onClose} className="h-9 rounded-[6px] bg-[#168ff2] px-6 text-[12px] font-medium text-white shadow-[0_5px_12px_rgba(22,143,242,.18)] transition hover:bg-[#087edc]">立即开通{selectedPlan.name ? ` ${selectedPlan.name}` : ''}</button></div></div></div>;
 }
 
 function StickyPurchaseBar({ plans, cycleKey, membershipType, onMembershipTypeChange }: { plans: MembershipPlan[]; cycleKey: string; membershipType: 'personal' | 'enterprise'; onMembershipTypeChange: (type: 'personal' | 'enterprise') => void }) {
@@ -330,7 +349,7 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   return <article className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`}>
     {promoBanner ? <div className="h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7" style={{ backgroundColor: promoBanner.backgroundColor, color: promoBanner.textColor }}>{promoBanner.text}</div> : null}
     <div className="px-5 pb-4 pt-5">
-      <div className="flex items-start justify-between gap-2"><div><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 text-[11px] text-[#8590a0]">{plan.subtitle}</p></div>{promoTag ? <span className="rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.backgroundColor, color: promoTag.textColor }}>{promoTag.text}</span> : null}</div>
+      <div className="flex items-start justify-between gap-2"><div><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 text-[11px] text-[#8590a0]">会员等级 {plan.memberLevel} · {plan.subtitle}</p></div>{promoTag ? <span className="rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.backgroundColor, color: promoTag.textColor }}>{promoTag.text}</span> : null}</div>
       <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><strong className="text-[33px] font-semibold leading-none tracking-[-.05em]">{displayPrice}</strong>{enterprise ? <span className="mb-1 text-[11px] text-[#7f8999]">/席位/{cycleData.period}</span> : <span className="mb-1 text-[10px] text-[#7f8999]">{cycleData.period}</span>}{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
       <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">{enterprise ? `¥${displayMonthlyPrice}/月/席位 · 单席位价格按当前套餐数据计算` : `首年${displayPrice} · 次年续费金额按当前价格计算 · 包年可随时取消`}</p>
       {enterprise ? <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-[#566274]"><div className="flex items-center overflow-hidden rounded-[9px] border border-[#eef0f3] bg-white"><button type="button" aria-label="减少席位" disabled={seats <= 1} onClick={() => onSeatChange?.(-1)} className="flex h-8 w-8 items-center justify-center text-[16px] text-[#aab2bd] disabled:cursor-not-allowed disabled:opacity-40 hover:text-[#168ff2]">−</button><span className="min-w-[54px] text-center font-medium text-[#374255]">{seats} 席位</span><button type="button" aria-label="增加席位" onClick={() => onSeatChange?.(1)} className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[16px] text-[#566274] shadow-[0_1px_5px_rgba(34,48,70,.06)] hover:text-[#168ff2]">＋</button></div><span className="whitespace-nowrap text-[#6d7888]">合计 <b className="text-[13px] text-[#293548]">{totalPrice}元</b></span></div> : null}
@@ -419,12 +438,14 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
   const enterpriseTab = pageConfig.plans.tabs.find((tab) => tab.key === 'enterprise');
   const activeTab = pageConfig.plans.tabs.find((tab) => tab.key === membershipType) ?? pageConfig.plans.tabs[0];
   const cycleOptions = activeTab?.options ?? [];
+  const activeMemberLevels = new Set(activeTab?.memberLevels?.map((member) => member.level) ?? []);
   const selectedCycle = Math.min(activeCycle, Math.max(cycleOptions.length - 1, 0));
   const selectedCycleConfig = cycleOptions[selectedCycle];
   const visiblePlans = cycleOptions.length === 0 ? [] : (pageConfig.overview.planCards?.[membershipType] ?? [])
     .map((plan) => hydratePlan(plan, membershipType, cycleOptions, packageDetails, pageConfig.plans.memberLevelDisplay))
-    .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberType ?? '', selectedCycleConfig, packageDetails).length > 0)
-    .filter((plan, index, plans) => plans.findIndex((item) => item.memberType === plan.memberType) === index);
+    .filter((plan) => activeMemberLevels.size === 0 || activeMemberLevels.has(plan.memberLevel))
+    .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberLevel, selectedCycleConfig, packageDetails).length > 0)
+    .filter((plan, index, plans) => plans.findIndex((item) => item.memberLevel === plan.memberLevel) === index);
   const activeCycleKey = cycleOptions[selectedCycle]?.key ?? 'yearly';
   const activeDetails = pageConfig.details[membershipType];
   const requestClose = () => {

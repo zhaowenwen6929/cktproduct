@@ -14,6 +14,8 @@ export type MembershipPlanDisplayConfig = {
   planKey: string;
   /** 对应会员套餐管理 Web端-新版中的所属会员名称。 */
   memberType?: string;
+  /** 对应会员套餐管理中的会员等级数字，运行时按此字段关联套餐数据。 */
+  memberLevel: number;
   name: string;
   subtitle: string;
   color: 'neutral' | 'blue' | 'orange';
@@ -43,6 +45,13 @@ export function getDefaultMembershipPlanMemberType(tabKey: 'personal' | 'enterpr
   return memberTypes[planKey as keyof typeof memberTypes];
 }
 
+export function getDefaultMembershipPlanMemberLevel(tabKey: 'personal' | 'enterprise', planKey: string) {
+  const memberLevels = tabKey === 'personal'
+    ? { basic: 240, professional: 241 }
+    : { basic: 310, professional: 311, flagship: 220 };
+  return memberLevels[planKey as keyof typeof memberLevels];
+}
+
 export type MembershipBenefitItem = {
   label: string;
   enabled?: boolean;
@@ -66,6 +75,7 @@ export type MembershipTabConfig = {
   key: 'personal' | 'enterprise';
   name: string;
   memberLevel: { level: string };
+  memberLevels: Array<{ memberType: string; level: number }>;
   options: MembershipCycleConfig[];
 };
 
@@ -303,6 +313,7 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
   {
     planKey: 'basic',
     memberType: '基础版（个人）',
+    memberLevel: 240,
     name: '基础版',
     subtitle: '适合初次探索 AI 创作',
     color: 'neutral',
@@ -312,6 +323,7 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
   {
     planKey: 'professional',
     memberType: '专业版（个人）',
+    memberLevel: 241,
     name: '专业版',
     subtitle: '适合大批量稳定产出与交付',
     color: 'blue',
@@ -412,11 +424,13 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
   ...personalPlans.map((plan) => ({
     ...plan,
     memberType: plan.planKey === 'basic' ? '基础版（企业）' : '专业版（企业）',
+    memberLevel: plan.planKey === 'basic' ? 310 : 311,
     benefitSections: enterpriseCommonBenefits,
   })),
   {
     planKey: 'flagship',
     memberType: '旗舰版（企业）',
+    memberLevel: 220,
     name: '旗舰版',
     subtitle: '为极限产出而生',
     color: 'orange',
@@ -429,17 +443,17 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
 const createMemberLevelBadge = (text = '', backgroundColor = '#168ff2', textColor = '#ffffff', enabled = false): MembershipMemberLevelBadgeConfig => ({ enabled, text, backgroundColor, textColor });
 
 const DEFAULT_MEMBER_LEVEL_DISPLAY: Record<string, MembershipMemberLevelDisplayConfig> = {
-  '基础版（个人）': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
-  '专业版（个人）': {
+  '240': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '241': {
     banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
     tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
   },
-  '基础版（企业）': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
-  '专业版（企业）': {
+  '310': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '311': {
     banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
     tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
   },
-  '旗舰版（企业）': {
+  '220': {
     banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.19/秒', '#ff7910', '#ffffff', true),
     tag: createMemberLevelBadge('加赠2个月会员', '#ff7910', '#ffffff', true),
   },
@@ -452,6 +466,10 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         key: 'personal',
         name: '个人使用',
         memberLevel: { level: 'personal' },
+        memberLevels: [
+          { memberType: '基础版（个人）', level: 240 },
+          { memberType: '专业版（个人）', level: 241 },
+        ],
         options: [
           { key: 'yearly', name: '连续包年', guideText: '限时4.5折', duration: '365天', highlighted: true },
           { key: 'yearly-one-time', name: '1年', guideText: '', duration: '365天' },
@@ -468,6 +486,11 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         key: 'enterprise',
         name: '企业使用',
         memberLevel: { level: 'enterprise' },
+        memberLevels: [
+          { memberType: '基础版（企业）', level: 310 },
+          { memberType: '专业版（企业）', level: 311 },
+          { memberType: '旗舰版（企业）', level: 220 },
+        ],
         options: [
           { key: 'team-three-year', name: '3年', guideText: '', duration: '1095天', highlighted: true },
           { key: 'team-yearly', name: '1年', guideText: '', duration: '365天' },
@@ -835,6 +858,9 @@ const normalizePlanCardList = (
       memberType: typeof rawPlan.memberType === 'string'
         ? rawPlan.memberType
         : getDefaultMembershipPlanMemberType(membershipType, String(rawPlan.planKey ?? fallbackPlan.planKey)) ?? fallbackPlan.memberType,
+      memberLevel: typeof rawPlan.memberLevel === 'number'
+        ? rawPlan.memberLevel
+        : getDefaultMembershipPlanMemberLevel(membershipType, String(rawPlan.planKey ?? fallbackPlan.planKey)) ?? fallbackPlan.memberLevel,
       name: typeof rawPlan.name === 'string' ? rawPlan.name : fallbackPlan.name,
       subtitle: typeof rawPlan.subtitle === 'string' ? rawPlan.subtitle : fallbackPlan.subtitle,
       color: rawPlan.color === 'blue' || rawPlan.color === 'orange' || rawPlan.color === 'neutral' ? rawPlan.color : fallbackPlan.color,
@@ -874,8 +900,17 @@ const normalizeMemberLevelBadge = (value: unknown, fallback: MembershipMemberLev
   };
 };
 
+const MEMBER_LEVEL_BY_NAME: Record<string, number> = {
+  '基础版（个人）': 240,
+  '专业版（个人）': 241,
+  '基础版（企业）': 310,
+  '专业版（企业）': 311,
+  '旗舰版（企业）': 220,
+};
+
 const normalizeMemberLevelDisplay = (value: unknown, fallback: Record<string, MembershipMemberLevelDisplayConfig>): Record<string, MembershipMemberLevelDisplayConfig> => {
-  const raw = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  const rawValue = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  const raw = Object.fromEntries(Object.entries(rawValue).map(([key, display]) => [String(MEMBER_LEVEL_BY_NAME[key] ?? key), display]));
   const keys = new Set([...Object.keys(fallback), ...Object.keys(raw)]);
   return Object.fromEntries([...keys].map((memberType) => {
     const fallbackDisplay = fallback[memberType] ?? { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() };
@@ -885,6 +920,18 @@ const normalizeMemberLevelDisplay = (value: unknown, fallback: Record<string, Me
       tag: normalizeMemberLevelBadge(rawDisplay.tag, fallbackDisplay.tag),
     }];
   })) as Record<string, MembershipMemberLevelDisplayConfig>;
+};
+
+const normalizeMemberLevels = (value: unknown, fallback: Array<{ memberType: string; level: number }>) => {
+  if (!Array.isArray(value)) return clone(fallback);
+  const levels = value
+    .filter((item): item is { memberType?: unknown; level?: unknown } => Boolean(item) && typeof item === 'object')
+    .map((item) => ({
+      memberType: typeof item.memberType === 'string' ? item.memberType : '',
+      level: typeof item.level === 'number' ? item.level : Number(item.level),
+    }))
+    .filter((item) => item.memberType && Number.isFinite(item.level));
+  return levels.length ? levels : clone(fallback);
 };
 
 const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToPackageData = false): MembershipPlansConfig => {
@@ -910,6 +957,7 @@ const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToP
         key: fallbackTab.key,
         name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof rawTab.name === 'string' ? rawTab.name : fallbackTab.name,
         memberLevel: { ...fallbackTab.memberLevel, ...(rawTab.memberLevel ?? {}) },
+        memberLevels: normalizeMemberLevels(rawTab.memberLevels, fallbackTab.memberLevels),
         options,
       };
     }),

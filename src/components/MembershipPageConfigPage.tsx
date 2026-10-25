@@ -14,7 +14,7 @@ type PlatformConfig = {
 type ConfigState = Record<PlatformKey, PlatformConfig>;
 
 const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
-  { key: 'plans', label: '套餐显示结构', description: '仅配置个人、企业及套餐时长；价格、积分和会员等级来自新版套餐数据' },
+  { key: 'plans', label: '套餐显示结构', description: '配置个人、企业、会员等级及套餐时长；价格和积分来自新版套餐数据' },
   { key: 'overview', label: '权益概览', description: '配置个人、企业各会员等级的套餐卡片、权益和卡片文案' },
   { key: 'details', label: '权益明细', description: '配置会员弹框中按会员类型展示的详细权益对比' },
   { key: 'model-consumption', label: '模型消耗', description: '配置会员弹框中的模型消耗、额度和计费说明' },
@@ -105,6 +105,7 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
         key: isPersonal ? 'personal' : isEnterprise ? 'enterprise' : fallbackTab.key,
         name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof tab.name === 'string' ? tab.name : fallbackTab.name,
         memberLevel: tab.memberLevel ?? fallbackTab.memberLevel ?? { level: isPersonal || index === 0 ? 'personal' : 'enterprise' },
+        memberLevels: Array.isArray(tab.memberLevels) ? tab.memberLevels : fallbackTab.memberLevels,
         options,
       };
     });
