@@ -685,7 +685,7 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
       columns: [
         { key: 'basic', label: '基础版' },
         { key: 'advanced', label: '高级版' },
-        { key: 'professional', label: '专业版', tag: 'New' },
+        { key: 'professional', label: '专业版' },
       ],
       sections: [
         {
@@ -970,11 +970,20 @@ const isComparisonConfig = (value: unknown): value is MembershipComparisonConfig
 const normalizeDetails = (value: unknown, fallback: MembershipDetailsConfig): MembershipDetailsConfig => {
   if (!value || typeof value !== 'object') return clone(fallback);
   const raw = value as Partial<MembershipDetailsConfig>;
+  const normalizeComparison = (comparison: MembershipComparisonConfig) => ({
+    ...comparison,
+    columns: comparison.columns.map((column) => {
+      if (column.key !== 'professional') return column;
+      const normalizedColumn = { ...column };
+      delete normalizedColumn.tag;
+      return normalizedColumn;
+    }),
+  });
   return {
     ...clone(fallback),
     title: typeof raw.title === 'string' ? raw.title : fallback.title,
-    personal: isComparisonConfig(raw.personal) ? raw.personal : fallback.personal,
-    enterprise: isComparisonConfig(raw.enterprise) ? raw.enterprise : fallback.enterprise,
+    personal: isComparisonConfig(raw.personal) ? normalizeComparison(raw.personal) : fallback.personal,
+    enterprise: isComparisonConfig(raw.enterprise) ? normalizeComparison(raw.enterprise) : fallback.enterprise,
   };
 };
 
