@@ -708,13 +708,13 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         <section className={`relative ${mode === 'templates' ? 'min-h-[430px]' : 'min-h-[390px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-10 pt-[54px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
-          <div className="pointer-events-none absolute left-1/2 top-[132px] -translate-x-1/2 opacity-[0.64]">
-            <div className="absolute -left-[190px] top-0 h-[142px] w-[300px] -rotate-[3deg] rounded-[28px] border-2 border-white bg-white/50 p-5 shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm">
+          <div className="absolute left-1/2 top-[132px] -translate-x-1/2 opacity-[0.64]">
+            <button type="button" onClick={() => setMode('templates')} aria-pressed={mode === 'templates'} className="pointer-events-auto absolute -left-[190px] top-0 h-[142px] w-[300px] -rotate-[3deg] rounded-[28px] border-2 border-white bg-white/50 p-5 text-left shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm transition hover:opacity-100 hover:shadow-[0_20px_44px_rgba(74,111,190,0.22)]">
               <div className="text-[29px] font-bold text-[#e4e8f5]">Template</div><div className="mt-1 text-[20px] font-semibold text-[#3c465d]">设计模板</div><div className="mt-7 h-9 rounded-xl bg-[linear-gradient(135deg,#c7e6ff,#7aa7fa)]" />
-            </div>
-            <div className="absolute left-[80px] top-4 h-[142px] w-[300px] rotate-[3deg] rounded-[28px] border-2 border-white bg-white/45 p-5 shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm">
+            </button>
+            <button type="button" onClick={() => setMode('agent')} aria-pressed={mode === 'agent'} className="pointer-events-auto absolute left-[80px] top-4 h-[142px] w-[300px] rotate-[3deg] rounded-[28px] border-2 border-white bg-white/45 p-5 text-left shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm transition hover:opacity-100 hover:shadow-[0_20px_44px_rgba(74,111,190,0.22)]">
               <div className="text-[29px] font-bold text-white/70">AI creation</div><div className="mt-1 text-[20px] font-semibold text-[#68718b]">AI创作</div><div className="mt-7 h-9 rounded-xl bg-[linear-gradient(135deg,#f7d6dc,#cad8ff)]" />
-            </div>
+            </button>
           </div>
           <h1 className="relative z-10 text-center text-[31px] font-semibold tracking-[0.035em] text-[#18233d]">今天你想做些什么？</h1>
 
