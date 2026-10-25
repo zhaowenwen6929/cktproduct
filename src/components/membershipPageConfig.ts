@@ -70,12 +70,15 @@ export type MembershipBenefitItem = {
   enabled?: boolean;
   badge?: string;
   detail?: string;
+  icon?: 'image' | 'video';
 };
 
 export type MembershipBenefitSection = {
   title: string;
   badge?: string;
   actionLabel?: string;
+  /** 权益分组右侧的二维码展示，可在配置中替换为实际二维码图片。 */
+  qrCode?: MembershipBenefitQrCodeConfig;
   items: MembershipBenefitItem[];
   /** 标色突出应用于整个权益分组区域，而不是单条权益。 */
   highlightStyle?: MembershipBenefitSectionStyleConfig;
@@ -84,6 +87,14 @@ export type MembershipBenefitSection = {
     items: Array<{ label: string; badge?: string }>;
     tone: 'blue' | 'orange';
   };
+};
+
+export type MembershipBenefitQrCodeConfig = {
+  imageUrl?: string;
+  label?: string;
+  description?: string;
+  backgroundColor?: string;
+  borderColor?: string;
 };
 
 export type MembershipBenefitSectionStyleConfig = {
@@ -202,6 +213,13 @@ export type MembershipCommercialLicenseConfig = {
     qrTitle: string;
     qrDescription: string;
   };
+  enterprisePurchaseContact: {
+    title: string;
+    imageUrl?: string;
+    qrLabel: string;
+    qrActionLabel: string;
+    benefits: string[];
+  };
 };
 
 export type MembershipFaqConfig = {
@@ -225,6 +243,13 @@ const benefitItem = (label: string, enabled = true, badge?: string, detail?: str
   enabled,
   badge,
   detail,
+});
+
+const modelBenefitItem = (label: string, badge: string, icon: 'image' | 'video'): MembershipBenefitItem => ({
+  label,
+  badge,
+  icon,
+  enabled: true,
 });
 
 const modelHighlight = (tone: 'blue' | 'orange'): NonNullable<MembershipBenefitSection['highlight']> => ({
@@ -351,11 +376,11 @@ const personalProfessionalBenefits: MembershipBenefitSection[] = [
       badgeTextColor: '#168ff2',
     },
     items: [
-      benefitItem('智能Image2.5 Pro', true, '高质通道'),
-      benefitItem('Seedream5.0 Pro', true, '限时特惠'),
-      benefitItem('智能Image2.5 Fast', true, '限时特惠'),
-      benefitItem('Seedance2.5', true, '限时特惠'),
-      benefitItem('Seedance2.0-Mini', true, '限时特惠'),
+      modelBenefitItem('智能Image2.5 Pro', '高质通道', 'image'),
+      modelBenefitItem('Seedream5.0 Pro', '限时特惠', 'image'),
+      modelBenefitItem('智能Image2.5 Fast', '限时特惠', 'image'),
+      modelBenefitItem('Seedance2.5', '限时特惠', 'video'),
+      modelBenefitItem('Seedance2.0-Mini', '限时特惠', 'video'),
     ],
   },
 ];
@@ -526,6 +551,10 @@ const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
   },
   {
     title: '专享权益',
+    qrCode: {
+      label: '扫码咨询',
+      description: '专属顾问',
+    },
     items: [
       benefitItem('支持积分灵活定制'),
       benefitItem('支持私有化部署与内容定制'),
@@ -922,6 +951,17 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
       qrTitle: '扫码添加\n专属顾问',
       qrDescription: '企业专属服务',
     },
+    enterprisePurchaseContact: {
+      title: '多人采购优惠通道',
+      qrLabel: '扫码添加专属顾问',
+      qrActionLabel: '申请优惠',
+      benefits: [
+        '大型团队协作与品牌管控',
+        '内容审批管理，内容安全合规',
+        '企业一站式专业解决方案',
+        '支持对公转账与专票开具',
+      ],
+    },
   },
   faq: {
     title: '常见问题',
@@ -1034,6 +1074,9 @@ const normalizeDetails = (value: unknown, fallback: MembershipDetailsConfig): Me
 const normalizeCommercialLicense = (value: unknown, fallback: MembershipCommercialLicenseConfig): MembershipCommercialLicenseConfig => {
   if (!value || typeof value !== 'object') return clone(fallback);
   const raw = value as Partial<MembershipCommercialLicenseConfig>;
+  const rawEnterprisePurchaseContact = raw.enterprisePurchaseContact && typeof raw.enterprisePurchaseContact === 'object'
+    ? raw.enterprisePurchaseContact
+    : undefined;
   return {
     ...clone(fallback),
     title: typeof raw.title === 'string' ? raw.title : fallback.title,
@@ -1044,6 +1087,16 @@ const normalizeCommercialLicense = (value: unknown, fallback: MembershipCommerci
     testimonials: Array.isArray(raw.testimonials) ? raw.testimonials : fallback.testimonials,
     logos: Array.isArray(raw.logos) ? raw.logos : fallback.logos,
     serviceCta: raw.serviceCta && typeof raw.serviceCta === 'object' ? raw.serviceCta : fallback.serviceCta,
+    enterprisePurchaseContact: rawEnterprisePurchaseContact ? {
+      ...fallback.enterprisePurchaseContact,
+      title: typeof rawEnterprisePurchaseContact.title === 'string' ? rawEnterprisePurchaseContact.title : fallback.enterprisePurchaseContact.title,
+      imageUrl: typeof rawEnterprisePurchaseContact.imageUrl === 'string' ? rawEnterprisePurchaseContact.imageUrl : fallback.enterprisePurchaseContact.imageUrl,
+      qrLabel: typeof rawEnterprisePurchaseContact.qrLabel === 'string' ? rawEnterprisePurchaseContact.qrLabel : fallback.enterprisePurchaseContact.qrLabel,
+      qrActionLabel: typeof rawEnterprisePurchaseContact.qrActionLabel === 'string' ? rawEnterprisePurchaseContact.qrActionLabel : fallback.enterprisePurchaseContact.qrActionLabel,
+      benefits: Array.isArray(rawEnterprisePurchaseContact.benefits)
+        ? rawEnterprisePurchaseContact.benefits.filter((item): item is string => typeof item === 'string')
+        : fallback.enterprisePurchaseContact.benefits,
+    } : fallback.enterprisePurchaseContact,
   };
 };
 
@@ -1075,6 +1128,7 @@ const normalizePlanCardList = (
           ? fallbackSection?.title ?? rawSection.title
           : rawSection.title,
         items: Array.isArray(rawSection.items) ? rawSection.items : fallbackSection?.items ?? [],
+        qrCode: rawSection.qrCode ?? fallbackSection?.qrCode,
         highlightStyle: rawSection.highlightStyle ?? fallbackSection?.highlightStyle,
       };
     }).filter((section): section is MembershipBenefitSection => Boolean(section));
