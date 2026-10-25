@@ -76,6 +76,7 @@ const initialPackages: PackageRow[] = [
 ];
 
 const CONFIGURED_PACKAGE_IDS = new Set([1, 2, 6, 7, 8, 9]);
+const WEB_PACKAGE_ID = 8;
 
 export type MemberTypeOption = { name: string; level?: number };
 
@@ -170,6 +171,130 @@ const initialPackageDetails: PackageDetailRow[] = [
   { id: 3383, name: 'web-高级版（团队）-2年会员', displayName: '2年', duration: 730, originalPrice: 1138, discount: 100, currentPrice: 1138, contractPrice: '-', packageType: '普通套餐', member: '高级版(团队)', sort: 1, trialDays: 0, segment: '/', displayTime: '/', status: '隐藏', points: undefined },
   { id: 3382, name: 'web-高级版（团队）-3年会员', displayName: '3年', duration: 1095, originalPrice: 1578, discount: 100, currentPrice: 1578, contractPrice: '-', packageType: '普通套餐', member: '高级版(团队)', sort: 0, trialDays: 0, segment: '/', displayTime: '/', status: '隐藏', points: undefined },
   { id: 3381, name: 'web-高级版（团队）-2年会员', displayName: '2年', duration: 730, originalPrice: 1138, discount: 100, currentPrice: 1138, contractPrice: '-', packageType: '普通套餐', member: '高级版(团队)', sort: 1, trialDays: 0, segment: '/', displayTime: '/', status: '隐藏', points: undefined },
+];
+
+type NewWebSkuPrice = {
+  displayName: string;
+  duration: number;
+  price: number;
+  renewalPrice?: number;
+  packageType?: '普通套餐' | '订阅套餐';
+};
+
+function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
+  const pointsUnit = member.includes('企业') ? '团队' : '每人';
+  return prices.map((price, index): PackageDetailRow => ({
+    id: startId + index,
+    name: `web-${member}-${price.displayName}（${price.renewalPrice == null ? price.price : `首充${price.price}，续费${price.renewalPrice}`}）`,
+    displayName: price.displayName,
+    duration: price.duration,
+    originalPrice: price.renewalPrice ?? price.price,
+    discount: 100,
+    currentPrice: price.price,
+    contractPrice: price.renewalPrice == null ? '-' : `首充${price.price}，续费${price.renewalPrice}`,
+    packageType: price.packageType ?? '普通套餐',
+    member,
+    sort: index,
+    trialDays: 0,
+    segment: '/',
+    displayTime: '/',
+    status: '显示',
+    points,
+    pointsUnit,
+    pointsCycle: price.duration === LIFETIME_MEMBER_DAYS ? '一次性' : '按月',
+  }));
+}
+
+const newWebSkuDetails: PackageDetailRow[] = [
+  ...createWebSkuDetails(3501, '基础版（个人）', 200, [
+    { displayName: '连续包月', duration: 30, price: 39, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 49 },
+    { displayName: '连续包季', duration: 90, price: 59, renewalPrice: 79, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 89 },
+    { displayName: '1年', duration: 365, price: 179 },
+    { displayName: '连续包年', duration: 365, price: 149, renewalPrice: 159, packageType: '订阅套餐' },
+    { displayName: '2年', duration: 730, price: 199 },
+    { displayName: '终身', duration: LIFETIME_MEMBER_DAYS, price: 399 },
+  ]),
+  ...createWebSkuDetails(3511, '专业版（个人）', 1200, [
+    { displayName: '连续包月', duration: 30, price: 49, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 59 },
+    { displayName: '连续包季', duration: 90, price: 79, renewalPrice: 89, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 99 },
+    { displayName: '1年', duration: 365, price: 219 },
+    { displayName: '连续包年', duration: 365, price: 179, renewalPrice: 189, packageType: '订阅套餐' },
+    { displayName: '2年+送1年', duration: 1095, price: 569 },
+  ]),
+  ...createWebSkuDetails(3521, '专业版（个人）', 2500, [
+    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 79 },
+    { displayName: '连续包季', duration: 90, price: 129, renewalPrice: 139, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 149 },
+    { displayName: '1年', duration: 365, price: 419 },
+    { displayName: '连续包年', duration: 365, price: 429, packageType: '订阅套餐' },
+    { displayName: '2年+送1年', duration: 1095, price: 949 },
+  ]),
+  ...createWebSkuDetails(3531, '专业版（个人）', 4000, [
+    { displayName: '连续包月', duration: 30, price: 49, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 59 },
+    { displayName: '连续包季', duration: 90, price: 99, renewalPrice: 119, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 129 },
+    { displayName: '1年', duration: 365, price: 389 },
+    { displayName: '连续包年', duration: 365, price: 299, packageType: '订阅套餐' },
+    { displayName: '2年+送1年', duration: 1095, price: 668 },
+  ]),
+  ...createWebSkuDetails(3541, '专业版（个人）', 8000, [
+    { displayName: '连续包月', duration: 30, price: 49, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 59 },
+    { displayName: '连续包季', duration: 90, price: 99, renewalPrice: 119, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 129 },
+    { displayName: '1年', duration: 365, price: 389 },
+    { displayName: '连续包年', duration: 365, price: 299, packageType: '订阅套餐' },
+    { displayName: '2年+送1年', duration: 1095, price: 668 },
+  ]),
+  ...createWebSkuDetails(3551, '基础版（企业）', 400, [
+    { displayName: '连续包季', duration: 90, price: 199, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 269 },
+    { displayName: '1年', duration: 365, price: 399 },
+    { displayName: '2年', duration: 730, price: 669 },
+    { displayName: '3年', duration: 1095, price: 859 },
+  ]),
+  ...createWebSkuDetails(3561, '专业版（企业）', 1200, [
+    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 89 },
+    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 199 },
+    { displayName: '1年', duration: 365, price: 489 },
+    { displayName: '2年', duration: 730, price: 579 },
+    { displayName: '3年', duration: 1095, price: 759 },
+  ]),
+  ...createWebSkuDetails(3571, '专业版（企业）', 2000, [
+    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 89 },
+    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 199 },
+    { displayName: '1年', duration: 365, price: 489 },
+    { displayName: '2年', duration: 730, price: 579 },
+    { displayName: '3年', duration: 1095, price: 759 },
+  ]),
+  ...createWebSkuDetails(3581, '专业版（企业）', 4000, [
+    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 89 },
+    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 199 },
+    { displayName: '1年', duration: 365, price: 489 },
+    { displayName: '2年', duration: 730, price: 579 },
+    { displayName: '3年', duration: 1095, price: 759 },
+  ]),
+  ...createWebSkuDetails(3591, '旗舰版（企业）', 1200, [
+    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 89 },
+    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 199 },
+    { displayName: '1年', duration: 365, price: 489 },
+    { displayName: '2年', duration: 730, price: 579 },
+    { displayName: '3年', duration: 1095, price: 759 },
+  ]),
 ];
 
 export function formatPointsDisplay(points?: number, pointsUnit?: '每人' | '团队', pointsCycle?: '按月' | '一次性') {
@@ -499,8 +624,8 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
   );
 }
 
-function MembershipPackageDetailPage({ packageName, onBack, onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { packageName: string; onBack: () => void; onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
-  const [details, setDetails] = useState(initialPackageDetails);
+function MembershipPackageDetailPage({ packageId, packageName, onBack, onBackToDirectory, onNavigateToSkillConfig, onNavigateToGuidedSearch, onNavigateToMembershipPageConfig, onNavigateToRequirement }: { packageId: number; packageName: string; onBack: () => void; onBackToDirectory: () => void; onNavigateToSkillConfig?: () => void; onNavigateToGuidedSearch?: () => void; onNavigateToMembershipPageConfig?: () => void; onNavigateToRequirement?: (path: string) => void }) {
+  const [details, setDetails] = useState(() => packageId === WEB_PACKAGE_ID ? [...initialPackageDetails, ...newWebSkuDetails] : initialPackageDetails);
   const [nameQuery, setNameQuery] = useState('');
   const [memberType, setMemberType] = useState('');
   const [submittedName, setSubmittedName] = useState('');
@@ -561,7 +686,7 @@ export function MembershipPackagePage({ onBackToDirectory, onNavigateToSkillConf
   };
 
   if (selectedPackage) {
-    return <MembershipPackageDetailPage packageName={selectedPackage.id === 32 ? 'web端-新成' : selectedPackage.name} onBack={() => setSelectedPackage(null)} onBackToDirectory={onBackToDirectory} onNavigateToSkillConfig={onNavigateToSkillConfig} onNavigateToGuidedSearch={onNavigateToGuidedSearch} onNavigateToMembershipPageConfig={onNavigateToMembershipPageConfig} onNavigateToRequirement={onNavigateToRequirement} />;
+    return <MembershipPackageDetailPage packageId={selectedPackage.id} packageName={selectedPackage.name} onBack={() => setSelectedPackage(null)} onBackToDirectory={onBackToDirectory} onNavigateToSkillConfig={onNavigateToSkillConfig} onNavigateToGuidedSearch={onNavigateToGuidedSearch} onNavigateToMembershipPageConfig={onNavigateToMembershipPageConfig} onNavigateToRequirement={onNavigateToRequirement} />;
   }
 
   return (
