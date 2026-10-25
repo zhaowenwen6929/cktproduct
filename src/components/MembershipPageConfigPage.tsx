@@ -94,13 +94,24 @@ const migratePlansJson = (value: unknown, fallback: string, syncToPackageData = 
       const isPersonal = tab.key === 'personal' || tab.name === '个人订阅';
       const isEnterprise = tab.key === 'enterprise' || tab.key === 'team' || tab.name === '团队订阅';
       const rawOptions = Array.isArray(tab.options) ? tab.options as Array<Record<string, unknown>> : null;
+      const fallbackOptions = Array.isArray(fallbackTab.options) ? fallbackTab.options as Array<Record<string, unknown>> : [];
       const isLegacyOptions = rawOptions != null && (
         (isPersonal && rawOptions.length <= 4 && rawOptions.some((option) => option.key === 'single'))
         || (isEnterprise && rawOptions.length <= 3 && rawOptions.some((option) => option.key === 'team-quarterly'))
       );
       const options = syncToPackageData
-        ? fallbackTab.options
-        : isLegacyOptions ? fallbackTab.options : rawOptions ?? fallbackTab.options;
+        ? fallbackOptions.map((packageOption) => {
+          const configuredOption = rawOptions?.find((option) => option.key === packageOption.key
+            || (option.name === packageOption.name && option.duration === packageOption.duration));
+          return {
+            ...packageOption,
+            guideText: typeof configuredOption?.guideText === 'string' ? configuredOption.guideText : packageOption.guideText,
+            guideTextColor: typeof configuredOption?.guideTextColor === 'string' && configuredOption.guideTextColor.trim()
+              ? configuredOption.guideTextColor
+              : packageOption.guideTextColor,
+          };
+        })
+        : isLegacyOptions ? fallbackOptions : rawOptions ?? fallbackOptions;
       return {
         key: isPersonal ? 'personal' : isEnterprise ? 'enterprise' : fallbackTab.key,
         name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof tab.name === 'string' ? tab.name : fallbackTab.name,

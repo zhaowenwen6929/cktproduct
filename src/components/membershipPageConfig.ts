@@ -6,6 +6,7 @@ export type MembershipCycleConfig = {
   key: string;
   name: string;
   guideText: string;
+  guideTextColor?: string;
   duration: string;
   highlighted?: boolean;
 };
@@ -32,6 +33,8 @@ export type MembershipMemberLevelBadgeConfig = {
 };
 
 export type MembershipMemberLevelDisplayConfig = {
+  level: number;
+  memberName: string;
   banner: MembershipMemberLevelBadgeConfig;
   tag: MembershipMemberLevelBadgeConfig;
 };
@@ -443,17 +446,23 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
 const createMemberLevelBadge = (text = '', backgroundColor = '#168ff2', textColor = '#ffffff', enabled = false): MembershipMemberLevelBadgeConfig => ({ enabled, text, backgroundColor, textColor });
 
 const DEFAULT_MEMBER_LEVEL_DISPLAY: Record<string, MembershipMemberLevelDisplayConfig> = {
-  '240': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '240': { level: 240, memberName: '基础版（个人）', banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
   '241': {
+    level: 241,
+    memberName: '专业版（个人）',
     banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
     tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
   },
-  '310': { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
+  '310': { level: 310, memberName: '基础版（企业）', banner: createMemberLevelBadge(), tag: createMemberLevelBadge() },
   '311': {
+    level: 311,
+    memberName: '专业版（企业）',
     banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
     tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
   },
   '220': {
+    level: 220,
+    memberName: '旗舰版（企业）',
     banner: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.19/秒', '#ff7910', '#ffffff', true),
     tag: createMemberLevelBadge('加赠2个月会员', '#ff7910', '#ffffff', true),
   },
@@ -471,15 +480,15 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
           { memberType: '专业版（个人）', level: 241 },
         ],
         options: [
-          { key: 'yearly', name: '连续包年', guideText: '限时4.5折', duration: '365天', highlighted: true },
-          { key: 'yearly-one-time', name: '1年', guideText: '', duration: '365天' },
-          { key: 'monthly', name: '连续包月', guideText: '4.8折', duration: '30天' },
-          { key: 'monthly-one-time', name: '月度', guideText: '', duration: '30天' },
-          { key: 'quarterly', name: '连续包季', guideText: '限时4.3折', duration: '90天' },
-          { key: 'quarterly-one-time', name: '季度', guideText: '', duration: '90天' },
-          { key: 'two-year', name: '2年', guideText: '', duration: '730天' },
-          { key: 'bonus-year', name: '2年送1年', guideText: '', duration: '1095天' },
-          { key: 'lifetime', name: '终身', guideText: '', duration: `${LIFETIME_MEMBER_DAYS}天` },
+          { key: 'yearly', name: '连续包年', guideText: '限时4.5折', guideTextColor: '#8993a2', duration: '365天', highlighted: true },
+          { key: 'yearly-one-time', name: '1年', guideText: '', guideTextColor: '#8993a2', duration: '365天' },
+          { key: 'monthly', name: '连续包月', guideText: '4.8折', guideTextColor: '#8993a2', duration: '30天' },
+          { key: 'monthly-one-time', name: '月度', guideText: '', guideTextColor: '#8993a2', duration: '30天' },
+          { key: 'quarterly', name: '连续包季', guideText: '限时4.3折', guideTextColor: '#8993a2', duration: '90天' },
+          { key: 'quarterly-one-time', name: '季度', guideText: '', guideTextColor: '#8993a2', duration: '90天' },
+          { key: 'two-year', name: '2年', guideText: '', guideTextColor: '#8993a2', duration: '730天' },
+          { key: 'bonus-year', name: '2年送1年', guideText: '', guideTextColor: '#8993a2', duration: '1095天' },
+          { key: 'lifetime', name: '终身', guideText: '', guideTextColor: '#8993a2', duration: `${LIFETIME_MEMBER_DAYS}天` },
         ],
       },
       {
@@ -492,13 +501,13 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
           { memberType: '旗舰版（企业）', level: 220 },
         ],
         options: [
-          { key: 'team-three-year', name: '3年', guideText: '', duration: '1095天', highlighted: true },
-          { key: 'team-yearly', name: '1年', guideText: '', duration: '365天' },
-          { key: 'team-two-year', name: '2年', guideText: '', duration: '730天' },
-          { key: 'team-monthly', name: '连续包月', guideText: '', duration: '30天' },
-          { key: 'team-monthly-one-time', name: '月度', guideText: '', duration: '30天' },
-          { key: 'team-quarterly-subscription', name: '连续包季', guideText: '', duration: '90天' },
-          { key: 'team-quarterly', name: '季度', guideText: '', duration: '90天' },
+          { key: 'team-three-year', name: '3年', guideText: '', guideTextColor: '#8993a2', duration: '1095天', highlighted: true },
+          { key: 'team-yearly', name: '1年', guideText: '', guideTextColor: '#8993a2', duration: '365天' },
+          { key: 'team-two-year', name: '2年', guideText: '', guideTextColor: '#8993a2', duration: '730天' },
+          { key: 'team-monthly', name: '连续包月', guideText: '', guideTextColor: '#8993a2', duration: '30天' },
+          { key: 'team-monthly-one-time', name: '月度', guideText: '', guideTextColor: '#8993a2', duration: '30天' },
+          { key: 'team-quarterly-subscription', name: '连续包季', guideText: '', guideTextColor: '#8993a2', duration: '90天' },
+          { key: 'team-quarterly', name: '季度', guideText: '', guideTextColor: '#8993a2', duration: '90天' },
         ],
       },
     ],
@@ -908,18 +917,49 @@ const MEMBER_LEVEL_BY_NAME: Record<string, number> = {
   '旗舰版（企业）': 220,
 };
 
+const MEMBER_NAME_BY_LEVEL: Record<string, string> = Object.fromEntries(
+  Object.entries(MEMBER_LEVEL_BY_NAME).map(([memberName, level]) => [String(level), memberName]),
+);
+
 const normalizeMemberLevelDisplay = (value: unknown, fallback: Record<string, MembershipMemberLevelDisplayConfig>): Record<string, MembershipMemberLevelDisplayConfig> => {
   const rawValue = value && typeof value === 'object' ? value as Record<string, unknown> : {};
   const raw = Object.fromEntries(Object.entries(rawValue).map(([key, display]) => [String(MEMBER_LEVEL_BY_NAME[key] ?? key), display]));
   const keys = new Set([...Object.keys(fallback), ...Object.keys(raw)]);
   return Object.fromEntries([...keys].map((memberType) => {
-    const fallbackDisplay = fallback[memberType] ?? { banner: createMemberLevelBadge(), tag: createMemberLevelBadge() };
+    const fallbackDisplay = fallback[memberType] ?? {
+      level: Number(memberType),
+      memberName: MEMBER_NAME_BY_LEVEL[memberType] ?? '',
+      banner: createMemberLevelBadge(),
+      tag: createMemberLevelBadge(),
+    };
     const rawDisplay = raw[memberType] && typeof raw[memberType] === 'object' ? raw[memberType] as Partial<MembershipMemberLevelDisplayConfig> : {};
     return [memberType, {
+      level: typeof rawDisplay.level === 'number' && Number.isFinite(rawDisplay.level) ? rawDisplay.level : fallbackDisplay.level,
+      memberName: typeof rawDisplay.memberName === 'string' && rawDisplay.memberName.trim() ? rawDisplay.memberName : fallbackDisplay.memberName,
       banner: normalizeMemberLevelBadge(rawDisplay.banner, fallbackDisplay.banner),
       tag: normalizeMemberLevelBadge(rawDisplay.tag, fallbackDisplay.tag),
     }];
   })) as Record<string, MembershipMemberLevelDisplayConfig>;
+};
+
+const normalizeCycleOptions = (value: unknown, fallback: MembershipCycleConfig[]): MembershipCycleConfig[] => {
+  const rawOptions = Array.isArray(value) ? value : fallback;
+  return rawOptions.map((option, index) => {
+    const fallbackOption = fallback.find((item) => item.key === (option as { key?: unknown })?.key) ?? fallback[index] ?? fallback[0];
+    if (!fallbackOption || !option || typeof option !== 'object') return fallbackOption;
+    const rawOption = option as Partial<MembershipCycleConfig>;
+    return {
+      ...clone(fallbackOption),
+      key: typeof rawOption.key === 'string' ? rawOption.key : fallbackOption.key,
+      name: typeof rawOption.name === 'string' ? rawOption.name : fallbackOption.name,
+      guideText: typeof rawOption.guideText === 'string' ? rawOption.guideText : fallbackOption.guideText,
+      guideTextColor: typeof rawOption.guideTextColor === 'string' && rawOption.guideTextColor.trim()
+        ? rawOption.guideTextColor
+        : fallbackOption.guideTextColor ?? '#8993a2',
+      duration: typeof rawOption.duration === 'string' ? rawOption.duration : fallbackOption.duration,
+      highlighted: typeof rawOption.highlighted === 'boolean' ? rawOption.highlighted : fallbackOption.highlighted,
+    };
+  }).filter((option): option is MembershipCycleConfig => Boolean(option));
 };
 
 const normalizeMemberLevels = (value: unknown, fallback: Array<{ memberType: string; level: number }>) => {
@@ -948,7 +988,20 @@ const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToP
         || (fallbackTab.key === 'enterprise' && rawOptions.length <= 3 && rawOptions.some((option) => (option as { key?: string })?.key === 'team-quarterly'))
       );
       const options = syncToPackageData
-        ? clone(fallbackTab.options)
+        ? fallbackTab.options.map((packageOption) => {
+          const configuredOption = rawOptions?.find((option) => {
+            const candidate = option as { key?: unknown; name?: unknown; duration?: unknown };
+            return candidate.key === packageOption.key
+              || (candidate.name === packageOption.name && candidate.duration === packageOption.duration);
+          }) as Partial<MembershipCycleConfig> | undefined;
+          return {
+            ...packageOption,
+            guideText: typeof configuredOption?.guideText === 'string' ? configuredOption.guideText : packageOption.guideText,
+            guideTextColor: typeof configuredOption?.guideTextColor === 'string' && configuredOption.guideTextColor.trim()
+              ? configuredOption.guideTextColor
+              : packageOption.guideTextColor,
+          };
+        })
         : isLegacyOptions ? clone(fallbackTab.options) : rawOptions ?? fallbackTab.options;
       const rawTabKey = (rawTab as { key?: string }).key;
       const isPersonal = rawTabKey === 'personal' || rawTab.name === '个人订阅';
@@ -958,7 +1011,7 @@ const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToP
         name: isPersonal ? '个人使用' : isEnterprise ? '企业使用' : typeof rawTab.name === 'string' ? rawTab.name : fallbackTab.name,
         memberLevel: { ...fallbackTab.memberLevel, ...(rawTab.memberLevel ?? {}) },
         memberLevels: normalizeMemberLevels(rawTab.memberLevels, fallbackTab.memberLevels),
-        options,
+        options: normalizeCycleOptions(options, fallbackTab.options),
       };
     }),
     memberLevelDisplay: normalizeMemberLevelDisplay((value as { memberLevelDisplay?: unknown })?.memberLevelDisplay, fallback.memberLevelDisplay),

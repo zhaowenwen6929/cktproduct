@@ -320,6 +320,7 @@ export type WebMembershipCycleOption = {
   key: string;
   name: string;
   guideText: string;
+  guideTextColor?: string;
   duration: string;
   highlighted?: boolean;
 };
@@ -382,12 +383,13 @@ export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'ente
       key: `${row.duration}-${row.displayName}`,
       name: row.displayName,
       guideText: guideText[row.displayName] ?? '',
+      guideTextColor: '#8993a2',
       duration: `${row.duration}天`,
       highlighted: index === 0,
     }));
   if (membershipType !== 'personal') return options;
 
-  const preferredPersonalCycle = (name: string) => name.includes('2年') && name.includes('送1年') ? 0 : 1;
+  const preferredPersonalCycle = (name: string) => name === '连续包年' ? 0 : 1;
   return options
     .map((option, index) => ({ option, index }))
     .sort((left, right) => preferredPersonalCycle(left.option.name) - preferredPersonalCycle(right.option.name) || left.index - right.index)
