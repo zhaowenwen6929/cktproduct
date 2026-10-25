@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type Ref } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type Ref } from 'react';
 import { Check, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipMemberLevelDisplayConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
@@ -290,33 +290,36 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
   const measureRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState(options.length);
+  const [selectorWidth, setSelectorWidth] = useState<number>();
   const optionSignature = options.map((option) => `${option.key}:${option.name}:${option.guideText}`).join('|');
   const primaryOptions = options.slice(0, visibleCount);
   const extraOptions = options.slice(visibleCount);
   const selectedExtraOption = selectedIndex >= visibleCount ? options[selectedIndex] : undefined;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setExpanded(false);
     setVisibleCount(options.length);
   }, [optionSignature]);
 
-  useEffect(() => {
-    const bar = barRef.current;
+  useLayoutEffect(() => {
+    const selector = selectorRef.current;
     const measure = measureRef.current;
-    if (!bar || !measure) return undefined;
+    if (!selector || !measure) return undefined;
 
     const updateVisibleCount = () => {
-      const availableWidth = Math.max(bar.clientWidth - 8, 0);
       const optionWidths = Array.from(measure.querySelectorAll<HTMLElement>('[data-cycle-measure]')).map((element) => element.offsetWidth);
-      const moreMeasure = selectedExtraOption
-        ? measure.querySelector<HTMLElement>('[data-more-measure="selected"]')
-        : measure.querySelector<HTMLElement>('[data-more-measure="default"]');
-      const moreWidth = moreMeasure?.offsetWidth ?? 0;
+      const moreWidth = Math.max(...Array.from(measure.querySelectorAll<HTMLElement>('[data-more-measure]')).map((element) => element.offsetWidth), 0);
       const gap = 4;
       const allOptionsWidth = optionWidths.reduce((sum, width) => sum + width, 0) + Math.max(optionWidths.length - 1, 0) * gap;
+      const parentWidth = selector.parentElement?.clientWidth ?? 0;
+      const maxWidth = parentWidth > 32 ? Math.min(960, parentWidth - 32) : 960;
+      const nextSelectorWidth = Math.min(allOptionsWidth + 8, maxWidth);
+      const availableWidth = Math.max(nextSelectorWidth - 8, 0);
+
+      setSelectorWidth((current) => current === nextSelectorWidth ? current : nextSelectorWidth);
 
       if (allOptionsWidth <= availableWidth) {
-        setVisibleCount(options.length);
+        setVisibleCount((current) => current === options.length ? current : options.length);
         return;
       }
 
@@ -330,15 +333,16 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
         fittedCount += 1;
       }
 
-      setVisibleCount(Math.max(fittedCount, 1));
+      const nextVisibleCount = Math.max(fittedCount, 1);
+      setVisibleCount((current) => current === nextVisibleCount ? current : nextVisibleCount);
     };
 
     updateVisibleCount();
     if (typeof ResizeObserver === 'undefined') return undefined;
     const observer = new ResizeObserver(updateVisibleCount);
-    observer.observe(bar);
+    observer.observe(selector.parentElement ?? selector);
     return () => observer.disconnect();
-  }, [optionSignature, options.length, selectedExtraOption, selectedIndex, visibleCount]);
+  }, [optionSignature, options.length]);
 
   useEffect(() => {
     if (!expanded) return undefined;
@@ -359,7 +363,7 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
     setExpanded(false);
   };
 
-  return <div ref={selectorRef} className="relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))] text-[11px] text-[#4e5868]">
+  return <div ref={selectorRef} style={selectorWidth ? { width: `${selectorWidth}px` } : undefined} className="relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))] text-[11px] text-[#4e5868]">
     <div ref={barRef} className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
       <div className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
         {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
@@ -381,8 +385,8 @@ function CycleOptionSelector({ options, selectedIndex, onChange }: { options: Me
     </div>
     <div ref={measureRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 -z-10 flex w-max gap-1 whitespace-nowrap opacity-0">
       {options.map((cycle) => <span data-cycle-measure="true" key={cycle.key} className="flex items-center gap-1 rounded-full px-3 py-2.5 text-[11px]">{renderCycleLabel(cycle)}</span>)}
-      <span data-more-measure="default" className="rounded-full px-5 py-2.5 text-[12px] font-semibold">更多</span>
-      {selectedExtraOption ? <span data-more-measure="selected" className="rounded-full px-5 py-2.5 text-[12px] font-semibold">更多–{renderCycleLabel(selectedExtraOption)}</span> : null}
+      <span data-more-measure="default" className="flex min-h-[36px] min-w-[92px] items-center justify-center gap-1 rounded-full px-5 py-2.5 text-[12px] font-semibold">更多<ChevronDown className="ml-1 h-4 w-4 shrink-0" /></span>
+      {options.map((cycle) => <span data-more-measure={cycle.key} key={`more-${cycle.key}`} className="flex min-h-[36px] min-w-[92px] items-center justify-center gap-1 rounded-full px-5 py-2.5 text-[12px] font-semibold">更多–{renderCycleLabel(cycle)}<ChevronDown className="ml-1 h-4 w-4 shrink-0" /></span>)}
     </div>
   </div>;
 }
