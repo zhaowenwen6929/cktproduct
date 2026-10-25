@@ -208,28 +208,13 @@ function getDefaultPointsDescription(member: string, points: number) {
   return '';
 }
 
-function getDefaultPriceDescription(price: Pick<PackageDetailRow, 'displayName' | 'duration' | 'currentPrice' | 'contractPrice' | 'packageType'>) {
-  if (price.displayName === '终身' || price.duration >= LIFETIME_MEMBER_DAYS) return '一次性购买 · 会员权益长期有效';
-  if (price.displayName.includes('送')) return `一次性购买 · 享${Math.max(1, Math.round(price.duration / 365))}年权益`;
-  if (price.packageType === '订阅套餐') {
-    const renewalPrice = price.contractPrice.match(/续费\s*[¥￥]?\s*([\d,.]+)/)?.[1];
-    return renewalPrice
-      ? `首充¥${price.currentPrice} · 续费¥${renewalPrice} · 可随时取消`
-      : `首充¥${price.currentPrice} · 后续按当前套餐价格续费 · 可随时取消`;
-  }
-  return `一次性购买 · 有效期按套餐时长计算`;
-}
-
-function getDefaultSaleDescription(member: string, points: number, price: Pick<NewWebSkuPrice, 'displayName' | 'duration' | 'price' | 'renewalPrice' | 'packageType'>, pointsDescription: string) {
-  const promotionDescription = price.packageType === '订阅套餐' ? '连续订阅优惠' : '一次性购买';
-  const priceDescription = getDefaultPriceDescription({
-    displayName: price.displayName,
-    duration: price.duration,
-    currentPrice: price.price,
-    contractPrice: price.renewalPrice == null ? '-' : `续费${price.renewalPrice}`,
-    packageType: price.packageType ?? '普通套餐',
-  });
-  return [promotionDescription, priceDescription, pointsDescription || getDefaultPointsDescription(member, points)].join('^');
+function getDefaultSaleDescription(member: string, points: number, pointsDescription: string) {
+  const isFlagship = member.includes('旗舰版');
+  const isProfessional = member.includes('专业版');
+  const tag = isFlagship ? '加赠2个月会员' : isProfessional ? '限时5折' : '';
+  const banner = isFlagship ? 'Seedance 2.5 720P限时低至 ¥0.19/秒' : isProfessional ? 'Seedance 2.5 720P限时低至 ¥0.43/秒' : '';
+  const color = isFlagship ? '#ff7910' : isProfessional ? '#168ff2' : '';
+  return [tag, banner, pointsDescription || getDefaultPointsDescription(member, points), color].join('^');
 }
 
 function createWebSkuDetails(startId: number, member: string, points: number, prices: NewWebSkuPrice[]) {
@@ -257,7 +242,7 @@ function createWebSkuDetails(startId: number, member: string, points: number, pr
       points,
       pointsUnit,
       pointsCycle: price.duration === LIFETIME_MEMBER_DAYS ? '一次性' : '按月',
-      saleDescription: price.saleDescription ?? getDefaultSaleDescription(member, points, price, pointsDescription),
+      saleDescription: price.saleDescription ?? getDefaultSaleDescription(member, points, pointsDescription),
       pointsDescription,
     };
   });
@@ -380,16 +365,18 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
     const rows = stored[String(packageId)];
     return Array.isArray(rows) ? (rows as PackageDetailRow[]).map((row) => {
       const pointsDescription = row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0);
-      const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim()).filter(Boolean);
+      const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim());
       const isLegacyDescriptionOrder = saleDescriptionParts.length >= 3
         && /生成|图片|视频|积分/.test(saleDescriptionParts[1])
         && /首充|续费|一次性购买|有效期|可随时取消/.test(saleDescriptionParts.slice(2).join('^'));
+      const isLegacySaleDescription = saleDescriptionParts.length < 4
+        && (isLegacyDescriptionOrder || /首充|续费|一次性购买|有效期|后续按/.test(saleDescriptionParts[1] ?? ''));
       const saleDescription = packageId !== WEB_PACKAGE_ID
         ? row.saleDescription
-        : saleDescriptionParts.length < 3
-          ? [saleDescriptionParts[0] ?? '一次性购买', getDefaultPriceDescription(row), pointsDescription].join('^')
-          : isLegacyDescriptionOrder
-            ? [saleDescriptionParts[0], saleDescriptionParts.slice(2).join('^'), saleDescriptionParts[1]].join('^')
+        : isLegacySaleDescription || !row.saleDescription?.trim()
+          ? getDefaultSaleDescription(row.member, row.points ?? 0, pointsDescription)
+          : saleDescriptionParts.length === 3
+            ? `${row.saleDescription}^`
             : row.saleDescription;
       return {
         ...row,

@@ -1,14 +1,14 @@
 import { useEffect, useLayoutEffect, useRef, useState, type Ref } from 'react';
 import { Check, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
-import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipMemberLevelDisplayConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
+import { readMembershipPageConfig, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 import { readWebMembershipPackageDetails, type PackageDetailRow } from './MembershipPackagePage';
 
 type MembershipCenterModalProps = {
   onClose: () => void;
 };
 
-type MembershipPlan = MembershipPlanDisplayConfig & MembershipPlanData & { memberLevelDisplay?: MembershipMemberLevelDisplayConfig };
+type MembershipPlan = MembershipPlanDisplayConfig & MembershipPlanData;
 
 type RetentionPurchaseModalProps = {
   cycleOptions: MembershipCycleConfig[];
@@ -120,11 +120,25 @@ function getRenewalPeriod(period: string) {
 }
 
 function getPackageDescriptions(row: WebPackageDetail) {
-  const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim()).filter(Boolean);
+  const saleDescriptionParts = (row.saleDescription ?? '').split('^').map((part) => part.trim());
   return {
-    saleDescription: saleDescriptionParts[0] ?? '',
+    saleDescription: row.saleDescription?.trim() ?? '',
     priceDescription: saleDescriptionParts[1] ?? '',
-    pointsDescription: saleDescriptionParts.length > 2 ? saleDescriptionParts.slice(2).join('^') : row.pointsDescription?.trim() ?? '',
+    pointsDescription: saleDescriptionParts[2] || (row.pointsDescription?.trim() ?? ''),
+  };
+}
+
+function getPackagePromotion(saleDescription?: string) {
+  const saleDescriptionParts = (saleDescription ?? '').split('^').map((part) => part.trim());
+  const isLegacyDescriptionOrder = saleDescriptionParts.length >= 3
+    && /生成|图片|视频|积分/.test(saleDescriptionParts[1] ?? '')
+    && /首充|续费|一次性购买|有效期|可随时取消/.test(saleDescriptionParts.slice(2).join('^'));
+  const isLegacySaleDescription = isLegacyDescriptionOrder || /首充|续费|一次性购买|有效期|后续按/.test(saleDescriptionParts[1] ?? '');
+  if (isLegacySaleDescription) return { tagText: '', bannerText: '', color: '' };
+  return {
+    tagText: saleDescriptionParts[0] ?? '',
+    bannerText: saleDescriptionParts[1] ?? '',
+    color: saleDescriptionParts[3] ?? '',
   };
 }
 
@@ -188,11 +202,11 @@ function createWebPackagePlanData(memberLevel: number | undefined, planKey: stri
   return { ...fallback, ...(firstCycle ?? {}), cyclePricing };
 }
 
-function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[], memberLevelDisplay?: MembershipMemberLevelDisplayConfig): MembershipPlan {
+function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: MembershipType, cycleOptions: MembershipCycleConfig[], packageDetails: WebPackageDetail[]): MembershipPlan {
   const memberType = resolveMemberType(plan, membershipType);
   const memberLevel = resolveMemberLevel(plan, membershipType);
   const data = createWebPackagePlanData(memberLevel, plan.planKey, cycleOptions, packageDetails);
-  return { ...data, ...plan, memberType, memberLevel, memberLevelDisplay };
+  return { ...data, ...plan, memberType, memberLevel };
 }
 
 const promotionDurationMs = (((4 * 24 + 1) * 60 + 51) * 60 + 59) * 1000;
@@ -507,11 +521,13 @@ function CommercialLicenseOverview({ config }: { config: MembershipCommercialLic
 function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enterprise = false, seats = 1, onSeatChange, purchaseButtonRef }: { plan: MembershipPlan; selected: boolean; cycleKey: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; onSeatChange?: (delta: number) => void; purchaseButtonRef?: Ref<HTMLButtonElement> }) {
   const isBlue = plan.color === 'blue';
   const isOrange = plan.color === 'orange';
-  const promoBanner = plan.memberLevelDisplay?.bannerTxt.enabled && plan.memberLevelDisplay.bannerTxt.text.trim() ? plan.memberLevelDisplay.bannerTxt : null;
-  const promoTag = plan.memberLevelDisplay?.tag.enabled && plan.memberLevelDisplay.tag.text.trim() ? plan.memberLevelDisplay.tag : null;
-  const isFeatured = isBlue || isOrange || Boolean(promoBanner);
   const cycleData = getCyclePlanData(plan, cycleKey);
   const activeTier = cycleData.tierOptions?.[tierIndex] ?? cycleData.tierOptions?.[0];
+  const promotion = getPackagePromotion(activeTier?.saleDescription ?? cycleData.saleDescription);
+  const promotionColor = promotion.color || (isOrange ? '#ff7910' : '#168ff2');
+  const promoBanner = promotion.bannerText ? { text: promotion.bannerText, color: promotionColor } : null;
+  const promoTag = promotion.tagText ? { text: promotion.tagText, color: promotionColor } : null;
+  const isFeatured = isBlue || isOrange || Boolean(promoBanner);
   const displayPrice = activeTier?.price ?? cycleData.price;
   const displayOriginalPrice = activeTier?.originalPrice ?? cycleData.originalPrice;
   const displayPoints = activeTier ? `${activeTier.points} 积分每月` : cycleData.points;
@@ -539,9 +555,9 @@ function PlanCard({ plan, selected, cycleKey, tierIndex = 0, onTierChange, enter
   const benefitSections = plan.benefitSections ?? [{ title: '专享权益', items: plan.features.map((feature) => ({ label: feature, enabled: true, badge: '专属通道' })) }];
 
   return <article className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`}>
-    {promoBanner ? <div className="h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7" style={{ backgroundColor: promoBanner.backgroundColor, color: promoBanner.textColor }}>{promoBanner.text}</div> : null}
+    {promoBanner ? <div className="h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7" style={{ backgroundColor: promoBanner.color, color: '#ffffff' }}>{promoBanner.text}</div> : null}
     <div className="px-5 pb-4 pt-5">
-      <div className="flex items-start justify-between gap-2"><div><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 text-[11px] text-[#8590a0]">{plan.subtitle}</p></div>{promoTag ? <span className="rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.backgroundColor, color: promoTag.textColor }}>{promoTag.text}</span> : null}</div>
+      <div className="flex items-start justify-between gap-2"><div><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 text-[11px] text-[#8590a0]">{plan.subtitle}</p></div>{promoTag ? <span className="rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.color, color: '#ffffff' }}>{promoTag.text}</span> : null}</div>
       <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><strong className="text-[33px] font-semibold leading-none tracking-[-.05em]">{displayPrice}</strong>{enterprise ? <span className="mb-1 text-[11px] text-[#7f8999]">/席位/{cycleData.period}</span> : <span className="mb-1 text-[10px] text-[#7f8999]">{cycleData.period}</span>}{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
       <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">{monthlyPriceLabel}<span className="mx-1 text-[#c1c7d0]">·</span>{pointPriceLabel}</p>
       {enterprise ? <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-[#566274]"><div className="flex items-center overflow-hidden rounded-[9px] border border-[#eef0f3] bg-white"><button type="button" aria-label="减少席位" disabled={seats <= 1} onClick={() => onSeatChange?.(-1)} className="flex h-8 w-8 items-center justify-center text-[16px] text-[#aab2bd] disabled:cursor-not-allowed disabled:opacity-40 hover:text-[#168ff2]">−</button><span className="min-w-[54px] text-center font-medium text-[#374255]">{seats} 席位</span><button type="button" aria-label="增加席位" onClick={() => onSeatChange?.(1)} className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[16px] text-[#566274] shadow-[0_1px_5px_rgba(34,48,70,.06)] hover:text-[#168ff2]">＋</button></div><span className="whitespace-nowrap text-[#6d7888]">合计 <b className="text-[13px] text-[#293548]">{totalPrice}元</b></span></div> : null}
@@ -642,8 +658,7 @@ export function MembershipCenterModal({ onClose }: MembershipCenterModalProps) {
       const displayPlan = vipLevel
         ? { ...plan, name: vipLevel.displayName, subtitle: vipLevel.subtitle, memberType: vipLevel.memberName, memberLevel: vipLevel.level }
         : plan;
-      const memberLevelDisplay = vipLevel ?? (memberLevel == null ? undefined : pageConfig.plans.memberLevelDisplay?.[String(memberLevel)]);
-      return hydratePlan(displayPlan, membershipType, cycleOptions, packageDetails, memberLevelDisplay);
+      return hydratePlan(displayPlan, membershipType, cycleOptions, packageDetails);
     })
     .filter((plan) => activeMemberLevels.size === 0 || activeMemberLevels.has(plan.memberLevel))
     .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberLevel, selectedCycleConfig, packageDetails).length > 0)
