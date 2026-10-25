@@ -162,7 +162,8 @@ const migrateOverviewJson = (value: unknown, fallback: string, legacyPlansValue?
     const parsed = JSON.parse(value) as Record<string, unknown>;
     const fallbackConfig = JSON.parse(fallback) as Record<string, unknown>;
     const hasPlanCards = parsed.planCards && typeof parsed.planCards === 'object';
-    let planCards = hasPlanCards ? parsed.planCards : fallbackConfig.planCards;
+    const isLegacyOverview = parsed.version !== 2;
+    let planCards = hasPlanCards && !isLegacyOverview ? parsed.planCards : fallbackConfig.planCards;
 
     if (!hasPlanCards && typeof legacyPlansValue === 'string') {
       try {
@@ -184,6 +185,7 @@ const migrateOverviewJson = (value: unknown, fallback: string, legacyPlansValue?
     return JSON.stringify({
       ...fallbackConfig,
       ...parsed,
+      version: 2,
       title: typeof parsed.title === 'string' ? parsed.title : fallbackConfig.title,
       subtitle: typeof parsed.subtitle === 'string' ? parsed.subtitle : fallbackConfig.subtitle,
       items: Array.isArray(parsed.items) ? parsed.items : fallbackConfig.items,

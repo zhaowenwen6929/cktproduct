@@ -103,6 +103,7 @@ export type MembershipPlansConfig = {
 };
 
 export type MembershipOverviewConfig = {
+  version?: number;
   title: string;
   subtitle: string;
   /** 会员弹框顶部套餐卡片及对应会员等级权益。 */
@@ -219,34 +220,28 @@ const personalBasicBenefits: MembershipBenefitSection[] = [
   {
     title: '模板创作权益',
     items: [
-      benefitItem('个人商用授权'),
-      benefitItem('模板作品高清无水印下载'),
-      benefitItem('模板作品 PSD 导出', false),
-      benefitItem('海量海报、PPT、视频、H5 等 VIP 模板', true, '持续更新'),
-      benefitItem('高级工具功能：尺寸延展、PSD 转模板等'),
-      benefitItem('随时随地在线编辑'),
+      benefitItem('个人商用授权（仅限个人使用）'),
+      benefitItem('模板无水印高清下载'),
+      benefitItem('PSD 导出 3次/天', true, '限时加赠'),
+      benefitItem('畅想智能抠图', true, '限时加赠'),
+      benefitItem('AI 智能工具箱（变清晰/图片转svg/消除等）'),
+      benefitItem('web/app/小程序多终端灵活编辑'),
     ],
   },
   {
     title: 'AI 创作权益',
     items: [
-      benefitItem('50 积分/月'),
-      benefitItem('访问所有 AI 模型'),
-      benefitItem('加购积分享折扣', false),
-      benefitItem('AI 作品高清下载（可设置多倍数尺寸）', false),
-      benefitItem('模型限时优惠', false),
+      benefitItem('每月积分 200'),
+      benefitItem('AI 作品高清下载'),
+      benefitItem('最高生图 8K 图片，1080P 视频'),
+      benefitItem('支持图文分层/无痕改字/主体提取等'),
+      benefitItem('畅用无限画布所有编辑能力'),
+      benefitItem('生成作品去除水印'),
     ],
   },
   {
-    title: '精选素材组合包',
-    items: [
-      benefitItem('无官方自营素材下载次数', false),
-      benefitItem('无第三方合作素材下载次数', false),
-    ],
-  },
-  {
-    title: '通用权益',
-    items: [benefitItem('50 GB 存储空间')],
+    title: '存储权益',
+    items: [benefitItem('60G 云存储空间')],
   },
 ];
 
@@ -291,38 +286,44 @@ const personalProfessionalBenefits: MembershipBenefitSection[] = [
   {
     title: '模板创作权益',
     items: [
-      benefitItem('个人商用授权'),
-      benefitItem('模板作品高清无水印下载'),
-      benefitItem('模板作品 PSD 导出 10次/月', true, '限时加赠'),
-      benefitItem('海量海报、PPT、视频、H5 等 VIP 模板', true, '持续更新'),
-      benefitItem('高级工具功能：尺寸延展、PSD 转模板等'),
-      benefitItem('随时随地在线编辑'),
+      benefitItem('个人商用授权（仅限个人使用）'),
+      benefitItem('模板无水印高清下载'),
+      benefitItem('PSD 导出 3次/天', true, '限时加赠'),
+      benefitItem('畅想智能抠图', true, '限时加赠'),
+      benefitItem('AI 智能工具箱（变清晰/图片转svg/消除等）'),
+      benefitItem('web/app/小程序多终端灵活编辑'),
     ],
   },
   {
     title: 'AI 创作权益',
     items: [
-      benefitItem('300~5000 积分/月'),
-      benefitItem('访问所有 AI 模型'),
-      benefitItem('加购积分享折扣'),
-      benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
-      benefitItem('团队共享积分'),
-      benefitItem('模型限时优惠'),
+      benefitItem('每月积分 1200~4000'),
+      benefitItem('可使用所有图片/视频模型'),
+      benefitItem('AI 作品高清下载（2K/4K/8K）'),
+      benefitItem('最高生图 8K 图片，1080P 视频'),
+      benefitItem('支持图文分层/无痕改字/主体提取等'),
+      benefitItem('生成作品去除水印'),
+      benefitItem('畅用所有 SKILL 技术能力'),
+      benefitItem('畅用无限画布所有编辑能力'),
+      benefitItem('支持 API 灵活配置应用', true, '专享权益'),
+      benefitItem('积分加购享优惠', true, '专享权益'),
     ],
   },
   {
-    title: '精选素材组合包',
-    badge: '限时赠送',
-    actionLabel: '单独购买  ›',
+    title: '存储权益',
     items: [
-      benefitItem('限时加送官方自营素材下载', true, undefined, '每月 100 次，共赠送 3 个月'),
-      benefitItem('限时加送第三方合作下载次数', true, undefined, '每月 20 次，共赠送 3 个月'),
+      benefitItem('100G 云存储空间'),
     ],
   },
   {
-    title: '通用权益',
-    items: [benefitItem('存储空间 500 GB'), benefitItem('团队资产共享与复用')],
-    highlight: modelHighlight('orange'),
+    title: '专享权益（标色突出）',
+    items: [
+      benefitItem('智能Image2.5 Pro', true, '高质通道'),
+      benefitItem('Seedream5.0 Pro', true, '限时特惠'),
+      benefitItem('智能Image2.5 Fast', true, '限时特惠'),
+      benefitItem('Seedance2.5', true, '限时特惠'),
+      benefitItem('Seedance2.0-Mini', true, '限时特惠'),
+    ],
   },
 ];
 
@@ -342,7 +343,7 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
     memberType: '专业版（个人）',
     memberLevel: 241,
     name: '专业版',
-    subtitle: 'AI创作设计、视频，创意笔下生花',
+    subtitle: '100万模板+AI全能创作',
     color: 'blue',
     tag: '限时5折',
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印'],
@@ -350,90 +351,142 @@ const personalPlans: MembershipPlanDisplayConfig[] = [
   },
 ];
 
-const enterpriseCommonBenefits: MembershipBenefitSection[] = [
+const enterpriseBasicBenefits: MembershipBenefitSection[] = [
   {
     title: '模板创作权益',
     items: [
-      benefitItem('中小企业或大型企业商用授权'),
-      benefitItem('支持线上线下授权'),
-      benefitItem('支持海外/全球范围授权', true, '可选购'),
-      benefitItem('支持敏感行业定制', true, '可选购'),
-      benefitItem('支持更多扩展用途定制'),
+      benefitItem('商业授权全覆盖*1（企业/个人均支持）', true, '可加购'),
+      benefitItem('模板无水印高清下载'),
+      benefitItem('PSD 导出 3次/席位/天', true, '限时加赠'),
+      benefitItem('智能抠图不限张'),
+      benefitItem('海量平面/PPT/H5视频/音频VIP模板', true, '持续更新'),
+      benefitItem('畅享高级工具功能（批量设计/图片翻译/尺寸延展等）'),
+      benefitItem('支持多终端随时随地开启编辑'),
     ],
   },
   {
     title: 'AI 创作权益',
     items: [
-      benefitItem('300~5000 积分/席位/月'),
-      benefitItem('访问所有 AI 模型'),
-      benefitItem('加购积分享折扣'),
-      benefitItem('AI 作品高清下载（可设置多倍数尺寸）'),
-      benefitItem('团队共享积分'),
-      benefitItem('模型限时优惠'),
+      benefitItem('每月积分 400/团队'),
+      benefitItem('AI 作品高清下载（2K/4K/8K）'),
+      benefitItem('最高生图 8K 图片，1080P 视频'),
+      benefitItem('可使用所有图片/视频模型'),
+      benefitItem('支持图文分层/无痕改字/主体提取等'),
+      benefitItem('畅用所有 SKILL 技术能力'),
+      benefitItem('畅用无限画布所有编辑能力'),
     ],
   },
   {
-    title: '精选素材组合包',
-    items: [benefitItem('官方自营素材下载'), benefitItem('第三方合作素材下载')],
+    title: '团队协作权益',
+    items: [
+      benefitItem('支持20人以内实时协作/批注/评论'),
+      benefitItem('品牌LOGO/字体等在线管理应用'),
+      benefitItem('设计数据可视化分析汇总', true, '限时免费'),
+      benefitItem('团队空间成员管理'),
+      benefitItem('内容安全管控'),
+      benefitItem('积分共享'),
+    ],
   },
   {
     title: '通用权益',
     items: [
-      benefitItem('存储空间 10 TB/团队'),
-      benefitItem('无限团队空间数量'),
-      benefitItem('无限企业资源库数量'),
-      benefitItem('内容审批管理，保障合规安全'),
-      benefitItem('人员离职无缝交接，内容资产完整保留'),
-      benefitItem('自定义企业品牌界面/导航栏/内容推送等'),
-      benefitItem('支持私有化部署与内容定制'),
-      benefitItem('支持企业微信、自有系统、NAS 接入'),
+      benefitItem('500G 云存储空间'),
+      benefitItem('团队资产共享与复用'),
+    ],
+  },
+];
+
+const enterpriseProfessionalBenefits: MembershipBenefitSection[] = [
+  {
+    title: '模板创作权益',
+    items: [
+      benefitItem('商业授权全覆盖*1（企业/个人均支持）', true, '可加购'),
+      benefitItem('模板无水印高清下载'),
+      benefitItem('PSD 导出 10次/席位/天', true, '限时加赠'),
+      benefitItem('智能抠图不限张'),
+      benefitItem('海量平面/PPT/H5视频/音频VIP模板', true, '持续更新'),
+      benefitItem('支持上传PSD源文件作为企业模板'),
+      benefitItem('畅享高级工具功能（批量设计/图片翻译/尺寸延展等）'),
+      benefitItem('支持多终端随时随地开启编辑'),
+    ],
+  },
+  {
+    title: 'AI 创作权益',
+    items: [
+      benefitItem('每月积分 1200~4000/席位'),
+      benefitItem('AI 作品高清下载（2K/4K/8K）'),
+      benefitItem('最高生图 8K 图片，1080P 视频'),
+      benefitItem('可使用所有图片/视频模型'),
+      benefitItem('支持图文分层/无痕改字/主体提取等'),
+      benefitItem('畅用所有 SKILL 技术能力'),
+      benefitItem('畅用无限画布所有编辑能力'),
+      benefitItem('支持 API 灵活配置应用', true, '专享权益'),
+      benefitItem('积分加购享优惠', true, '专享权益'),
+    ],
+  },
+  {
+    title: '团队协作权益',
+    items: [
+      benefitItem('支持20人以内实时协作/批注/评论'),
+      benefitItem('品牌LOGO/字体等在线管理应用'),
+      benefitItem('设计数据可视化分析汇总', true, '限时免费'),
+      benefitItem('团队空间成员管理'),
+      benefitItem('内容安全管控'),
+      benefitItem('积分共享'),
+    ],
+  },
+  {
+    title: '通用权益',
+    items: [
+      benefitItem('500G 云存储空间'),
+      benefitItem('团队资产共享与复用'),
     ],
   },
 ];
 
 const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
   {
-    title: '商用授权主体及范围',
+    title: '拥有【专业版】所有权益，额外享受',
     items: [
-      benefitItem('中小企业或大型企业商用授权'),
-      benefitItem('支持线上线下授权'),
-      benefitItem('支持海外/全球范围授权', true, '可选购'),
-      benefitItem('支持敏感行业定制', true, '可选购'),
-      benefitItem('支持更多扩展用途定制'),
+      benefitItem('商业授权全覆盖*1（企业/个人均支持）', true, '可加购'),
+      benefitItem('模板无水印高清下载'),
+      benefitItem('智能抠图不限张'),
+      benefitItem('海量平面/PPT/H5视频/音频VIP模板', true, '持续更新'),
+      benefitItem('畅享高级工具功能（批量设计/图片翻译/尺寸延展等）'),
+      benefitItem('支持多终端随时随地开启编辑'),
     ],
   },
   {
-    title: '企业版专属权益',
+    title: '更多的企业管理权益（标色突出）',
     items: [
-      benefitItem('存储空间 10 TB/团队'),
-      benefitItem('无限团队空间数量'),
-      benefitItem('无限企业资源库数量'),
-      benefitItem('内容审批管理，保障合规安全'),
-      benefitItem('人员离职无缝交接，内容资产完整保留'),
-      benefitItem('自定义企业品牌界面/导航栏/内容推送等'),
+      benefitItem('品牌设置，支持多品牌logo、主题色、品牌字体等'),
+      benefitItem('内容审批，支持设计审批、保障合规安全'),
+      benefitItem('成员管理，支持成员角色变更、离职无缝交接'),
+      benefitItem('资源库管理，资源库数量不限'),
+      benefitItem('个性化设置，企业LOGO/banner自定义，登录页面/弹窗自定义配置'),
+      benefitItem('源文件导出，PSD导出不限次'),
+      benefitItem('数据统计，成员使用数据分析'),
+    ],
+  },
+  {
+    title: '资产管理权益',
+    items: [
+      benefitItem('支持多品牌/子公司企业库管理与权限设置'),
+      benefitItem('企业模板可添加分类及标签'),
+      benefitItem('支持入库敏感词检测'),
+      benefitItem('企业库分类管理团队素材'),
+      benefitItem('支持素材源文件下载'),
+      benefitItem('支持批量操作，批量移动、批量删除、批量复制等'),
+    ],
+  },
+  {
+    title: '专享权益',
+    items: [
+      benefitItem('支持积分灵活定制'),
       benefitItem('支持私有化部署与内容定制'),
-      benefitItem('支持企业微信、自有系统、NAS 接入'),
-    ],
-  },
-  {
-    title: '模板创作权益',
-    items: [
-      benefitItem('拥有「团队版」所有权益'),
-      benefitItem('模板作品 PSD 导出 30~80次/团队/月', true, '限时加赠'),
-      benefitItem('敏感词检测，营销更安全'),
       benefitItem('提供专业培训与定期数据报告'),
+      benefitItem('按需定制，请扫码咨询'),
     ],
-  },
-  {
-    title: '素材下载权益',
-    items: [
-      benefitItem('海量版权图片、免版权素材、PSD 源文件可下载，自由创作'),
-      benefitItem('官方/第三方合作素材下载次数：按需定制'),
-    ],
-  },
-  {
-    title: 'AI 创作权益',
-    items: [benefitItem('拥有 AI 创作会员（团队版）所有权益'), benefitItem('积分额度灵活定制')],
   },
 ];
 
@@ -442,15 +495,15 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
     ...plan,
     memberType: plan.planKey === 'basic' ? '基础版（企业）' : '专业版（企业）',
     memberLevel: plan.planKey === 'basic' ? 310 : 311,
-    subtitle: plan.planKey === 'basic' ? '100万模板在线编辑，快速出图' : 'AI创作能力&模型随心用，支持团队协作与共享',
-    benefitSections: enterpriseCommonBenefits,
+    subtitle: plan.planKey === 'basic' ? '100万模板+团队协作与共享+商用授权' : '100万模板+AI全能创作+团队协作与共享',
+    benefitSections: plan.planKey === 'basic' ? enterpriseBasicBenefits : enterpriseProfessionalBenefits,
   })),
   {
     planKey: 'flagship',
     memberType: '旗舰版（企业）',
     memberLevel: 220,
     name: '旗舰版',
-    subtitle: 'AI创作能力&模型随心用，支持团队协作与共享',
+    subtitle: '适合于大型企业（跨地域/多分公司、子公司的企业）灵活的算力配额，支持20以上席位灵活配置',
     color: 'orange',
     tag: '加赠2个月会员',
     features: ['Seedance 2.0 VIP', '图片 4.0', '快速生成通道', '生成作品去除品牌水印', 'API 服务购买'],
@@ -496,7 +549,7 @@ const DEFAULT_PERSONAL_VIP_LEVELS: MembershipVipLevelConfig[] = [
     level: 241,
     memberName: '专业版（个人）',
     displayName: '专业版',
-    subtitle: 'AI创作设计、视频，创意笔下生花',
+    subtitle: '100万模板+AI全能创作',
     bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['241'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['241'].tag,
   },
@@ -507,7 +560,7 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
     level: 310,
     memberName: '基础版（企业）',
     displayName: '基础版',
-    subtitle: '100万模板在线编辑，快速出图',
+    subtitle: '100万模板+团队协作与共享+商用授权',
     bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['310'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['310'].tag,
   },
@@ -515,7 +568,7 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
     level: 311,
     memberName: '专业版（企业）',
     displayName: '专业版',
-    subtitle: 'AI创作能力&模型随心用，支持团队协作与共享',
+    subtitle: '100万模板+AI全能创作+团队协作与共享',
     bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['311'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['311'].tag,
   },
@@ -523,7 +576,7 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
     level: 220,
     memberName: '旗舰版（企业）',
     displayName: '旗舰版',
-    subtitle: 'AI创作能力&模型随心用，支持团队协作与共享',
+    subtitle: '适合于大型企业（跨地域/多分公司、子公司的企业）灵活的算力配额，支持20以上席位灵活配置',
     bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['220'].bannerTxt,
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['220'].tag,
   },
@@ -567,6 +620,7 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
     ],
   },
   overview: {
+    version: 2,
     title: '哪个计划更适合你',
     subtitle: '根据你的创作频率和团队规模，选择合适的会员权益',
     planCards: {
@@ -936,17 +990,19 @@ const normalizePlanCardList = (
 const normalizeOverview = (value: unknown, fallback: MembershipOverviewConfig): MembershipOverviewConfig => {
   if (!value || typeof value !== 'object') return clone(fallback);
   const raw = value as Partial<MembershipOverviewConfig>;
+  const isLegacyOverview = raw.version !== 2;
   const rawPlanCards = raw.planCards && typeof raw.planCards === 'object'
     ? raw.planCards as Partial<MembershipOverviewConfig['planCards']>
     : {};
   return {
     ...clone(fallback),
+    version: 2,
     title: typeof raw.title === 'string' ? raw.title : fallback.title,
     subtitle: typeof raw.subtitle === 'string' ? raw.subtitle : fallback.subtitle,
     items: Array.isArray(raw.items) ? raw.items : fallback.items,
     planCards: {
-      personal: normalizePlanCardList(rawPlanCards.personal, fallback.planCards.personal, 'personal'),
-      enterprise: normalizePlanCardList(rawPlanCards.enterprise, fallback.planCards.enterprise, 'enterprise'),
+      personal: normalizePlanCardList(isLegacyOverview ? fallback.planCards.personal : rawPlanCards.personal, fallback.planCards.personal, 'personal'),
+      enterprise: normalizePlanCardList(isLegacyOverview ? fallback.planCards.enterprise : rawPlanCards.enterprise, fallback.planCards.enterprise, 'enterprise'),
     },
   };
 };
