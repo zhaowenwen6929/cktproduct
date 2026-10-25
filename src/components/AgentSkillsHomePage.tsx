@@ -14,12 +14,14 @@ import {
   Home,
   Image as ImageIcon,
   LayoutTemplate,
+  Menu,
   Plus,
   Puzzle,
   Search,
   Settings2,
   Shirt,
   Sparkles,
+  Zap,
   Upload,
   UserRound,
   Video,
@@ -215,13 +217,11 @@ const recentSkillIds = ['product-set', 'product-copy', 'keyword-analysis', 'whit
 
 const homepageFeatureCards = [
   { title: '热点日历', desc: '一览全年热点', art: 'calendar' },
-  { title: 'AI爆款视频', desc: '一键生成带货视频', art: 'video' },
-  { title: 'AI海报/封面', desc: '一键生成营销海报', art: 'poster' },
-  { title: 'AI去水印', desc: '无痕去水印', art: 'watermark' },
-  { title: '高级感A+图', desc: '全方位展示细节，还原产品真实性', art: 'detail' },
-  { title: '电商主图', desc: '一键生成爆款主图', art: 'commerce' },
+  { title: '电商套图', desc: '一键生成爆款套图', art: 'commerce-set' },
   { title: '智能抠图', desc: '一键抠图', art: 'cutout' },
-  { title: '印刷定制', desc: '点击即可快速开始', art: 'print' },
+  { title: 'AI PPT生成', desc: '文字秒变专业PPT', art: 'ppt' },
+  { title: '招生特辑', desc: '爆款招生物料，助力转化', art: 'recruitment' },
+  { title: '高级感A+图', desc: '全方位展示细节，还原产品真实属性', art: 'detail' },
 ];
 
 const aiSkillRows = [
@@ -451,6 +451,7 @@ const navItems = [
   { label: '创建', icon: Plus },
   { label: '我的', icon: UserRound },
   { label: '团队', icon: BriefcaseBusiness },
+  { label: '品牌', icon: Shirt },
 ];
 
 interface AgentSkillsHomePageProps {
@@ -647,86 +648,59 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white font-sans text-[#20263a]">
-      <aside className="fixed inset-y-0 left-0 z-30 flex w-[56px] flex-col items-center border-r border-[#e8edf7] bg-[#f3f7ff] py-3">
-        <button type="button" onClick={onBackToDirectory} className="mb-7 flex h-8 w-8 items-center justify-center rounded-lg text-[#75839e] hover:bg-white" title="返回目录"><ChevronLeft className="h-4 w-4" /></button>
-        <div className="flex w-full flex-col items-center gap-3">
+    <div className="min-h-screen overflow-x-hidden bg-white font-sans text-[#1d2943]">
+      <aside className="fixed inset-y-0 left-0 z-30 flex w-[92px] flex-col items-center border-r border-[#e8edf7] bg-[linear-gradient(180deg,#f4f8ff_0%,#f1f5ff_100%)] py-4">
+        <button type="button" onClick={onBackToDirectory} className="mb-6 flex h-9 w-9 items-center justify-center rounded-xl text-[#52617b] transition hover:bg-white" title="返回目录"><Menu className="h-5 w-5" /></button>
+        <div className="flex w-full flex-col items-center gap-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
-            return <button key={item.label} type="button" onClick={() => item.label === '模板' ? onOpenTemplates() : undefined} className={`flex w-[44px] flex-col items-center gap-1 rounded-[10px] py-2 text-[10px] ${item.active ? 'bg-[#dceaff] text-[#2677ed]' : 'text-[#63708a] hover:bg-white/80'}`}><Icon className="h-[18px] w-[18px]" /><span>{item.label}</span></button>;
+            return <React.Fragment key={item.label}>
+              {item.label === '我的' ? <div className="my-1 h-px w-[52px] bg-[#e1e7f1]" /> : null}
+              <button type="button" onClick={() => item.label === '模板' ? onOpenTemplates() : item.label === 'AI工具' ? setMode('agent') : item.label === '首页' ? setMode('templates') : undefined} className={`flex w-[62px] flex-col items-center gap-1 rounded-[12px] py-2 text-[11px] transition ${item.active && mode === 'templates' ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : item.label === 'AI工具' && mode === 'agent' ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'text-[#596986] hover:bg-white/80'}`}><Icon className="h-[22px] w-[22px]" /><span>{item.label}</span></button>
+            </React.Fragment>;
           })}
         </div>
-        <div className="mt-auto flex flex-col items-center gap-3 pb-2 text-[10px] text-[#64728b]">
-          <button type="button" className="flex flex-col items-center gap-1"><UserRound className="h-[18px] w-[18px]" />成员</button>
-          <button type="button" className="flex flex-col items-center gap-1"><Settings2 className="h-[18px] w-[18px]" />管理</button>
+        <div className="mt-auto flex flex-col items-center gap-4 pb-1 text-[11px] text-[#596986]">
+          <button type="button" className="flex flex-col items-center gap-1"><UserRound className="h-[22px] w-[22px]" />成员</button>
+          <button type="button" className="flex flex-col items-center gap-1"><Settings2 className="h-[22px] w-[22px]" />管理</button>
         </div>
       </aside>
 
-      <header className="fixed left-[56px] right-0 top-0 z-20 flex h-[56px] items-center justify-between bg-white/95 px-6 backdrop-blur">
-        <button type="button" onClick={onBackToDirectory} className="flex items-center"><img src={cktAiEcomLogo} alt="创客贴" className="h-[30px] w-auto" /></button>
-        <div className="flex items-center gap-5 text-[#5e6679]">
-          <button type="button" onClick={() => setMembershipOpen(true)} className="text-[12px] transition hover:text-[#2677ed]">会员中心</button>
-          <button type="button" className="text-[12px]">印刷店</button>
-          <Grid2x2 className="h-[17px] w-[17px]" />
-          <span className="relative"><Bell className="h-[18px] w-[18px]" /><i className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ff4c48] text-[9px] not-italic text-white">4</i></span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[linear-gradient(135deg,#e9c6aa,#8ba6bb)] text-white"><UserRound className="h-4 w-4" /></span>
+      <header className="fixed left-[92px] right-0 top-0 z-20 flex h-[86px] items-center justify-between border-b border-[#f1f3f8] bg-white/90 px-10 backdrop-blur-xl">
+        <button type="button" onClick={onBackToDirectory} className="flex items-center"><img src={cktAiEcomLogo} alt="创客贴" className="h-[40px] w-auto" /></button>
+        <div className="flex items-center gap-7 text-[#4f5870]">
+          <button type="button" onClick={() => setMode('agent')} className="flex items-center gap-1 text-[15px] transition hover:text-[#1677f8]"><Zap className="h-4 w-4 text-[#ffbc3b]" />PPT生成</button>
+          <button type="button" className="text-[15px] transition hover:text-[#1677f8]">印刷店</button>
+          <Grid2x2 className="h-[21px] w-[21px]" />
+          <span className="relative"><Bell className="h-[23px] w-[23px]" /><i className="absolute -right-2 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff5e58] px-1 text-[11px] font-medium not-italic text-white">4</i></span>
+          <button type="button" onClick={() => setMembershipOpen(true)} className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>开通会员</button>
+          <span className="relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#ead1b3,#7d9eb7)] text-white shadow-sm"><UserRound className="h-6 w-6" /><i className="absolute bottom-0 right-0 rounded-full bg-[#4b8eea] px-1 text-[9px] not-italic">团</i></span>
         </div>
       </header>
 
-      <main className="ml-[56px] pt-[56px]">
-        <section className={`relative ${mode === 'templates' ? 'min-h-[240px]' : 'min-h-[325px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_25%,#eef1ff_0%,#f8f9ff_48%,#ffffff_82%)] px-4 pb-7 pt-[28px]`}>
-          <div className="pointer-events-none absolute left-[38%] top-[12px] h-32 w-32 rounded-full bg-white/80 blur-3xl" />
-          <div className="pointer-events-none absolute right-[28%] top-[10px] h-36 w-36 rounded-full bg-[#d8e4ff]/50 blur-3xl" />
-          <h1 className="relative text-center text-[21px] font-semibold tracking-[0.04em] text-[#30364a]">今天你想做些什么？</h1>
-
-          <div className="relative mx-auto mt-5 flex h-12 w-fit items-end justify-center gap-1.5">
-            {modeOptions.map((option) => {
-              const isSelected = mode === option.key;
-              const isTemplate = option.key === 'templates';
-              return (
-                <div key={option.key} className="relative shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setMode(option.key)}
-                    className={`relative -skew-x-6 rounded-t-[15px] border px-5 transition-all duration-200 ${isSelected ? 'z-20 h-11 min-w-[156px] border-[#2784ff] bg-white text-[13px] font-semibold text-[#272d40] shadow-[0_7px_18px_rgba(39,132,255,0.16)]' : 'z-10 h-9 min-w-[142px] border-[#e9edf6] bg-white/65 text-[12px] font-medium text-[#8b93a7] hover:bg-white'}`}
-                  >
-                    <span className="block skew-x-6">{option.label}</span>
-                  </button>
-                  {isSelected ? (
-                    <div
-                      aria-hidden="true"
-                      className={`pointer-events-none absolute -right-[24px] -top-[14px] z-30 rotate-[5deg] rounded-[10px] border border-white bg-white p-[3px] shadow-[0_6px_18px_rgba(73,114,190,0.22)] transition-all duration-200 ${isTemplate ? 'h-[56px] w-[46px]' : 'h-[52px] w-[42px]'}`}
-                    >
-                      <div className={`relative flex h-full items-center justify-center overflow-hidden rounded-[7px] ${isTemplate ? 'bg-[linear-gradient(155deg,#d8f4ff_0%,#7ec5ff_48%,#7267ff_100%)]' : 'bg-[linear-gradient(155deg,#e8e3ff_0%,#9a91ff_52%,#695cff_100%)]'}`}>
-                        {isTemplate ? (
-                          <>
-                            <div className="absolute left-1.5 top-1.5 h-1.5 w-5 rounded-full bg-white/80" />
-                            <div className="absolute bottom-1.5 left-1.5 right-1.5 h-6 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#fff6cc_0%,#ffb568_48%,#fa6e69_100%)] shadow-sm" />
-                            <LayoutTemplate className="relative z-10 h-4 w-4 text-white drop-shadow" />
-                          </>
-                        ) : (
-                          <>
-                            <div className="absolute left-1.5 top-1.5 h-2 w-4 rounded-full bg-white/80" />
-                            <div className="absolute bottom-1.5 left-1.5 right-1.5 h-5 rounded-[4px] border border-white/80 bg-[linear-gradient(145deg,#f5f1ff_0%,#c4bcff_100%)] shadow-sm" />
-                            <Sparkles className="relative z-10 h-4 w-4 text-white drop-shadow" />
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
+      <main className="ml-[92px] pt-[86px]">
+        <section className={`relative ${mode === 'templates' ? 'min-h-[430px]' : 'min-h-[390px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-10 pt-[54px]`}>
+          <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
+          <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
+          <div className="pointer-events-none absolute left-1/2 top-[132px] -translate-x-1/2 opacity-[0.64]">
+            <div className="absolute -left-[190px] top-0 h-[142px] w-[300px] -rotate-[3deg] rounded-[28px] border-2 border-white bg-white/50 p-5 shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm">
+              <div className="text-[29px] font-bold text-[#e4e8f5]">Template</div><div className="mt-1 text-[20px] font-semibold text-[#3c465d]">设计模板</div><div className="mt-7 h-9 rounded-xl bg-[linear-gradient(135deg,#c7e6ff,#7aa7fa)]" />
+            </div>
+            <div className="absolute left-[80px] top-4 h-[142px] w-[300px] rotate-[3deg] rounded-[28px] border-2 border-white bg-white/45 p-5 shadow-[0_20px_40px_rgba(102,128,187,0.12)] backdrop-blur-sm">
+              <div className="text-[29px] font-bold text-white/70">AI creation</div><div className="mt-1 text-[20px] font-semibold text-[#68718b]">AI创作</div><div className="mt-7 h-9 rounded-xl bg-[linear-gradient(135deg,#f7d6dc,#cad8ff)]" />
+            </div>
           </div>
+          <h1 className="relative z-10 text-center text-[31px] font-semibold tracking-[0.035em] text-[#18233d]">今天你想做些什么？</h1>
 
           {mode === 'templates' ? (
-            <div className="relative mx-auto -mt-0 flex h-[52px] max-w-[710px] items-center gap-3 rounded-[17px] border-2 border-[#2784ff] bg-white px-3 shadow-[0_12px_25px_rgba(55,95,158,0.14)]">
-              <Search className="h-4 w-4 shrink-0 text-[#9aa3b6]" />
-              <input value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="输入关键词搜索你想要的模板或素材" className="min-w-0 flex-1 text-[12px] outline-none placeholder:text-[#a5adc0]" />
-              <button type="button" className="rounded-[9px] bg-[#1677f8] px-5 py-2 text-[12px] font-medium text-white">搜索</button>
+            <div className="relative z-10 mx-auto mt-[150px] flex h-[84px] max-w-[1160px] items-center gap-4 rounded-[31px] border-[3px] border-[#3287ff] bg-white px-4 shadow-[0_16px_35px_rgba(63,116,220,0.16)]">
+              <Search className="ml-1 h-6 w-6 shrink-0 text-[#c4cad5]" />
+              <input value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="输入关键词搜索你想要的模板或素材" className="min-w-0 flex-1 text-[18px] outline-none placeholder:text-[#aab4c7]" />
+              <Camera className="h-6 w-6 shrink-0 text-[#c4cad5]" />
+              <button type="button" className="h-[58px] w-[100px] shrink-0 rounded-[16px] bg-[#1478fa] text-[17px] font-semibold text-white shadow-[0_5px_12px_rgba(20,120,250,0.2)]">搜索</button>
             </div>
           ) : (
-            <div className="relative mx-auto -mt-0 max-w-[710px] rounded-[17px] border-2 border-[#7166ff] bg-white px-3.5 pb-3 pt-3 shadow-[0_12px_25px_rgba(87,92,197,0.14)]">
+            <div className="relative z-10 mx-auto mt-[92px] max-w-[900px] rounded-[20px] border-2 border-[#7166ff] bg-white px-5 pb-4 pt-4 shadow-[0_12px_25px_rgba(87,92,197,0.14)]">
               <textarea value={homePrompt} onChange={(event) => setHomePrompt(event.currentTarget.value)} placeholder="上传参考图片，描述下您想要的内容，我们会为您呈现~" className="h-[58px] w-full resize-none bg-transparent text-[12px] leading-5 text-[#394156] outline-none placeholder:text-[#a7b0c3]" />
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5">
@@ -743,9 +717,9 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             </div>
           )}
 
-          <div className="relative mx-auto mt-2 flex max-w-[710px] flex-wrap items-center justify-center gap-2">
+          <div className="relative z-10 mx-auto mt-4 flex max-w-[1160px] flex-wrap items-center justify-center gap-3">
             {(mode === 'templates'
-              ? ['🟠 中秋', '🍂 邀请函', '🟥 小红书', '无图画布', 'AI电商', '喜报', '✨ 展架·次日达', '🇨🇳 2027台历模板']
+              ? ['🍁秋日特辑', '🚩喜报', '🌕日签', '无限画布', 'AI电商', '✨展架·次日达', '🗓️2027台历模板']
               : ['🔔 提示词库', '🛍 商品套图Agent', '👗 服饰穿搭Agent', '🎨 海报Agent', '🎬 视频Agent']).map((tag, index) => {
               const skillId = ['product-set', 'apparel-styling', 'poster', 'video-agent'][index - 1];
               return (
@@ -795,31 +769,31 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             </div>
           </section>
         ) : (
-          <section className="mx-auto grid max-w-[1920px] grid-cols-1 gap-3 px-6 pb-7 xl:grid-cols-[minmax(300px,420px)_minmax(0,1fr)]">
-            <div className="grid grid-cols-2 grid-rows-[132px_88px] gap-3">
-              <button type="button" className="relative col-span-2 overflow-hidden rounded-[17px] border border-[#ececf8] bg-[linear-gradient(110deg,#f2f2ff_0%,#f8f8ff_72%,#fff_100%)] px-5 py-4 text-left">
-                <span className="block text-[14px] font-semibold text-[#4e5872]">创建设计</span>
-                <span className="mt-1 block text-[10px] text-[#9aa3b8]">高频创作场景一键直达</span>
-                <span className="absolute bottom-5 left-5 flex h-7 w-7 items-center justify-center rounded-full border border-[#edf0ff] bg-white text-[#8176ff]">›</span>
-                <span className="absolute right-5 top-6 flex h-[82px] w-[78px] items-center justify-center rounded-[13px] border border-[#e3e9ff] bg-white/75 shadow-[0_6px_18px_rgba(77,127,255,0.08)]"><span className="flex h-12 w-12 items-center justify-center border border-dashed border-[#7aaaff] text-[#3985ff]"><Plus className="h-5 w-5" /></span></span>
+          <section className="mx-auto grid max-w-[1920px] grid-cols-1 gap-5 px-[42px] pb-10 xl:grid-cols-[minmax(400px,0.82fr)_minmax(760px,1.7fr)] 2xl:gap-6">
+            <div className="grid grid-cols-2 grid-rows-[218px_165px] gap-5">
+              <button type="button" className="relative col-span-2 overflow-hidden rounded-[22px] border border-[#e8e9f5] bg-[linear-gradient(115deg,#f2f2ff_0%,#f9f9ff_66%,#fff_100%)] px-8 py-8 text-left shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
+                <span className="block text-[24px] font-semibold text-[#35405a]">创建设计</span>
+                <span className="mt-3 block text-[16px] text-[#94a3be]">高频创作场景一键直达</span>
+                <span className="absolute bottom-10 left-8 flex h-10 w-10 items-center justify-center rounded-full border border-[#e8edff] bg-white text-[29px] leading-none text-[#7a74ff] shadow-sm">›</span>
+                <span className="absolute bottom-7 right-9 flex h-[132px] w-[130px] items-center justify-center rounded-[16px] border border-[#e0e9ff] bg-white/75 shadow-[0_8px_24px_rgba(77,127,255,0.1)]"><span className="relative flex h-[92px] w-[82px] items-center justify-center border-2 border-dashed border-[#78a8ff] text-[#3985ff]"><span className="absolute -right-2 -top-2 h-3 w-3 rounded-sm border-2 border-[#3985ff] bg-white" /><span className="absolute -bottom-2 -left-2 h-3 w-3 rounded-sm border-2 border-[#3985ff] bg-white" /><Plus className="h-9 w-9" /></span></span>
               </button>
-              <button type="button" onClick={onOpenCanvas} className="rounded-[15px] border border-[#eef0f5] bg-[linear-gradient(120deg,#f8fbff,#fff)] px-4 py-3 text-left hover:border-[#ccd9ff]"><span className="block text-[13px] font-semibold text-[#515a70]">无限画布</span><span className="mt-1 block text-[10px] text-[#9da7ba]">点击即可快速开始</span></button>
-              <button type="button" className="rounded-[15px] border border-[#eef0f5] bg-[linear-gradient(120deg,#f8f9ff,#fff)] px-4 py-3 text-left"><span className="block text-[13px] font-semibold text-[#515a70]">图片编辑</span><span className="mt-1 block text-[10px] text-[#9da7ba]">点击即可快速开始</span></button>
+              <button type="button" onClick={onOpenCanvas} className="rounded-[22px] border border-[#eceff4] bg-[radial-gradient(circle_at_25%_20%,#edf8ff_0%,#fff_58%)] px-7 py-7 text-left shadow-[0_3px_12px_rgba(85,101,154,0.025)] transition hover:border-[#c9d9ff]"><span className="block text-[22px] font-semibold text-[#35405a]">无限画布</span><span className="mt-3 block text-[16px] text-[#96a5be]">点击即可快速开始</span></button>
+              <button type="button" className="rounded-[22px] border border-[#eceff4] bg-[radial-gradient(circle_at_80%_20%,#f0f3ff_0%,#fff_58%)] px-7 py-7 text-left shadow-[0_3px_12px_rgba(85,101,154,0.025)] transition hover:border-[#c9d9ff]"><span className="block text-[22px] font-semibold text-[#35405a]">图片编辑</span><span className="mt-3 block text-[16px] text-[#96a5be]">点击即可快速开始</span></button>
             </div>
 
-            <div className="rounded-[17px] bg-[#f3f6fc] p-3">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-4 text-[11px] font-medium text-[#7d879a]">
-                  {['热门推荐', 'AI商拍', '模板特效', '视频创作', 'POD印花', '图片处理', '印刷制作'].map((tab, index) => <button key={tab} type="button" className={index === 0 ? 'relative text-[#252b3b] after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-6 after:bg-[#8e80ff]' : 'hover:text-[#252b3b]'}>{tab}</button>)}
+            <div className="rounded-[22px] bg-[#f2f5fb] p-5 shadow-[0_3px_12px_rgba(85,101,154,0.035)]">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-7 text-[16px] font-medium text-[#75829a]">
+                  {['热门推荐', '海报上新', '视频创作', 'AI电商', '印刷制作', '图片处理'].map((tab, index) => <button key={tab} type="button" className={index === 0 ? 'relative font-semibold text-[#263148] after:absolute after:-bottom-2 after:left-0 after:h-[3px] after:w-10 after:rounded-full after:bg-[#8077ff]' : 'transition hover:text-[#263148]'}>{tab}</button>)}
                 </div>
-                <button type="button" className="shrink-0 text-[10px] text-[#8490a6]">更多 ›</button>
+                <button type="button" className="shrink-0 text-[14px] text-[#8490a6] transition hover:text-[#3e79d7]">更多 ›</button>
               </div>
-              <div className="grid grid-cols-2 gap-2.5 2xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-5 xl:grid-cols-3">
                 {homepageFeatureCards.map((card) => (
-                  <div key={card.title} className="relative flex h-[80px] min-w-0 items-center justify-between overflow-hidden rounded-[14px] bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(58,71,101,0.025)]">
-                    <div className="relative z-10 min-w-0">
-                      <div className="truncate text-[12px] font-semibold text-[#303749]">{card.title}</div>
-                      <div className="mt-1 truncate text-[10px] text-[#9aa4b7]">{card.desc}</div>
+                  <div key={card.title} className="relative flex h-[128px] min-w-0 items-center justify-between overflow-hidden rounded-[19px] bg-white px-6 py-4 shadow-[0_2px_8px_rgba(58,71,101,0.025)]">
+                    <div className="relative z-10 min-w-0 pr-2">
+                      <div className="truncate text-[20px] font-semibold text-[#273248]">{card.title}</div>
+                      <div className="mt-2 line-clamp-2 text-[14px] leading-6 text-[#98a6bd]">{card.desc}</div>
                     </div>
                     <FeatureArt kind={card.art} />
                   </div>
@@ -836,15 +810,15 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         ) : null}
 
         {mode === 'templates' ? (
-          <section className="mx-auto max-w-[1920px] px-6 pb-16">
-            <div className="mb-3 flex items-center justify-between"><h2 className="text-[16px] font-semibold text-[#30364a]">为你推荐</h2><button type="button" className="text-[11px] text-[#8a95aa]">更多 ›</button></div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-              {templateCards.map((card, index) => (
-                <button key={card.title} type="button" className="overflow-hidden rounded-[12px] border border-[#edf0f6] bg-[#f4f7fc] p-2 text-left">
-                  <div className={`relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-[6px] bg-gradient-to-br ${card.tone} p-4 text-center text-white`}>
-                    <span className="absolute inset-2 rounded border border-white/25" />
-                    <span className="relative drop-shadow-sm"><span className="block text-[9px] font-medium tracking-[0.15em]">{card.kicker}</span><span className="mt-3 block text-[15px] font-black leading-tight">{card.title}</span><span className="mt-2 block text-[8px] opacity-80">CREATE · INSPIRE · DESIGN</span></span>
-                    {index === 0 ? <span className="absolute bottom-5 left-0 right-0 h-12 bg-[linear-gradient(180deg,transparent,rgba(16,54,112,.5))]" /> : null}
+          <section className="mx-auto max-w-[1920px] px-[42px] pb-16">
+            <div className="mb-5 flex items-center justify-between"><h2 className="text-[25px] font-semibold text-[#28334b]">热点内容速递</h2><button type="button" className="text-[14px] text-[#8a95aa] transition hover:text-[#3d75d2]">更多 ›</button></div>
+            <div className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-6">
+              {templateCards.slice(0, 6).map((card, index) => (
+                <button key={card.title} type="button" className="overflow-hidden rounded-[20px] border border-[#edf0f6] bg-[#f6f8fc] p-3 text-left shadow-[0_3px_12px_rgba(58,71,101,0.025)] transition hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(58,71,101,0.1)]">
+                  <div className={`relative flex aspect-[0.82] items-center justify-center overflow-hidden rounded-[11px] bg-gradient-to-br ${card.tone} p-4 text-center text-white`}>
+                    <span className="absolute inset-3 rounded border border-white/25" />
+                    <span className="relative drop-shadow-sm"><span className="block text-[10px] font-medium tracking-[0.15em]">{card.kicker}</span><span className="mt-4 block text-[19px] font-black leading-tight">{card.title}</span><span className="mt-3 block text-[9px] opacity-80">CREATE · INSPIRE · DESIGN</span></span>
+                    {index % 2 === 0 ? <span className="absolute bottom-0 left-0 right-0 h-20 bg-[linear-gradient(180deg,transparent,rgba(16,54,112,.48))]" /> : null}
                   </div>
                 </button>
               ))}
@@ -1162,13 +1136,15 @@ function SkillCard({ skill, index, hot = index < 2, onClick }: { skill: SkillDef
 }
 
 function FeatureArt({ kind }: { kind: string }) {
-  const common = 'relative ml-2 flex h-[58px] w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-[10px]';
-  if (kind === 'calendar') return <div className={`${common} bg-[linear-gradient(135deg,#b9e6ff,#92c7ff)]`}><div className="grid h-[44px] w-[50px] grid-cols-3 gap-1 rounded-md bg-white/90 p-1">{Array.from({ length: 9 }, (_, i) => <i key={i} className={`rounded-sm ${i === 4 ? 'bg-[#43a4ff]' : 'bg-[#d5e9ff]'}`} />)}</div></div>;
-  if (kind === 'video') return <div className={`${common} bg-[#e8edf5]`}><div className="flex h-[43px] w-[58px] items-center justify-center rounded-md border border-white bg-[#d7e4f4]"><Video className="h-6 w-6 text-[#557594]" /><span className="absolute rounded-full bg-white/80 p-1"><Video className="h-3 w-3 text-[#6b58ef]" /></span></div></div>;
-  if (kind === 'poster') return <div className={`${common} bg-[#ddf5f3]`}><div className="h-[44px] w-[29px] rounded-[4px] bg-[linear-gradient(180deg,#fbffff,#a8d4ff)] p-1 shadow-sm"><span className="block h-2 rounded-sm bg-[#5d93ff]"/><span className="mt-1 block h-1 w-4 rounded bg-[#9dbaff]"/></div><div className="ml-1 h-[44px] w-[29px] rounded-[4px] bg-[linear-gradient(180deg,#fef8ed,#ffa689)] p-1 shadow-sm"><span className="block h-2 rounded-sm bg-[#ff795d]"/><span className="mt-1 block h-1 w-4 rounded bg-[#ffc38f]"/></div></div>;
-  if (kind === 'watermark') return <div className={`${common} bg-[linear-gradient(135deg,#dff5fa,#b0e2f6)]`}><div className="h-[40px] w-[56px] rounded-md bg-[linear-gradient(135deg,#315c93,#8ec0ee)] p-1"><div className="mt-4 h-4 rounded bg-white/40"/><span className="absolute right-3 top-3 h-3 w-3 rounded-sm bg-white/80"/></div></div>;
-  if (kind === 'commerce') return <div className={`${common} bg-[#f3e8dc]`}><div className="h-10 w-7 rounded bg-[linear-gradient(180deg,#dec2aa,#966644)] shadow"/><div className="ml-1 h-8 w-7 rounded bg-[linear-gradient(180deg,#f4f4ee,#b7b9a7)] shadow"/></div>;
-  if (kind === 'cutout') return <div className={`${common} bg-[linear-gradient(135deg,#d9edff,#f8fbff)]`}><span className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(140deg,#355f9a,#ffba9d)] text-white"><UserRound className="h-5 w-5" /></span></div>;
-  if (kind === 'print') return <div className={`${common} bg-[#edf2f1]`}><FileImage className="h-8 w-8 text-[#538ad1]" /><span className="absolute right-3 top-2 h-6 w-3 rounded-sm bg-[#fb565a]" /></div>;
-  return <div className={`${common} bg-[#e7eaf3]`}><Shirt className="h-8 w-8 text-[#4b566a]" /><Sparkles className="absolute right-3 top-2 h-3 w-3 text-[#7065e9]" /></div>;
+  const common = 'relative ml-2 flex h-[94px] w-[136px] shrink-0 items-center justify-center overflow-hidden rounded-[13px]';
+  if (kind === 'calendar') return <div className={`${common} bg-[linear-gradient(135deg,#c1e6ff,#82b8f2)]`}><div className="grid h-[70px] w-[88px] grid-cols-3 gap-1 rounded-lg bg-white/90 p-2 shadow-sm">{Array.from({ length: 9 }, (_, i) => <i key={i} className={`rounded-sm ${i === 4 ? 'bg-[#43a4ff]' : 'bg-[#d5e9ff]'}`} />)}</div><span className="absolute right-2 top-2 h-3 w-3 rounded-full bg-[#ffd34e]" /></div>;
+  if (kind === 'video') return <div className={`${common} bg-[#e8edf5]`}><div className="flex h-[70px] w-[95px] items-center justify-center rounded-lg border border-white bg-[linear-gradient(135deg,#d7e4f4,#a7c7e8)]"><Video className="h-9 w-9 text-[#557594]" /><span className="absolute rounded-full bg-white/80 p-1.5"><Video className="h-4 w-4 text-[#6b58ef]" /></span></div></div>;
+  if (kind === 'poster') return <div className={`${common} bg-[#ddf5f3]`}><div className="h-[70px] w-[48px] rounded-[6px] bg-[linear-gradient(180deg,#fbffff,#a8d4ff)] p-2 shadow-sm"><span className="block h-3 rounded-sm bg-[#5d93ff]"/><span className="mt-2 block h-1.5 w-7 rounded bg-[#9dbaff]"/></div><div className="ml-2 h-[70px] w-[48px] rounded-[6px] bg-[linear-gradient(180deg,#fef8ed,#ffa689)] p-2 shadow-sm"><span className="block h-3 rounded-sm bg-[#ff795d]"/><span className="mt-2 block h-1.5 w-7 rounded bg-[#ffc38f]"/></div></div>;
+  if (kind === 'watermark') return <div className={`${common} bg-[linear-gradient(135deg,#dff5fa,#b0e2f6)]`}><div className="h-[65px] w-[98px] rounded-lg bg-[linear-gradient(135deg,#315c93,#8ec0ee)] p-2"><div className="mt-7 h-5 rounded bg-white/40"/><span className="absolute right-5 top-4 h-4 w-4 rounded-sm bg-white/80"/></div></div>;
+  if (kind === 'commerce-set') return <div className={`${common} bg-[linear-gradient(135deg,#f2e0d5,#f7eee5)]`}><div className="h-[66px] w-[45px] -rotate-[8deg] rounded bg-[linear-gradient(180deg,#f5e8d8,#c08f70)] shadow"/><div className="-ml-2 h-[72px] w-[49px] rotate-[5deg] rounded bg-[linear-gradient(180deg,#f4f4ee,#b7b9a7)] p-1 shadow"><div className="h-8 rounded bg-white/60"/><div className="mt-1 h-3 rounded bg-black/10"/></div></div>;
+  if (kind === 'ppt') return <div className={`${common} bg-[linear-gradient(135deg,#dfeeff,#c6d7ff)]`}><div className="relative h-[70px] w-[100px] rounded-lg bg-white p-2 shadow"><div className="h-2 w-12 rounded bg-[#5b7cff]"/><div className="mt-2 h-7 rounded bg-[linear-gradient(135deg,#a7d8ff,#827dff)]"/><div className="mt-2 flex gap-1"><span className="h-2 w-7 rounded bg-[#e5ebf8]"/><span className="h-2 w-7 rounded bg-[#e5ebf8]"/></div></div></div>;
+  if (kind === 'recruitment') return <div className={`${common} bg-[linear-gradient(135deg,#fff1b3,#d7f0a4)]`}><div className="flex gap-1"><span className="h-[72px] w-[32px] rounded bg-[linear-gradient(180deg,#f8e857,#45bfa2)] shadow"/><span className="h-[58px] w-[32px] rounded bg-[linear-gradient(180deg,#ff8b81,#fff0b6)] shadow"/><span className="h-[66px] w-[32px] rounded bg-[linear-gradient(180deg,#4aa4e8,#cbf2ff)] shadow"/></div></div>;
+  if (kind === 'cutout') return <div className={`${common} bg-[linear-gradient(135deg,#d9edff,#f8fbff)]`}><span className="flex h-[66px] w-[66px] items-center justify-center rounded-full bg-[linear-gradient(140deg,#355f9a,#ffba9d)] text-white"><UserRound className="h-9 w-9" /></span></div>;
+  if (kind === 'print') return <div className={`${common} bg-[#edf2f1]`}><FileImage className="h-12 w-12 text-[#538ad1]" /><span className="absolute right-5 top-4 h-9 w-5 rounded-sm bg-[#fb565a]" /></div>;
+  return <div className={`${common} bg-[#e7eaf3]`}><Shirt className="h-12 w-12 text-[#4b566a]" /><Sparkles className="absolute right-5 top-4 h-4 w-4 text-[#7065e9]" /></div>;
 }
