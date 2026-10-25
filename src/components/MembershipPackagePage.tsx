@@ -205,6 +205,16 @@ function createWebSkuDetails(startId: number, member: string, points: number, pr
   }));
 }
 
+const flagshipWebSkuPrices: NewWebSkuPrice[] = [
+  { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
+  { displayName: '月度', duration: 30, price: 89 },
+  { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
+  { displayName: '季度', duration: 90, price: 199 },
+  { displayName: '1年', duration: 365, price: 489 },
+  { displayName: '2年', duration: 730, price: 579 },
+  { displayName: '3年', duration: 1095, price: 759 },
+];
+
 const newWebSkuDetails: PackageDetailRow[] = [
   ...createWebSkuDetails(3501, '基础版（个人）', 200, [
     { displayName: '连续包月', duration: 30, price: 39, packageType: '订阅套餐' },
@@ -286,15 +296,7 @@ const newWebSkuDetails: PackageDetailRow[] = [
     { displayName: '2年', duration: 730, price: 579 },
     { displayName: '3年', duration: 1095, price: 759 },
   ]),
-  ...createWebSkuDetails(3591, '旗舰版（企业）', 1200, [
-    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
-    { displayName: '月度', duration: 30, price: 89 },
-    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
-    { displayName: '季度', duration: 90, price: 199 },
-    { displayName: '1年', duration: 365, price: 489 },
-    { displayName: '2年', duration: 730, price: 579 },
-    { displayName: '3年', duration: 1095, price: 759 },
-  ]),
+  ...[1200, 2000, 4000, 10000, 50000, 100000].flatMap((points, index) => createWebSkuDetails(3591 + index * 10, '旗舰版（企业）', points, flagshipWebSkuPrices)),
 ];
 
 export function formatPointsDisplay(points?: number, pointsUnit?: '每人' | '团队', pointsCycle?: '按月' | '一次性') {
