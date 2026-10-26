@@ -1499,7 +1499,7 @@ export default function App() {
         <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-8 sm:px-10 lg:px-12">
           <div className="rounded-[32px] border border-white/70 bg-white/75 p-8 shadow-[0_30px_80px_rgba(82,64,39,0.12)] backdrop-blur">
             <div className="flex flex-col gap-10">
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-4xl">
                   <div className="mb-4 inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-4 py-1 text-xs font-semibold tracking-[0.24em] text-stone-500 uppercase">
                     Feature Hub
@@ -1521,27 +1521,27 @@ export default function App() {
                     </div>}
                   </div>
                 </div>
-              </div>
 
-              <div role="tablist" aria-label="原型查看方式" className="inline-flex w-fit rounded-full border border-stone-200 bg-stone-100/80 p-1 shadow-[0_8px_20px_rgba(120,95,60,0.06)]">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={homeViewMode === 'requirements'}
-                  onClick={() => setHomeViewMode('requirements')}
-                  className={`rounded-full px-5 py-2 text-sm font-medium transition ${homeViewMode === 'requirements' ? 'bg-stone-900 text-white shadow-[0_5px_12px_rgba(41,32,23,.16)]' : 'text-stone-500 hover:text-stone-900'}`}
-                >
-                  按需求查看
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={homeViewMode === 'projects'}
-                  onClick={() => setHomeViewMode('projects')}
-                  className={`rounded-full px-5 py-2 text-sm font-medium transition ${homeViewMode === 'projects' ? 'bg-stone-900 text-white shadow-[0_5px_12px_rgba(41,32,23,.16)]' : 'text-stone-500 hover:text-stone-900'}`}
-                >
-                  按项目查看
-                </button>
+                <div role="tablist" aria-label="原型查看方式" className="inline-flex shrink-0 self-start rounded-full border border-stone-200 bg-stone-100/80 p-1 shadow-[0_8px_20px_rgba(120,95,60,0.06)] lg:mt-8">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={homeViewMode === 'requirements'}
+                    onClick={() => setHomeViewMode('requirements')}
+                    className={`inline-flex h-12 items-center rounded-full px-7 text-[15px] font-medium transition ${homeViewMode === 'requirements' ? 'bg-stone-900 text-white shadow-[0_5px_12px_rgba(41,32,23,.16)]' : 'text-stone-500 hover:text-stone-900'}`}
+                  >
+                    按需求查看
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={homeViewMode === 'projects'}
+                    onClick={() => setHomeViewMode('projects')}
+                    className={`inline-flex h-12 items-center rounded-full px-7 text-[15px] font-medium transition ${homeViewMode === 'projects' ? 'bg-stone-900 text-white shadow-[0_5px_12px_rgba(41,32,23,.16)]' : 'text-stone-500 hover:text-stone-900'}`}
+                  >
+                    按项目查看
+                  </button>
+                </div>
               </div>
 
               {homeViewMode === 'requirements' ? (
