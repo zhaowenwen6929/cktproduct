@@ -3,6 +3,7 @@ import { Check, ChevronDown, Image as ImageIcon, QrCode, Sparkles, Ticket, Video
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipBenefitItem, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 import { getEnterpriseSeatUnitPrice, readWebMembershipPackageDetails, type PackageDetailRow } from './MembershipPackagePage';
+import { MEMBERSHIP_CENTER_REQUIREMENT_META, MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_REQUIREMENT_DRAWER_WIDTH, MembershipRequirementFloatingButton } from './MembershipRequirementFloatingButton';
 
 export type MembershipCurrentMember = {
   memberLevel?: number | null;
@@ -11,10 +12,14 @@ export type MembershipCurrentMember = {
   remainingPoints?: number | string | null;
   teamMemberCount?: number | null;
   purchasedSeats?: number | null;
+  membershipType?: 'personal' | 'enterprise';
 };
 
-type MembershipCenterModalProps = {
+export type MembershipCenterModalProps = {
+  /** Controlled visibility; omit to preserve the existing conditional-render API. */
+  open?: boolean;
   onClose: () => void;
+  onOpenChange?: (open: boolean) => void;
   onOpenUpgradePage?: (currentMember: MembershipCurrentMember) => void;
   currentMember?: MembershipCurrentMember;
 };
@@ -54,7 +59,7 @@ const MEMBER_NAME_BY_LEVEL: Record<number, string> = {
 };
 
 type MembershipPreviewIdentity = {
-  key: 'free' | 'personal-basic' | 'enterprise-professional';
+  key: 'free-1' | 'free-5' | 'personal-basic-1' | 'personal-basic-3' | 'enterprise-professional-3';
   label: string;
   memberLevel: number | null;
   memberName: string;
@@ -66,16 +71,26 @@ type MembershipPreviewIdentity = {
 };
 
 const MEMBERSHIP_PREVIEW_IDENTITIES: MembershipPreviewIdentity[] = [
-  { key: 'free', label: '免费版', memberLevel: null, memberName: '免费版', validUntil: '长期有效', remainingPoints: 66, teamMemberCount: 3, purchasedSeats: null, membershipType: 'personal' },
-  { key: 'personal-basic', label: '基础版（个人）', memberLevel: 240, memberName: '基础版（个人）', validUntil: '2027-10-25', remainingPoints: 200, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
-  { key: 'enterprise-professional', label: '专业版（企业）3人', memberLevel: 311, memberName: '专业版（企业）', validUntil: '2027-10-25', remainingPoints: 1200, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
+  { key: 'free-1', label: '免费版 1人', memberLevel: null, memberName: '免费版', validUntil: '长期有效', remainingPoints: 66, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
+  { key: 'free-5', label: '免费版 5人', memberLevel: null, memberName: '免费版', validUntil: '长期有效', remainingPoints: 66, teamMemberCount: 5, purchasedSeats: null, membershipType: 'enterprise' },
+  { key: 'personal-basic-1', label: '基础版（个人）1人', memberLevel: 240, memberName: '基础版（个人）', validUntil: '2027-10-25', remainingPoints: 200, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
+  { key: 'personal-basic-3', label: '基础版（个人）3人', memberLevel: 240, memberName: '基础版（个人）', validUntil: '2027-10-25', remainingPoints: 200, teamMemberCount: 3, purchasedSeats: null, membershipType: 'personal' },
+  { key: 'enterprise-professional-3', label: '专业版（企业）3人', memberLevel: 311, memberName: '专业版（企业）', validUntil: '2027-10-25', remainingPoints: 1200, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
 ];
+
+function resolveMembershipPreviewIdentity(member?: MembershipCurrentMember) {
+  const memberLevel = member?.memberLevel ?? null;
+  const memberCount = Math.max(1, member?.purchasedSeats ?? member?.teamMemberCount ?? 1);
+  if (memberLevel === 240) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === (memberCount >= 3 ? 'personal-basic-3' : 'personal-basic-1')) ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+  if (memberLevel === 311) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === 'enterprise-professional-3') ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+  return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === (memberCount >= 5 ? 'free-5' : 'free-1')) ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+}
 
 function getMemberLevelRank(level?: number | null) {
   return level == null ? -1 : MEMBER_LEVEL_RANK.get(level) ?? 0;
 }
 
-function getMembershipPurchaseAction(currentMemberLevel: number | null | undefined, targetMemberLevel: number | undefined, currentMemberName?: string): MembershipPurchaseAction {
+export function getMembershipPurchaseAction(currentMemberLevel: number | null | undefined, targetMemberLevel: number | undefined, currentMemberName?: string): MembershipPurchaseAction {
   if (currentMemberLevel == null) return { kind: 'open', buttonText: '立即开通' };
 
   const currentRank = getMemberLevelRank(currentMemberLevel);
@@ -771,7 +786,7 @@ function StickyPurchaseBar({ plans, details, packageDetails, membershipType, cur
   return <div className="sticky top-[48px] z-[9] border-b border-[#e4e9f0] bg-white/95 px-5 py-2 shadow-[0_8px_18px_rgba(38,53,79,.1)] backdrop-blur-md"><div className="mx-auto max-w-[1240px] overflow-x-auto"><div className="flex min-w-[700px] items-end gap-3"><div className="w-[176px] shrink-0 pb-0.5"><div className="flex rounded-full bg-[#eef1f5] p-0.5"><button type="button" onClick={() => onMembershipTypeChange('personal')} className={`flex-1 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] leading-4 transition ${membershipType === 'personal' ? 'bg-white font-semibold text-[#273144] shadow-[0_1px_4px_rgba(38,53,79,.1)]' : 'text-[#8792a2] hover:text-[#273144]'}`}>个人使用</button><button type="button" onClick={() => onMembershipTypeChange('enterprise')} className={`flex-1 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] leading-4 transition ${membershipType === 'enterprise' ? 'bg-white font-semibold text-[#273144] shadow-[0_1px_4px_rgba(38,53,79,.1)]' : 'text-[#8792a2] hover:text-[#273144]'}`}>企业使用</button></div></div><div className="grid min-w-0 flex-1 gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(plans.length, 1)}, minmax(128px, 1fr))` }}>{plans.map((plan) => { const detailColumn = details?.columns.find((column) => column.key === plan.planKey); const stickyTag = plan.planKey === 'flagship' ? undefined : detailColumn?.tag; const lowestPackage = getLowestPackagePrice(plan.memberLevel, packageDetails); const monthlyPrice = lowestPackage ? formatPackageMonthlyPrice(Number(lowestPackage.currentPrice), lowestPackage.duration) : null; const purchaseAction = getMembershipPurchaseAction(currentMemberLevel, plan.memberLevel, currentMemberName); const isDowngrade = purchaseAction.kind === 'downgrade'; return <div key={plan.planKey} className="min-w-0 text-center"><div className="truncate text-[12px] font-semibold leading-4 text-[#202938]">{detailColumn?.label ?? plan.name}{stickyTag ? <span className="ml-1 text-[9px] font-normal text-[#168ff2]">{stickyTag}</span> : null}</div><div className="mt-0.5 text-[11px] leading-4 text-[#4e5a6c]">{monthlyPrice == null || monthlyPrice === '-' ? '暂无价格' : `¥${monthlyPrice}/月起`}</div><button type="button" disabled={isDowngrade} onClick={isDowngrade ? undefined : () => onPurchase(plan)} title={isDowngrade ? purchaseAction.helperText : undefined} className={`mt-1.5 h-7 w-full max-w-[108px] rounded-[5px] px-2 text-[10px] font-medium transition ${isDowngrade ? 'cursor-not-allowed bg-[#eef1f5] text-[#9aa3af]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]'}`}>{purchaseAction.buttonText}</button>{isDowngrade ? <div className="mt-1 text-[9px] leading-3 text-[#f04444]">{purchaseAction.helperText}</div> : null}</div>; })}</div></div></div></div>;
 }
 
-function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys = new Set<string>(), className }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void; couponCycleKeys?: Set<string>; className?: string }) {
+function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys = new Set<string>(), className, stretch = false }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void; couponCycleKeys?: Set<string>; className?: string; stretch?: boolean }) {
   const selectorRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -800,7 +815,7 @@ function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys
       const allOptionsWidth = optionWidths.reduce((sum, width) => sum + width, 0) + Math.max(optionWidths.length - 1, 0) * gap;
       const parentWidth = selector.parentElement?.clientWidth ?? 0;
       const maxWidth = parentWidth > 32 ? Math.min(960, parentWidth - 32) : 960;
-      const nextSelectorWidth = Math.min(allOptionsWidth + 8, maxWidth);
+      const nextSelectorWidth = stretch ? Math.max(parentWidth, 0) : Math.min(allOptionsWidth + 8, maxWidth);
       const availableWidth = Math.max(nextSelectorWidth - 8, 0);
 
       setSelectorWidth((current) => current === nextSelectorWidth ? current : nextSelectorWidth);
@@ -829,7 +844,7 @@ function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys
     const observer = new ResizeObserver(updateVisibleCount);
     observer.observe(selector.parentElement ?? selector);
     return () => observer.disconnect();
-  }, [optionSignature, options.length]);
+  }, [optionSignature, options.length, stretch]);
 
   useEffect(() => {
     if (!expanded) return undefined;
@@ -851,16 +866,16 @@ function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys
     setExpanded(false);
   };
 
-  return <div ref={selectorRef} style={selectorWidth ? { width: `${selectorWidth}px` } : undefined} className={`${className ?? 'relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))]'} text-[11px] text-[#4e5868]`}>
+  return <div ref={selectorRef} style={!stretch && selectorWidth ? { width: `${selectorWidth}px` } : undefined} className={`${className ?? 'relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))]'} text-[11px] text-[#4e5868]`}>
     <div ref={barRef} className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
       <div className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
         {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
       </div>
       {extraOptions.length ? <div className="relative shrink-0">
-        <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[92px] max-w-[280px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-[12px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
-          <span>{selectedExtraOption ? '更多–' : '更多'}</span>
-          {selectedExtraOption ? renderCycleLabel(selectedExtraOption) : null}
-          <ChevronDown className={`ml-1 h-4 w-4 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[76px] max-w-[220px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-3 py-2.5 text-[11px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
+          <span className="min-w-0 truncate">{selectedExtraOption ? '更多–' : '更多'}</span>
+          {selectedExtraOption ? <span className="min-w-0 truncate">{renderCycleLabel(selectedExtraOption)}</span> : null}
+          <ChevronDown className={`ml-1 h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </button>
         {expanded ? <div role="listbox" className="absolute right-0 top-[calc(100%+8px)] z-40 w-[250px] overflow-hidden rounded-[20px] border border-[#e6e8ec] bg-white p-2 shadow-[0_12px_32px_rgba(31,50,81,.16)]">
           {extraOptions.map((cycle, index) => {
@@ -873,8 +888,8 @@ function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys
     </div>
     <div ref={measureRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 -z-10 flex w-max gap-1 whitespace-nowrap opacity-0">
       {options.map((cycle) => <span data-cycle-measure="true" key={cycle.key} className="flex items-center gap-1 rounded-full px-3 py-2.5 text-[11px]">{renderCycleLabel(cycle)}</span>)}
-      <span data-more-measure="default" className="flex min-h-[36px] min-w-[92px] items-center justify-center gap-1 rounded-full px-5 py-2.5 text-[12px] font-semibold">更多<ChevronDown className="ml-1 h-4 w-4 shrink-0" /></span>
-      {options.map((cycle) => <span data-more-measure={cycle.key} key={`more-${cycle.key}`} className="flex min-h-[36px] min-w-[92px] items-center justify-center gap-1 rounded-full px-5 py-2.5 text-[12px] font-semibold">更多–{renderCycleLabel(cycle)}<ChevronDown className="ml-1 h-4 w-4 shrink-0" /></span>)}
+      <span data-more-measure="default" className="flex min-h-[36px] min-w-[76px] items-center justify-center gap-1 rounded-full px-3 py-2.5 text-[11px] font-semibold">更多<ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" /></span>
+      {options.map((cycle) => <span data-more-measure={cycle.key} key={`more-${cycle.key}`} className="flex min-h-[36px] min-w-[76px] items-center justify-center gap-1 rounded-full px-3 py-2.5 text-[11px] font-semibold">更多–{renderCycleLabel(cycle)}<ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" /></span>)}
     </div>
   </div>;
 }
@@ -1171,18 +1186,99 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
   </article>;
 }
 
-export function MembershipCenterModal({ onClose, onOpenUpgradePage, currentMember }: MembershipCenterModalProps) {
-  const initialIdentity = MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.memberLevel === (currentMember?.memberLevel ?? null)) ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+type MembershipPromotionBannerProps = {
+  countdown: ReturnType<typeof formatCountdown>;
+};
+
+function MembershipPromotionBanner({ countdown }: MembershipPromotionBannerProps) {
+  return <section className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(112deg,#1588ee_0%,#1b94f7_48%,#ffd57d_100%)] px-6 py-5 shadow-[0_14px_34px_rgba(39,143,238,.17)]">
+    <div className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full bg-white/25 blur-3xl" />
+    <div className="pointer-events-none absolute right-[17%] top-0 h-32 w-32 rounded-full bg-[#fff3d0]/40 blur-2xl" />
+    <div className="relative flex min-h-[82px] items-center justify-between gap-6">
+      <div>
+        <div className="mb-3 flex items-center gap-2"><span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-[#293548]">✦ Seedance 2.5</span><span className="rounded-full bg-white px-2 py-1 text-[10px] font-medium text-[#293548]">四重福利</span></div>
+        <p className="text-[17px] font-semibold text-white">🎟 ¥0.19超低单秒价备战双11</p>
+        <p className="mt-1 text-[15px] font-medium text-[#ffe74d]">最高额外加赠2个月会员、4万+积分</p>
+      </div>
+      <div className="hidden items-center gap-1.5 sm:flex"><CountdownBox value={countdown.days} label="天" /><CountdownBox value={countdown.hours} label="小时" /><CountdownBox value={countdown.minutes} label="分钟" /><CountdownBox value={countdown.seconds} label="秒" /></div>
+    </div>
+  </section>;
+}
+
+type MembershipTypeCycleModuleProps = {
+  membershipType: MembershipType;
+  personalName?: string;
+  enterpriseName?: string;
+  cycleOptions: MembershipCycleConfig[];
+  selectedCycle: number;
+  couponCycleKeys: Set<string>;
+  onMembershipTypeChange: (type: MembershipType) => void;
+  onCycleChange: (index: number) => void;
+  onOpenPointsPurchase: () => void;
+};
+
+function MembershipTypeCycleModule({ membershipType, personalName, enterpriseName, cycleOptions, selectedCycle, couponCycleKeys, onMembershipTypeChange, onCycleChange, onOpenPointsPurchase }: MembershipTypeCycleModuleProps) {
+  return <section className="pt-6">
+    <div className="flex items-center justify-center gap-10 text-[17px] font-semibold">
+      <button type="button" onClick={() => onMembershipTypeChange('personal')} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalName ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button>
+      <button type="button" onClick={() => onMembershipTypeChange('enterprise')} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseName ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button>
+    </div>
+    <div className="flex w-full min-w-0 items-center gap-3">
+      <div className="min-w-0 flex-1"><CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={onCycleChange} couponCycleKeys={couponCycleKeys} stretch className="relative mx-0 mt-4 w-full max-w-none" /></div>
+      <button type="button" onClick={onOpenPointsPurchase} className="mt-4 shrink-0 whitespace-nowrap rounded-full border border-[#dfe4ec] bg-white px-4 py-2.5 text-[11px] font-medium text-[#4e5a6c] shadow-[0_2px_8px_rgba(31,50,81,.08)] transition hover:border-[#aabff0] hover:text-[#168ff2]">购买积分</button>
+    </div>
+  </section>;
+}
+
+type MembershipPackageModuleProps = {
+  plans: MembershipPlan[];
+  membershipType: MembershipType;
+  activeCycleKey: string;
+  cycleName: string;
+  tierSelections: Record<string, number>;
+  enterpriseMinimumSeats: number;
+  availableCoupons: MembershipCoupon[];
+  currentMemberLevel?: number | null;
+  currentMemberName?: string;
+  purchaseButtonRef?: Ref<HTMLButtonElement>;
+  getEnterpriseSeatCount: (planKey: string) => number;
+  onTierChange: (tierKey: string, value: number) => void;
+  onSeatChange: (planKey: string, delta: number) => void;
+  onContactAdvisor: () => void;
+  onPurchase: (plan: MembershipPlan, tierIndex: number, seats: number) => void;
+  onOpenUpgradePage?: (plan: MembershipPlan) => void;
+  onPurchaseBlocked: (message: string) => void;
+};
+
+function MembershipPackageModule({ plans, membershipType, activeCycleKey, cycleName, tierSelections, enterpriseMinimumSeats, availableCoupons, currentMemberLevel, currentMemberName, purchaseButtonRef, getEnterpriseSeatCount, onTierChange, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked }: MembershipPackageModuleProps) {
+  return <section className={`mt-[68px] ${plans.length === 1 ? 'flex justify-center' : ''}`} style={plans.length === 1 ? { display: 'flex', justifyContent: 'center' } : undefined}>
+    <div className={`grid w-full grid-cols-1 gap-4 sm:grid-cols-2 ${plans.length === 1 ? 'max-w-[720px] xl:grid-cols-1' : plans.length === 2 ? 'mx-auto max-w-[1120px] xl:grid-cols-2' : plans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`} style={plans.length === 1 ? { width: '100%', maxWidth: '720px', margin: '0 auto', gridTemplateColumns: 'minmax(0, 1fr)' } : undefined}>
+      {plans.map((plan, index) => {
+        const tierKey = `${membershipType}:${plan.memberType ?? plan.planKey}:${activeCycleKey}`;
+        const cycleData = getCyclePlanData(plan, activeCycleKey);
+        const hasTiers = Boolean(cycleData.tierOptions?.length);
+        const tierIndex = tierSelections[tierKey] ?? 0;
+        const seats = getEnterpriseSeatCount(plan.planKey);
+        return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} cycleName={cycleName || cycleData.period} tierIndex={tierIndex} onTierChange={hasTiers ? (value) => onTierChange(tierKey, value) : undefined} enterprise={membershipType === 'enterprise'} minimumSeats={enterpriseMinimumSeats} seats={seats} onSeatChange={membershipType === 'enterprise' ? (delta) => onSeatChange(plan.planKey, delta) : undefined} onContactAdvisor={onContactAdvisor} onPurchase={() => onPurchase(plan, tierIndex, seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage(plan) : undefined} onPurchaseBlocked={onPurchaseBlocked} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} coupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} />;
+      })}
+    </div>
+  </section>;
+}
+
+export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOpenUpgradePage, currentMember }: MembershipCenterModalProps) {
+  const currentIdentity = resolveMembershipPreviewIdentity(currentMember);
+  const initialIdentity = currentIdentity;
   const [selectedIdentityKey, setSelectedIdentityKey] = useState<MembershipPreviewIdentity['key']>(initialIdentity.key);
   const [identityMenuOpen, setIdentityMenuOpen] = useState(false);
   const identityMenuRef = useRef<HTMLDivElement>(null);
   const selectedIdentity = MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === selectedIdentityKey) ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+  const isCurrentMemberIdentity = currentIdentity.key === selectedIdentity.key;
   const currentMemberLevel = selectedIdentity.memberLevel;
-  const currentMemberName = currentMember?.memberLevel === currentMemberLevel ? currentMember.memberName ?? selectedIdentity.memberName : selectedIdentity.memberName;
-  const currentMemberValidUntil = currentMember?.memberLevel === currentMemberLevel ? currentMember.validUntil ?? selectedIdentity.validUntil : selectedIdentity.validUntil;
-  const currentMemberRemainingPoints = currentMember?.memberLevel === currentMemberLevel ? currentMember.remainingPoints ?? selectedIdentity.remainingPoints : selectedIdentity.remainingPoints;
-  const currentTeamMemberCount = currentMember?.memberLevel === currentMemberLevel ? currentMember.teamMemberCount ?? selectedIdentity.teamMemberCount : selectedIdentity.teamMemberCount;
-  const currentPurchasedSeats = currentMember?.memberLevel === currentMemberLevel ? currentMember.purchasedSeats ?? selectedIdentity.purchasedSeats : selectedIdentity.purchasedSeats;
+  const currentMemberName = isCurrentMemberIdentity ? currentMember?.memberName ?? selectedIdentity.memberName : selectedIdentity.memberName;
+  const currentMemberValidUntil = isCurrentMemberIdentity ? currentMember?.validUntil ?? selectedIdentity.validUntil : selectedIdentity.validUntil;
+  const currentMemberRemainingPoints = isCurrentMemberIdentity ? currentMember?.remainingPoints ?? selectedIdentity.remainingPoints : selectedIdentity.remainingPoints;
+  const currentTeamMemberCount = isCurrentMemberIdentity ? currentMember?.teamMemberCount ?? selectedIdentity.teamMemberCount : selectedIdentity.teamMemberCount;
+  const currentPurchasedSeats = isCurrentMemberIdentity ? currentMember?.purchasedSeats ?? selectedIdentity.purchasedSeats : selectedIdentity.purchasedSeats;
   const [membershipType, setMembershipType] = useState<'personal' | 'enterprise'>(initialIdentity.membershipType);
   const [activeCycle, setActiveCycle] = useState(0);
   const [tierSelections, setTierSelections] = useState<Record<string, number>>({});
@@ -1197,9 +1293,10 @@ export function MembershipCenterModal({ onClose, onOpenUpgradePage, currentMembe
   const [pointsPurchaseOpen, setPointsPurchaseOpen] = useState(false);
   const [paymentSelection, setPaymentSelection] = useState<MembershipPaymentSelection | null>(null);
   const [enterprisePurchaseContactOpen, setEnterprisePurchaseContactOpen] = useState(false);
+  const [requirementDrawerOpen, setRequirementDrawerOpen] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<MembershipCoupon[]>(() => readAvailableMembershipCoupons());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const packageSectionRef = useRef<HTMLElement>(null);
+  const packageSectionRef = useRef<HTMLDivElement>(null);
   const purchaseButtonRef = useRef<HTMLButtonElement>(null);
   const [showStickyPurchase, setShowStickyPurchase] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -1227,7 +1324,7 @@ export function MembershipCenterModal({ onClose, onOpenUpgradePage, currentMembe
       toastTimerRef.current = null;
     }, 2400);
   };
-  const openUpgradeFromFaq = onOpenUpgradePage ? () => onOpenUpgradePage({ memberLevel: currentMemberLevel, memberName: currentMemberName, validUntil: currentMemberValidUntil, remainingPoints: currentMemberRemainingPoints, teamMemberCount: currentTeamMemberCount, purchasedSeats: currentPurchasedSeats }) : undefined;
+  const openUpgradeFromFaq = onOpenUpgradePage ? () => onOpenUpgradePage({ memberLevel: currentMemberLevel, memberName: currentMemberName, validUntil: currentMemberValidUntil, remainingPoints: currentMemberRemainingPoints, teamMemberCount: currentTeamMemberCount, purchasedSeats: currentPurchasedSeats, membershipType }) : undefined;
 
   useEffect(() => {
     return () => {
@@ -1341,33 +1438,49 @@ export function MembershipCenterModal({ onClose, onOpenUpgradePage, currentMembe
     };
   }, [activeCycleKey, membershipType, visiblePlans.length]);
 
+  const handleClose = () => {
+    onOpenChange?.(false);
+    onClose();
+  };
+
+  if (!open) return null;
+
   return <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1f2937]/35 p-0 text-[#202938]" role="dialog" aria-modal="true" aria-label="会员中心">
-    <div className="relative h-[100vh] max-h-[100vh] w-[90vw] overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.24)]">
+    <div style={requirementDrawerOpen ? { marginRight: MEMBERSHIP_REQUIREMENT_DRAWER_WIDTH } : undefined} className="relative h-[100vh] max-h-[100vh] w-[90vw] overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.24)] transition-[margin-right] duration-200">
       <div ref={scrollContainerRef} className="h-full overflow-x-hidden overflow-y-auto overscroll-x-none bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_58%,#f7f9fc_100%)]">
       <header className="sticky top-0 z-10 relative border-b border-[#edf0f4] bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-[48px] max-w-[1240px] items-center justify-between px-5 pr-16">
           <div className="flex min-w-0 items-center gap-3 text-[12px] text-[#657084]"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#efc7b4,#91a9c1)] text-[10px] text-white">营</span><span className="font-medium text-[#364052]">营萱</span>{currentMemberLevel == null ? <><span className="min-w-0 truncate">{currentMemberName}</span><span className="max-w-[220px] shrink-0 truncate">升级会员畅享模板AI创作权益</span></> : <span className="min-w-0 truncate">{currentMemberName}·有效期至{currentMemberValidUntil}</span>}<span className="shrink-0 text-[#d2d6dd]">|</span><span className="shrink-0 whitespace-nowrap">剩余积分：<b className="font-medium text-[#414b5b]">{currentMemberRemainingPoints}</b></span></div>
-          <div className="flex shrink-0 items-center gap-3 text-[12px] text-[#657084]"><div ref={identityMenuRef} className="relative"><button type="button" aria-haspopup="listbox" aria-expanded={identityMenuOpen} onClick={() => setIdentityMenuOpen((current) => !current)} className="flex items-center gap-1 whitespace-nowrap rounded-full border border-[#dfe5ee] bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#4e5a6c] shadow-[0_2px_7px_rgba(31,50,81,.06)] transition hover:border-[#a9c3e6] hover:text-[#168ff2]">身份：{selectedIdentity.label}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${identityMenuOpen ? 'rotate-180' : ''}`} /></button>{identityMenuOpen ? <div role="listbox" className="absolute right-0 top-[calc(100%+8px)] z-[30] w-[190px] rounded-[12px] border border-[#e4e9f0] bg-white p-1.5 shadow-[0_10px_24px_rgba(31,50,81,.16)]">{MEMBERSHIP_PREVIEW_IDENTITIES.map((identity) => <button type="button" role="option" aria-selected={identity.key === selectedIdentityKey} key={identity.key} onClick={() => selectIdentity(identity)} className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-left text-[11px] transition ${identity.key === selectedIdentityKey ? 'bg-[#edf6ff] font-semibold text-[#168ff2]' : 'text-[#536075] hover:bg-[#f7f8fa] hover:text-[#168ff2]'}`}><span>{identity.label}</span>{identity.key === selectedIdentityKey ? <span className="text-[10px]">当前</span> : null}</button>)}</div> : null}</div><button type="button" onClick={() => setCouponModalOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">优惠券/码</button><button type="button" onClick={() => setEnterprisePurchaseContactOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">咨询客服</button></div>
+          <div className="flex shrink-0 items-center gap-3 text-[12px] text-[#657084]"><button type="button" onClick={() => setCouponModalOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">优惠券/码</button><button type="button" onClick={() => setEnterprisePurchaseContactOpen(true)} className="whitespace-nowrap hover:text-[#168ff2]">咨询客服</button></div>
         </div>
         <button type="button" onClick={requestClose} aria-label="关闭会员中心" className="absolute right-4 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[#e5e9ef] bg-white text-[#7e8999] shadow-[0_4px_14px_rgba(38,53,79,.08)] transition hover:border-[#bdc7d7] hover:text-[#263247]"><X className="h-4 w-4" /></button>
       </header>
       {showStickyPurchase ? <StickyPurchaseBar plans={visiblePlans} details={activeDetails} packageDetails={packageDetails} membershipType={membershipType} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} onMembershipTypeChange={changeMembershipType} onPurchase={() => { scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); }} /> : null}
       <main className="mx-auto max-w-[1240px] px-5 pb-20 pt-0">
-        <section className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(112deg,#1588ee_0%,#1b94f7_48%,#ffd57d_100%)] px-6 py-5 shadow-[0_14px_34px_rgba(39,143,238,.17)]"><div className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full bg-white/25 blur-3xl" /><div className="pointer-events-none absolute right-[17%] top-0 h-32 w-32 rounded-full bg-[#fff3d0]/40 blur-2xl" /><div className="relative flex min-h-[82px] items-center justify-between gap-6"><div><div className="mb-3 flex items-center gap-2"><span className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-[#293548]">✦ Seedance 2.5</span><span className="rounded-full bg-white px-2 py-1 text-[10px] font-medium text-[#293548]">四重福利</span></div><p className="text-[17px] font-semibold text-white">🎟 ¥0.19超低单秒价备战双11</p><p className="mt-1 text-[15px] font-medium text-[#ffe74d]">最高额外加赠2个月会员、4万+积分</p></div><div className="hidden items-center gap-1.5 sm:flex"><CountdownBox value={countdown.days} label="天" /><CountdownBox value={countdown.hours} label="小时" /><CountdownBox value={countdown.minutes} label="分钟" /><CountdownBox value={countdown.seconds} label="秒" /></div></div></section>
-        <section className="pt-6"><div className="flex items-center justify-center gap-10 text-[17px] font-semibold"><button type="button" onClick={() => changeMembershipType('personal')} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalTab?.name ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button><button type="button" onClick={() => changeMembershipType('enterprise')} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseTab?.name ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button></div><div className="relative flex flex-wrap items-center justify-center gap-3"><CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={setActiveCycle} couponCycleKeys={couponCycleKeys} className="relative mx-0 mt-4 w-fit max-w-[min(960px,calc(100%-32px))]" /><button type="button" onClick={() => setPointsPurchaseOpen(true)} className="mt-4 shrink-0 whitespace-nowrap rounded-full border border-[#dfe4ec] bg-white px-4 py-2.5 text-[10px] font-medium text-[#4e5a6c] shadow-[0_2px_8px_rgba(31,50,81,.08)] transition hover:border-[#aabff0] hover:text-[#168ff2] md:absolute md:right-0 md:top-0">购买积分</button></div></section>
-        <section ref={packageSectionRef} className={`mt-[68px] ${visiblePlans.length === 1 ? 'flex justify-center' : ''}`} style={visiblePlans.length === 1 ? { display: 'flex', justifyContent: 'center' } : undefined}><div className={`grid w-full grid-cols-1 gap-4 sm:grid-cols-2 ${visiblePlans.length === 1 ? 'max-w-[720px] xl:grid-cols-1' : visiblePlans.length === 2 ? 'mx-auto max-w-[1120px] xl:grid-cols-2' : visiblePlans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`} style={visiblePlans.length === 1 ? { width: '100%', maxWidth: '720px', margin: '0 auto', gridTemplateColumns: 'minmax(0, 1fr)' } : undefined}>{visiblePlans.map((plan, index) => { const tierKey = `${membershipType}:${plan.memberType ?? plan.planKey}:${activeCycleKey}`; const cycleData = getCyclePlanData(plan, activeCycleKey); const hasTiers = Boolean(cycleData.tierOptions?.length); return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} cycleName={selectedCycleConfig?.name ?? cycleData.period} tierIndex={tierSelections[tierKey] ?? 0} onTierChange={hasTiers ? (value) => setTierSelections((current) => ({ ...current, [tierKey]: value })) : undefined} enterprise={membershipType === 'enterprise'} minimumSeats={enterpriseMinimumSeats} seats={getEnterpriseSeatCount(plan.planKey)} onSeatChange={membershipType === 'enterprise' ? (delta) => updateEnterpriseSeats(plan.planKey, delta) : undefined} onContactAdvisor={() => setEnterprisePurchaseContactOpen(true)} onPurchase={() => openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? cycleData.period, tierSelections[tierKey] ?? 0, membershipType === 'enterprise', getEnterpriseSeatCount(plan.planKey))} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage({ memberLevel: currentMemberLevel, memberName: currentMemberName, validUntil: currentMemberValidUntil, remainingPoints: currentMemberRemainingPoints, teamMemberCount: currentTeamMemberCount, purchasedSeats: currentPurchasedSeats }) : undefined} onPurchaseBlocked={showToast} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} coupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} />; })}</div></section>
+        <MembershipPromotionBanner countdown={countdown} />
+        <MembershipTypeCycleModule membershipType={membershipType} personalName={personalTab?.name} enterpriseName={enterpriseTab?.name} cycleOptions={cycleOptions} selectedCycle={selectedCycle} couponCycleKeys={couponCycleKeys} onMembershipTypeChange={changeMembershipType} onCycleChange={setActiveCycle} onOpenPointsPurchase={() => setPointsPurchaseOpen(true)} />
+        <div ref={packageSectionRef}><MembershipPackageModule plans={visiblePlans} membershipType={membershipType} activeCycleKey={activeCycleKey} cycleName={selectedCycleConfig?.name ?? ''} tierSelections={tierSelections} enterpriseMinimumSeats={enterpriseMinimumSeats} availableCoupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} purchaseButtonRef={purchaseButtonRef} getEnterpriseSeatCount={getEnterpriseSeatCount} onTierChange={(tierKey, value) => setTierSelections((current) => ({ ...current, [tierKey]: value }))} onSeatChange={updateEnterpriseSeats} onContactAdvisor={() => setEnterprisePurchaseContactOpen(true)} onPurchase={(plan, tierIndex, seats) => openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, tierIndex, membershipType === 'enterprise', seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage({ memberLevel: currentMemberLevel, memberName: currentMemberName, validUntil: currentMemberValidUntil, remainingPoints: currentMemberRemainingPoints, teamMemberCount: currentTeamMemberCount, purchasedSeats: currentPurchasedSeats, membershipType }) : undefined} onPurchaseBlocked={showToast} /></div>
         <section className="mx-auto mt-12 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} /> : <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section>
         <section className="mx-auto mt-4 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.modelConsumption.title}</h2><p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section>
         <CommercialLicenseOverview config={pageConfig.commercialLicense} />
         <section className="mx-auto mt-16 max-w-[1120px] rounded-[18px] bg-[#f7f8fa] p-6 sm:p-8"><h2 className="text-center text-[24px] font-semibold tracking-tight text-[#202938]">{pageConfig.faq.title}</h2><div className="mt-7 flex flex-col gap-5 lg:hidden">{pageConfig.faq.items.map((item, index) => <FaqCard key={`${item.question}-${index}`} item={item} index={index} onOpenUpgradePage={openUpgradeFromFaq} />)}</div><div className="mt-7 hidden grid-cols-2 gap-5 lg:grid"><div className="flex min-w-0 flex-col gap-5">{pageConfig.faq.items.filter((_, index) => index % 2 === 0).map((item, index) => <FaqCard key={item.question} item={item} index={index * 2} onOpenUpgradePage={openUpgradeFromFaq} />)}</div><div className="flex min-w-0 flex-col gap-5">{pageConfig.faq.items.filter((_, index) => index % 2 === 1).map((item, index) => <FaqCard key={item.question} item={item} index={index * 2 + 1} onOpenUpgradePage={openUpgradeFromFaq} />)}</div></div></section>
       </main>
       </div>
+      <div ref={identityMenuRef} className="absolute bottom-[72px] right-[112px] z-[120]">
+        <div className="flex items-center overflow-hidden rounded-[13px] border border-[#f0c44f] bg-[#fff8df] p-1 text-[12px] font-medium text-[#8b6a20] shadow-[0_12px_30px_rgba(140,105,32,.16)]" aria-label="身份切换">
+          <button type="button" aria-haspopup="listbox" aria-expanded={identityMenuOpen} aria-label={`当前身份：${selectedIdentity.label}，会员等级：${currentMemberLevel ?? '免费'}，剩余积分：${currentMemberRemainingPoints}`} onClick={() => setIdentityMenuOpen((current) => !current)} className="flex items-center gap-1 rounded-[9px] px-3 py-2 font-semibold text-[#604700] transition hover:bg-[#fff0b9]"><span>身份：{selectedIdentity.label}</span><ChevronDown className={`h-3.5 w-3.5 transition-transform ${identityMenuOpen ? 'rotate-180' : ''}`} /></button>
+        </div>
+        {identityMenuOpen ? <div role="listbox" className="absolute bottom-[calc(100%+8px)] right-0 w-[220px] overflow-hidden rounded-[14px] border border-[#f0c44f] bg-[#fffdf2] p-2 text-left shadow-[0_12px_32px_rgba(140,105,32,.2)]">
+          {MEMBERSHIP_PREVIEW_IDENTITIES.map((identity) => <button type="button" role="option" aria-selected={identity.key === selectedIdentityKey} key={identity.key} onClick={() => selectIdentity(identity)} className={`flex w-full items-center justify-between rounded-[9px] px-3 py-2 text-[12px] transition ${identity.key === selectedIdentityKey ? 'bg-[#ffd85f] font-semibold text-[#604700]' : 'text-[#6f5a25] hover:bg-[#fff0b9] hover:text-[#604700]'}`}><span>{identity.label}</span>{identity.key === selectedIdentityKey ? <span className="text-[10px]">当前</span> : null}</button>)}
+        </div> : null}
+      </div>
       {toastMessage ? <div role="status" className="pointer-events-none fixed bottom-8 left-1/2 z-[220] -translate-x-1/2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]">{toastMessage}</div> : null}
-      {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} membershipType={membershipType} onCycleChange={(index) => { setActiveCycle(index); setRetentionPlanIndex(0); }} onPlanChange={setRetentionPlanIndex} onPurchase={(plan) => { setRetentionOpen(false); openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, 0, membershipType === 'enterprise', membershipType === 'enterprise' ? getEnterpriseSeatCount(plan.planKey) : 1); }} onContinue={() => setRetentionOpen(false)} onClose={onClose} /> : null}
+      {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} membershipType={membershipType} onCycleChange={(index) => { setActiveCycle(index); setRetentionPlanIndex(0); }} onPlanChange={setRetentionPlanIndex} onPurchase={(plan) => { setRetentionOpen(false); openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, 0, membershipType === 'enterprise', membershipType === 'enterprise' ? getEnterpriseSeatCount(plan.planKey) : 1); }} onContinue={() => setRetentionOpen(false)} onClose={handleClose} /> : null}
       {paymentSelection ? <MembershipPaymentModal selection={paymentSelection} coupons={availableCoupons} onClose={() => setPaymentSelection(null)} /> : null}
       {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
       {couponModalOpen ? <MembershipCouponModal coupons={availableCoupons} onClose={() => setCouponModalOpen(false)} /> : null}
       {enterprisePurchaseContactOpen ? <EnterprisePurchaseContactModal config={pageConfig.commercialLicense.enterprisePurchaseContact} onClose={() => setEnterprisePurchaseContactOpen(false)} /> : null}
+      <MembershipRequirementFloatingButton title="会员支付弹框" subtitle="会员中心身份、套餐、积分、席位、支付和购买限制说明" sections={MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS} meta={MEMBERSHIP_CENTER_REQUIREMENT_META} open={requirementDrawerOpen} onOpenChange={setRequirementDrawerOpen} />
     </div>
   </div>;
 }

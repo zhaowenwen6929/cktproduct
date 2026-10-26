@@ -23,6 +23,7 @@ import {
   Users,
 } from 'lucide-react';
 import { RequirementDocumentDrawer, type RequirementSpec } from './RequirementDocumentPage';
+import { MEMBERSHIP_CENTER_REQUIREMENT_META, MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_UPGRADE_REQUIREMENT_META, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, type MembershipRequirementSection } from './MembershipRequirementFloatingButton';
 
 type SkillOption = {
   label: string;
@@ -314,7 +315,7 @@ type RequirementNavItem = {
 };
 
 const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
-  { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirementKey: 'V2610', requirement: '完善会员套餐、会员页面、补差价升级和积分配置能力。', summary: '会员中心后台和前台会员页同步改版。', details: ['会员套餐管理、开通会员、会员页面配置和补差价升级页作为本次改版的子需求。', '统一补充积分、权益、展示配置和企业使用场景。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/requirements/membership' },
+  { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirementKey: 'V2610', requirement: '完善会员套餐、会员页面、补差价升级、会员支付和积分配置能力。', summary: '会员中心后台和前台会员页同步改版。', details: ['会员套餐管理、开通会员、会员页面配置、会员支付弹框和补差价升级页作为本次改版的子需求。', '统一补充积分、权益、展示配置、企业席位、支付限制和需求说明。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/requirements/membership' },
   { id: 'membership-packages', title: '会员套餐管理新增会员等级及积分量', navLabels: ['会员套餐管理'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员套餐管理支持新增会员等级、level 和积分发放配置。', summary: '新增会员等级、level、积分量、发放单位和发放周期，并支持历史套餐按等级回显且不可修改。', details: ['会员类型列表新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220，并显示对应 level。', '新增套餐积分量为必填项，填写非负整数，默认每人、按月，可切换团队和一次性。', '历史会员等级积分量非必填，按等级积分量自动回显且不可修改；终身套餐按36135天识别并一次性发放。', '购买套餐时按购买套餐对应的积分量立即发放，上一笔对应的未使用积分量失效；未配置时回退到会员等级积分量和规则。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-packages' },
   { id: 'membership-open', title: '开通会员新增新会员等级', navLabels: ['开通会员'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '开通会员页支持会员类型、新增等级 level，以及成员人数下的积分量、发放单位和发放周期。', summary: '新增会员类型和 level，并在成员人数下配置积分量、发放单位和发放周期。', details: ['会员类型列表包含完整会员类型，并展示对应 level。', '新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '会员类型显示名称在前，level 数字在后。', '成员人数下新增积分量，支持非负整数、发放单位、发放周期和对应发放规则。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-open' },
   { id: 'user-segments-member-level', title: '用户分群新增新会员等级', navLabels: ['用户分群'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户分群中的会员等级筛选支持新增会员等级及 level。', summary: 'CSV 导入分群、规则分群和定制分群条件支持新增会员等级及 level 筛选。', details: ['会员等级筛选新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。', '新增等级在会员类型选项中以名称在前、level 数字在后的格式展示。', '是会员、是会员按等级、不是会员和不是会员按等级均支持新会员等级筛选。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-segments' },
@@ -322,7 +323,8 @@ const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
   { id: 'user-authorization-member-level', title: '用户授权信息管理新增新会员等级', navLabels: ['授权信息管理与查询'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户授权信息管理的权益等级/类型筛选支持新增会员等级及 level。', summary: '权益等级/类型筛选支持新增会员等级及 level。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-authorization-management' },
   { id: 'membership-activation-member-level', title: '会员激活码新增新会员等级', navLabels: ['活动列表'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员激活码活动的激活码类型支持新增会员等级及 level。', summary: '活动列表中的激活码类型支持新增会员等级及 level。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/membership-activation' },
   { id: 'membership-page-config', title: '会员页面配置套餐与权益', navLabels: ['会员页面配置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '配置网页版和移动端会员页面的套餐、权益和说明内容。', summary: '会员页配置拆分个人使用和企业使用，并支持各模块 JSON 配置。', details: ['支持网页版和移动端两个端配置，默认进入网页版。', '支持套餐、权益概览、权益明细、模型消耗、商用授权和常见问题模块。', '会员套餐价格和积分沿用真实套餐数据。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-page-config' },
-  { id: 'membership-upgrade-page', title: '会员补差价升级页', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '按会员套餐管理中的“Web端-新版-补差价页面”套餐组展示会员补差价升级页。', summary: '以补差价升级套餐组数据还原单人/团队、会员等级、套餐选择和支付二维码区域。', details: ['页面数据来源为会员套餐管理中的“Web端-新版-补差价页面”套餐组（ID 9），不使用普通会员页套餐组替代。', '单人用、团队用和会员等级使用会员支付弹框一致的新会员名称，包含基础版（个人）、专业版（个人）、基础版（企业）、专业版（企业）和旗舰版（企业）。', '各会员等级默认选中第一个套餐；套餐卡片展示套餐名称、现价、划线原价和套餐积分说明。', '套餐下方右侧展示支付二维码、实际应付金额、成员席位提示、支付协议和支付方式。', '支持在单人用与团队用、会员等级和套餐之间切换，并保持当前选择与支付金额同步。'], addedAt: '2026-10-25', status: '待开发', path: '/membership-upgrade' },
+  { id: 'membership-upgrade-page', title: '会员补差价升级页', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '因新增会员等级和套餐展示形式，改造补差价升级页的套餐显示区域，支持新增会员的补差价升级；下方已有支付区域沿用原能力，仅接收选中的套餐结果。', summary: '以补差价升级套餐组数据展示个人/企业、按时间/按会员、套餐选择和席位计算；本次改动范围不包含已有支付区域布局。', details: ['页面数据来源为会员套餐管理中的“Web端-新版-补差价升级”套餐组（ID 9），不使用普通会员页套餐组替代。', '个人使用展示基础版（个人）、专业版（个人），企业使用展示基础版（企业）、专业版（企业）、旗舰版（企业）；页面默认按时间展示，也支持按会员展示。', '每个会员等级默认选中第一个时间组和积分档位；同一时长的不同积分量聚合在同一卡片内，切换积分档位同步现价、每积分价格、积分说明和支付金额。', '企业席位按当前团队人数或已购席位自动填充，价格按基础价 +（席位数 - 1）× 单席位价格计算；席位最大为20人，超过20人自动回落并 toast 提示；签约套餐和降级套餐不可购买。', '可购买套餐继续使用下方已有支付区域；不可购买套餐在该支付区域位置展示原因提示，不生成支付二维码。'], addedAt: '2026-10-26', status: '待开发', path: '/membership-upgrade' },
+  { id: 'membership-center-payment-modal', title: '会员支付弹框购买与升级规则', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员中心支付弹框按新会员等级、套餐积分、席位和购买限制完成支付展示，并提供完整 V2610 需求说明。', summary: '统一会员身份、套餐时长、积分档位、优惠券、席位、支付金额和购买限制。', details: ['个人使用展示基础版（个人）、专业版（个人），企业使用展示基础版（企业）、专业版（企业）、旗舰版（企业），新增等级按 V2610 总排序判断续费、升级和降级。', '顶部会员信息显示会员名称、有效期和剩余积分；免费用户显示升级提示，会员用户显示具体有效期。', '企业席位按实际成员数或已购席位填充，价格按基础价 +（N - 1）× 单席位价格计算；签约套餐限制 1 席位。', '支付弹框显示优惠后金额、购买后有效期、每积分价格、二维码、支付方式和协议；不可购买套餐不展示支付码并用 toast 说明原因。', '弹框右下角提供 V2610 黄色需求说明悬浮按钮，说明会员支付弹框的数据来源、字段、规则和样式。'], addedAt: '2026-10-26', status: '待开发', path: '/agent-skills-home' },
   { id: 'membership-center-home-entry', title: '首页会员中心入口文案', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '首页右上角会员入口从“开通会员”调整为“会员中心”，并继续打开会员中心弹框。', summary: '首页顶部导航统一使用“会员中心”文案，并在改动区域展示 V2610 需求标识。', details: ['入口位置为创客贴首页顶部导航右上角。', '点击“会员中心”打开已有会员中心弹框，不改变原有打开行为。', '改动区域沿用 2026年10月会员改版标识 V2610，标识不遮挡入口按钮。'], addedAt: '2026-10-25', status: '待开发', path: '/agent-skills-home' },
   { id: 'guided-search', title: '搜索引导管理', level: 'main', requirementKey: 'SG-2610', requirement: '维护引导词节点、节点关系，并查询实际映射配置。', summary: '支持引导词、关系和映射结果的查询与维护。', details: ['支持节点、关系和映射三个管理视图。', '可按关键词、层级、关系类型和状态筛选数据。', '支持导入、编辑、启停和删除操作。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/guided-search' },
   { id: 'ai-ecommerce', title: 'AI电商配置', level: 'main', requirementKey: 'AIE-2610', requirement: '按 function_code 和 scene 查询、编辑 AI 电商配置。', summary: '面向 AI 电商技能配置的查询、编辑和缓存管理。', details: ['支持按功能标识和场景查询配置。', '支持 JSON 草稿编辑、格式校验和保存。', '支持清理对应功能缓存，并保留最近查询记录。'], addedAt: '2026-10-22', status: '待开发', path: '/admin-backoffice/ai-ecommerce' },
@@ -426,6 +428,7 @@ function getRequirementDisplayPath(item: RequirementNavItem): string {
   if (item.id === 'ai-ecommerce') return `${projectName} > 灵感社区 > 玩法管理 > AI电商配置`;
   if (item.id === 'membership-redesign') return `${projectName} > 会员中心 > 会员改版`;
   if (item.id === 'membership-upgrade-page') return `${projectName} > 会员中心 > 补差价升级页`;
+  if (item.id === 'membership-center-payment-modal') return `${projectName} > 首页 > 会员中心 > 会员支付弹框`;
   if (item.id === 'membership-center-home-entry') return `${projectName} > 首页 > 顶部导航 > 会员中心`;
   return `${projectName} > 需求中心`;
 }
@@ -602,7 +605,61 @@ type RequirementListPageProps = {
   onNavigateToRequirementList?: () => void;
 };
 
+function getMembershipRequirementDetailLabel(content: string, sectionTitle: string, index: number) {
+  const separatorIndex = content.search(/[：:]/);
+  if (separatorIndex > 1 && separatorIndex <= 22) return content.slice(0, separatorIndex);
+  return `${sectionTitle}需求点 ${String(index + 1).padStart(2, '0')}`;
+}
+
+function getMembershipRequirementDetailContent(content: string, sectionTitle: string, index: number) {
+  const label = getMembershipRequirementDetailLabel(content, sectionTitle, index);
+  const prefix = `${label}：`;
+  return content.startsWith(prefix) ? content.slice(prefix.length).trim() : content;
+}
+
+function buildMembershipRequirementSpec(item: RequirementNavItem, sections: MembershipRequirementSection[], meta: { background: string; goal: string; path: string; acceptance: string[]; verificationNotes: string[] }): RequirementSpec {
+  return {
+    title: item.title,
+    requirementKey: item.requirementKey,
+    status: item.status,
+    eyebrow: 'MEMBERSHIP EXPERIENCE · PAGE REQUIREMENT',
+    summary: item.summary,
+    background: meta.background,
+    goal: meta.goal,
+    sections: [
+      {
+        title: '需求描述',
+        description: '本页面需要实现的核心改动和业务边界。',
+        items: [{ label: '核心需求', content: item.requirement }],
+      },
+      ...sections.map((section) => ({
+        title: section.title,
+        description: '按模块拆分可定位、可开发、可验收的具体需求点。',
+        items: section.items.map((content, index) => ({
+          label: getMembershipRequirementDetailLabel(content, section.title, index),
+          content: getMembershipRequirementDetailContent(content, section.title, index),
+          path: meta.path.includes('/membership-upgrade') ? '/membership-upgrade' : '/agent-skills-home',
+        })),
+      })),
+      {
+        title: '所在路径',
+        description: '需求入口和真实页面路由。',
+        items: [{ label: '所在路径', content: meta.path, path: meta.path.includes('/membership-upgrade') ? '/membership-upgrade' : '/agent-skills-home' }],
+      },
+    ],
+    acceptance: meta.acceptance,
+    verificationNotes: meta.verificationNotes,
+  };
+}
+
 function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
+  if (item.id === 'membership-upgrade-page') {
+    return buildMembershipRequirementSpec(item, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, MEMBERSHIP_UPGRADE_REQUIREMENT_META);
+  }
+  if (item.id === 'membership-center-payment-modal') {
+    return buildMembershipRequirementSpec(item, MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_CENTER_REQUIREMENT_META);
+  }
+
   const childRequirements = item.level === 'main' ? getRequirementChildren(item.id) : [];
   const detailedRequirementGroups = childRequirements.map((child) => ({
     title: child.title,

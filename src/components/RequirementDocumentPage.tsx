@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, Check, CheckCircle2, ChevronRight, Clipboard, ClipboardList, FileText, Maximize2, Minimize2, X } from 'lucide-react';
+import { MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, type MembershipRequirementSection } from './MembershipRequirementFloatingButton';
 
 type RequirementKind = 'ai-ecommerce' | 'search-guide' | 'membership';
 
@@ -31,7 +32,14 @@ export type RequirementSpec = {
   goal: string;
   sections: RequirementSection[];
   acceptance: string[];
+  verificationNotes?: string[];
 };
+
+const toRequirementDocumentSections = (prefix: string, sections: MembershipRequirementSection[]): RequirementSection[] => sections.map((section) => ({
+  title: prefix ? `${prefix} · ${section.title}` : section.title,
+  description: '',
+  items: section.items.map((content, index) => ({ label: `${section.title}${index + 1}`, content })),
+}));
 
 const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
   membership: {
@@ -39,17 +47,18 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
     requirementKey: 'V2610',
     status: '待开发',
     eyebrow: 'MEMBERSHIP EXPERIENCE REDESIGN',
-    summary: '统一完善会员开通、会员套餐和会员页面配置能力，确保会员类型、套餐权益和积分发放规则在各入口保持一致。',
-    background: '会员中心后台包含开通会员、会员套餐管理和会员页面配置等多个入口，会员类型和套餐规则需要同步维护；本次改版将新增会员等级、套餐积分配置和会员页面版本管理，并让开发可以通过需求标识快速对齐改动点。',
-    goal: '建立一套统一的会员管理后台交互和数据展示规则，保证会员类型、level、套餐积分、权益配置和页面版本之间的数据口径一致。',
+    summary: '统一完善会员开通、会员套餐和会员页面配置能力，并将全新的会员支付弹框建设为可复用组件，确保会员类型、套餐权益、支付和积分规则在各入口保持一致。',
+    background: '会员中心后台包含开通会员、会员套餐管理和会员页面配置等多个入口，会员类型和套餐规则需要同步维护；本次改版将新增会员等级、套餐积分配置和会员页面版本管理。前台会员弹框和补差价升级页还需要明确页面配置、套餐明细、固定字典和计算值的边界，避免技术人员误把演示数据当成后台接口数据。',
+    goal: '建立一套可直接实现和验收的会员管理后台及前台会员页面数据口径：明确 member/memberLevel、套餐时长、积分量、价格、席位、页面配置和购买限制分别来自哪里，以及哪些值由前端规则计算；首页会员入口、后续会员页入口和购买流程统一调用 MembershipCenterModal，并按模块维护数据和交互边界。',
     sections: [
+      ...toRequirementDocumentSections('', MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS),
       {
         title: '开通会员新增新会员等级',
         description: '开通会员页沿用套餐管理中的完整会员类型列表，新增等级必须同步展示名称和 level。',
         items: [
           { label: '入口位置', content: '会员中心 > 开通会员，进入后左侧会员中心目录默认展开并选中开通会员。' },
-          { label: '会员类型', content: '与会员套餐管理使用同一份会员类型数据，包含个人版VIP、标准版(个人)、标准版(企业)、标准版(大企业)、个人高级版、企业高级版、高级版、协作版、旗舰版、高级版(大企业)、通用版(个人)、通用版(企业)、高级版(团队)、专业版(团队)、至尊版(团队)、基础版(单人)、高级版(单人)、专业版(单人)、至尊版(单人)。' },
-          { label: '新增等级', content: '基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220；列表展示名称在前，level 数字在后。' },
+          { label: '会员类型', content: '后台来源为会员套餐管理中的 member 字段；当前原型的完整选项由 MembershipPackagePage.tsx 的 MEMBER_TYPE_OPTIONS 固定提供，真实接入时应替换为会员类型接口返回值，不能从卡片显示名称反推。' },
+          { label: '新增等级', content: '新增等级为基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220；名称取 member，等级数字取 memberLevel，当前补差价/会员页对这 5 个等级使用固定映射作为无配置时回退。' },
           { label: '开通表单', content: '包含用户ID、会员类型、会员时长、成员人数、积分量、发放单位、发放周期、支付状态、支付金额、开通公司名称和开通原因；新会员等级积分量为必填项，历史会员等级按等级积分量回显且不可修改。终身会员按99年识别。' },
           { label: '积分量说明', content: '历史会员开通时积分量非必填，前端按会员等级自动回显等级积分量并锁定；新会员等级仍可配置具体值、发放单位和周期。' },
           { label: '专业版布局', content: '切换专业版后隐藏会员类型，增加“配置域名”页签和配置域名字段，保留用户ID、会员时长、成员人数、积分量、支付状态、支付金额、开通公司名称和开通原因。' },
@@ -60,9 +69,9 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         title: '会员套餐管理与积分量',
         description: '套餐详情、新增套餐和编辑套餐中统一展示积分量配置，并保留历史套餐兼容逻辑。',
         items: [
-          { label: '积分量配置', content: '新会员等级积分量为必填项，填写非负整数；历史会员等级积分量非必填，按等级积分量自动回显且不可修改；发放单位默认每人，可选团队；发放周期默认按月，可选一次性。' },
+          { label: '积分量配置', content: '后台套餐明细字段为 points、pointsUnit、pointsCycle；新会员等级积分量为必填项，填写非负整数；发放单位默认每人，可选团队；发放周期默认按月，可选一次性。前台卡片不从会员名称猜积分，直接读取当前选中套餐的这 3 个字段。' },
           { label: '历史套餐', content: '历史等级创建套餐时，积分量按所属会员等级自动回显且不可编辑；终身会员按套餐时长99年识别，即按天字段填写36135天。' },
-          { label: '列表展示规则', content: '积分量为空时显示“按会员等级发”；已配置具体值时显示“具体值/单位/周期”，例如“600/每人/按月”。' },
+          { label: '列表展示规则', content: '积分量为空时显示固定文案“按会员等级发”；已配置具体值时显示 points/pointsUnit/pointsCycle，例如“600/每人/按月”。会员支付和补差价页面的积分档位只使用 points 非空且 status=显示的套餐。' },
           { label: '积分发放规则', content: '购买套餐时，对应用户/团队的积分量按照购买套餐对应的「积分量」设置进行发放；每次购买将立即按生效套餐发放，上一笔对应的未使用积分量失效。优先查询用户当前生效套餐对应的积分量，套餐中未配置积分量的，按照套餐对应会员等级的积分量和规则发放。' },
           { label: '改动标识', content: '具体功能点显示 V2610 需求标识并支持查看需求说明；上级目录只显示红点，标识和说明不能遮挡原有功能内容。' },
         ],
@@ -78,13 +87,26 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         ],
       },
       {
+        title: '会员支付弹框组件化',
+        description: '全新的会员支付弹框作为统一可调用组件承载会员入口、套餐选择和购买支付，按模块拆分并补齐数据来源与验收口径。',
+        items: [
+          { label: '组件出口', content: '前端统一使用 src/components/MembershipCenterModal.tsx 导出的 MembershipCenterModal；公共参数包含 open、onClose、onOpenChange、currentMember、onOpenUpgradePage。' },
+          { label: '模块划分', content: '组件拆分为顶部 Banner、类型/时间切换、套餐展示、权益内容、支付与订单、FAQ/优惠券/客服/需求说明辅助模块；模块之间通过当前会员、membershipType、activeCycle、tierIndex、seats 和 MembershipPaymentSelection 传递数据。' },
+          { label: '统一入口', content: '首页右上角“会员中心”、后续会员页入口和会员购买流程使用同一会员弹框组件；补差价升级仍由 FAQ 第 8 条进入 /membership-upgrade，不把延期升级和补差价升级混为一套支付逻辑。' },
+          { label: '数据边界', content: '页面配置和套餐明细从现有后台原型配置读取，会员身份、价格、积分、席位和有效期分别按字段、固定字典或计算规则使用；Banner 活动文案属于固定前端活动配置，不从套餐名称推导。' },
+          { label: '验收重点', content: '可从不同入口打开同一组件；类型、时间、积分和席位切换后卡片与二维码金额同步；不可购买时显示原因而不生成二维码；open/onOpenChange 可以控制弹框生命周期。' },
+        ],
+      },
+      {
         title: '会员补差价升级页',
-        description: '使用补差价升级套餐组数据还原会员升级页面，选择套餐后在右侧完成扫码支付。',
+        description: '因新增会员等级和套餐展示形式，改造补差价升级页的套餐显示区域；下方已有支付区域沿用原能力，仅接收选中的套餐结果。',
         items: [
           { label: '页面入口', content: '会员中心 > 会员补差价升级页，页面独立展示用户套餐信息、单人/团队切换和升级套餐。', path: '/membership-upgrade' },
-          { label: '数据来源', content: '读取会员套餐管理中的“Web端-新版-补差价页面”套餐组（ID 9），页面不使用普通会员页套餐组替代。', path: '/membership-upgrade' },
-          { label: '等级与套餐', content: '单人用、团队用和会员等级使用会员支付弹框一致的新会员名称；每个等级默认选中第一个套餐，并展示现价、划线原价、积分说明和支付金额。', path: '/membership-upgrade' },
-          { label: '支付区域', content: '套餐下方右侧展示支付二维码、实际应付金额、成员席位提示、支付协议和支付宝/微信支付方式；切换套餐后二维码区域的金额同步更新。', path: '/membership-upgrade' },
+          { label: '数据来源', content: '读取会员套餐管理中的“Web端-新版-补差价页面”套餐组（ID 9）；原型缓存为 localStorage.admin-membership-package-details["9"]，无缓存使用 MEMBERSHIP_UPGRADE_PACKAGE_DETAILS。新增会员行由 Web端-新版套餐组（ID 8）的 member/memberLevel/points/价格等字段同步复制，不能只复制名称。', path: '/membership-upgrade' },
+          { label: '字段与筛选', content: '套餐名称取 displayName，时长取 duration，排序取 sort，价格取 currentPrice/originalPrice/discount，订阅识别取 packageType，积分取 points/pointsUnit/pointsCycle/pointsDescription，席位单价取 seatUnitPrice；仅 status=显示且 points 非空的行参与时间和积分档位展示。', path: '/membership-upgrade' },
+          { label: '等级与套餐', content: '个人使用和企业使用的等级展示来自固定等级映射/会员页面配置；每个等级按 sort 最小的时间组默认选中，组内按 points 从小到大默认选中第一个积分档位，并展示当前行的价格、划线原价、积分说明和支付金额。', path: '/membership-upgrade' },
+          { label: '积分切换', content: '同一 memberLevel、duration、packageType 下存在多个 points 时才显示积分滑块；切换后重新匹配对应套餐行，价格、每积分价格、积分说明和二维码金额全部使用新行重新计算。', path: '/membership-upgrade' },
+          { label: '支付区域', content: '套餐显示区域下方继续使用已有支付区域，展示支付二维码、实际应付金额、成员席位提示、支付协议和支付宝/微信支付方式；切换套餐后仅同步更新金额和支付数据，不改动支付区域布局。', path: '/membership-upgrade' },
         ],
       },
       {
@@ -106,6 +128,8 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
           { label: '遮挡处理', content: '需求标识放在改动区域虚线框外侧；需求说明弹层自动避让顶部、底部和页面边界，确保内容完整可见。' },
         ],
       },
+      ...toRequirementDocumentSections('会员补差价升级页', MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS.slice(2)),
+      ...toRequirementDocumentSections('会员支付弹框', MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS.slice(2)),
     ],
     acceptance: [
       '开通会员页的会员类型与会员套餐管理完全共用同一份列表，新增 5 个会员等级名称和 level 展示一致。',
@@ -113,7 +137,10 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
       '积分发放优先使用当前生效套餐配置，套餐未配置时回退到对应会员等级配置，规则说明分条清晰展示。',
       '会员页面配置支持版本新增、状态开关和进入具体版本配置，默认版本与左侧目录状态正确。',
       '首页右上角入口显示“会员中心”，点击后继续打开会员中心弹框，入口附近显示 V2610 且不遮挡按钮。',
-      '会员补差价升级页从 ID 9 套餐组读取数据，单人/团队和会员等级名称与会员支付弹框一致，默认选中第一个套餐并正确同步支付二维码金额。',
+      '会员补差价升级页从 ID 9 套餐组读取数据，并能追溯到 ID 8 Web 新版新增会员的完整配置；页面明确展示每个字段的来源、固定回退和计算规则，不把前端演示数据描述成真实接口。',
+      '同一等级、同一时长存在多个积分量时才显示积分切换；切换不同积分量后，价格、划线原价、每积分价格、积分说明和二维码金额都按对应套餐行更新。',
+      '会员补差价升级页和会员支付弹框均展示 V2610 黄色需求说明悬浮按钮，点击后从按钮左侧打开可滚动说明，正文覆盖等级、排序、数据、字段、规则和样式。',
+      '需求说明正文不包含过程讨论或修改记录，页面标识、需求列表、需求说明和验收标准均使用同一套会员等级、价格和购买限制口径。',
       'V2610 在具体功能点、需求说明和页面入口处保持一致，上级目录仅显示待开发红点，已上线标识变为绿色。',
       '所有需求标识和说明均不遮挡原有表单、表格、下拉选项及操作按钮，弹层在可视区域内完整展示。',
     ],
@@ -264,7 +291,8 @@ function buildAiPrompt(spec: RequirementSpec) {
     return `### ${index + 1}. ${section.title}\n${section.description}\n${items}${groups ? `\n${groups}` : ''}`;
   }).join('\n\n');
 
-  return `你是一名资深后台产品经理、交互设计师和前端开发者。请严格根据下面的需求说明，设计并实现“${spec.title}”功能，不要擅自扩展业务范围。\n\n## 需求概述\n${spec.summary}\n\n## 需求背景\n${spec.background}\n\n## 需求目标\n${spec.goal}\n\n## 具体需求\n${sections}\n\n## 验收标准\n${spec.acceptance.map((item) => `- ${item}`).join('\n')}\n\n## 输出要求\n请先梳理页面信息架构、组件划分、交互流程、接口依赖、权限差异、空态、加载态和错误态，再给出实现方案。保持现有项目的视觉风格和路由结构；涉及接口时说明请求参数、返回数据和异常处理，不要编造未确认的后端能力。`;
+  const verification = spec.verificationNotes?.length ? `\n\n## 验证辅助项（非业务需求）\n${spec.verificationNotes.map((item) => `- ${item}`).join('\n')}` : '';
+  return `你是一名资深后台产品经理、交互设计师和前端开发者。请严格根据下面的需求说明，设计并实现“${spec.title}”功能，不要擅自扩展业务范围。\n\n## 需求概述\n${spec.summary}\n\n## 需求背景\n${spec.background}\n\n## 需求目标\n${spec.goal}\n\n## 具体需求\n${sections}\n\n## 验收标准\n${spec.acceptance.map((item) => `- ${item}`).join('\n')}${verification}\n\n## 输出要求\n请先梳理页面信息架构、组件划分、交互流程、接口依赖、权限差异、空态、加载态和错误态，再给出实现方案。保持现有项目的视觉风格和路由结构；涉及接口时说明请求参数、返回数据和异常处理，不要编造未确认的后端能力。`;
 }
 
 function RequirementSectionItem({ item, compact = false, onNavigate }: { item: RequirementSectionItemData; compact?: boolean; onNavigate?: (path: string) => void }) {
@@ -357,6 +385,8 @@ export function RequirementDocumentPage({ kind, onBack, onNavigate }: { kind: Re
             <div className="rounded-[12px] border border-[#e3ecfb] bg-[#f7faff] p-5"><h2 className="text-[15px] font-semibold text-[#344158]">需求目标</h2><p className="mt-3 text-[13px] leading-6 text-[#6c788c]">{spec.goal}</p></div>
           </div>
 
+          {spec.verificationNotes?.length ? <section className="mx-6 mb-4 rounded-[12px] border border-[#f1d98c] bg-[#fffaf0] p-5"><h2 className="text-[15px] font-semibold text-[#8b650d]">验证辅助项（非业务需求）</h2><p className="mt-1 text-[12px] leading-5 text-[#a07b28]">以下内容仅用于验证页面效果和规则，不属于产品业务功能，不纳入业务验收口径。</p><div className="mt-3 grid gap-2 md:grid-cols-2">{spec.verificationNotes.map((item) => <div key={item} className="flex items-start gap-2 text-[12px] leading-5 text-[#8a7133]"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#d4a62a]" />{item.replace(/^验证辅助项，不属于[^：]+：/, '')}</div>)}</div></section> : null}
+
           <div className="space-y-4 px-6 pb-6">
             {spec.sections.map((section, sectionIndex) => (
               <section key={section.title} className="rounded-[12px] border border-[#e8ecf2] bg-white p-5">
@@ -419,6 +449,8 @@ export function RequirementDocumentDrawer({ kind, spec: customSpec, onClose, onN
             </div>
 
             <div className="grid gap-3 border-t border-[#edf0f4] p-4 md:grid-cols-2 md:p-5"><div className="rounded-[10px] border border-[#edf0f4] bg-[#fbfcfe] p-4"><h2 className="text-[14px] font-semibold text-[#344158]">需求背景</h2><p className="mt-2 text-[12px] leading-5 text-[#6c788c]">{spec.background}</p></div><div className="rounded-[10px] border border-[#e3ecfb] bg-[#f7faff] p-4"><h2 className="text-[14px] font-semibold text-[#344158]">需求目标</h2><p className="mt-2 text-[12px] leading-5 text-[#6c788c]">{spec.goal}</p></div></div>
+
+            {spec.verificationNotes?.length ? <section className="mx-4 mb-3 rounded-[10px] border border-[#f1d98c] bg-[#fffaf0] p-4 md:mx-5"><h2 className="text-[14px] font-semibold text-[#8b650d]">验证辅助项（非业务需求）</h2><p className="mt-1 text-[11px] leading-5 text-[#a07b28]">以下内容仅用于验证页面效果和规则，不属于产品业务功能，不纳入业务验收口径。</p><div className="mt-2 grid gap-2">{spec.verificationNotes.map((item) => <div key={item} className="flex items-start gap-2 text-[11px] leading-5 text-[#8a7133]"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#d4a62a]" />{item.replace(/^验证辅助项，不属于[^：]+：/, '')}</div>)}</div></section> : null}
 
             <div className="space-y-3 px-4 pb-4 md:px-5 md:pb-5">{spec.sections.map((section, sectionIndex) => <section key={section.title} className="rounded-[10px] border border-[#e8ecf2] bg-white p-4"><div className="flex items-start gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] bg-[#edf4ff] text-[10px] font-semibold text-[#4c87d7]">{String(sectionIndex + 1).padStart(2, '0')}</span><div><h2 className="text-[14px] font-semibold text-[#344158]">{section.title}</h2>{section.description ? <p className="mt-1 text-[11px] leading-5 text-[#8b96a7]">{section.description}</p> : null}</div></div><RequirementSectionItems section={section} compact onNavigate={onNavigate} /></section>)}</div>
 

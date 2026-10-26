@@ -962,7 +962,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         </div>
       ) : null}
 
-      {membershipOpen ? <MembershipCenterModal onClose={() => setMembershipOpen(false)} onOpenUpgradePage={(currentMember) => { setMembershipOpen(false); onOpenMembershipUpgrade(currentMember); }} /> : null}
+      {membershipOpen ? <MembershipCenterModal open={membershipOpen} onOpenChange={setMembershipOpen} onClose={() => setMembershipOpen(false)} onOpenUpgradePage={(currentMember) => { setMembershipOpen(false); onOpenMembershipUpgrade(currentMember); }} /> : null}
 
       {selectedSkill ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1b2335]/40 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>

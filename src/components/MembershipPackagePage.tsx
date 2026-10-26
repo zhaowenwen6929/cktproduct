@@ -263,7 +263,7 @@ function createWebSkuDetails(startId: number, member: string, points: number, pr
       trialDays: 0,
       segment: '/',
       displayTime: '/',
-      status: '显示',
+      status: price.displayName === '月度' ? '隐藏' : '显示',
       points,
       pointsUnit,
       pointsCycle: price.duration === LIFETIME_MEMBER_DAYS ? '一次性' : '按月',
@@ -370,64 +370,6 @@ export const WEB_NEW_MEMBER_PACKAGE_DETAILS: PackageDetailRow[] = [
 
 export const MEMBERSHIP_UPGRADE_PACKAGE_ID = 9;
 
-const createUpgradePackageDetails = (startId: number, member: string, memberLevel: number, rows: Array<{ displayName: string; duration: number; price: number; originalPrice: number; points: number; pointsCycle?: '按月' | '一次性'; pointsDescription: string }>) => rows.map((row, index): PackageDetailRow => ({
-  id: startId + index,
-  name: `upgrade-${member}-${row.displayName}（${row.price}）`,
-  displayName: row.displayName,
-  duration: row.duration,
-  originalPrice: row.originalPrice,
-  discount: row.originalPrice > 0 ? Math.round((row.price / row.originalPrice) * 100) : 0,
-  currentPrice: row.price,
-  contractPrice: '-',
-  packageType: '普通套餐',
-  member,
-  memberLevel,
-  sort: index,
-  trialDays: 0,
-  segment: '/',
-  displayTime: '/',
-  status: '显示',
-  points: row.points,
-  pointsUnit: member.includes('企业') ? '团队' : '每人',
-  pointsCycle: row.pointsCycle ?? '按月',
-  seatUnitPrice: getEnterpriseSeatUnitPrice(memberLevel, member),
-  pointsDescription: row.pointsDescription,
-}));
-
-/** 补差价升级页使用的正式套餐组数据（Web端-新版-补差价页面，ID 9）。 */
-export const MEMBERSHIP_UPGRADE_PACKAGE_DETAILS: PackageDetailRow[] = [
-  ...createUpgradePackageDetails(4001, '基础版（个人）', 240, [
-    { displayName: '终身', duration: LIFETIME_MEMBER_DAYS, price: 399, originalPrice: 950, points: 200, pointsCycle: '一次性', pointsDescription: '长期性价比首选' },
-    { displayName: '2年', duration: 730, price: 199, originalPrice: 362, points: 600, pointsDescription: '8.3元/月，送600积分' },
-    { displayName: '季度会员', duration: 90, price: 89, originalPrice: 168, points: 600, pointsDescription: '29.7元/月' },
-    { displayName: '1年', duration: 365, price: 179, originalPrice: 245, points: 600, pointsDescription: '14.9元/月，送600积分' },
-  ]),
-  ...createUpgradePackageDetails(4011, '专业版（个人）', 241, [
-    { displayName: '2年+送1年', duration: 1095, price: 569, originalPrice: 739, points: 1200, pointsDescription: '15.8元/月，送1200积分' },
-    { displayName: '1年', duration: 365, price: 219, originalPrice: 285, points: 1200, pointsDescription: '18.3元/月，送1200积分' },
-    { displayName: '季度会员', duration: 90, price: 99, originalPrice: 168, points: 1200, pointsDescription: '33元/月' },
-  ]),
-  ...createUpgradePackageDetails(4021, '基础版（企业）', 310, [
-    { displayName: '季度', duration: 90, price: 269, originalPrice: 350, points: 400, pointsDescription: '89.7元/月，400积分/团队/月' },
-    { displayName: '1年', duration: 365, price: 399, originalPrice: 519, points: 400, pointsDescription: '33.3元/月，400积分/团队/月' },
-    { displayName: '2年', duration: 730, price: 669, originalPrice: 870, points: 400, pointsDescription: '27.9元/月，400积分/团队/月' },
-    { displayName: '3年', duration: 1095, price: 859, originalPrice: 1117, points: 400, pointsDescription: '23.9元/月，400积分/团队/月' },
-  ]),
-  ...createUpgradePackageDetails(4031, '专业版（企业）', 311, [
-    { displayName: '季度', duration: 90, price: 199, originalPrice: 259, points: 1200, pointsDescription: '66.3元/月，1200积分/席/月' },
-    { displayName: '1年', duration: 365, price: 489, originalPrice: 636, points: 1200, pointsDescription: '40.8元/月，1200积分/席/月' },
-    { displayName: '2年', duration: 730, price: 579, originalPrice: 753, points: 1200, pointsDescription: '24.1元/月，1200积分/席/月' },
-    { displayName: '3年', duration: 1095, price: 759, originalPrice: 987, points: 1200, pointsDescription: '21.1元/月，1200积分/席/月' },
-  ]),
-  ...createUpgradePackageDetails(4041, '旗舰版（企业）', 220, [
-    { displayName: '季度', duration: 90, price: 399, originalPrice: 519, points: 1200, pointsDescription: '133元/月，1200积分/席/月' },
-    { displayName: '1年', duration: 365, price: 899, originalPrice: 1169, points: 1200, pointsDescription: '74.9元/月，1200积分/席/月' },
-    { displayName: '2年', duration: 730, price: 1299, originalPrice: 1689, points: 1200, pointsDescription: '54.1元/月，1200积分/席/月' },
-  ]),
-];
-
-export const MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY = 'admin-membership-package-details';
-
 const NEW_WEB_MEMBER_NAMES = new Set([
   '基础版（个人）',
   '专业版（个人）',
@@ -435,6 +377,30 @@ const NEW_WEB_MEMBER_NAMES = new Set([
   '专业版（企业）',
   '旗舰版（企业）',
 ]);
+
+function cloneNewMemberPackagesToUpgradeGroup(sourceRows: PackageDetailRow[]) {
+  return sourceRows
+    .filter((row) => NEW_WEB_MEMBER_NAMES.has(row.member))
+    .map((row, index) => ({
+      ...row,
+      id: 4101 + index,
+      name: row.name.replace(/^web-/, 'upgrade-'),
+    }));
+}
+
+/**
+ * 将 Web端-新版中的新增会员套餐复制到补差价升级套餐组。
+ * 复制后的套餐使用独立 ID，其余配置完整保持来源套餐一致。
+ */
+export const MEMBERSHIP_UPGRADE_PACKAGE_DETAILS: PackageDetailRow[] = cloneNewMemberPackagesToUpgradeGroup(WEB_NEW_MEMBER_PACKAGE_DETAILS);
+
+function syncNewMemberPackagesToUpgradeGroup(rows: PackageDetailRow[], sourceRows: PackageDetailRow[]) {
+  const legacyRows = rows.filter((row) => !NEW_WEB_MEMBER_NAMES.has(row.member));
+  return [...cloneNewMemberPackagesToUpgradeGroup(sourceRows), ...legacyRows];
+}
+
+export const MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY = 'admin-membership-package-details';
+const UPGRADE_PACKAGE_SYNC_VERSION = 'web-new-member-packages-v2';
 
 export type WebMembershipCycleOption = {
   key: string;
@@ -457,7 +423,21 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
   try {
     const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY) ?? '{}') as Record<string, unknown>;
     const rows = stored[String(packageId)];
-    if (!Array.isArray(rows)) return fallback;
+    const isUpgradeGroup = packageId === MEMBERSHIP_UPGRADE_PACKAGE_ID;
+    const sourceRows = isUpgradeGroup ? readMembershipPackageDetails(WEB_PACKAGE_ID) : undefined;
+    if (!Array.isArray(rows)) {
+      if (!isUpgradeGroup) return fallback;
+      const nextRows = syncNewMemberPackagesToUpgradeGroup([], sourceRows ?? WEB_NEW_MEMBER_PACKAGE_DETAILS);
+      window.localStorage.setItem(
+        MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY,
+        JSON.stringify({
+          ...stored,
+          [String(packageId)]: nextRows,
+          __upgradePackageSyncVersion: UPGRADE_PACKAGE_SYNC_VERSION,
+        }),
+      );
+      return nextRows;
+    }
     const normalizedRows = (rows as PackageDetailRow[]).map((row) => {
       const pointsDescription = row.pointsDescription ?? getDefaultPointsDescription(row.member, row.points ?? 0);
       const memberLevel = row.memberLevel ?? getMemberLevelByName(row.member);
@@ -478,6 +458,7 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
       const pointsUnit = isNewWebMember
         ? (memberLevel === 310 ? '团队' : '每人')
         : row.pointsUnit;
+      const status = isNewWebMember && row.displayName === '月度' ? '隐藏' : row.status;
       const seatUnitPrice = row.seatUnitPrice ?? getEnterpriseSeatUnitPrice(memberLevel, row.member);
       const originalPrice = isNewWebMember
         ? getNewMemberOriginalPrice(row.currentPrice)
@@ -487,28 +468,39 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
         memberLevel,
         originalPrice,
         discount: isNewWebMember ? getNewMemberDiscount(row.currentPrice, originalPrice) : row.discount,
+        status,
         saleDescription,
         pointsDescription,
         pointsUnit,
         seatUnitPrice,
       };
     });
+    const nextRows = isUpgradeGroup
+      ? syncNewMemberPackagesToUpgradeGroup(normalizedRows, sourceRows ?? WEB_NEW_MEMBER_PACKAGE_DETAILS)
+      : normalizedRows;
 
     // 兼容已写入浏览器缓存的旧新会员套餐数据，首次读取时同步成新的原价规则。
     const hasPricingChanges = normalizedRows.some((row, index) => {
       const previousRow = rows[index] as PackageDetailRow;
       return row.originalPrice !== previousRow.originalPrice
         || row.discount !== previousRow.discount
+        || row.status !== previousRow.status
         || row.pointsUnit !== previousRow.pointsUnit
         || row.seatUnitPrice !== previousRow.seatUnitPrice;
     });
-    if (hasPricingChanges && packageId === WEB_PACKAGE_ID) {
+    const shouldPersist = (hasPricingChanges && packageId === WEB_PACKAGE_ID)
+      || (isUpgradeGroup && JSON.stringify(nextRows) !== JSON.stringify(rows));
+    if (shouldPersist) {
       window.localStorage.setItem(
         MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY,
-        JSON.stringify({ ...stored, [String(packageId)]: normalizedRows }),
+        JSON.stringify({
+          ...stored,
+          [String(packageId)]: nextRows,
+          ...(isUpgradeGroup ? { __upgradePackageSyncVersion: UPGRADE_PACKAGE_SYNC_VERSION } : {}),
+        }),
       );
     }
-    return normalizedRows;
+    return nextRows;
   } catch {
     return fallback;
   }
