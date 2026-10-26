@@ -223,7 +223,7 @@ export function MembershipOpenPage({ onBackToDirectory, onNavigateToSkillConfig,
               <h1 className="text-[22px] font-semibold tracking-[-.02em] text-[#252525]">开通会员</h1>
               <div className="mt-5 space-y-1 text-[14px] leading-6 text-[#ff5a5f]">
                 <p>开通会员需先在企微提交审批，审批通过后可按照对应要求开通会员。</p>
-                <p>当前在售所有会员均在「企业会员」目录下开通，根据需求选择会员类型<span className="relative mx-1 inline-block max-w-[calc(100%-24px)] rounded-[4px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-2 pb-1 pt-2 align-middle text-[17px] font-semibold"><span>基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220</span><span className="absolute -right-4 -top-3"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={OPEN_MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></span></span>进行开通。</p>
+                <p>当前在售所有会员均在「企业会员」目录下开通，根据需求选择会员类型<span className="relative mx-1 inline-block max-w-[calc(100%-24px)] rounded-[4px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-2 pb-1 pt-2 align-middle text-[17px] font-semibold"><span>基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312</span><span className="absolute -right-4 -top-3"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={OPEN_MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></span></span>进行开通。</p>
               </div>
               <div className="mt-7 flex items-end gap-8">
                 {(['个人会员', '企业会员', '专业版'] as MembershipCategory[]).map((item) => {

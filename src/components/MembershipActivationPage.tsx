@@ -46,7 +46,7 @@ const EXISTING_ACTIVATION_TYPE_OPTIONS = [
   '专业版（单人）',
   '旗舰版（企业）',
 ];
-const NEW_ACTIVATION_TYPE_OPTIONS = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 220'];
+const NEW_ACTIVATION_TYPE_OPTIONS = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 312'];
 const ACTIVATION_TYPE_OPTIONS = [...EXISTING_ACTIVATION_TYPE_OPTIONS, ...NEW_ACTIVATION_TYPE_OPTIONS];
 
 const CHANNEL_OPTIONS = ['创客贴运营', '电商-天津成长管理', '蓝色兄弟'];

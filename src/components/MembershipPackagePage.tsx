@@ -108,7 +108,7 @@ export const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
   { name: '专业版（个人）', level: 241 },
   { name: '基础版（企业）', level: 310 },
   { name: '专业版（企业）', level: 311 },
-  { name: '旗舰版（企业）', level: 220 },
+  { name: '旗舰版（企业）', level: 312 },
 ];
 
 export const MEMBER_LEVEL_BY_NAME: Record<string, number> = Object.fromEntries(
@@ -127,7 +127,7 @@ export function getMemberLevelByName(member: string) {
 export const ENTERPRISE_SEAT_UNIT_PRICE_BY_LEVEL: Record<number, number> = {
   310: 300,
   311: 500,
-  220: 800,
+  312: 800,
 };
 
 export function getEnterpriseSeatUnitPrice(memberLevel?: number, member?: string) {
@@ -136,7 +136,7 @@ export function getEnterpriseSeatUnitPrice(memberLevel?: number, member?: string
 }
 
 const PERSONAL_MEMBER_LEVELS = new Set([240, 241]);
-const ENTERPRISE_MEMBER_LEVELS = new Set([220, 310, 311]);
+const ENTERPRISE_MEMBER_LEVELS = new Set([310, 311, 312]);
 
 type MemberPointsConfig = Pick<PackageDetailRow, 'points' | 'pointsUnit' | 'pointsCycle'> & { display?: string };
 
@@ -638,7 +638,7 @@ export const MEMBER_TYPE_REQUIREMENT_NAME = '会员套餐管理新增新会员�
 export const OPEN_MEMBER_TYPE_REQUIREMENT_NAME = '开通会员新增新会员等级';
 export const MEMBER_TYPE_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '功能说明', items: ['会员类型列表新增 5 个会员等级及对应 level。'] },
-  { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },
+  { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。'] },
   { title: '列表展示规则', items: ['会员类型显示名称在前，level 数字在后。'] },
 ];
 export const MEMBER_TYPE_REQUIREMENT = MEMBER_TYPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');

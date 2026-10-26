@@ -4,7 +4,7 @@ import { AdminSidebar, TopHeader } from './AdminBackofficePage';
 import { MEMBER_TYPE_REQUIREMENT, MEMBER_TYPE_REQUIREMENT_SECTIONS, RequirementEntryFrame, RequirementHint } from './MembershipPackagePage';
 
 const MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS = [
-  { title: '归入已有类型', items: ['将新增会员归入已有类型。', '基础版（个人）240、专业版（个人）241归入个人不限次会员。', '基础版（企业）310、专业版（企业）311、旗舰版（企业）220归入企业会员。'] },
+  { title: '归入已有类型', items: ['将新增会员归入已有类型。', '基础版（个人）240、专业版（个人）241归入个人不限次会员。', '基础版（企业）310、专业版（企业）311、旗舰版（企业）312归入企业会员。'] },
 ];
 const MEMBER_TYPE_GROUP_REQUIREMENT = MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 const USER_SEGMENT_MEMBER_REQUIREMENT_SECTIONS = [...MEMBER_TYPE_REQUIREMENT_SECTIONS, ...MEMBER_TYPE_GROUP_REQUIREMENT_SECTIONS];
@@ -49,13 +49,13 @@ export const MEMBER_LEVEL_OPTIONS = [
   '标准版（企业），200', '标准版（大企业），210', '高级版，203', '高级版（大企业），204', '旗舰版，220', '通用版（个人），211',
   '通用版（企业），212', '协作版，205', '基础版（单人），230', '高级版（单人），231', '专业版（单人），232', '至尊版（单人），233',
   '高级版（团队），300', '专业版（团队），301', '至尊版（团队），302', '基础版（个人），240', '专业版（个人），241',
-  '基础版（企业），310', '专业版（企业），311', '旗舰版（企业），220',
+  '基础版（企业），310', '专业版（企业），311', '旗舰版（企业），312',
 ];
 
 export const MEMBER_TYPE_OPTIONS = ['个人限次会员', '个人不限次会员', '企业会员'];
 const NEW_MEMBER_LEVEL_GROUPS: { label: string; options: string[] }[] = [
   { label: '个人会员', options: ['基础版（个人），240', '专业版（个人），241'] },
-  { label: '企业会员', options: ['基础版（企业），310', '专业版（企业），311', '旗舰版（企业），220'] },
+  { label: '企业会员', options: ['基础版（企业），310', '专业版（企业），311', '旗舰版（企业），312'] },
 ];
 const NEW_MEMBER_LEVEL_OPTIONS = NEW_MEMBER_LEVEL_GROUPS.flatMap((group) => group.options);
 const MEMBER_TYPE_REQUIREMENT_OPTIONS = new Set(['个人不限次会员', '企业会员']);

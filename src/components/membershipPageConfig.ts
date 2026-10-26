@@ -61,7 +61,7 @@ export function getDefaultMembershipPlanMemberType(tabKey: 'personal' | 'enterpr
 export function getDefaultMembershipPlanMemberLevel(tabKey: 'personal' | 'enterprise', planKey: string) {
   const memberLevels = tabKey === 'personal'
     ? { basic: 240, professional: 241 }
-    : { basic: 310, professional: 311, flagship: 220 };
+    : { basic: 310, professional: 311, flagship: 312 };
   return memberLevels[planKey as keyof typeof memberLevels];
 }
 
@@ -585,7 +585,7 @@ const enterprisePlans: MembershipPlanDisplayConfig[] = [
   {
     planKey: 'flagship',
     memberType: '旗舰版（企业）',
-    memberLevel: 220,
+    memberLevel: 312,
     name: '旗舰版',
     subtitle: '适合于大型企业（跨地域/多分公司、子公司的企业）灵活的算力配额，支持20以上席位灵活配置',
     color: 'orange',
@@ -613,8 +613,8 @@ const DEFAULT_MEMBER_LEVEL_DISPLAY: Record<string, MembershipMemberLevelDisplayC
     bannerTxt: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.43/秒', '#168ff2', '#ffffff', true),
     tag: createMemberLevelBadge('限时5折', '#168ff2', '#ffffff', true),
   },
-  '220': {
-    level: 220,
+  '312': {
+    level: 312,
     memberName: '旗舰版（企业）',
     bannerTxt: createMemberLevelBadge('Seedance 2.5 720P限时低至 ¥0.19/秒', '#ff7910', '#ffffff', true),
     tag: createMemberLevelBadge('加赠2个月会员', '#ff7910', '#ffffff', true),
@@ -658,12 +658,12 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
     tag: DEFAULT_MEMBER_LEVEL_DISPLAY['311'].tag,
   },
   {
-    level: 220,
+    level: 312,
     memberName: '旗舰版（企业）',
     displayName: '旗舰版',
     subtitle: '适合于大型企业（跨地域/多分公司、子公司的企业）灵活的算力配额，支持20以上席位灵活配置',
-    bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['220'].bannerTxt,
-    tag: DEFAULT_MEMBER_LEVEL_DISPLAY['220'].tag,
+    bannerTxt: DEFAULT_MEMBER_LEVEL_DISPLAY['312'].bannerTxt,
+    tag: DEFAULT_MEMBER_LEVEL_DISPLAY['312'].tag,
   },
 ];
 
@@ -1206,7 +1206,7 @@ const MEMBER_LEVEL_BY_NAME: Record<string, number> = {
   '专业版（个人）': 241,
   '基础版（企业）': 310,
   '专业版（企业）': 311,
-  '旗舰版（企业）': 220,
+  '旗舰版（企业）': 312,
 };
 
 const MEMBER_NAME_BY_LEVEL: Record<string, string> = Object.fromEntries(

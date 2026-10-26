@@ -55,7 +55,7 @@ const MEMBER_NAME_BY_LEVEL: Record<number, string> = {
   241: '专业版（个人）',
   310: '基础版（企业）',
   311: '专业版（企业）',
-  220: '旗舰版（企业）',
+  312: '旗舰版（企业）',
 };
 
 type MembershipPreviewIdentity = {
@@ -418,7 +418,7 @@ const DEFAULT_MEMBER_LEVEL_BY_PLAN: Record<MembershipType, Record<string, number
     basic: 310,
     advanced: 311,
     professional: 311,
-    flagship: 220,
+    flagship: 312,
   },
 };
 

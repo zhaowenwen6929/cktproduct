@@ -38,7 +38,7 @@ const EXISTING_BENEFIT_LEVEL_OPTIONS = [
   '专业版（单人）',
   '旗舰版（企业）',
 ];
-const NEW_BENEFIT_LEVEL_OPTIONS = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 220'];
+const NEW_BENEFIT_LEVEL_OPTIONS = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 312'];
 
 const AUTHORIZATION_RECORDS: AuthorizationRecord[] = [
   { userId: '121904831', source: '主站/WPS', benefitLevel: '基础版VIP', seats: '1', duration: '31', openedAt: '2026-04-30 15:08:16', benefitStatus: '已失效', authorizationStatus: '个人' },

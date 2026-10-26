@@ -16,7 +16,7 @@ const EXISTING_MEMBER_TYPES = [
   '标准版(企业)', '个人高级版', '企业高级版', '高级版', '标准版(大企业)', '高级版(大企业)', '协作版', '高级版(团队)', '专业版(团队)', '至尊版(团队)',
   '通用版(个人)', '通用版(企业)', '基础版(单人)', '高级版(单人)', '专业版(单人)', '至尊版(单人)', '旗舰版',
 ];
-const NEW_MEMBER_TYPES = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 220'];
+const NEW_MEMBER_TYPES = ['基础版（个人） 240', '专业版（个人） 241', '基础版（企业） 310', '专业版（企业） 311', '旗舰版（企业） 312'];
 const MEMBER_TYPES = [...EXISTING_MEMBER_TYPES, ...NEW_MEMBER_TYPES];
 
 type ScopeItem = {
@@ -71,7 +71,7 @@ const createDefaultScopeSections = (): ScopeSection[] => [
 const INITIAL_SCOPE_SECTIONS = createDefaultScopeSections();
 const AUTHORIZATION_SCOPE_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '功能说明', items: ['授权范围按会员等级分别配置，切换会员等级后展示并维护对应的授权范围。'] },
-  { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）220。'] },
+  { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。'] },
   { title: '授权范围配置', items: ['每个新增会员均配置线上推广用途、线下印刷用途和禁用三类授权范围。', '每条范围支持单独启用/停用，并配置是否在会员协议显示。'] },
 ];
 const AUTHORIZATION_SCOPE_REQUIREMENT = AUTHORIZATION_SCOPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');

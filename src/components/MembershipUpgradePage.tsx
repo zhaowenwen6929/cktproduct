@@ -63,7 +63,7 @@ const AUDIENCE_LEVELS: Record<UpgradeAudience, Array<{ level: number; name: stri
   enterprise: [
     { level: 310, name: '基础版（企业）', shortName: '基础版' },
     { level: 311, name: '专业版（企业）', shortName: '专业版' },
-    { level: 220, name: '旗舰版（企业）', shortName: '旗舰版' },
+    { level: 312, name: '旗舰版（企业）', shortName: '旗舰版' },
   ],
 };
 
@@ -72,7 +72,7 @@ const LEVEL_PRESENTATION: Record<number, { subtitle: string; accent: 'neutral' |
   241: { subtitle: 'AI创作设计、视频，创意笔下生花', accent: 'blue' },
   310: { subtitle: '100万模板+团队协作与共享+商用授权', accent: 'neutral' },
   311: { subtitle: '100万模板+AI全能创作+团队协作与共享', accent: 'blue' },
-  220: { subtitle: '适合大型企业，灵活的算力配额，支持20人以上席位灵活配置', accent: 'orange' },
+  312: { subtitle: '适合大型企业，灵活的算力配额，支持20人以上席位灵活配置', accent: 'orange' },
 };
 
 const formatMoney = (value: number) => value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
