@@ -274,7 +274,7 @@ function createWebSkuDetails(startId: number, member: string, points: number, pr
   });
 }
 
-const flagshipWebSkuPrices: NewWebSkuPrice[] = [
+const legacyProfessional2000Prices: NewWebSkuPrice[] = [
   { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
   { displayName: '月度', duration: 30, price: 89 },
   { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
@@ -283,6 +283,105 @@ const flagshipWebSkuPrices: NewWebSkuPrice[] = [
   { displayName: '2年', duration: 730, price: 579 },
   { displayName: '3年', duration: 1095, price: 759 },
 ];
+
+const professionalWebSkuPrices: Record<number, NewWebSkuPrice[]> = {
+  1200: [
+    { displayName: '连续包月', duration: 30, price: 89, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 139 },
+    { displayName: '连续包季', duration: 90, price: 229, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 299 },
+    { displayName: '1年', duration: 365, price: 429 },
+    { displayName: '2年', duration: 730, price: 699 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 889 },
+  ],
+  2000: legacyProfessional2000Prices,
+  2500: [
+    { displayName: '连续包月', duration: 30, price: 109, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 159 },
+    { displayName: '连续包季', duration: 90, price: 279, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 349 },
+    { displayName: '1年', duration: 365, price: 759 },
+    { displayName: '2年', duration: 730, price: 1359 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 1589 },
+  ],
+  4000: [
+    { displayName: '连续包月', duration: 30, price: 149, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 199 },
+    { displayName: '连续包季', duration: 90, price: 359, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 429 },
+    { displayName: '1年', duration: 365, price: 939 },
+    { displayName: '2年', duration: 730, price: 1539 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 2009 },
+  ],
+  12000: [
+    { displayName: '连续包月', duration: 30, price: 309, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 359 },
+    { displayName: '连续包季', duration: 90, price: 599, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 669 },
+    { displayName: '1年', duration: 365, price: 1659 },
+    { displayName: '2年', duration: 730, price: 3059 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 3529 },
+  ],
+};
+
+const legacyFlagship2000Prices: NewWebSkuPrice[] = [
+  { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
+  { displayName: '月度', duration: 30, price: 89 },
+  { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
+  { displayName: '季度', duration: 90, price: 199 },
+  { displayName: '1年', duration: 365, price: 489 },
+  { displayName: '2年', duration: 730, price: 579 },
+  { displayName: '3年', duration: 1095, price: 759 },
+];
+
+const flagshipWebSkuPrices: Record<number, NewWebSkuPrice[]> = {
+  1200: [
+    { displayName: '连续包月', duration: 30, price: 289, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 339 },
+    { displayName: '连续包季', duration: 90, price: 429, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 499 },
+    { displayName: '1年', duration: 365, price: 629 },
+    { displayName: '2年', duration: 730, price: 899 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 1089 },
+  ],
+  2000: legacyFlagship2000Prices,
+  4000: [
+    { displayName: '连续包月', duration: 30, price: 339, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 389 },
+    { displayName: '连续包季', duration: 90, price: 479, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 629 },
+    { displayName: '1年', duration: 365, price: 1139 },
+    { displayName: '2年', duration: 730, price: 1739 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 2109 },
+  ],
+  10000: [
+    { displayName: '连续包月', duration: 30, price: 459, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 509 },
+    { displayName: '连续包季', duration: 90, price: 779, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 929 },
+    { displayName: '1年', duration: 365, price: 1859 },
+    { displayName: '2年', duration: 730, price: 2459 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 3429 },
+  ],
+  50000: [
+    { displayName: '连续包月', duration: 30, price: 1259, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 1309 },
+    { displayName: '连续包季', duration: 90, price: 2779, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 3129 },
+    { displayName: '1年', duration: 365, price: 8659 },
+    { displayName: '2年', duration: 730, price: 9259 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 11429 },
+  ],
+  100000: [
+    { displayName: '连续包月', duration: 30, price: 2259, packageType: '订阅套餐' },
+    { displayName: '月度', duration: 30, price: 2309 },
+    { displayName: '连续包季', duration: 90, price: 4779, packageType: '订阅套餐' },
+    { displayName: '季度', duration: 90, price: 5629 },
+    { displayName: '1年', duration: 365, price: 17159 },
+    { displayName: '2年', duration: 730, price: 20759 },
+    { displayName: '2年+送1年（3年）', duration: 1095, price: 21429 },
+  ],
+};
 
 export const WEB_NEW_MEMBER_PACKAGE_DETAILS: PackageDetailRow[] = [
   ...createWebSkuDetails(3501, '基础版（个人）', 200, [
@@ -338,34 +437,12 @@ export const WEB_NEW_MEMBER_PACKAGE_DETAILS: PackageDetailRow[] = [
     { displayName: '2年', duration: 730, price: 669 },
     { displayName: '3年', duration: 1095, price: 859 },
   ]),
-  ...createWebSkuDetails(3561, '专业版（企业）', 1200, [
-    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
-    { displayName: '月度', duration: 30, price: 89 },
-    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
-    { displayName: '季度', duration: 90, price: 199 },
-    { displayName: '1年', duration: 365, price: 489 },
-    { displayName: '2年', duration: 730, price: 579 },
-    { displayName: '3年', duration: 1095, price: 759 },
-  ]),
-  ...createWebSkuDetails(3571, '专业版（企业）', 2000, [
-    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
-    { displayName: '月度', duration: 30, price: 89 },
-    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
-    { displayName: '季度', duration: 90, price: 199 },
-    { displayName: '1年', duration: 365, price: 489 },
-    { displayName: '2年', duration: 730, price: 579 },
-    { displayName: '3年', duration: 1095, price: 759 },
-  ]),
-  ...createWebSkuDetails(3581, '专业版（企业）', 4000, [
-    { displayName: '连续包月', duration: 30, price: 69, packageType: '订阅套餐' },
-    { displayName: '月度', duration: 30, price: 89 },
-    { displayName: '连续包季', duration: 90, price: 159, packageType: '订阅套餐' },
-    { displayName: '季度', duration: 90, price: 199 },
-    { displayName: '1年', duration: 365, price: 489 },
-    { displayName: '2年', duration: 730, price: 579 },
-    { displayName: '3年', duration: 1095, price: 759 },
-  ]),
-  ...[1200, 2000, 4000, 10000, 50000, 100000].flatMap((points, index) => createWebSkuDetails(3591 + index * 10, '旗舰版（企业）', points, flagshipWebSkuPrices)),
+  ...createWebSkuDetails(3561, '专业版（企业）', 1200, professionalWebSkuPrices[1200]),
+  ...createWebSkuDetails(3571, '专业版（企业）', 2000, professionalWebSkuPrices[2000]),
+  ...createWebSkuDetails(3581, '专业版（企业）', 2500, professionalWebSkuPrices[2500]),
+  ...createWebSkuDetails(3591, '专业版（企业）', 4000, professionalWebSkuPrices[4000]),
+  ...createWebSkuDetails(3601, '专业版（企业）', 12000, professionalWebSkuPrices[12000]),
+  ...[1200, 2000, 4000, 10000, 50000, 100000].flatMap((points, index) => createWebSkuDetails(3611 + index * 10, '旗舰版（企业）', points, flagshipWebSkuPrices[points])),
 ];
 
 export const MEMBERSHIP_UPGRADE_PACKAGE_ID = 9;
@@ -399,8 +476,14 @@ function syncNewMemberPackagesToUpgradeGroup(rows: PackageDetailRow[], sourceRow
   return [...cloneNewMemberPackagesToUpgradeGroup(sourceRows), ...legacyRows];
 }
 
+function syncNewMemberPackagesToWebGroup(rows: PackageDetailRow[]) {
+  const legacyRows = rows.filter((row) => !NEW_WEB_MEMBER_NAMES.has(row.member));
+  return [...legacyRows, ...WEB_NEW_MEMBER_PACKAGE_DETAILS];
+}
+
 export const MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY = 'admin-membership-package-details';
-const UPGRADE_PACKAGE_SYNC_VERSION = 'web-new-member-packages-v2';
+const WEB_PACKAGE_SYNC_VERSION = 'web-new-member-packages-v3';
+const UPGRADE_PACKAGE_SYNC_VERSION = 'web-new-member-packages-v3';
 
 export type WebMembershipCycleOption = {
   key: string;
@@ -424,6 +507,7 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
     const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PACKAGE_DETAILS_STORAGE_KEY) ?? '{}') as Record<string, unknown>;
     const rows = stored[String(packageId)];
     const isUpgradeGroup = packageId === MEMBERSHIP_UPGRADE_PACKAGE_ID;
+    const shouldSyncWebGroup = packageId === WEB_PACKAGE_ID && stored.__webPackageSyncVersion !== WEB_PACKAGE_SYNC_VERSION;
     const sourceRows = isUpgradeGroup ? readMembershipPackageDetails(WEB_PACKAGE_ID) : undefined;
     if (!Array.isArray(rows)) {
       if (!isUpgradeGroup) return fallback;
@@ -477,7 +561,9 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
     });
     const nextRows = isUpgradeGroup
       ? syncNewMemberPackagesToUpgradeGroup(normalizedRows, sourceRows ?? WEB_NEW_MEMBER_PACKAGE_DETAILS)
-      : normalizedRows;
+      : shouldSyncWebGroup
+        ? syncNewMemberPackagesToWebGroup(normalizedRows)
+        : normalizedRows;
 
     // 兼容已写入浏览器缓存的旧新会员套餐数据，首次读取时同步成新的原价规则。
     const hasPricingChanges = normalizedRows.some((row, index) => {
@@ -488,7 +574,7 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
         || row.pointsUnit !== previousRow.pointsUnit
         || row.seatUnitPrice !== previousRow.seatUnitPrice;
     });
-    const shouldPersist = (hasPricingChanges && packageId === WEB_PACKAGE_ID)
+    const shouldPersist = ((hasPricingChanges || shouldSyncWebGroup) && packageId === WEB_PACKAGE_ID)
       || (isUpgradeGroup && JSON.stringify(nextRows) !== JSON.stringify(rows));
     if (shouldPersist) {
       window.localStorage.setItem(
@@ -496,6 +582,7 @@ export function readMembershipPackageDetails(packageId = WEB_PACKAGE_ID): Packag
         JSON.stringify({
           ...stored,
           [String(packageId)]: nextRows,
+          ...(packageId === WEB_PACKAGE_ID ? { __webPackageSyncVersion: WEB_PACKAGE_SYNC_VERSION } : {}),
           ...(isUpgradeGroup ? { __upgradePackageSyncVersion: UPGRADE_PACKAGE_SYNC_VERSION } : {}),
         }),
       );
