@@ -5,6 +5,13 @@ export type MembershipRequirementSection = {
   title: string;
   items: string[];
   highlight?: boolean;
+  table?: MembershipRequirementTable;
+  highlightTerms?: string[];
+};
+
+export type MembershipRequirementTable = {
+  columns: string[];
+  rows: Array<{ cells: string[]; highlight?: boolean }>;
 };
 
 export type MembershipRequirementDocumentMeta = {
@@ -95,6 +102,16 @@ const MEMBERSHIP_SECTION_DESCRIPTIONS: Record<string, string> = {
 export const MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS: MembershipRequirementSection[] = [
   {
     title: '新增需求等级',
+    table: {
+      columns: ['level', '名称', '类型', '授权'],
+      rows: [
+        { cells: ['240', '基础版（个人）', '个人', '个人商用授权（仅限个人使用）'], highlight: true },
+        { cells: ['241', '专业版（个人）', '个人', '个人商用授权（仅限个人使用）'], highlight: true },
+        { cells: ['310', '基础版（企业）', '企业', '线上推广、线下印刷、团队协作与共享；禁用网络转售、商标注册等用途'], highlight: true },
+        { cells: ['311', '专业版（企业）', '企业', '线上推广、线下印刷、团队协作与共享；禁用网络转售、商标注册等用途'], highlight: true },
+        { cells: ['312', '旗舰版（企业）', '企业', '线上推广、线下印刷、团队协作与共享；禁用网络转售、商标注册等用途'], highlight: true },
+      ],
+    },
     items: [
       '等级字典：当前补差价升级页展示基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312；会员支付弹框优先读取会员页面配置中的等级与展示文案，后台未配置时使用同一套默认等级表。',
       '后台对照：会员套餐管理 > Web端-新版/补差价升级套餐组 > 套餐明细中的会员名称字段用于显示会员名称，等级编号字段用于确定等级。',
@@ -105,6 +122,7 @@ export const MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS: MembershipRequirementSection[] 
   },
   {
     title: '会员级别总体排列',
+    highlightTerms: ['240', '241', '310', '311', '312'],
     items: [
       '排序来源：会员总排序是统一的业务等级规则，不是套餐价格或套餐显示顺序计算出来的；同一等级分组内的会员视为同等级。',
       '会员总排序：4（限次会员）< 1 = 125 < 199 = 4（不限次） = 211 = 230 = 240 < 241 < 105 = 9 = 130 = 200 = 212 = 231 < 232 < 233 < 210 < 201 < 7 = 8 < 2 = 5 = 6 = 100 = 110 = 115 = 135 = 202 = 203 = 205 = 300 = 310 < 301 = 311 < 302 = 312 < 204 < 3 = 120 = 220。',

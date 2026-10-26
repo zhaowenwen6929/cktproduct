@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, Check, CheckCircle2, ChevronRight, Clipboard, ClipboardList, FileText, Maximize2, Minimize2, X } from 'lucide-react';
-import { MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, type MembershipRequirementSection } from './MembershipRequirementFloatingButton';
+import { MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, type MembershipRequirementSection, type MembershipRequirementTable } from './MembershipRequirementFloatingButton';
 
 type RequirementKind = 'ai-ecommerce' | 'search-guide' | 'membership';
 
@@ -8,6 +8,7 @@ type RequirementSectionItemData = {
   label: string;
   content: string;
   path?: string;
+  highlightTerms?: string[];
 };
 
 type RequirementSectionGroup = {
@@ -20,6 +21,7 @@ type RequirementSection = {
   description: string;
   items: RequirementSectionItemData[];
   groups?: RequirementSectionGroup[];
+  table?: MembershipRequirementTable;
 };
 
 export type RequirementSpec = {
@@ -38,7 +40,8 @@ export type RequirementSpec = {
 const toRequirementDocumentSections = (prefix: string, sections: MembershipRequirementSection[]): RequirementSection[] => sections.map((section) => ({
   title: prefix ? `${prefix} · ${section.title}` : section.title,
   description: '',
-  items: section.items.map((content, index) => ({ label: `${section.title}${index + 1}`, content })),
+  table: section.table,
+  items: section.items.map((content, index) => ({ label: `${section.title}${index + 1}`, content, highlightTerms: section.highlightTerms })),
 }));
 
 const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
@@ -148,6 +151,8 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
     ],
     acceptance: [
       '开通会员页的会员类型与会员套餐管理完全共用同一份列表，新增 5 个会员等级名称和 level 展示一致。',
+      'V2610 主需求前置的“新增需求等级”模块以表格列出新增会员的 level、名称、类型和授权范围，240、241、310、311、312 五行使用红色标识。',
+      '“会员级别总体排列”完整保留全部历史等级顺序，并将新增等级 240、241、310、311、312 在排序文本中使用红色高亮。',
       '会员套餐列表、套餐详情、新增套餐和编辑套餐均按统一规则展示积分量，并正确处理空值和已配置值。',
       '积分发放优先使用当前生效套餐配置，套餐未配置时回退到对应会员等级配置，规则说明分条清晰展示。',
       '会员页面配置支持版本新增、状态开关和进入具体版本配置，默认版本与左侧目录状态正确。',
@@ -303,20 +308,32 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
 function buildAiPrompt(spec: RequirementSpec) {
   const sections = spec.sections.map((section, index) => {
     const items = section.items.map((item) => `- ${item.label}：${item.content}`).join('\n');
+    const table = section.table
+      ? `\n\n| ${section.table.columns.join(' | ')} |\n| ${section.table.columns.map(() => '---').join(' | ')} |\n${section.table.rows.map((row) => `| ${row.cells.join(' | ')} |`).join('\n')}`
+      : '';
     const groups = section.groups?.map((group) => {
       const groupItems = group.items.map((item) => `- ${item.label}：${item.content}`).join('\n');
       return `#### ${group.title}\n${groupItems}`;
     }).join('\n\n') ?? '';
-    return `### ${index + 1}. ${section.title}\n${section.description}\n${items}${groups ? `\n${groups}` : ''}`;
+    return `### ${index + 1}. ${section.title}\n${section.description}\n${table}${items}${groups ? `\n${groups}` : ''}`;
   }).join('\n\n');
 
   const verification = spec.verificationNotes?.length ? `\n\n## 验证辅助项（非业务需求）\n${spec.verificationNotes.map((item) => `- ${item}`).join('\n')}` : '';
   return `你是一名资深后台产品经理、交互设计师和前端开发者。请严格根据下面的需求说明，设计并实现“${spec.title}”功能，不要擅自扩展业务范围。\n\n## 需求概述\n${spec.summary}\n\n## 需求背景\n${spec.background}\n\n## 需求目标\n${spec.goal}\n\n## 具体需求\n${sections}\n\n## 验收标准\n${spec.acceptance.map((item) => `- ${item}`).join('\n')}${verification}\n\n## 输出要求\n请先梳理页面信息架构、组件划分、交互流程、接口依赖、权限差异、空态、加载态和错误态，再给出实现方案。保持现有项目的视觉风格和路由结构；涉及接口时说明请求参数、返回数据和异常处理，不要编造未确认的后端能力。`;
 }
 
+function renderHighlightedText(content: string, highlightTerms?: string[]) {
+  if (!highlightTerms?.length) return content;
+  const escapedTerms = highlightTerms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`(${escapedTerms.join('|')})`, 'g');
+  return content.split(pattern).map((part, index) => highlightTerms.includes(part)
+    ? <span key={`${part}-${index}`} className="font-semibold text-[#e05252]">{part}</span>
+    : <span key={`${part}-${index}`}>{part}</span>);
+}
+
 function RequirementSectionItem({ item, compact = false, onNavigate }: { item: RequirementSectionItemData; compact?: boolean; onNavigate?: (path: string) => void }) {
   const className = compact ? 'rounded-[8px] bg-[#f8fafc] px-3 py-2.5 text-left transition' : 'rounded-[9px] bg-[#f8fafc] px-4 py-3 text-left transition';
-  const content = <><div className={compact ? 'text-[11px] font-medium text-[#536178]' : 'text-[12px] font-medium text-[#536178]'}>{item.label}</div><p className={compact ? 'mt-1 text-[11px] leading-5 text-[#778397]' : 'mt-1.5 text-[12px] leading-5 text-[#778397]'}>{item.content}</p>{item.path && onNavigate ? <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#278fee]">查看对应页面<ChevronRight className="h-3 w-3" /></span> : null}</>;
+  const content = <><div className={compact ? 'text-[11px] font-medium text-[#536178]' : 'text-[12px] font-medium text-[#536178]'}>{item.label}</div><p className={compact ? 'mt-1 text-[11px] leading-5 text-[#778397]' : 'mt-1.5 text-[12px] leading-5 text-[#778397]'}>{renderHighlightedText(item.content, item.highlightTerms)}</p>{item.path && onNavigate ? <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#278fee]">查看对应页面<ChevronRight className="h-3 w-3" /></span> : null}</>;
 
   if (item.path && onNavigate) {
     return <button type="button" onClick={() => onNavigate(item.path!)} className={`${className} w-full hover:bg-[#eef6ff] hover:text-[#278fee]`}>
@@ -342,6 +359,12 @@ function RequirementSectionItems({ section, compact = false, onNavigate }: { sec
     : 'mt-3 grid gap-3 md:grid-cols-2';
 
   return <>
+    {section.table ? <div className="mt-4 overflow-x-auto rounded-[9px] border border-[#f0b1aa] bg-[#fff9f8]">
+      <table className="min-w-full border-collapse text-left text-[12px]">
+        <thead className="bg-[#fff0ed] text-[#c43f3f]"><tr>{section.table.columns.map((column) => <th key={column} className="border-b border-[#f0b1aa] px-3 py-2.5 font-semibold">{column}</th>)}</tr></thead>
+        <tbody>{section.table.rows.map((row, rowIndex) => <tr key={`${section.title}-table-${rowIndex}`} className={row.highlight ? 'bg-[#fff0ed] text-[#d34b43]' : 'bg-white text-[#647187]'}>{row.cells.map((cell, cellIndex) => <td key={`${section.title}-table-${rowIndex}-${cellIndex}`} className="border-b border-[#f5d8d4] px-3 py-2.5 align-top last:border-b-0">{cell}</td>)}</tr>)}</tbody>
+      </table>
+    </div> : null}
     {section.groups?.map((group) => <div key={group.title} className={groupClassName}>
       <h3 className={groupTitleClassName}>{group.title}</h3>
       <div className={groupItemsClassName}>
