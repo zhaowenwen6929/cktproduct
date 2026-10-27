@@ -740,12 +740,21 @@ button {
 }
 
 @media (min-width: 701px) {
-  .prototype-homepage-shell:has(.prototype-requirement-board--drawer-open) {
+  .prototype-homepage-shell:has([data-drawer-mode="push"]) {
     padding-right: var(--prototype-requirement-drawer-width);
   }
 
   .prototype-homepage .prototype-requirement-drawer:not(.inset-4) {
+    position: fixed !important;
+    top: 0;
+    right: 24px;
+    bottom: 0;
+    left: auto;
     width: var(--prototype-requirement-drawer-width) !important;
+  }
+
+  .prototype-homepage:has([data-drawer-mode="push"]) .prototype-requirement-drawer:not(.inset-4) {
+    right: 0;
   }
 }
 
