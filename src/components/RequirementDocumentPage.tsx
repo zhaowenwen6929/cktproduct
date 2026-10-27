@@ -50,11 +50,21 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
     requirementKey: 'V2610',
     status: '待开发',
     eyebrow: 'MEMBERSHIP EXPERIENCE REDESIGN',
-    summary: '统一完善会员开通、会员套餐、会员页面配置、会员支付弹框和补差价升级页能力，并将会员购买、续费、升级、降级规则与数据来源沉淀为一套可实现、可验收的 V2610 规范。',
+    summary: '新增 5 个会员等级，统一套餐积分、全屏购买弹框、权益/AI 模型消耗及各端会员等级响应，并将入口、页面、数据映射和购买规则沉淀为可实现、可验收的 V2610 规范。',
     background: '会员中心后台包含开通会员、会员套餐管理和会员页面配置等多个入口，前台又有会员中心弹框和补差价升级独立页面；新增个人/企业会员等级后，原有入口无法完整表达套餐积分档位、企业席位和购买方向。本次改版需要同时明确后台字段、前端固定字典、价格/席位计算值以及验证辅助项的边界，避免把演示身份切换或需求说明工具误认为业务需求。',
     goal: '建立一套可直接实现和验收的会员管理后台及前台会员页面数据口径：新增 5 个会员等级，统一会员名称、等级编号、套餐时长、积分量、价格、席位、页面配置和购买限制的来源；首页会员入口、后续会员页入口和购买流程统一使用同一会员支付弹框，弹框使用延期升级，独立升级页使用补差价支付，并按模块维护交互、样式和验收边界。',
     sections: [
       ...toRequirementDocumentSections('', MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS),
+      {
+        title: '需求描述',
+        description: '本次会员改版涉及的主要改动汇总。',
+        items: [
+          { label: '改动重点 01', content: '新增 5 个会员等级：基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。' },
+          { label: '改动重点 02', content: '会员积分支持按套餐配置和发放。' },
+          { label: '改动重点 03', content: '会员购买弹框升级为全屏大弹框，增加权益展示及 AI 模型消耗。' },
+          { label: '改动重点 04', content: '各端支持新会员等级的显示及权益响应。' },
+        ],
+      },
       {
         title: '开通会员新增新会员等级',
         description: '开通会员页沿用套餐管理中的完整会员类型列表，新增等级必须同步展示名称和 level。',
@@ -333,7 +343,7 @@ function renderHighlightedText(content: string, highlightTerms?: string[]) {
 
 function RequirementSectionItem({ item, compact = false, onNavigate }: { item: RequirementSectionItemData; compact?: boolean; onNavigate?: (path: string) => void }) {
   const className = compact ? 'rounded-[8px] bg-[#f8fafc] px-3 py-2.5 text-left transition' : 'rounded-[9px] bg-[#f8fafc] px-4 py-3 text-left transition';
-  const content = <><div className={compact ? 'text-[11px] font-medium text-[#536178]' : 'text-[12px] font-medium text-[#536178]'}>{item.label}</div><p className={compact ? 'mt-1 text-[11px] leading-5 text-[#778397]' : 'mt-1.5 text-[12px] leading-5 text-[#778397]'}>{renderHighlightedText(item.content, item.highlightTerms)}</p>{item.path && onNavigate ? <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#278fee]">查看对应页面<ChevronRight className="h-3 w-3" /></span> : null}</>;
+  const content = <><div className={compact ? 'text-[11px] font-medium text-[#536178]' : 'text-[12px] font-medium text-[#536178]'}>{item.label}</div><p className={`${compact ? 'mt-1 text-[11px] leading-5' : 'mt-1.5 text-[12px] leading-5'} whitespace-pre-line text-[#778397]`}>{renderHighlightedText(item.content, item.highlightTerms)}</p>{item.path && onNavigate ? <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#278fee]">查看对应页面<ChevronRight className="h-3 w-3" /></span> : null}</>;
 
   if (item.path && onNavigate) {
     return <button type="button" onClick={() => onNavigate(item.path!)} className={`${className} w-full hover:bg-[#eef6ff] hover:text-[#278fee]`}>

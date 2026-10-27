@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, Camera, ChevronDown, Headphones, MoreHorizontal, Search, Settings2, UserRound } from 'lucide-react';
 import cktAiEcomLogo from '../assets/ckt-ai-ecom-logo.svg';
 import { getMembershipPurchaseAction } from './MembershipCenterModal';
 import { getEnterpriseSeatUnitPrice, getWebMembershipCycleOptions, MEMBERSHIP_UPGRADE_PACKAGE_ID, readMembershipPackageDetails, type PackageDetailRow } from './MembershipPackagePage';
+import { readMembershipPageConfig } from './membershipPageConfig';
 import { MEMBERSHIP_REQUIREMENT_DRAWER_WIDTH, MEMBERSHIP_UPGRADE_REQUIREMENT_META, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, MembershipRequirementFloatingButton } from './MembershipRequirementFloatingButton';
 
 type MembershipUpgradePageProps = {
@@ -175,47 +176,12 @@ function groupPackagesByTime(rows: PackageDetailRow[]): PackageTimeGroup[] {
     });
 }
 
-function UpgradeCycleSelector({ options, selectedKey, onChange }: { options: Array<{ key: string; name: string; guideText?: string; guideTextColor?: string }>; selectedKey?: string; onChange: (key: string) => void }) {
-  const selectorRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const measureRef = useRef<HTMLDivElement>(null);
-  const [visibleCount, setVisibleCount] = useState(options.length);
+function UpgradeCycleSelector({ options, selectedKey, onChange }: { options: Array<{ key: string; name: string; guideText?: string; guideTextColor?: string; hiddenInMore?: boolean }>; selectedKey?: string; onChange: (key: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const selectedIndex = options.findIndex((option) => option.key === selectedKey);
-  const selectedExtraOption = selectedIndex >= visibleCount ? options[selectedIndex] : undefined;
-  const visibleOptions = options.slice(0, visibleCount);
-  const extraOptions = options.slice(visibleCount);
-
-  useLayoutEffect(() => {
-    const selector = selectorRef.current;
-    const bar = barRef.current;
-    const measure = measureRef.current;
-    if (!selector || !bar || !measure) return undefined;
-
-    const updateVisibleCount = () => {
-      const availableWidth = bar.clientWidth - 8;
-      const optionWidths = Array.from(measure.querySelectorAll<HTMLElement>('[data-cycle-measure]')).map((element) => element.offsetWidth);
-      const moreWidth = Math.max(...Array.from(measure.querySelectorAll<HTMLElement>('[data-more-measure]')).map((element) => element.offsetWidth), 76);
-      const gap = 4;
-      let width = 0;
-      let count = 0;
-      optionWidths.forEach((optionWidth, index) => {
-        const nextWidth = width + optionWidth + (count ? gap : 0);
-        const hasMoreOptions = index < optionWidths.length - 1;
-        const requiredWidth = nextWidth + (hasMoreOptions ? gap + moreWidth : 0);
-        if (requiredWidth <= availableWidth || count === 0) {
-          width = nextWidth;
-          count += 1;
-        }
-      });
-      setVisibleCount(Math.max(1, Math.min(count || 1, options.length)));
-    };
-
-    updateVisibleCount();
-    const observer = new ResizeObserver(updateVisibleCount);
-    observer.observe(selector.parentElement ?? selector);
-    return () => observer.disconnect();
-  }, [options, selectedKey]);
+  const selectedExtraOption = options.find((option) => option.key === selectedKey && option.hiddenInMore);
+  const visibleOptions = options.filter((option) => !option.hiddenInMore);
+  const extraOptions = options.filter((option) => option.hiddenInMore);
 
   useEffect(() => {
     setExpanded(false);
@@ -226,8 +192,8 @@ function UpgradeCycleSelector({ options, selectedKey, onChange }: { options: Arr
     setExpanded(false);
   };
 
-  return <div ref={selectorRef} className="relative min-w-0 flex-1">
-    <div ref={barRef} className="flex min-w-0 items-center gap-1 overflow-visible rounded-full bg-[#eef0f4] p-1">
+  return <div className="relative min-w-0 flex-1">
+    <div className="flex min-w-0 items-center gap-1 overflow-visible rounded-full bg-[#eef0f4] p-1">
       <div className="flex min-w-0 flex-1 items-center justify-start gap-1 overflow-hidden">
         {visibleOptions.map((option) => <button type="button" key={option.key} onClick={() => selectOption(option.key)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-4 py-2.5 text-[11px] transition ${selectedKey === option.key ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>
           <span>{option.name}</span>
@@ -244,11 +210,6 @@ function UpgradeCycleSelector({ options, selectedKey, onChange }: { options: Arr
           {extraOptions.map((option) => <button type="button" role="option" aria-selected={selectedKey === option.key} key={option.key} onClick={() => selectOption(option.key)} className={`flex w-full items-center justify-between rounded-[9px] px-3 py-2 text-left text-[11px] transition ${selectedKey === option.key ? 'bg-[#edf6ff] font-semibold text-[#168ff2]' : 'text-[#536075] hover:bg-[#f7f8fa] hover:text-[#168ff2]'}`}><span>{option.name}{option.guideText ? <span className="ml-1" style={{ color: option.guideTextColor ?? '#8993a2' }}>{option.guideText}</span> : null}</span>{selectedKey === option.key ? <span className="text-[10px]">当前</span> : null}</button>)}
         </div> : null}
       </div> : null}
-    </div>
-    <div ref={measureRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 -z-10 flex w-max gap-1 whitespace-nowrap opacity-0">
-      {options.map((option) => <span data-cycle-measure="true" key={option.key} className="flex items-center justify-center gap-1 rounded-full px-4 py-2.5 text-[11px]">{option.name}{option.guideText ? <span>{option.guideText}</span> : null}</span>)}
-      <span data-more-measure="default" className="flex min-h-[36px] min-w-[76px] items-center justify-center gap-1 rounded-full px-3 py-2.5 text-[11px] font-semibold">更多<ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" /></span>
-      {options.map((option) => <span data-more-measure={option.key} key={`more-${option.key}`} className="flex min-h-[36px] min-w-[76px] items-center justify-center gap-1 rounded-full px-3 py-2.5 text-[11px] font-semibold">更多–{option.name}<ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" /></span>)}
     </div>
   </div>;
 }
@@ -299,11 +260,21 @@ export function MembershipUpgradePage({ onBack, currentMember }: MembershipUpgra
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef<number | null>(null);
   const [requirementDrawerOpen, setRequirementDrawerOpen] = useState(false);
+  const [pageConfig, setPageConfig] = useState(() => readMembershipPageConfig('web'));
   const packageDetails = useMemo(() => readMembershipPackageDetails(MEMBERSHIP_UPGRADE_PACKAGE_ID), []);
   const levels = AUDIENCE_LEVELS[audience];
   const rowsByLevel = useMemo(() => Object.fromEntries(levels.map((level) => [level.level, packageDetails.filter((row) => row.status === '显示' && row.memberLevel === level.level)])), [levels, packageDetails]);
   const groupsByLevel = useMemo(() => Object.fromEntries(levels.map((level) => [level.level, groupPackagesByTime(rowsByLevel[level.level] ?? [])])), [levels, rowsByLevel]);
-  const timeOptions = useMemo(() => getWebMembershipCycleOptions(audience, packageDetails), [audience, packageDetails]);
+  const configuredCycleOptions = pageConfig.plans.tabs.find((tab) => tab.key === audience)?.options ?? [];
+  const timeOptions = useMemo(() => getWebMembershipCycleOptions(audience, packageDetails).map((option) => {
+    const configuredOption = configuredCycleOptions.find((item) => item.name === option.name && item.duration === option.duration);
+    return {
+      ...option,
+      guideText: configuredOption?.guideText ?? option.guideText,
+      guideTextColor: configuredOption?.guideTextColor ?? option.guideTextColor,
+      hiddenInMore: configuredOption?.hiddenInMore ?? option.hiddenInMore,
+    };
+  }), [audience, configuredCycleOptions, packageDetails]);
   const selectedTimeKey = selectedTimeKeys[audience] ?? timeOptions[0]?.key;
   const selectedTimeOption = timeOptions.find((option) => option.key === selectedTimeKey) ?? timeOptions[0];
   const selectedTimeDuration = selectedTimeOption ? Number.parseInt(selectedTimeOption.duration, 10) : undefined;
@@ -348,6 +319,12 @@ export function MembershipUpgradePage({ onBack, currentMember }: MembershipUpgra
 
   useEffect(() => () => {
     if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    const reloadPageConfig = () => setPageConfig(readMembershipPageConfig('web'));
+    window.addEventListener('membership-page-config-updated', reloadPageConfig);
+    return () => window.removeEventListener('membership-page-config-updated', reloadPageConfig);
   }, []);
 
   useEffect(() => {

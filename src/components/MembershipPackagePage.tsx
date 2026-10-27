@@ -492,6 +492,7 @@ export type WebMembershipCycleOption = {
   guideTextColor?: string;
   duration: string;
   highlighted?: boolean;
+  hiddenInMore?: boolean;
 };
 
 const getDefaultPackageDetails = (packageId: number) => packageId === WEB_PACKAGE_ID
@@ -635,6 +636,7 @@ export function getWebMembershipCycleOptions(membershipType?: 'personal' | 'ente
       guideTextColor: row.displayName === '连续包年' ? '#ff4d4f' : '#8993a2',
       duration: `${row.duration}天`,
       highlighted: index === 0,
+      hiddenInMore: row.displayName === '季度' || row.displayName === '2年',
     }));
   if (membershipType !== 'personal') return options;
 
