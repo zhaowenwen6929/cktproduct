@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type Ref } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 import { Check, ChevronDown, Image as ImageIcon, QrCode, Sparkles, Ticket, Video, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipBenefitItem, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
@@ -321,7 +321,7 @@ function MembershipPaymentModal({ selection, coupons, onClose }: MembershipPayme
   const totalPrice = selection.enterprise
     ? calculateEnterpriseTotalPrice(discountedUnitPrice, seatUnitPrice, seatCount)
     : discountedUnitPrice * seatCount;
-  const paymentTitle = selection.plan.memberType ?? `${selection.enterprise ? '企业版' : '个人版'}·${selection.plan.name}会员`;
+  const paymentTitle = `${selection.plan.memberType ?? `${selection.enterprise ? '企业版' : '个人版'}·${selection.plan.name}会员`}${selection.enterprise ? ` · ${seatCount}席位` : ''}`;
   const paymentPoints = getPaymentPointsText(cycleData, selection.tierIndex);
   const couponExpiry = coupon?.expiresAt ? new Date(coupon.expiresAt).toLocaleTimeString('zh-CN', { hour12: false }) : '23:12:51';
 
@@ -786,65 +786,12 @@ function StickyPurchaseBar({ plans, details, packageDetails, membershipType, cur
   return <div className="sticky top-[48px] z-[9] border-b border-[#e4e9f0] bg-white/95 px-5 py-2 shadow-[0_8px_18px_rgba(38,53,79,.1)] backdrop-blur-md"><div className="mx-auto max-w-[1240px] overflow-x-auto"><div className="flex min-w-[700px] items-end gap-3"><div className="w-[176px] shrink-0 pb-0.5"><div className="flex rounded-full bg-[#eef1f5] p-0.5"><button type="button" onClick={() => onMembershipTypeChange('personal')} className={`flex-1 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] leading-4 transition ${membershipType === 'personal' ? 'bg-white font-semibold text-[#273144] shadow-[0_1px_4px_rgba(38,53,79,.1)]' : 'text-[#8792a2] hover:text-[#273144]'}`}>个人使用</button><button type="button" onClick={() => onMembershipTypeChange('enterprise')} className={`flex-1 whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] leading-4 transition ${membershipType === 'enterprise' ? 'bg-white font-semibold text-[#273144] shadow-[0_1px_4px_rgba(38,53,79,.1)]' : 'text-[#8792a2] hover:text-[#273144]'}`}>企业使用</button></div></div><div className="grid min-w-0 flex-1 gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(plans.length, 1)}, minmax(128px, 1fr))` }}>{plans.map((plan) => { const detailColumn = details?.columns.find((column) => column.key === plan.planKey); const stickyTag = plan.planKey === 'flagship' ? undefined : detailColumn?.tag; const lowestPackage = getLowestPackagePrice(plan.memberLevel, packageDetails); const monthlyPrice = lowestPackage ? formatPackageMonthlyPrice(Number(lowestPackage.currentPrice), lowestPackage.duration) : null; const purchaseAction = getMembershipPurchaseAction(currentMemberLevel, plan.memberLevel, currentMemberName); const isDowngrade = purchaseAction.kind === 'downgrade'; return <div key={plan.planKey} className="min-w-0 text-center"><div className="truncate text-[12px] font-semibold leading-4 text-[#202938]">{detailColumn?.label ?? plan.name}{stickyTag ? <span className="ml-1 text-[9px] font-normal text-[#168ff2]">{stickyTag}</span> : null}</div><div className="mt-0.5 text-[11px] leading-4 text-[#4e5a6c]">{monthlyPrice == null || monthlyPrice === '-' ? '暂无价格' : `¥${monthlyPrice}/月起`}</div><button type="button" disabled={isDowngrade} onClick={isDowngrade ? undefined : () => onPurchase(plan)} title={isDowngrade ? purchaseAction.helperText : undefined} className={`mt-1.5 h-7 w-full max-w-[108px] rounded-[5px] px-2 text-[10px] font-medium transition ${isDowngrade ? 'cursor-not-allowed bg-[#eef1f5] text-[#9aa3af]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]'}`}>{purchaseAction.buttonText}</button>{isDowngrade ? <div className="mt-1 text-[9px] leading-3 text-[#f04444]">{purchaseAction.helperText}</div> : null}</div>; })}</div></div></div></div>;
 }
 
-function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys = new Set<string>(), className, stretch = false }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void; couponCycleKeys?: Set<string>; className?: string; stretch?: boolean }) {
+function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys = new Set<string>(), className }: { options: MembershipCycleConfig[]; selectedIndex: number; onChange: (index: number) => void; couponCycleKeys?: Set<string>; className?: string }) {
   const selectorRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const measureRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(options.length);
-  const [selectorWidth, setSelectorWidth] = useState<number>();
-  const optionSignature = options.map((option) => `${option.key}:${option.name}:${option.guideText}`).join('|');
-  const primaryOptions = options.slice(0, visibleCount);
-  const extraOptions = options.slice(visibleCount);
-  const selectedExtraOption = selectedIndex >= visibleCount ? options[selectedIndex] : undefined;
-
-  useLayoutEffect(() => {
-    setExpanded(false);
-    setVisibleCount(options.length);
-  }, [optionSignature]);
-
-  useLayoutEffect(() => {
-    const selector = selectorRef.current;
-    const measure = measureRef.current;
-    if (!selector || !measure) return undefined;
-
-    const updateVisibleCount = () => {
-      const optionWidths = Array.from(measure.querySelectorAll<HTMLElement>('[data-cycle-measure]')).map((element) => element.offsetWidth);
-      const moreWidth = Math.max(...Array.from(measure.querySelectorAll<HTMLElement>('[data-more-measure]')).map((element) => element.offsetWidth), 0);
-      const gap = 4;
-      const allOptionsWidth = optionWidths.reduce((sum, width) => sum + width, 0) + Math.max(optionWidths.length - 1, 0) * gap;
-      const parentWidth = selector.parentElement?.clientWidth ?? 0;
-      const maxWidth = parentWidth > 32 ? Math.min(960, parentWidth - 32) : 960;
-      const nextSelectorWidth = stretch ? Math.max(parentWidth, 0) : Math.min(allOptionsWidth + 8, maxWidth);
-      const availableWidth = Math.max(nextSelectorWidth - 8, 0);
-
-      setSelectorWidth((current) => current === nextSelectorWidth ? current : nextSelectorWidth);
-
-      if (allOptionsWidth <= availableWidth) {
-        setVisibleCount((current) => current === options.length ? current : options.length);
-        return;
-      }
-
-      let fittedCount = 0;
-      let fittedWidth = 0;
-      for (const optionWidth of optionWidths) {
-        const nextWidth = fittedWidth + optionWidth + (fittedCount ? gap : 0);
-        const widthWithMore = nextWidth + gap + moreWidth;
-        if (widthWithMore > availableWidth) break;
-        fittedWidth = nextWidth;
-        fittedCount += 1;
-      }
-
-      const nextVisibleCount = Math.max(fittedCount, 1);
-      setVisibleCount((current) => current === nextVisibleCount ? current : nextVisibleCount);
-    };
-
-    updateVisibleCount();
-    if (typeof ResizeObserver === 'undefined') return undefined;
-    const observer = new ResizeObserver(updateVisibleCount);
-    observer.observe(selector.parentElement ?? selector);
-    return () => observer.disconnect();
-  }, [optionSignature, options.length, stretch]);
+  const primaryOptions = options.filter((option) => !option.hiddenInMore);
+  const extraOptions = options.filter((option) => option.hiddenInMore);
+  const selectedExtraOption = options[selectedIndex]?.hiddenInMore ? options[selectedIndex] : undefined;
 
   useEffect(() => {
     if (!expanded) return undefined;
@@ -866,10 +813,13 @@ function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys
     setExpanded(false);
   };
 
-  return <div ref={selectorRef} style={!stretch && selectorWidth ? { width: `${selectorWidth}px` } : undefined} className={`${className ?? 'relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))]'} text-[11px] text-[#4e5868]`}>
-    <div ref={barRef} className="flex w-full items-center gap-1 rounded-full bg-[#eef0f4] p-1 shadow-inner">
-      <div className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
-        {primaryOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => selectCycle(index)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === index ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>)}
+  return <div ref={selectorRef} className={`${className ?? 'relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))]'} text-[11px] text-[#4e5868]`}>
+    <div className="flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-full bg-[#eef0f4] p-1 shadow-inner">
+      <div className="flex w-max shrink-0 items-center justify-center gap-1">
+        {primaryOptions.map((cycle) => {
+          const optionIndex = options.findIndex((option) => option.key === cycle.key);
+          return <button type="button" key={cycle.key} onClick={() => selectCycle(optionIndex)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-2.5 transition ${selectedIndex === optionIndex ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'hover:text-[#168ff2]'}`}>{renderCycleLabel(cycle)}</button>;
+        })}
       </div>
       {extraOptions.length ? <div className="relative shrink-0">
         <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[76px] max-w-[220px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-3 py-2.5 text-[11px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
@@ -878,18 +828,13 @@ function CycleOptionSelector({ options, selectedIndex, onChange, couponCycleKeys
           <ChevronDown className={`ml-1 h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </button>
         {expanded ? <div role="listbox" className="absolute right-0 top-[calc(100%+8px)] z-40 w-[250px] overflow-hidden rounded-[20px] border border-[#e6e8ec] bg-white p-2 shadow-[0_12px_32px_rgba(31,50,81,.16)]">
-          {extraOptions.map((cycle, index) => {
-            const optionIndex = primaryOptions.length + index;
+          {extraOptions.map((cycle) => {
+            const optionIndex = options.findIndex((option) => option.key === cycle.key);
             const isSelected = selectedIndex === optionIndex;
             return <button type="button" role="option" aria-selected={isSelected} key={cycle.key} onClick={() => selectCycle(optionIndex)} className={`flex w-full items-center gap-2 rounded-[16px] px-4 py-3 text-left text-[14px] transition ${isSelected ? 'bg-[#f1f2f4] font-semibold text-[#252a31]' : 'text-[#252a31] hover:bg-[#f6f7f9]'}`}>{renderCycleLabel(cycle)}</button>;
           })}
         </div> : null}
       </div> : null}
-    </div>
-    <div ref={measureRef} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 -z-10 flex w-max gap-1 whitespace-nowrap opacity-0">
-      {options.map((cycle) => <span data-cycle-measure="true" key={cycle.key} className="flex items-center gap-1 rounded-full px-3 py-2.5 text-[11px]">{renderCycleLabel(cycle)}</span>)}
-      <span data-more-measure="default" className="flex min-h-[36px] min-w-[76px] items-center justify-center gap-1 rounded-full px-3 py-2.5 text-[11px] font-semibold">更多<ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" /></span>
-      {options.map((cycle) => <span data-more-measure={cycle.key} key={`more-${cycle.key}`} className="flex min-h-[36px] min-w-[76px] items-center justify-center gap-1 rounded-full px-3 py-2.5 text-[11px] font-semibold">更多–{renderCycleLabel(cycle)}<ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" /></span>)}
     </div>
   </div>;
 }
@@ -1224,7 +1169,7 @@ function MembershipTypeCycleModule({ membershipType, personalName, enterpriseNam
       <button type="button" onClick={() => onMembershipTypeChange('enterprise')} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseName ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button>
     </div>
     <div className="flex w-full min-w-0 items-center gap-3">
-      <div className="min-w-0 flex-1"><CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={onCycleChange} couponCycleKeys={couponCycleKeys} stretch className="relative mx-0 mt-4 w-full max-w-none" /></div>
+      <CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={onCycleChange} couponCycleKeys={couponCycleKeys} className="relative mt-4 w-fit max-w-[min(960px,calc(100%-32px))]" />
       <button type="button" onClick={onOpenPointsPurchase} className="mt-4 shrink-0 whitespace-nowrap rounded-full border border-[#dfe4ec] bg-white px-4 py-2.5 text-[11px] font-medium text-[#4e5a6c] shadow-[0_2px_8px_rgba(31,50,81,.08)] transition hover:border-[#aabff0] hover:text-[#168ff2]">购买积分</button>
     </div>
   </section>;

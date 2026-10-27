@@ -9,6 +9,8 @@ export type MembershipCycleConfig = {
   guideTextColor?: string;
   duration: string;
   highlighted?: boolean;
+  /** 是否由运营配置为收纳到“更多”菜单中，不根据容器宽度自动收纳。 */
+  hiddenInMore?: boolean;
 };
 
 export type MembershipPlanDisplayConfig = {
@@ -676,15 +678,15 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         memberLevel: { level: 'personal' },
         viplevel: DEFAULT_PERSONAL_VIP_LEVELS,
         options: [
-          { key: 'yearly', name: '连续包年', guideText: '限时4.5折', guideTextColor: '#ff4d4f', duration: '365天', highlighted: true },
-          { key: 'yearly-one-time', name: '1年', guideText: '', guideTextColor: '#8993a2', duration: '365天' },
-          { key: 'monthly', name: '连续包月', guideText: '4.8折', guideTextColor: '#8993a2', duration: '30天' },
-          { key: 'monthly-one-time', name: '月度', guideText: '', guideTextColor: '#8993a2', duration: '30天' },
-          { key: 'quarterly', name: '连续包季', guideText: '限时4.3折', guideTextColor: '#8993a2', duration: '90天' },
-          { key: 'quarterly-one-time', name: '季度', guideText: '', guideTextColor: '#8993a2', duration: '90天' },
-          { key: 'two-year', name: '2年', guideText: '', guideTextColor: '#8993a2', duration: '730天' },
-          { key: 'bonus-year', name: '2年送1年', guideText: '', guideTextColor: '#8993a2', duration: '1095天' },
-          { key: 'lifetime', name: '终身', guideText: '', guideTextColor: '#8993a2', duration: `${LIFETIME_MEMBER_DAYS}天` },
+          { key: 'yearly', name: '连续包年', guideText: '限时4.5折', guideTextColor: '#ff4d4f', duration: '365天', highlighted: true, hiddenInMore: false },
+          { key: 'yearly-one-time', name: '1年', guideText: '', guideTextColor: '#8993a2', duration: '365天', hiddenInMore: false },
+          { key: 'monthly', name: '连续包月', guideText: '4.8折', guideTextColor: '#8993a2', duration: '30天', hiddenInMore: false },
+          { key: 'monthly-one-time', name: '月度', guideText: '', guideTextColor: '#8993a2', duration: '30天', hiddenInMore: false },
+          { key: 'quarterly', name: '连续包季', guideText: '限时4.3折', guideTextColor: '#8993a2', duration: '90天', hiddenInMore: false },
+          { key: 'quarterly-one-time', name: '季度', guideText: '', guideTextColor: '#8993a2', duration: '90天', hiddenInMore: false },
+          { key: 'two-year', name: '2年', guideText: '', guideTextColor: '#8993a2', duration: '730天', hiddenInMore: false },
+          { key: 'bonus-year', name: '2年送1年', guideText: '', guideTextColor: '#8993a2', duration: '1095天', hiddenInMore: false },
+          { key: 'lifetime', name: '终身', guideText: '', guideTextColor: '#8993a2', duration: `${LIFETIME_MEMBER_DAYS}天`, hiddenInMore: false },
         ],
       },
       {
@@ -693,13 +695,13 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
         memberLevel: { level: 'enterprise' },
         viplevel: DEFAULT_ENTERPRISE_VIP_LEVELS,
         options: [
-          { key: 'team-three-year', name: '3年', guideText: '', guideTextColor: '#8993a2', duration: '1095天', highlighted: true },
-          { key: 'team-yearly', name: '1年', guideText: '', guideTextColor: '#8993a2', duration: '365天' },
-          { key: 'team-two-year', name: '2年', guideText: '', guideTextColor: '#8993a2', duration: '730天' },
-          { key: 'team-monthly', name: '连续包月', guideText: '', guideTextColor: '#8993a2', duration: '30天' },
-          { key: 'team-monthly-one-time', name: '月度', guideText: '', guideTextColor: '#8993a2', duration: '30天' },
-          { key: 'team-quarterly-subscription', name: '连续包季', guideText: '', guideTextColor: '#8993a2', duration: '90天' },
-          { key: 'team-quarterly', name: '季度', guideText: '', guideTextColor: '#8993a2', duration: '90天' },
+          { key: 'team-three-year', name: '3年', guideText: '', guideTextColor: '#8993a2', duration: '1095天', highlighted: true, hiddenInMore: false },
+          { key: 'team-yearly', name: '1年', guideText: '', guideTextColor: '#8993a2', duration: '365天', hiddenInMore: false },
+          { key: 'team-two-year', name: '2年', guideText: '', guideTextColor: '#8993a2', duration: '730天', hiddenInMore: false },
+          { key: 'team-monthly', name: '连续包月', guideText: '', guideTextColor: '#8993a2', duration: '30天', hiddenInMore: false },
+          { key: 'team-monthly-one-time', name: '月度', guideText: '', guideTextColor: '#8993a2', duration: '30天', hiddenInMore: false },
+          { key: 'team-quarterly-subscription', name: '连续包季', guideText: '', guideTextColor: '#8993a2', duration: '90天', hiddenInMore: false },
+          { key: 'team-quarterly', name: '季度', guideText: '', guideTextColor: '#8993a2', duration: '90天', hiddenInMore: false },
         ],
       },
     ],
@@ -1254,6 +1256,7 @@ const normalizeCycleOptions = (value: unknown, fallback: MembershipCycleConfig[]
           : fallbackOption.guideTextColor ?? '#8993a2',
       duration: typeof rawOption.duration === 'string' ? rawOption.duration : fallbackOption.duration,
       highlighted: typeof rawOption.highlighted === 'boolean' ? rawOption.highlighted : fallbackOption.highlighted,
+      hiddenInMore: typeof rawOption.hiddenInMore === 'boolean' ? rawOption.hiddenInMore : fallbackOption.hiddenInMore,
     };
   }).filter((option): option is MembershipCycleConfig => Boolean(option));
 };
@@ -1320,6 +1323,7 @@ const normalizePlans = (value: unknown, fallback: MembershipPlansConfig, syncToP
             guideTextColor: typeof configuredOption?.guideTextColor === 'string' && configuredOption.guideTextColor.trim()
               ? configuredOption.guideTextColor
               : packageOption.guideTextColor,
+            hiddenInMore: typeof configuredOption?.hiddenInMore === 'boolean' ? configuredOption.hiddenInMore : packageOption.hiddenInMore,
           };
         })
         : isLegacyOptions ? clone(fallbackTab.options) : rawOptions ?? fallbackTab.options;
