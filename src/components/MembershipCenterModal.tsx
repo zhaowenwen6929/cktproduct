@@ -113,7 +113,6 @@ type RetentionPurchaseModalProps = {
   membershipType: 'personal' | 'enterprise';
   onCycleChange: (index: number) => void;
   onPlanChange: (index: number) => void;
-  onPurchase: (plan: MembershipPlan) => void;
   onContinue: () => void;
   onClose: () => void;
 };
@@ -650,7 +649,7 @@ function AnimatedDiscountedPrice({ price, couponDiscount }: { price: string; cou
   return <strong className="text-[33px] font-semibold leading-none tracking-[-.05em]">{formatMoney(displayPrice)}</strong>;
 }
 
-function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, plans, selectedPlanIndex, membershipType, onCycleChange, onPlanChange, onPurchase, onContinue, onClose }: RetentionPurchaseModalProps) {
+function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, plans, selectedPlanIndex, membershipType, onCycleChange, onPlanChange, onContinue, onClose }: RetentionPurchaseModalProps) {
   const selectedPlan = plans[selectedPlanIndex] ?? plans[0];
   if (!selectedPlan) return null;
 
@@ -677,33 +676,34 @@ function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, p
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-12 py-12">
         <div className="rounded-[20px] bg-[#f6f8fb] px-8 py-8">
-          <h3 className="text-center text-[22px] font-semibold text-[#273144]">选择套餐时长</h3>
-          <div className="mt-7 flex min-w-0 flex-nowrap gap-2 overflow-x-auto rounded-[16px] bg-[#e9edf3] p-1.5">
-            {cycleOptions.map((cycle, index) => <button type="button" key={cycle.key} onClick={() => onCycleChange(index)} className={`flex min-w-[142px] shrink-0 items-center justify-center whitespace-nowrap rounded-[11px] px-5 py-4 text-[20px] transition ${selectedCycle === index ? 'bg-white font-semibold text-[#168ff2] shadow-[0_3px_12px_rgba(38,60,92,.1)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>{cycle.name}{cycle.guideText ? <span className="ml-2 text-[15px]" style={{ color: cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}</button>)}
-          </div>
-
-          <div className="mt-8 flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h3 className="text-[22px] font-semibold text-[#273144]">选择会员等级</h3>
               <p className="mt-2 text-[13px] text-[#8c96a6]">当前展示{membershipType === 'enterprise' ? '企业使用' : '个人使用'}的会员套餐</p>
             </div>
             <span className="text-[13px] text-[#8c96a6]">默认选择第1个套餐</span>
           </div>
-          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {plans.map((plan, index) => {
-              const planCycleData = getCyclePlanData(plan, activeCycleKey);
-              const planTier = planCycleData.tierOptions?.[0];
-              const planPrice = planTier?.price ?? planCycleData.price;
-              const planOriginalPrice = planTier?.originalPrice ?? planCycleData.originalPrice;
-              const levelName = plan.memberType ?? plan.name;
-              return <button type="button" key={`${plan.planKey}-${index}`} onClick={() => onPlanChange(index)} className={`min-w-0 rounded-[16px] border px-6 py-6 text-left transition ${selectedPlanIndex === index ? 'border-[#168ff2] bg-[#edf6ff] shadow-[0_8px_20px_rgba(22,143,242,.12)]' : 'border-[#dfe5ee] bg-white hover:border-[#a9c9ee]'}`}>
-                <span className={`block truncate text-[20px] font-semibold ${selectedPlanIndex === index ? 'text-[#168ff2]' : 'text-[#273144]'}`}>{levelName}</span>
-                <span className="mt-2 block truncate text-[14px] font-medium text-[#53617a]">{plan.name}套餐</span>
-                <span className="mt-2 block min-h-[40px] text-[13px] leading-5 text-[#8d98a8]">{plan.subtitle}</span>
-                <span className="mt-6 flex items-end gap-1 text-[#202938]"><span className="mb-1 text-[15px]">¥</span><strong className="text-[36px] leading-none tracking-[-.05em]">{planPrice}</strong><span className="mb-1 text-[14px] text-[#8994a4]">/{(planTier?.period ?? planCycleData.period).replace('每', '')}</span></span>
-                <span className="mt-3 block text-[13px] text-[#7f8b9d]">{planOriginalPrice ? <del className="mr-2">¥{planOriginalPrice}</del> : null}{planTier?.discount ?? planCycleData.discount}折 · {planTier?.points ?? planCycleData.points}</span>
-              </button>;
-            })}
+          <div className={`mt-5 gap-2 rounded-[12px] bg-[#eef1f5] p-1 ${plans.length <= 2 ? 'mx-auto flex w-full max-w-[620px]' : 'grid grid-cols-3'}`}>
+            {plans.map((plan, index) => <button type="button" key={`${plan.planKey}-${index}`} onClick={() => onPlanChange(index)} className={`rounded-[9px] px-4 py-3 text-[16px] font-semibold transition ${plans.length <= 2 ? 'flex-1' : ''} ${selectedPlanIndex === index ? 'bg-white text-[#168ff2] shadow-[0_2px_8px_rgba(31,64,120,.1)]' : 'text-[#667386] hover:text-[#168ff2]'}`}>{plan.name}</button>)}
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-[22px] font-semibold text-[#273144]">选择套餐时长</h3>
+            <div className="mt-5 flex min-w-0 snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {cycleOptions.map((cycle, index) => {
+                const cyclePlanData = getCyclePlanData(selectedPlan, cycle.key);
+                const cycleTier = cyclePlanData.tierOptions?.[0];
+                const cyclePrice = cycleTier?.price ?? cyclePlanData.price;
+                const cycleOriginalPrice = cycleTier?.originalPrice ?? cyclePlanData.originalPrice;
+                const cyclePoints = cycleTier?.points ?? cyclePlanData.points;
+                const cyclePeriod = (cycleTier?.period ?? cyclePlanData.period).replace('每', '');
+                return <button type="button" key={cycle.key} onClick={() => onCycleChange(index)} className={`w-full min-w-[220px] snap-start rounded-[14px] border px-5 py-5 text-left transition sm:min-w-[260px] xl:min-w-0 xl:flex-1 ${selectedCycle === index ? 'border-[#168ff2] bg-[#edf6ff] shadow-[0_8px_20px_rgba(22,143,242,.1)]' : 'border-[#dfe5ee] bg-white hover:border-[#a9c9ee]'}`}>
+                  <span className={`flex items-center gap-2 text-[16px] font-semibold ${selectedCycle === index ? 'text-[#168ff2]' : 'text-[#273144]'}`}><span>{cycle.name}</span>{cycle.guideText ? <span className="text-[12px]" style={{ color: cycle.guideTextColor ?? '#8993a2' }}>{cycle.guideText}</span> : null}</span>
+                  <span className="mt-5 flex items-end gap-1 text-[#202938]"><span className="mb-1 text-[13px]">¥</span><strong className="text-[30px] leading-none tracking-[-.05em]">{cyclePrice}</strong><span className="mb-1 text-[13px] text-[#8994a4]">/{cyclePeriod}</span></span>
+                  <span className="mt-3 block text-[12px] text-[#7f8b9d]">{cycleOriginalPrice ? <del className="mr-2">¥{cycleOriginalPrice}</del> : null}{cycleTier?.discount ?? cyclePlanData.discount}折 · {cyclePoints}</span>
+                </button>;
+              })}
+            </div>
           </div>
 
           <div className="mt-8 grid items-center gap-8 border-t border-[#e4e9f0] pt-8 lg:grid-cols-[minmax(0,1fr)_220px]">
@@ -724,7 +724,6 @@ function RetentionPurchaseModal({ cycleOptions, selectedCycle, activeCycleKey, p
       </div>
       <div className="flex shrink-0 items-center justify-end gap-5 border-t border-[#edf0f4] px-12 py-6">
         <button type="button" onClick={onContinue} className="h-14 rounded-[10px] border border-[#dce3ed] px-10 text-[20px] text-[#697587] transition hover:border-[#b7c5d7] hover:text-[#273144]">继续浏览</button>
-        <button type="button" onClick={() => onPurchase(selectedPlan)} className="h-14 rounded-[10px] bg-[#168ff2] px-12 text-[20px] font-medium text-white shadow-[0_8px_18px_rgba(22,143,242,.2)] transition hover:bg-[#087edc]">立即开通 {selectedPlan.name}</button>
       </div>
     </div>
   </div>;
@@ -1420,7 +1419,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
         </div> : null}
       </div>
       {toastMessage ? <div role="status" className="pointer-events-none fixed bottom-8 left-1/2 z-[220] -translate-x-1/2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]">{toastMessage}</div> : null}
-      {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} membershipType={membershipType} onCycleChange={(index) => { setActiveCycle(index); setRetentionPlanIndex(0); }} onPlanChange={setRetentionPlanIndex} onPurchase={(plan) => { setRetentionOpen(false); openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, 0, membershipType === 'enterprise', membershipType === 'enterprise' ? getEnterpriseSeatCount(plan.planKey) : 1); }} onContinue={() => setRetentionOpen(false)} onClose={handleClose} /> : null}
+      {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} membershipType={membershipType} onCycleChange={setActiveCycle} onPlanChange={setRetentionPlanIndex} onContinue={() => setRetentionOpen(false)} onClose={handleClose} /> : null}
       {paymentSelection ? <MembershipPaymentModal selection={paymentSelection} coupons={availableCoupons} onClose={() => setPaymentSelection(null)} /> : null}
       {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
       {couponModalOpen ? <MembershipCouponModal coupons={availableCoupons} onClose={() => setCouponModalOpen(false)} /> : null}
