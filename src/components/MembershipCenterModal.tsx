@@ -1168,9 +1168,9 @@ function MembershipTypeCycleModule({ membershipType, personalName, enterpriseNam
       <button type="button" onClick={() => onMembershipTypeChange('personal')} className={`relative pb-3 ${membershipType === 'personal' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{personalName ?? '个人使用'}{membershipType === 'personal' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button>
       <button type="button" onClick={() => onMembershipTypeChange('enterprise')} className={`relative pb-3 ${membershipType === 'enterprise' ? 'text-[#202938]' : 'text-[#9aa1ac]'}`}>{enterpriseName ?? '企业使用'}{membershipType === 'enterprise' ? <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#202938]" /> : null}</button>
     </div>
-    <div className="flex w-full min-w-0 items-center gap-3">
-      <CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={onCycleChange} couponCycleKeys={couponCycleKeys} className="relative mt-4 w-fit max-w-[min(960px,calc(100%-32px))]" />
-      <button type="button" onClick={onOpenPointsPurchase} className="mt-4 shrink-0 whitespace-nowrap rounded-full border border-[#dfe4ec] bg-white px-4 py-2.5 text-[11px] font-medium text-[#4e5a6c] shadow-[0_2px_8px_rgba(31,50,81,.08)] transition hover:border-[#aabff0] hover:text-[#168ff2]">购买积分</button>
+    <div className="relative w-full min-w-0">
+      <CycleOptionSelector options={cycleOptions} selectedIndex={selectedCycle} onChange={onCycleChange} couponCycleKeys={couponCycleKeys} className="relative mx-auto mt-4 w-fit max-w-[min(960px,calc(100%-32px))]" />
+      <button type="button" onClick={onOpenPointsPurchase} className="absolute right-0 top-4 shrink-0 whitespace-nowrap rounded-full border border-[#dfe4ec] bg-white px-4 py-2.5 text-[11px] font-medium text-[#4e5a6c] shadow-[0_2px_8px_rgba(31,50,81,.08)] transition hover:border-[#aabff0] hover:text-[#168ff2]">购买积分</button>
     </div>
   </section>;
 }
