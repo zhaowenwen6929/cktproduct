@@ -1495,16 +1495,16 @@ export default function App() {
     const requirementOverviewStats = getRequirementOverviewStats();
 
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f7efe5_0%,#f5f0e8_32%,#ebe6dc_100%)] text-stone-900">
-        <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-8 sm:px-10 lg:px-12">
-          <div className="rounded-[32px] border border-white/70 bg-white/75 p-8 shadow-[0_30px_80px_rgba(82,64,39,0.12)] backdrop-blur">
-            <div className="flex flex-col gap-10">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <div className="prototype-homepage min-h-screen bg-[radial-gradient(circle_at_top,#f7efe5_0%,#f5f0e8_32%,#ebe6dc_100%)] text-stone-900">
+        <div className="prototype-homepage-shell mx-auto flex min-h-screen w-full max-w-none flex-col">
+          <div className="prototype-homepage-card rounded-[32px] border border-white/70 bg-white/75 p-8 shadow-[0_30px_80px_rgba(82,64,39,0.12)] backdrop-blur">
+            <div className="prototype-homepage-content flex flex-col gap-10">
+              <div className="prototype-homepage-header flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-4xl">
                   <div className="mb-4 inline-flex items-center rounded-full border border-stone-200 bg-stone-50 px-4 py-1 text-xs font-semibold tracking-[0.24em] text-stone-500 uppercase">
                     Feature Hub
                   </div>
-                  <h1 className="text-4xl font-semibold tracking-[-0.04em] text-stone-900 sm:text-5xl">
+                  <h1 className="prototype-homepage-title text-4xl font-semibold tracking-[-0.04em] text-stone-900 sm:text-5xl">
                     创客贴需求原型
                   </h1>
                   <div className="mt-5 flex flex-wrap gap-3 text-sm text-stone-600">
@@ -1522,7 +1522,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div role="tablist" aria-label="原型查看方式" className="inline-flex shrink-0 self-start rounded-full border border-stone-200 bg-stone-100/80 p-1 shadow-[0_8px_20px_rgba(120,95,60,0.06)] lg:mt-8">
+                <div role="tablist" aria-label="原型查看方式" className="prototype-homepage-tabs inline-flex shrink-0 self-start rounded-full border border-stone-200 bg-stone-100/80 p-1 shadow-[0_8px_20px_rgba(120,95,60,0.06)] lg:mt-8">
                   <button
                     type="button"
                     role="tab"
@@ -1545,11 +1545,11 @@ export default function App() {
               </div>
 
               {homeViewMode === 'requirements' ? (
-                <div className="rounded-[28px] border border-stone-200 bg-[#f4f6f9] p-3 shadow-[0_20px_50px_rgba(120,95,60,0.08)] sm:p-4">
+                <div className="prototype-requirement-board-shell rounded-[28px] border border-stone-200 bg-[#f4f6f9] p-3 shadow-[0_20px_50px_rgba(120,95,60,0.08)] sm:p-4">
                   <RequirementListBoard onNavigate={(path) => navigateTo(normalizeRoute(path))} />
                 </div>
               ) : (
-              <div className="grid gap-5 lg:grid-cols-2">
+              <div className="prototype-homepage-feature-grid grid gap-5 lg:grid-cols-2">
                 {featureCards.map((feature) => (
                   (() => {
                     const requirementStats = requirementProjectStats[feature.title] ?? { total: 0, launched: 0, notLaunched: 0 };

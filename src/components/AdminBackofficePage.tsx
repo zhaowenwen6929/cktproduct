@@ -730,7 +730,7 @@ export function RequirementListBoard({ onNavigate }: { onNavigate?: (path: strin
   const [expandedMainRequirements, setExpandedMainRequirements] = useState<Record<string, boolean>>({});
   const [selectedRequirement, setSelectedRequirement] = useState<RequirementNavItem | null>(null);
 
-  return <div className="relative min-w-0">
+  return <div className={`prototype-requirement-board relative min-w-0 ${selectedRequirement ? 'prototype-requirement-board--drawer-open' : ''}`}>
     <section className="overflow-hidden rounded-[4px] bg-white shadow-[0_2px_8px_rgba(44,57,83,.04)]">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8edf3] px-5 py-4"><div><h1 className="text-[18px] font-semibold text-[#283244]">需求列表</h1><p className="mt-1 text-[12px] text-[#98a2b2]">按主需求新增时间倒序展示，子需求归属在对应主需求下。</p></div><span className="rounded-[5px] bg-[#fff4c8] px-3 py-1.5 text-[12px] font-medium text-[#986a00]">{mainRequirements.length} 个主需求 · {childRequirementCount} 个子需求</span></header>
       <div className="space-y-3 p-5">

@@ -695,3 +695,109 @@ button {
   .design-app-tool { font-size: 12px; }
   .design-app-recommend-card { flex-basis: 148px; }
 }
+
+/* 需求原型首页：按浏览器可用宽度流式调整容器、间距和字号，避免大屏留出过宽空白或小屏横向溢出。 */
+.prototype-homepage {
+  --prototype-requirement-drawer-width: clamp(360px, 34vw, 520px);
+  overflow-x: hidden;
+}
+
+.prototype-homepage-shell {
+  box-sizing: border-box;
+  width: min(calc(100% - clamp(24px, 6vw, 128px)), 1820px);
+  padding: clamp(16px, 2.2vw, 36px) 0;
+}
+
+.prototype-homepage-card {
+  box-sizing: border-box;
+  border-radius: clamp(20px, 2.2vw, 32px);
+  padding: clamp(20px, 2.35vw, 40px);
+}
+
+.prototype-homepage-content {
+  gap: clamp(24px, 3vw, 40px);
+}
+
+.prototype-homepage-title {
+  font-size: clamp(32px, 3.1vw, 48px);
+}
+
+.prototype-homepage-header {
+  gap: clamp(20px, 2.5vw, 40px);
+}
+
+.prototype-requirement-board-shell {
+  border-radius: clamp(18px, 2vw, 28px);
+  padding: clamp(12px, 1.5vw, 16px);
+}
+
+.prototype-homepage-feature-grid {
+  gap: clamp(16px, 2vw, 24px);
+}
+
+.prototype-homepage-shell {
+  transition: padding-right 200ms ease;
+}
+
+@media (min-width: 701px) {
+  .prototype-homepage-shell:has(.prototype-requirement-board--drawer-open) {
+    padding-right: var(--prototype-requirement-drawer-width);
+  }
+
+  .prototype-homepage .prototype-requirement-drawer:not(.inset-4) {
+    width: var(--prototype-requirement-drawer-width) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .prototype-homepage-header {
+    align-items: flex-start;
+  }
+
+  .prototype-homepage-tabs {
+    width: 100%;
+  }
+
+  .prototype-homepage-tabs button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .prototype-homepage-shell {
+    width: calc(100% - 24px);
+    padding: 12px 0;
+  }
+
+  .prototype-homepage-card {
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .prototype-homepage-card > .prototype-homepage-content {
+    gap: 24px;
+  }
+
+  .prototype-homepage-title {
+    font-size: clamp(30px, 9vw, 40px);
+  }
+
+  .prototype-homepage-tabs button {
+    height: 42px;
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+
+  .prototype-requirement-board-shell {
+    border-radius: 16px;
+    padding: 8px;
+  }
+
+  .prototype-homepage .prototype-requirement-drawer:not(.inset-4) {
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: calc(100vw - 24px) !important;
+    border-radius: 16px;
+  }
+}
