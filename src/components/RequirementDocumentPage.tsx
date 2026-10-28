@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { ArrowLeft, Check, CheckCircle2, ChevronRight, Clipboard, ClipboardList, FileText, Maximize2, Minimize2, X } from 'lucide-react';
 import { MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, type MembershipRequirementSection, type MembershipRequirementTable } from './MembershipRequirementFloatingButton';
 
-type RequirementKind = 'ai-ecommerce' | 'search-guide' | 'membership';
+type RequirementKind = 'ai-ecommerce' | 'search-guide' | 'membership' | 'agent-eval';
 
 type RequirementSectionItemData = {
   label: string;
@@ -46,6 +46,56 @@ const toRequirementDocumentSections = (prefix: string, sections: MembershipRequi
 }));
 
 const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
+  'agent-eval': {
+    title: 'Agent / Skill 自动化评测平台',
+    requirementKey: 'AE-2610',
+    status: '待开发',
+    eyebrow: 'AGENT EVALUATION PLATFORM',
+    summary: '建立面向 Agent 和 Skill 的离线批量评测工作台，统一管理测试用例、执行接口、Mock 运行、完整轨迹和结果验收。',
+    background: '当前 Agent 和 Skill 的验证依赖单个能力人工测试，无法高效覆盖路由冲突、参数异常、工具失败和历史回归问题，也难以定位失败发生在路由、执行还是最终结果。',
+    goal: '以业务任务为评测单位，将用例导入、批量运行、执行轨迹、规则评分和失败复核收敛到同一个工作台，并为后续接入真实 Agent 接口和线上回归保留适配边界。',
+    sections: [
+      {
+        title: '用例集管理',
+        description: '用例描述任务和验收标准，不只保存标准答案。',
+        items: [
+          { label: '用例范围', content: '覆盖 Agent 路由、Skill 参数、组合任务、相邻能力冲突、缺少输入和异常兜底等场景。' },
+          { label: '导入格式', content: '支持 JSON、JSONL 和 CSV；字段至少包含 input 或 prompt，同时记录用例 ID、类型、目标、期望结果、优先级和标签。' },
+          { label: '示例数据', content: '首次进入提供 5 条 Agent / Skill 示例用例，可一键恢复示例数据并清空上一轮执行结果。' },
+        ],
+      },
+      {
+        title: '接口配置与执行控制',
+        description: '先通过 Mock Runner 验证评测闭环，再替换为真实接口适配层。',
+        items: [
+          { label: '接口配置', content: '支持配置名称、请求方法、接口地址、认证方式、Token/API Key 和超时时间；默认使用 Mock Runner，不发送真实请求。' },
+          { label: '批量执行', content: '支持选择 Agent + Skill 全部用例、配置并发数、开始执行和暂停执行，并实时显示完成数量和进度。' },
+          { label: '运行日志', content: '记录开始执行、单条用例完成、暂停和整批完成状态，并标记成功、警告或普通信息。' },
+        ],
+      },
+      {
+        title: '结果与轨迹',
+        description: '规则评分优先，失败样本需要可复核。',
+        items: [
+          { label: '统计指标', content: '展示用例总数、已执行数量、通过率和平均耗时；失败时明确失败数量。' },
+          { label: '单条结果', content: '展示通过/失败状态、耗时、执行信息，并支持打开详情。' },
+          { label: '执行轨迹', content: '详情展示期望结果、实际结果、路由、工具调用、参数校验和最终断言等步骤，支持定位失败原因。' },
+        ],
+      },
+    ],
+    acceptance: [
+      '需求首页按项目查看中新增“自动化验证平台”项目入口，并显示 AE-2610 需求统计。',
+      '进入项目后默认提供示例用例，能够导入 JSON、JSONL 或 CSV 用例并正确展示。',
+      '点击开始执行后按用例逐条更新进度、运行日志和结果；点击暂停后不再继续执行新的用例。',
+      '执行结果至少包含通过率、平均耗时、成功/失败状态和单条详情；失败详情可查看完整执行轨迹。',
+      'Mock Runner 默认开启且不会发起真实请求；接口配置字段可编辑并能在评测工作台内保持一致。',
+      '需求列表中的主需求、子需求、需求说明和进入页面路径均指向本评测工作台，文案与页面能力一致。',
+    ],
+    verificationNotes: [
+      '验证辅助项，不属于自动化验证平台业务需求：页面使用 Mock Runner 模拟执行结果，skill-003 固定展示一次失败样本用于验证失败复核链路。',
+      '验证辅助项，不属于自动化验证平台业务需求：用例、配置和执行结果仅保存在当前页面状态，不代表真实线上数据。',
+    ],
+  },
   membership: {
     title: '2026年10月会员改版',
     requirementKey: 'V2610',
@@ -101,14 +151,13 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         ],
       },
       {
-        title: '会员支付弹框组件化',
-        description: '全新的会员支付弹框作为统一会员入口承载会员页访问、套餐选择和购买支付，后续所有相关入口均统一调起，并按模块补齐数据来源与验收口径。',
+        title: '【Web】会员支付弹框/挽留弹框/补差价升级页新增会员',
+        description: '聚焦三类 Web 会员页面的新增会员展示、套餐匹配、支付和购买限制，不包含设计页外或设计页内入口处理。',
         items: [
-          { label: '统一使用方式', content: '本次会员支付弹框为全新会员服务入口；首页顶部“会员中心”、后续会员页入口、会员购买入口和支付流程统一打开这一弹框，不再分别实现会员套餐和支付流程。弹框需要支持统一的打开、关闭、当前会员信息和补差价升级入口。' },
-          { label: '模块划分', content: '弹框拆分为 Banner区、套餐切换区、套餐展示购买区、权益概览区、AI模型消耗区、详细权益区、商用授权区和常见问题区；各模块围绕当前会员、当前身份、套餐选择和支付结果联动。' },
-          { label: '统一入口', content: '首页右上角“会员中心”、后续会员页入口、会员购买入口和支付流程均使用同一会员支付弹框；支持通过链接中的约定标识符调起并识别打开场景。链接标识符只负责进入指定会员场景，不改变当前用户身份、套餐价格和购买资格。补差价升级仍由 FAQ 第 8 条进入 /membership-upgrade，不把延期升级和补差价升级混为一套支付逻辑。' },
-          { label: '数据边界', content: '页面配置和套餐明细从现有后台原型配置读取，会员身份、价格、积分、席位和有效期分别按字段、固定字典或计算规则使用；Banner 活动文案属于固定前端活动配置，不从套餐名称推导。' },
-          { label: '验收重点', content: '可从不同入口打开同一会员支付弹框；类型、时间、积分和席位切换后卡片与二维码金额同步；不可购买时显示原因而不生成二维码；弹框打开和关闭状态在各入口保持一致。' },
+          { label: '会员支付弹框', content: '全屏会员支付弹框新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312，按 V2610 模块展示套餐、权益、AI 模型消耗、积分、席位和支付信息。' },
+          { label: '挽留弹框', content: '挽留弹框按补差价升级中的会员默认规则选择会员和套餐，确认购买后直接展示二维码，不再显示“立即开通”按钮。' },
+          { label: '补差价升级页', content: '补差价升级页使用 /membership-upgrade，套餐展示区域响应新增会员，下面已有支付区域继续负责补差价支付；切换等级、时长、积分档位或席位后金额和二维码同步更新。' },
+          { label: '支付边界', content: '会员支付弹框执行延期升级，补差价升级页执行补差价支付；两者不共用错误的支付流程，入口处理归入另外两个 Web 入口子需求。' },
         ],
       },
       {
@@ -139,12 +188,21 @@ const requirementSpecs: Record<RequirementKind, RequirementSpec> = {
         ],
       },
       {
-        title: '首页会员中心入口',
-        description: '首页顶部导航的会员入口统一使用会员中心文案，并与会员改版需求保持一致。',
+        title: '【Web】设计页外各会员入口处理新增会员',
+        description: '设计页外各会员入口只负责触发统一会员服务，不重复维护新会员套餐和支付规则。',
         items: [
-          { label: '入口位置', content: '创客贴首页 > 顶部导航 > 会员中心。' },
-          { label: '入口文案', content: '右上角原“开通会员”改为“会员中心”，点击后继续打开已有会员中心弹框。' },
-          { label: '需求标识', content: '入口改动区域展示 V2610 需求标识，标识放在改动区域外侧，不遮挡会员中心按钮。' },
+          { label: '入口范围', content: '创客贴首页/设计页外顶部导航的“会员中心”、会员购买入口和常见问题补差价升级入口分别打开会员支付弹框或 /membership-upgrade，不在入口页面重复拼装会员内容。' },
+          { label: '新会员响应', content: '入口触发后同步当前会员身份，使用基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312 的新会员名称和购买状态。' },
+          { label: '标识与跳转', content: '入口展示 V2610 标识且不遮挡顶部导航、用户信息、会员中心按钮或跳转控件；补差价入口进入独立升级页，不直接创建订单。' },
+        ],
+      },
+      {
+        title: '【Web】设计页/无限画布内各会员入口处理新会员',
+        description: '设计页和无限画布内的会员入口统一响应新会员等级、权益和购买状态。',
+        items: [
+          { label: '设计页入口', content: '设计页内会员模板、会员权益和升级提示等入口展示新会员名称、level 和对应权益，点击后统一调起会员支付弹框，不重复拼装套餐与支付内容。' },
+          { label: '无限画布入口', content: '无限画布内会员入口使用同一套新会员等级和会员状态判断；需要补差价升级时进入 /membership-upgrade，不可购买或席位受限时展示明确原因。' },
+          { label: '页面边界', content: '设计页和无限画布入口的 V2610 标识不遮挡编辑、生成、模板和会员操作控件；编辑与生成流程本身不在本子需求中改造。' },
         ],
       },
       {

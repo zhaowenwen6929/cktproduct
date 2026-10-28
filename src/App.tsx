@@ -22,11 +22,12 @@ import { UserAuthorizationPage } from './components/UserAuthorizationPage';
 import { UserAuthorizationViewPage } from './components/UserAuthorizationViewPage';
 import { MembershipActivationPage } from './components/MembershipActivationPage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
+import { AgentEvaluationPage } from './components/AgentEvaluationPage';
 import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval';
 
 type AppHistoryState = {
   appRoute?: AppRoute;
@@ -73,6 +74,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/canvas') return '/canvas';
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
   if (pathname === '/connector-auth') return '/connector-auth';
+  if (pathname === '/agent-eval') return '/agent-eval';
   if (pathname === '/agent-skills-home/templates') return '/agent-skills-home/templates';
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/membership-upgrade') return '/membership-upgrade';
@@ -83,6 +85,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/admin-backoffice/requirements/membership') return '/admin-backoffice/requirements/membership';
   if (pathname === '/admin-backoffice/requirements/ai-ecommerce') return '/admin-backoffice/requirements/ai-ecommerce';
   if (pathname === '/admin-backoffice/requirements/search-guide') return '/admin-backoffice/requirements/search-guide';
+  if (pathname === '/admin-backoffice/requirements/agent-eval') return '/admin-backoffice/requirements/agent-eval';
   if (pathname === '/admin-backoffice/guided-search') return '/admin-backoffice/guided-search';
   if (pathname === '/admin-backoffice/membership-open') return '/admin-backoffice/membership-open';
   if (pathname === '/admin-backoffice/membership-packages') return '/admin-backoffice/membership-packages';
@@ -1370,6 +1373,10 @@ export default function App() {
         title: 'AI 连接器授权原型',
         description: 'AI 连接器授权原型，模拟创客贴登录、Access Key 选择与 WorkBuddy 授权回跳流程。',
       },
+      '/agent-eval': {
+        title: '自动化验证平台｜Agent / Skill 评测',
+        description: '自动化验证平台，支持批量导入 Agent / Skill 用例、Mock 执行和结果轨迹查看。',
+      },
       '/agent-skills-home': {
         title: 'Agent skills 创作首页',
         description: '创客贴首页原型，展示 Agent skills 入口、技能表单和无限画布生成流程。',
@@ -1458,6 +1465,10 @@ export default function App() {
         title: '搜索引导管理｜需求说明',
         description: '搜索引导管理的需求背景、节点关系、查询映射和验收标准。',
       },
+      '/admin-backoffice/requirements/agent-eval': {
+        title: 'Agent / Skill 自动化评测平台｜需求说明',
+        description: '自动化验证平台的用例管理、接口配置、批量执行和结果追踪需求说明。',
+      },
     };
 
     const next = titleMap[currentRoute];
@@ -1503,6 +1514,12 @@ export default function App() {
         title: '创客贴管理后台',
         description: '进入管理后台需求目录，查看玩法管理下的 AI 电商配置查询与 JSON 编辑流程。',
         href: '/admin-backoffice' as AppRoute,
+        available: true,
+      },
+      {
+        title: '自动化验证平台',
+        description: '批量导入 Agent / Skill 测试用例，配置执行接口，运行 Mock 回归并查看验收结果与完整轨迹。',
+        href: '/agent-eval' as AppRoute,
         available: true,
       },
     ];
@@ -1621,7 +1638,7 @@ export default function App() {
                     </p>
                   </div>
                   <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm leading-6 text-stone-200">
-                    当前已接入：`/canvas`
+                    当前已接入：`/canvas` · `/agent-eval`
                   </div>
                 </div>
               </div>
@@ -1643,6 +1660,10 @@ export default function App() {
 
   if (currentRoute === '/connector-auth') {
     return <ConnectorAuthPrototypePage onBack={() => navigateTo('/')} />;
+  }
+
+  if (currentRoute === '/agent-eval') {
+    return <AgentEvaluationPage onBack={() => navigateTo('/')} />;
   }
 
   if (currentRoute === '/agent-skills-home/templates') {
@@ -1736,6 +1757,14 @@ export default function App() {
     return <RequirementDocumentPage
       kind="search-guide"
       onBack={() => navigateBack('/admin-backoffice/guided-search')}
+      onNavigate={(path) => navigateTo(path as AppRoute)}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/requirements/agent-eval') {
+    return <RequirementDocumentPage
+      kind="agent-eval"
+      onBack={() => navigateBack('/admin-backoffice/requirements')}
       onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
   }
