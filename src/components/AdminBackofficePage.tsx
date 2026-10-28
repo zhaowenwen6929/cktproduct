@@ -683,6 +683,17 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
       items: MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS[0].items.map((content, index) => ({ label: `等级规则 ${index + 1}`, content })),
     }
     : null;
+  const membershipLevelOrderingSection = item.id === 'membership-redesign'
+    ? {
+      title: MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS[1].title,
+      description: '会员等级按照统一的总排序和固定页面顺序展示，并据此判断续费、升级和降级。',
+      items: MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS[1].items.map((content, index) => ({
+        label: `等级排序 ${index + 1}`,
+        content,
+        highlightTerms: MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS[1].highlightTerms,
+      })),
+    }
+    : null;
   const membershipDescriptionItems = item.id === 'membership-redesign'
     ? MEMBERSHIP_REQUIREMENT_DESCRIPTION_ITEMS.map((content, index) => ({ label: `改动重点 ${index + 1}`, content }))
     : [{ label: '需求描述', content: item.requirement }];
@@ -697,6 +708,7 @@ function buildRequirementSpec(item: RequirementNavItem): RequirementSpec {
     goal: item.id === 'membership-redesign' ? MEMBERSHIP_REQUIREMENT_GOAL : `在${item.navLabels?.[0] ?? '对应页面'}内完成需求改动，并保持页面入口、数据展示和交互规则一致。`,
     sections: [
       ...(membershipLevelSection ? [membershipLevelSection] : []),
+      ...(membershipLevelOrderingSection ? [membershipLevelOrderingSection] : []),
       {
         title: '需求描述',
         description: item.id === 'membership-redesign' ? '本次会员改版涉及的主要改动汇总。' : '本页面需要实现的核心改动。',
