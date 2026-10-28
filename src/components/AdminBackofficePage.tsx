@@ -325,6 +325,21 @@ const MEMBERSHIP_REQUIREMENT_BACKGROUND = '会员后台、会员购买弹框和�
 const MEMBERSHIP_REQUIREMENT_GOAL = '建立统一的 V2610 会员等级、套餐、积分、权益、支付和升级展示口径，保证设计页外入口、会员购买弹框、补差价升级页及各端页面均能按同一套新等级和映射规则展示并响应。';
 
 const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
+  { id: 'developer-platform', title: '创客贴开放平台·开发者中心', projectName: '创客贴开放平台·开发者中心', level: 'main', requirementKey: 'DP-2610', requirement: '建设承载应用注册、凭证管理、OAuth 授权、REST API、CLI、MCP 接入、调用管理和组织权限的开发者中心，帮助开发者在 10 分钟内完成第一次安全调用。', summary: '面向个人开发者、企业技术团队和 AI Agent，提供从创建应用到 API/MCP 调用的完整接入闭环。', details: ['提供开发者平台首页与控制台总览，突出创建应用、获取凭证和开始调用三个核心动作。', '应用支持基本信息、集成方式、OAuth 回调、域名白名单、Webhook、环境和组织授权配置。', '凭证按开发/生产环境管理 Client ID、Client Secret、Access Key、Secret Key、Access Token 和 Refresh Token；Secret 只显示一次，重新生成必须二次确认。', 'REST API、CLI、MCP 共用应用、OAuth、Scope 和调用日志模型；MCP 提供 Server URL、客户端配置、连接测试和组织授权提示。', '按能力域配置 Scope，危险权限明确标识 AI 额度、设计修改、删除资源、发布设计和企业品牌资产影响。', '测试台支持模板、素材、设计、AI 商品图、导出和异步任务示例，并展示 JSON、任务 ID、请求耗时、错误码和额度消耗。', '调用量、额度、调用日志和团队权限支持按应用/组织/工具查看，组织管理员可处理待授权应用和额度设置。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-home', title: '开发者平台首页', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供中文优先的开放平台首页，让未登录用户理解产品价值并进入控制台。', summary: '展示 REST API、CLI、MCP 三种接入方式，以及快速开始、文档和开发者资源入口。', details: ['展示产品价值、三种接入方式、快速开始、API/MCP 文档、GitHub、SDK 和示例入口。', '提供创建应用、进入控制台、查看快速开始三个首屏动作，并预留中文/英文切换入口。', '首页以“10 分钟完成第一次调用”为设计目标，明确创建应用、获取凭证、连接工具、测试调用四步。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-console', title: '开发者控制台总览', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '建设 B 端开发者控制台总览，聚合组织、应用、调用量、额度和最近活动。', summary: '通过左侧导航、组织切换和数据卡片，让开发者快速找到下一步接入动作。', details: ['左侧导航包含总览、我的应用、API 文档、MCP 接入、CLI 工具、API/MCP 测试台、调用量与额度、调用日志、团队与权限和开发者设置。', '顶部提供组织切换、生产/开发环境提示、通知、帮助和个人账号入口。', '主内容展示今日调用、活跃应用、额度消耗、成功率、快速开始进度、应用列表和最近活动。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-apps', title: '应用列表', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供应用列表和应用生命周期管理能力。', summary: '支持应用搜索、筛选、排序、查看、编辑、停用和删除，并覆盖空应用列表状态。', details: ['列表展示应用名称、图标、应用类型、所属组织、接入方式、状态、最近调用和创建时间。', '支持搜索、状态筛选、创建时间排序、查看应用详情、停用和删除二次确认。', '空状态引导创建第一个应用；已停用应用保留历史调用和凭证状态提示。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-create-app', title: '创建应用向导', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '以 4 步向导完成应用注册、接入方式、授权配置和创建确认。', summary: '降低首次接入门槛，创建成功后直接引导用户查看 Client ID 和 Secret。', details: ['第一步填写应用名称、Logo、描述、应用类型、所属组织和应用用途。', '第二步选择 REST API、CLI、MCP、SDK，并展示适用用户、能力范围、所需凭证、OAuth 和企业审核要求。', '第三步配置 OAuth 回调、域名白名单、Webhook、开发/生产地址、PKCE 和组织级授权。', '第四步确认应用信息、集成方式、默认权限和安全提示；成功后显示创建成功状态并进入应用概览。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-app-overview', title: '应用概览', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供单个应用的概览和快速操作入口。', summary: '集中展示应用状态、凭证、授权用户、调用量、额度和最近调用。', details: ['展示应用名称、状态、Client ID、当前环境、应用类型和所属组织。', '展示已授权用户数、今日调用量、本月额度消耗、平均响应时间和最近调用记录。', '提供查看凭证、配置权限、配置 OAuth、测试 API、查看 MCP 配置和查看文档等快速操作。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-credentials', title: '应用凭证', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供按环境隔离的凭证查看、复制、过期、撤销和轮换能力。', summary: '安全管理 Client ID、Client Secret、Access Key、Secret Key、Access Token 和 Refresh Token。', details: ['开发环境和生产环境分别展示 Client ID、Client Secret、Access Key、Secret Key、Access Token 和 Refresh Token。', 'Secret 默认隐藏且只在生成时显示一次；支持复制、备注、设置过期时间、重新生成和撤销。', '重新生成和撤销必须二次确认，说明旧凭证失效影响；页面明确提示 Secret 不能放在前端、GitHub 或公开代码仓库。', '记录凭证最后使用时间、有效/过期状态和对应环境。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-integrations', title: '集成方式', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '在同一应用下提供 REST API、CLI、MCP 三种集成方式的配置与文档入口。', summary: '统一展示 Base URL、命令、MCP Server URL、鉴权方式、示例和连接测试。', details: ['REST API Tab 展示 API Base URL、鉴权方式、请求/返回示例、错误码、限流规则和复制代码。', 'CLI Tab 展示安装、登录、初始化、查看工具、调用任务、查询任务、JSON 输出和 macOS/Windows/Linux 说明。', 'MCP Tab 展示 Server URL、OAuth 入口、客户端配置、支持工具、权限说明、测试连接和 Claude/Cursor/Codex/ChatGPT 指引。', 'MCP 连接状态需覆盖连接成功、连接失败、授权中和授权失败，并关联当前应用权限和调用日志。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-oauth', title: 'OAuth 与回调地址', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供 OAuth 回调地址、域名白名单、PKCE 和组织级授权配置。', summary: '让开发者能区分开发/生产环境配置，并让企业管理员明确授权范围。', details: ['支持开发环境、生产环境、本地调试地址，并展示已验证、待验证和失效状态。', '支持新增、编辑、删除回调地址，生产环境必须 HTTPS，localhost 仅允许开发环境。', '支持启用 PKCE 和组织级授权；授权流程展示发起授权、用户确认、回跳换 Token 和开始调用。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-scopes', title: '权限 Scope', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '按能力域配置应用权限，并在授权前解释数据范围、确认要求和费用影响。', summary: '覆盖账号组织、模板、素材、设计、AI、品牌资产、评论协作和资源管理权限。', details: ['按账号与组织、模板读取、素材读取/上传、设计读取/创建/编辑/导出、AI 图片生成、AI 商品图、品牌资产、评论协作、删除和移动资源分组。', '每个权限展示名称、描述、读/写/删除等级、是否需要用户确认、是否需要企业管理员授权和可能产生的积分/费用。', '危险权限使用醒目标识，重点提示 AI 额度、修改现有设计、删除素材、发布设计和访问企业品牌资产。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-tester', title: 'API / MCP 测试台', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供可在线执行的 API/MCP 调试工具，帮助开发者完成第一次调用。', summary: '通过工具列表、参数表单和结果区完成模板搜索、设计创建、AI 生成、导出和任务查询。', details: ['左侧支持工具分类、工具搜索、工具名称和权限标签；中间支持参数表单、JSON 编辑器、文件上传、图片预览和异步开关。', '右侧展示请求结果、返回 JSON、请求耗时、任务 ID、结果预览、错误信息和复制代码。', '提供搜索模板、获取模板详情、搜索素材、创建设计草稿、AI 商品图生成、导出 PNG、查询异步任务示例。', '覆盖 API 调用成功、失败、异步处理中、异步成功、异步失败、额度不足、超出限流和无权限状态。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-usage', title: '调用量与额度', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供调用趋势、成功率、响应时间、额度和限流状态的可观测视图。', summary: '帮助开发者判断应用是否健康、额度是否充足以及哪类工具需要优化。', details: ['展示今日调用量、近 7 日趋势、API/MCP/CLI 调用次数、AI 积分消耗、失败率、平均响应时间和剩余额度。', '支持按应用、组织、工具维度筛选，并提供额度使用进度和 80%/100% 预警规则。', '调用量和额度页面覆盖加载中、空数据、额度不足和超出限流状态。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-logs', title: '调用日志', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '记录 API、MCP、CLI 调用明细，支持定位请求与错误。', summary: '从请求摘要到响应摘要完整追踪调用方式、工具、状态、耗时和额度消耗。', details: ['字段包含时间、应用、用户、组织、调用方式、工具名称、请求 ID、任务 ID、状态、响应耗时、额度消耗和错误码。', '支持按时间、工具、状态筛选，查看请求摘要、响应摘要和错误详情，复制请求 ID和导出日志。', '日志详情与应用、组织、任务、额度数据关联，应用停用后保留历史记录。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-team', title: '团队与权限', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '支持团队成员、角色、组织授权和审计日志管理。', summary: '满足企业管理员对应用成员、数据范围、额度和最近操作的管理需要。', details: ['角色至少包括所有者、管理员、开发者、只读成员和财务/额度管理员，并展示每个角色的能力边界。', '支持邀请成员、修改角色、移除成员、查看成员最近操作、配置组织授权和查看审计日志。', '待授权应用展示 Scope、数据范围和积分影响；管理员可同意授权、设置额度或拒绝。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
+  { id: 'developer-platform-docs', title: '快速开始文档', projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '提供 API、CLI、MCP 三种接入方式的快速开始与错误处理文档。', summary: '用可复制的代码、命令和步骤帮助开发者完成第一次安全调用。', details: ['文档覆盖创建应用、获取凭证、选择权限、OAuth 授权、第一次调用和错误处理。', '支持按 REST API、CLI、MCP 切换示例，代码块提供复制反馈，文档入口与测试台互相跳转。', '关键页面补充安全设计、可观测性、限流、异步任务和继续打开设计结果的说明。'], addedAt: '2026-10-28', status: '待开发', path: '/developer-platform' },
   { id: 'agent-evaluation-platform', title: 'Agent / Skill 自动化评测平台', projectName: '自动化验证平台', level: 'main', requirementKey: 'AE-2610', requirement: '建立面向 Agent 和 Skill 的离线批量评测工作台，统一管理测试用例、执行接口、Mock 运行、完整轨迹和结果验收。', summary: '通过批量用例、规则评分和执行轨迹，验证 Agent/Skill 的路由、参数、异常兜底和任务完成情况。', details: ['测试用例以业务任务为单位，支持 Agent 路由、Skill 参数、组合任务、冲突识别和异常兜底场景。', '支持 JSON、JSONL、CSV 用例导入，统一记录目标、输入、期望结果、优先级和标签。', '支持 Mock Runner 批量执行，预留真实 Agent 接口配置，并展示进度、耗时、通过率和失败样本。', '失败样本可查看期望结果、实际结果、路由信息、工具调用和断言校验等执行轨迹。'], addedAt: '2026-10-28', status: '待开发', path: '/admin-backoffice/requirements/agent-eval' },
   { id: 'agent-evaluation-workbench', title: 'Agent / Skill 评测工作台', projectName: '自动化验证平台', level: 'sub', requirementKey: 'AE-2610', parentId: 'agent-evaluation-platform', requirement: '实现自动化验证平台的 MVP 评测工作台。', summary: '提供用例管理、接口配置、执行控制、运行日志和结果详情，支持一轮完整的 Mock 回归验证。', details: ['用例集支持载入示例、导入 JSON/JSONL/CSV，并展示类型、目标、优先级、输入和标签。', '接口配置支持配置名称、请求方法、接口地址、认证方式、超时和 Token；默认开启 Mock Runner。', '执行控制支持全量 Agent + Skill 用例、并发数、进度条、开始执行和暂停操作。', '执行结果支持通过率、平均耗时、失败数量和单条用例详情；详情展示期望结果、实际结果和执行轨迹。', '运行日志记录开始、单条用例完成、暂停和整批完成状态，便于定位失败原因。'], addedAt: '2026-10-28', status: '待开发', path: '/agent-eval' },
   { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirementKey: 'V2610', requirement: MEMBERSHIP_REQUIREMENT_DESCRIPTION, summary: '新增 5 个会员等级，统一套餐积分、全屏购买弹框、权益/AI 模型消耗及各端会员等级响应。', details: [...MEMBERSHIP_REQUIREMENT_DESCRIPTION_ITEMS, '统一会员总排序、同等级续费叠加、低等级升级、高等级禁止降级、企业席位上下限和不可购买提示；具体字段来源、固定字典、计算规则和验收标准以 V2610 主需求说明为准。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/requirements/membership' },
@@ -386,6 +401,22 @@ export function getRequirementOverviewStats(): RequirementOverviewStats {
 }
 
 const REQUIREMENT_CHILD_ORDER: Record<string, string[]> = {
+  'developer-platform': [
+    'developer-platform-home',
+    'developer-platform-console',
+    'developer-platform-apps',
+    'developer-platform-create-app',
+    'developer-platform-app-overview',
+    'developer-platform-credentials',
+    'developer-platform-integrations',
+    'developer-platform-oauth',
+    'developer-platform-scopes',
+    'developer-platform-tester',
+    'developer-platform-usage',
+    'developer-platform-logs',
+    'developer-platform-team',
+    'developer-platform-docs',
+  ],
   'membership-redesign': [
     'membership-packages',
     'membership-open',
@@ -447,6 +478,24 @@ function getRequirementDisplayPath(item: RequirementNavItem): string {
   if (item.id === 'membership-web-canvas-entries') return `${projectName} > 设计页/无限画布 > 会员入口`;
   if (item.id === 'agent-evaluation-platform') return `${projectName} > 评测平台 > Agent / Skill 自动化评测平台`;
   if (item.id === 'agent-evaluation-workbench') return `${projectName} > 评测工作台`;
+  const developerPlatformPaths: Record<string, string> = {
+    'developer-platform': `${projectName} > 开发者中心`,
+    'developer-platform-home': `${projectName} > 开发者平台首页`,
+    'developer-platform-console': `${projectName} > 开发者中心 > 控制台总览`,
+    'developer-platform-apps': `${projectName} > 开发者中心 > 我的应用`,
+    'developer-platform-create-app': `${projectName} > 开发者中心 > 我的应用 > 创建应用`,
+    'developer-platform-app-overview': `${projectName} > 开发者中心 > 我的应用 > 应用概览`,
+    'developer-platform-credentials': `${projectName} > 开发者中心 > 应用凭证`,
+    'developer-platform-integrations': `${projectName} > 开发者中心 > 集成方式`,
+    'developer-platform-oauth': `${projectName} > 开发者中心 > OAuth 与回调地址`,
+    'developer-platform-scopes': `${projectName} > 开发者中心 > 权限 Scope`,
+    'developer-platform-tester': `${projectName} > 开发者中心 > API / MCP 测试台`,
+    'developer-platform-usage': `${projectName} > 开发者中心 > 调用量与额度`,
+    'developer-platform-logs': `${projectName} > 开发者中心 > 调用日志`,
+    'developer-platform-team': `${projectName} > 开发者中心 > 团队与权限`,
+    'developer-platform-docs': `${projectName} > 开发者中心 > 快速开始文档`,
+  };
+  if (developerPlatformPaths[item.id]) return developerPlatformPaths[item.id];
   return `${projectName} > 需求中心`;
 }
 

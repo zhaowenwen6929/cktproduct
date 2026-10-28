@@ -23,11 +23,12 @@ import { UserAuthorizationViewPage } from './components/UserAuthorizationViewPag
 import { MembershipActivationPage } from './components/MembershipActivationPage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AgentEvaluationPage } from './components/AgentEvaluationPage';
+import { DeveloperPlatformPage } from './components/DeveloperPlatformPage';
 import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval';
 
 type AppHistoryState = {
   appRoute?: AppRoute;
@@ -80,6 +81,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/membership-upgrade') return '/membership-upgrade';
   if (pathname === '/design-app') return '/design-app';
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
+  if (pathname === '/developer-platform') return '/developer-platform';
   if (pathname === '/admin-backoffice/ai-ecommerce') return '/admin-backoffice/ai-ecommerce';
   if (pathname === '/admin-backoffice/requirements') return '/admin-backoffice/requirements';
   if (pathname === '/admin-backoffice/requirements/membership') return '/admin-backoffice/requirements/membership';
@@ -1397,6 +1399,10 @@ export default function App() {
         title: 'AI创作｜创客贴设计',
         description: '创客贴设计 AI 创作移动端对话页，支持通过对话生成设计。',
       },
+      '/developer-platform': {
+        title: '创客贴开放平台·开发者中心',
+        description: '创客贴开放平台开发者中心，支持应用注册、凭证、OAuth、REST API、CLI、MCP 与调用管理。',
+      },
       '/admin-backoffice': {
         title: '创客贴管理后台｜需求列表',
         description: '创客贴管理后台需求列表，按新增时间查看主需求和子需求。',
@@ -1522,6 +1528,12 @@ export default function App() {
         href: '/agent-eval' as AppRoute,
         available: true,
       },
+      {
+        title: '创客贴开放平台·开发者中心',
+        description: '面向开发者、企业技术团队和 AI Agent 的高保真开放平台原型，覆盖应用、凭证、OAuth、Scope、MCP、API 测试和调用管理。',
+        href: '/developer-platform' as AppRoute,
+        available: true,
+      },
     ];
     const requirementProjectStats = getRequirementProjectStats();
     const requirementOverviewStats = getRequirementOverviewStats();
@@ -1638,7 +1650,7 @@ export default function App() {
                     </p>
                   </div>
                   <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm leading-6 text-stone-200">
-                    当前已接入：`/canvas` · `/agent-eval`
+                    当前已接入：`/canvas` · `/agent-eval` · `/developer-platform`
                   </div>
                 </div>
               </div>
@@ -1723,6 +1735,10 @@ export default function App() {
       initialNewConversation={designAppStartsNew}
       additionalWorkTitles={designAppCustomWorkTitles}
     />;
+  }
+
+  if (currentRoute === '/developer-platform') {
+    return <DeveloperPlatformPage onBackToDirectory={() => navigateTo('/')} />;
   }
 
   if (currentRoute === '/admin-backoffice/requirements') {
