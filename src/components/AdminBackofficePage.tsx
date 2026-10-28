@@ -838,9 +838,8 @@ export function RequirementListBoard({ onNavigate }: { onNavigate?: (path: strin
       const viewportWidth = window.innerWidth;
       const shellInset = Math.min(128, Math.max(24, viewportWidth * 0.06));
       const shellWidth = Math.min(viewportWidth - shellInset, 1820);
-      const outsideShellSpace = Math.max(0, (viewportWidth - shellWidth) / 2);
       const drawerWidth = Math.min(520, Math.max(360, viewportWidth * 0.34));
-      setShouldPushRequirementDrawer(outsideShellSpace < drawerWidth + 24);
+      setShouldPushRequirementDrawer(shellWidth + drawerWidth + 24 > viewportWidth);
     };
 
     updateDrawerLayout();

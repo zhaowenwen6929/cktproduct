@@ -744,6 +744,11 @@ button {
     padding-right: var(--prototype-requirement-drawer-width);
   }
 
+  .prototype-homepage-shell:has([data-drawer-mode="side"]) {
+    margin-right: 0;
+    margin-left: max(12px, calc((100vw - var(--prototype-requirement-drawer-width) - 24px - min(calc(100vw - clamp(24px, 6vw, 128px)), 1820px)) / 2));
+  }
+
   .prototype-homepage .prototype-requirement-drawer:not(.inset-4) {
     position: fixed !important;
     top: 0;
