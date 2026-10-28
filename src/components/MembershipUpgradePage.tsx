@@ -177,7 +177,10 @@ function groupPackagesByTime(rows: PackageDetailRow[]): PackageTimeGroup[] {
 }
 
 function UpgradeCycleSelector({ options, selectedKey, onChange }: { options: Array<{ key: string; name: string; guideText?: string; guideTextColor?: string; hiddenInMore?: boolean }>; selectedKey?: string; onChange: (key: string) => void }) {
+  const selectorRef = useRef<HTMLDivElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
   const [expanded, setExpanded] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const selectedIndex = options.findIndex((option) => option.key === selectedKey);
   const selectedExtraOption = options.find((option) => option.key === selectedKey && option.hiddenInMore);
   const visibleOptions = options.filter((option) => !option.hiddenInMore);
@@ -187,12 +190,40 @@ function UpgradeCycleSelector({ options, selectedKey, onChange }: { options: Arr
     setExpanded(false);
   }, [options]);
 
+  useEffect(() => {
+    if (!expanded) return undefined;
+
+    const updateMenuPosition = () => {
+      const button = moreButtonRef.current;
+      if (!button) return;
+      const rect = button.getBoundingClientRect();
+      const menuWidth = 220;
+      setMenuPosition({
+        top: rect.bottom + 8,
+        left: Math.min(Math.max(8, rect.right - menuWidth), window.innerWidth - menuWidth - 8),
+      });
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!selectorRef.current?.contains(event.target as Node)) setExpanded(false);
+    };
+
+    updateMenuPosition();
+    document.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('resize', updateMenuPosition);
+    window.addEventListener('scroll', updateMenuPosition, true);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('resize', updateMenuPosition);
+      window.removeEventListener('scroll', updateMenuPosition, true);
+    };
+  }, [expanded]);
+
   const selectOption = (key: string) => {
     onChange(key);
     setExpanded(false);
   };
 
-  return <div className="relative min-w-0 flex-1">
+  return <div ref={selectorRef} className="relative min-w-0 flex-1">
     <div className="flex min-w-0 items-center gap-1 overflow-visible rounded-full bg-[#eef0f4] p-1">
       <div className="flex min-w-0 flex-1 items-center justify-start gap-1 overflow-hidden">
         {visibleOptions.map((option) => <button type="button" key={option.key} onClick={() => selectOption(option.key)} className={`flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-4 py-2.5 text-[11px] transition ${selectedKey === option.key ? 'bg-white font-semibold text-[#253043] shadow-[0_1px_4px_rgba(31,50,81,.08)]' : 'text-[#687487] hover:text-[#168ff2]'}`}>
@@ -201,12 +232,12 @@ function UpgradeCycleSelector({ options, selectedKey, onChange }: { options: Arr
         </button>)}
       </div>
       {extraOptions.length ? <div className="relative shrink-0">
-        <button type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[76px] max-w-[220px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-3 py-2.5 text-[11px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
+        <button ref={moreButtonRef} type="button" aria-haspopup="listbox" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)} className="flex min-h-[36px] min-w-[76px] max-w-[220px] items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-3 py-2.5 text-[11px] font-semibold text-[#252a31] shadow-[0_2px_8px_rgba(31,50,81,.12)] transition hover:text-[#168ff2]">
           <span className="min-w-0 truncate">{selectedExtraOption ? '更多–' : '更多'}</span>
           {selectedExtraOption ? <span className="min-w-0 truncate">{selectedExtraOption.name}</span> : null}
           <ChevronDown className={`ml-1 h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </button>
-        {expanded ? <div role="listbox" className="absolute right-0 top-[calc(100%+8px)] z-30 w-[220px] overflow-hidden rounded-[16px] border border-[#e6e8ec] bg-white p-2 shadow-[0_12px_32px_rgba(31,50,81,.16)]">
+        {expanded ? <div role="listbox" style={{ top: menuPosition.top, left: menuPosition.left }} className="fixed z-[220] w-[220px] overflow-hidden rounded-[16px] border border-[#e6e8ec] bg-white p-2 shadow-[0_12px_32px_rgba(31,50,81,.16)]">
           {extraOptions.map((option) => <button type="button" role="option" aria-selected={selectedKey === option.key} key={option.key} onClick={() => selectOption(option.key)} className={`flex w-full items-center justify-between rounded-[9px] px-3 py-2 text-left text-[11px] transition ${selectedKey === option.key ? 'bg-[#edf6ff] font-semibold text-[#168ff2]' : 'text-[#536075] hover:bg-[#f7f8fa] hover:text-[#168ff2]'}`}><span>{option.name}{option.guideText ? <span className="ml-1" style={{ color: option.guideTextColor ?? '#8993a2' }}>{option.guideText}</span> : null}</span>{selectedKey === option.key ? <span className="text-[10px]">当前</span> : null}</button>)}
         </div> : null}
       </div> : null}
