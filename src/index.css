@@ -686,6 +686,20 @@ button {
   .design-app-directory-button:hover, .design-app-directory-button:focus { opacity: 1; }
 }
 
+/* Customer-facing developer center: keep the console warm, calm and product-like. */
+.developer-platform-shell {
+  background: radial-gradient(circle at 88% 0%, rgba(255, 244, 239, .9) 0%, rgba(251, 248, 245, .96) 34%, #f7f4f1 100%) !important;
+}
+
+.developer-platform-shell main {
+  background: transparent;
+}
+
+.customer-settings-page button:focus-visible {
+  outline: 2px solid rgba(226, 99, 85, .45);
+  outline-offset: 2px;
+}
+
 @media (max-width: 390px) {
   .design-app-primary-grid { gap: 8px; }
   .design-app-primary-card { padding-left: 12px; padding-right: 10px; }
