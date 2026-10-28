@@ -413,7 +413,7 @@ export function RequirementDocumentPage({ kind, onBack, onNavigate }: { kind: Re
     <div className="min-h-screen bg-[#f4f6f9] font-sans text-[#1f2838]">
       <header className="sticky top-0 z-20 border-b border-[#e4e8ef] bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-[62px] max-w-[1180px] items-center justify-between px-6">
-          <button type="button" onClick={onBack} className="inline-flex items-center gap-2 text-[12px] text-[#68758a] transition hover:text-[#278fee]"><ArrowLeft className="h-4 w-4" />返回配置页面</button>
+          <button type="button" onClick={onBack} className="inline-flex items-center gap-2 text-[12px] text-[#68758a] transition hover:text-[#278fee]"><ArrowLeft className="h-4 w-4" />返回上一页</button>
           <div className="flex items-center gap-2 text-[11px] text-[#9aa3b1]"><FileText className="h-3.5 w-3.5" />需求说明</div>
         </div>
       </header>

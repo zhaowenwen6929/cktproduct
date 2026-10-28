@@ -28,6 +28,11 @@ import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat,
 
 type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide';
 
+type AppHistoryState = {
+  appRoute?: AppRoute;
+  fromRoute?: AppRoute;
+};
+
 type ExportRequest =
   | {
       requestId: number;
@@ -139,9 +144,19 @@ export default function App() {
     if (typeof window === 'undefined') return;
     const nextRoute = normalizeRoute(route);
     if (window.location.pathname !== nextRoute) {
-      window.history.pushState({}, '', nextRoute);
+      window.history.pushState({ appRoute: nextRoute, fromRoute: currentRoute } satisfies AppHistoryState, '', nextRoute);
     }
     setCurrentRoute(nextRoute);
+  };
+
+  const navigateBack = (fallbackRoute: AppRoute) => {
+    if (typeof window === 'undefined') return;
+    const historyState = window.history.state as AppHistoryState | null;
+    if (historyState?.appRoute === currentRoute && historyState.fromRoute) {
+      window.history.back();
+      return;
+    }
+    navigateTo(fallbackRoute);
   };
 
   const exportableItems = useMemo<ExportItem[]>(() => {
@@ -1704,7 +1719,7 @@ export default function App() {
   if (currentRoute === '/admin-backoffice/requirements/membership') {
     return <RequirementDocumentPage
       kind="membership"
-      onBack={() => navigateTo('/admin-backoffice/requirements')}
+      onBack={() => navigateBack('/admin-backoffice/requirements')}
       onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
   }
@@ -1712,7 +1727,7 @@ export default function App() {
   if (currentRoute === '/admin-backoffice/requirements/ai-ecommerce') {
     return <RequirementDocumentPage
       kind="ai-ecommerce"
-      onBack={() => navigateTo('/admin-backoffice/ai-ecommerce')}
+      onBack={() => navigateBack('/admin-backoffice/ai-ecommerce')}
       onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
   }
@@ -1720,7 +1735,7 @@ export default function App() {
   if (currentRoute === '/admin-backoffice/requirements/search-guide') {
     return <RequirementDocumentPage
       kind="search-guide"
-      onBack={() => navigateTo('/admin-backoffice/guided-search')}
+      onBack={() => navigateBack('/admin-backoffice/guided-search')}
       onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
   }
