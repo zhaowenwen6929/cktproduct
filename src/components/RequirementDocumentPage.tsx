@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowLeft, Check, CheckCircle2, ChevronRight, Clipboard, ClipboardList, FileText, Maximize2, Minimize2, X } from 'lucide-react';
 import { MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_LEVEL_OVERVIEW_SECTIONS, MEMBERSHIP_UPGRADE_REQUIREMENT_SECTIONS, type MembershipRequirementSection, type MembershipRequirementTable } from './MembershipRequirementFloatingButton';
 
@@ -483,8 +484,11 @@ export function RequirementDocumentDrawer({ kind, spec: customSpec, onClose, onN
     window.setTimeout(() => setCopied(false), 1800);
   };
 
-  return (
-    <div className="pointer-events-none fixed inset-0 z-[80]">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    (
+      <div className="pointer-events-none fixed inset-0 z-[80]">
       {isFullScreen ? <button type="button" aria-label="关闭需求说明" onClick={onClose} className="pointer-events-auto absolute inset-0 bg-[#1f2937]/35 backdrop-blur-[1px]" /> : null}
       <aside role="dialog" aria-modal="true" aria-label={`${spec.title}需求说明`} style={isFullScreen ? undefined : { width: 'min(520px, max(320px, calc(100vw - 244px)))' }} className={`prototype-requirement-drawer pointer-events-auto absolute flex flex-col overflow-hidden border border-[#dfe6f0] bg-[#f4f6f9] shadow-[-12px_0_38px_rgba(28,45,70,.18)] transition-[inset,width,border-radius] duration-200 ${isFullScreen ? 'inset-4 rounded-[16px]' : 'inset-y-0 right-0'}`}>
         <header className="flex h-[62px] shrink-0 items-center justify-between border-b border-[#e4e8ef] bg-white px-5">
@@ -510,6 +514,8 @@ export function RequirementDocumentDrawer({ kind, spec: customSpec, onClose, onN
           </section>
         </div>
       </aside>
-    </div>
+      </div>
+    ),
+    document.body,
   );
 }
