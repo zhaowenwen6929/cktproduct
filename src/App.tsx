@@ -1377,7 +1377,7 @@ export default function App() {
       },
       '/agent-eval': {
         title: '自动化验证平台｜Agent / Skill 评测',
-        description: '自动化验证平台，支持批量导入 Agent / Skill 用例、Mock 执行和结果轨迹查看。',
+        description: '自动化验证平台，支持批量导入 Agent / Skill 用例、接口请求、浏览器操作和结果轨迹查看。',
       },
       '/agent-skills-home': {
         title: 'Agent skills 创作首页',
@@ -1524,7 +1524,7 @@ export default function App() {
       },
       {
         title: '自动化验证平台',
-        description: '批量导入 Agent / Skill 测试用例，配置执行接口，运行 Mock 回归并查看验收结果与完整轨迹。',
+        description: '批量导入 Agent / Skill 测试用例，执行接口请求或浏览器操作，并查看验收结果与完整轨迹。',
         href: '/agent-eval' as AppRoute,
         available: true,
       },

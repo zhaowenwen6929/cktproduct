@@ -19,6 +19,15 @@ View your app in AI Studio: https://ai.studio/apps/5cc29dc5-8529-4080-802d-173a2
 3. Run the app:
    `npm run dev`
 
+## 自动化验证平台 Runner
+
+自动化验证平台默认使用 Mock Runner；需要执行真实接口或浏览器操作时，另开一个终端启动本地 Runner：
+
+1. `npm run dev`
+2. `npm run eval-runner`
+
+Runner 默认监听 `http://localhost:4174`，支持 HTTP 接口请求和 Playwright 浏览器步骤。浏览器用例只允许访问工作台配置的域名白名单；如需指定 Chrome 路径，可设置 `BROWSER_EXECUTABLE_PATH`，如需显示浏览器窗口可设置 `EVAL_HEADLESS=0`。
+
 ## Public Deployment
 
 This project can be deployed as a static Vite site.
