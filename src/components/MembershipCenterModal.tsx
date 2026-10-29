@@ -445,6 +445,12 @@ function getPackageMonths(duration: number) {
   return Math.max(1, Math.round(duration / 30));
 }
 
+function formatPackageDurationLabel(duration?: number, fallback = '') {
+  if (duration === 36135) return '终身';
+  if (typeof duration === 'number' && duration > 0) return `${getPackageMonths(duration)}个月`;
+  return fallback;
+}
+
 function formatPackageMonthlyPrice(price: number, duration: number) {
   const months = getPackageMonths(duration);
   return months ? String(Number((price / months).toFixed(2))) : '-';
@@ -1021,6 +1027,7 @@ function PlanCard({ plan, section, selected, cycleKey, cycleName, tierIndex = 0,
   const pointsUnit = displayPointsNote.split('·')[0]?.trim() ?? '每人';
   const displayPointsDescription = activeTier?.pointsDescription || cycleData.pointsDescription;
   const displayMonthlyPrice = activeTier?.monthlyPrice ?? cycleData.monthlyPrice;
+  const durationLabel = formatPackageDurationLabel(activeTier?.durationDays ?? cycleData.durationDays, cycleData.period);
   const pointPrice = formatPackagePointPrice(pointsAreOneTime ? displayPrice : displayMonthlyPrice, activeTier?.points ?? displayPoints);
   const monthlyPriceLabel = displayMonthlyPrice === '-' ? '月价暂无' : `¥${displayMonthlyPrice}${enterprise ? '/席位' : ''}/月`;
   const pointPriceLabel = pointPrice === '-' ? '积分价暂无' : `¥${pointPrice}/积分`;
@@ -1083,7 +1090,7 @@ function PlanCard({ plan, section, selected, cycleKey, cycleName, tierIndex = 0,
     {promoBanner ? <div className="h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7" style={{ backgroundColor: promoBanner.color, color: '#ffffff' }}>{promoBanner.text}</div> : null}
     <div className="px-5 pb-4 pt-5">
       <div className="flex items-start justify-between gap-2"><div className="min-w-0 flex-1"><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 h-8 overflow-hidden text-[11px] leading-4 text-[#8590a0] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{plan.subtitle}</p></div>{promoTag ? <span className="shrink-0 rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.color, color: '#ffffff' }}>{promoTag.text}</span> : null}</div>
-      <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><AnimatedDiscountedPrice price={displayPrice} couponDiscount={couponDiscount} />{enterprise ? <span className="mb-1 text-[11px] text-[#7f8999]">/席位/{cycleData.period}</span> : <span className="mb-1 text-[10px] text-[#7f8999]">{cycleData.period}</span>}{couponDiscount > 0 ? <span className="mb-1 ml-1 rounded-[4px] bg-[#fff0f0] px-1.5 py-0.5 text-[9px] font-medium text-[#f04444]">已优惠{formatMoney(couponDiscount)}元</span> : null}{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
+      <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><AnimatedDiscountedPrice price={displayPrice} couponDiscount={couponDiscount} />{enterprise ? <span className="mb-1 text-[11px] text-[#7f8999]">/席位/{durationLabel}</span> : <span className="mb-1 text-[10px] text-[#7f8999]">/{durationLabel}</span>}{couponDiscount > 0 ? <span className="mb-1 ml-1 rounded-[4px] bg-[#fff0f0] px-1.5 py-0.5 text-[9px] font-medium text-[#f04444]">已优惠{formatMoney(couponDiscount)}元</span> : null}{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
       <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">{monthlyPriceLabel}<span className="mx-1 text-[#c1c7d0]">·</span>{pointPriceLabel}</p>
     {enterprise ? <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-[#566274]"><div className="flex items-center overflow-hidden rounded-[9px] border border-[#eef0f3] bg-white"><button type="button" aria-label="减少席位" disabled={isContractPlan || seatCount <= minimumSeats} title={isContractPlan ? '签约套餐仅支持1个席位' : seatCount <= minimumSeats ? `最少需要${minimumSeats}个席位` : undefined} onClick={() => onSeatChange?.(-1)} className="flex h-8 w-8 items-center justify-center text-[16px] text-[#aab2bd] disabled:cursor-not-allowed disabled:opacity-40 hover:text-[#168ff2]">−</button><span className="min-w-[54px] text-center font-medium text-[#374255]">{seatCount} 席位</span><button type="button" aria-label="增加席位" disabled={isContractPlan} title={isContractPlan ? '签约套餐仅支持1个席位' : undefined} onClick={() => onSeatChange?.(1)} className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[16px] text-[#566274] shadow-[0_1px_5px_rgba(34,48,70,.06)] disabled:cursor-not-allowed disabled:opacity-40 hover:text-[#168ff2]">＋</button></div><span className="whitespace-nowrap text-[#6d7888]">合计 <b className="text-[13px] text-[#293548]">{couponDiscount > 0 ? discountedTotalPrice : totalPrice}元</b></span></div> : null}
     </div>
