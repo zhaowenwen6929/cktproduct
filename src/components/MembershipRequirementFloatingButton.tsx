@@ -664,7 +664,7 @@ export function MembershipRequirementFloatingButton({ title, subtitle, sections,
     </aside>
   </div>;
 
-  return <div className={`fixed z-[115] ${className}`}>
+  return <div className={`z-[115] ${className}`}>
     {floatingButton()}
   </div>;
 }

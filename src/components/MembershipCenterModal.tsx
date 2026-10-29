@@ -1569,11 +1569,11 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
         <MembershipRequirementFrame moduleKey="faq" label="常见问题区" className="mx-auto mt-16 max-w-[1120px]"><section className="rounded-[18px] bg-[#f7f8fa] p-6 sm:p-8"><h2 className="text-center text-[24px] font-semibold tracking-tight text-[#202938]">{pageConfig.faq.title}</h2><div className="mt-7 flex flex-col gap-5 lg:hidden">{pageConfig.faq.items.map((item, index) => <FaqCard key={`${item.question}-${index}`} item={item} index={index} onOpenUpgradePage={openUpgradeFromFaq} />)}</div><div className="mt-7 hidden grid-cols-2 gap-5 lg:grid"><div className="flex min-w-0 flex-col gap-5">{pageConfig.faq.items.filter((_, index) => index % 2 === 0).map((item, index) => <FaqCard key={item.question} item={item} index={index * 2} onOpenUpgradePage={openUpgradeFromFaq} />)}</div><div className="flex min-w-0 flex-col gap-5">{pageConfig.faq.items.filter((_, index) => index % 2 === 1).map((item, index) => <FaqCard key={item.question} item={item} index={index * 2 + 1} onOpenUpgradePage={openUpgradeFromFaq} />)}</div></div></section></MembershipRequirementFrame>
       </main>
       </div>
-      <div ref={identityMenuRef} className="absolute bottom-[72px] right-[112px] z-[120]">
+      <div ref={identityMenuRef} className="absolute right-4 top-[136px] z-[120]">
         <div className="flex items-center overflow-hidden rounded-[13px] border border-[#f0c44f] bg-[#fff8df] p-1 text-[12px] font-medium text-[#8b6a20] shadow-[0_12px_30px_rgba(140,105,32,.16)]" aria-label="身份切换">
           <button type="button" aria-haspopup="listbox" aria-expanded={identityMenuOpen} aria-label={`当前身份：${selectedIdentity.label}，会员等级：${currentMemberLevel ?? '免费'}，剩余积分：${currentMemberRemainingPoints}`} onClick={() => setIdentityMenuOpen((current) => !current)} className="flex items-center gap-1 rounded-[9px] px-3 py-2 font-semibold text-[#604700] transition hover:bg-[#fff0b9]"><span>身份：{selectedIdentity.label}</span><ChevronDown className={`h-3.5 w-3.5 transition-transform ${identityMenuOpen ? 'rotate-180' : ''}`} /></button>
         </div>
-        {identityMenuOpen ? <div role="listbox" className="absolute bottom-[calc(100%+8px)] right-0 w-[220px] overflow-hidden rounded-[14px] border border-[#f0c44f] bg-[#fffdf2] p-2 text-left shadow-[0_12px_32px_rgba(140,105,32,.2)]">
+        {identityMenuOpen ? <div role="listbox" className="absolute right-0 top-[calc(100%+8px)] w-[220px] overflow-hidden rounded-[14px] border border-[#f0c44f] bg-[#fffdf2] p-2 text-left shadow-[0_12px_32px_rgba(140,105,32,.2)]">
           {MEMBERSHIP_PREVIEW_IDENTITIES.map((identity) => <button type="button" role="option" aria-selected={identity.key === selectedIdentityKey} key={identity.key} onClick={() => selectIdentity(identity)} className={`flex w-full items-center justify-between rounded-[9px] px-3 py-2 text-[12px] transition ${identity.key === selectedIdentityKey ? 'bg-[#ffd85f] font-semibold text-[#604700]' : 'text-[#6f5a25] hover:bg-[#fff0b9] hover:text-[#604700]'}`}><span>{identity.label}</span>{identity.key === selectedIdentityKey ? <span className="text-[10px]">当前</span> : null}</button>)}
         </div> : null}
       </div>
@@ -1583,7 +1583,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
       {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
       {couponModalOpen ? <MembershipCouponModal coupons={availableCoupons} onClose={() => setCouponModalOpen(false)} /> : null}
       {enterprisePurchaseContactOpen ? <EnterprisePurchaseContactModal config={pageConfig.commercialLicense.enterprisePurchaseContact} onClose={() => setEnterprisePurchaseContactOpen(false)} /> : null}
-      <MembershipRequirementFloatingButton title="会员支付弹框" subtitle="会员中心身份、套餐、积分、席位、支付和购买限制说明" sections={MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS} meta={MEMBERSHIP_CENTER_REQUIREMENT_META} open={requirementDrawerOpen} onOpenChange={setRequirementDrawerOpen} />
+      <MembershipRequirementFloatingButton className="absolute right-4 top-16" title="会员支付弹框" subtitle="会员中心身份、套餐、积分、席位、支付和购买限制说明" sections={MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS} meta={MEMBERSHIP_CENTER_REQUIREMENT_META} open={requirementDrawerOpen} onOpenChange={setRequirementDrawerOpen} />
     </div>
   </div>;
 }
