@@ -250,6 +250,27 @@ const normalizeCases = (rows: Array<Record<string, unknown>>): EvalCase[] => row
   })
   .filter((item) => item.input.trim());
 
+const CASE_STORAGE_PREFIX = 'agent-eval-cases:';
+
+function readPersistedCases(storageKey: string, fallback: EvalCase[]) {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const value = window.localStorage.getItem(`${CASE_STORAGE_PREFIX}${storageKey}`);
+    const parsed = value ? JSON.parse(value) as unknown : undefined;
+    return Array.isArray(parsed) && parsed.length ? parsed as EvalCase[] : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function persistCases(storageKey: string, cases: EvalCase[]) {
+  try {
+    window.localStorage.setItem(`${CASE_STORAGE_PREFIX}${storageKey}`, JSON.stringify(cases));
+  } catch {
+    // Keep the workbench usable when localStorage is unavailable or full.
+  }
+}
+
 type ImportedRequirementInfo = Partial<Pick<EvalRequirement, 'name' | 'key' | 'target' | 'pagePath' | 'version' | 'scope' | 'environment' | 'preconditions' | 'testData'>>;
 
 function Badge({ children, tone = 'blue' }: { children: ReactNode; tone?: 'blue' | 'purple' | 'green' | 'amber' | 'red' | 'slate' }) {
@@ -274,8 +295,10 @@ function RunningPlaceholder({ completed, total, mode }: { completed: number; tot
   return <div className="flex min-h-[270px] flex-col items-center justify-center rounded-lg border border-dashed border-[#b9d5fb] bg-[linear-gradient(180deg,#fbfdff,#f5f9ff)] px-5 text-center"><div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf3ff] text-[#0773fc]"><LoaderCircle className="h-6 w-6 animate-spin" /><span className="absolute inset-0 rounded-2xl border border-[#9bc4fa] opacity-70 animate-pulse" /></div><div className="mt-4 text-[14px] font-semibold text-[#3d5f8f]">正在执行测试用例</div><div className="mt-1 text-[11px] text-[#8290a5]">{mode === 'runner' ? '真实 Runner 正在执行接口和浏览器步骤，结果返回后会自动更新。' : 'Mock Runner 正在逐条执行当前用例集。'}</div><div className="mt-5 w-full max-w-[420px]"><div className="h-2 overflow-hidden rounded-full bg-[#dfeaf8]"><div className="h-full w-[42%] rounded-full bg-[linear-gradient(90deg,#0773fc,#7b61ff,#0773fc)] animate-pulse" /></div><div className="mt-2 text-[11px] text-[#71819a]">已完成 {completed}/{total} 条 · 请保持页面打开</div></div></div>;
 }
 export function AgentEvaluationPage({ onBack, projectName = '自动化验证平台', requirementName = 'Agent / Skill 自动化测试', requirement, caseIds, onImportRequirement }: { onBack: () => void; projectName?: string; requirementName?: string; requirement?: EvalRequirement; caseIds?: string[]; onImportRequirement?: (patch: ImportedRequirementInfo) => void }) {
-  const initialCases = caseIds?.length ? SAMPLE_CASES.filter((item) => caseIds.includes(item.id)) : SAMPLE_CASES;
-  const [cases, setCases] = useState<EvalCase[]>(initialCases);
+  const caseStorageKey = requirement?.id ?? 'default';
+  const caseSelectionKey = caseIds?.join('|') ?? 'all';
+  const getFallbackCases = () => caseIds?.length ? SAMPLE_CASES.filter((item) => caseIds.includes(item.id)) : SAMPLE_CASES;
+  const [cases, setCases] = useState<EvalCase[]>(() => readPersistedCases(caseStorageKey, getFallbackCases()));
   const [displayRequirementName, setDisplayRequirementName] = useState(requirementName);
   const [runScope, setRunScope] = useState<RunScope>('all');
   const [config, setConfig] = useState<EndpointConfig>(DEFAULT_CONFIG);
@@ -289,6 +312,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
   const [runnerStatus, setRunnerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const runnerAbortRef = useRef<AbortController | null>(null);
+  const activeCaseStorageKeyRef = useRef(caseStorageKey);
 
   const passedCount = results.filter((item) => item.status === 'passed').length;
   const failedCount = results.filter((item) => item.status === 'failed').length;
@@ -316,6 +340,19 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
       .catch(() => { if (!cancelled) setRunnerStatus('offline'); });
     return () => { cancelled = true; };
   }, [config.runnerEndpoint]);
+
+  useEffect(() => {
+    if (activeCaseStorageKeyRef.current === caseStorageKey) return;
+    activeCaseStorageKeyRef.current = caseStorageKey;
+    setCases(readPersistedCases(caseStorageKey, getFallbackCases()));
+    setResults([]);
+    setRunIndex(0);
+    setSelectedResult(null);
+  }, [caseSelectionKey, caseStorageKey]);
+
+  useEffect(() => {
+    persistCases(caseStorageKey, cases);
+  }, [caseStorageKey, cases]);
 
   useEffect(() => {
     if (!isRunning || !config.mockMode) return;
