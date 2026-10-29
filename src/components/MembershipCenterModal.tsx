@@ -1189,12 +1189,19 @@ type MembershipRequirementFrameProps = {
 };
 
 function MembershipRequirementFrame({ moduleKey, label, children, className = '', showLabel = true, labelPlacement = 'outside' }: MembershipRequirementFrameProps) {
-  const labelPosition = labelPlacement === 'inside' ? 'right-2 top-2' : 'right-0 top-[-20px]';
   return <div data-membership-requirement-module={moduleKey} className={`relative ${className}`}>
-    <div className="pointer-events-none absolute inset-0 z-20 rounded-[18px] border-2 border-dashed border-[#ff665b]" aria-hidden="true" />
-    {showLabel ? <span className={`pointer-events-none absolute z-30 rounded-[5px] bg-[#ff665b] px-2.5 py-1 text-[10px] font-semibold text-white shadow-[0_3px_8px_rgba(255,102,91,.2)] ${labelPosition}`}>V2610 · {label}</span> : null}
+    <RequirementLineAnnotation label={label} showLabel={showLabel} labelPlacement={labelPlacement} />
     {children}
   </div>;
+}
+
+function RequirementLineAnnotation({ label, showLabel = true, labelPlacement = 'outside' }: Pick<MembershipRequirementFrameProps, 'label' | 'showLabel' | 'labelPlacement'>) {
+  return <>
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 border-t-2 border-dashed border-[#ff665b]" aria-hidden="true" />
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 border-b-2 border-dashed border-[#ff665b]" aria-hidden="true" />
+    <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-20 border-r-2 border-dashed border-[#ff665b]" aria-hidden="true" />
+    {showLabel ? <span className={`pointer-events-none absolute z-30 whitespace-nowrap text-[13px] font-medium text-[#ff554c] ${labelPlacement === 'inside' ? 'right-2' : 'right-[-10px] translate-x-full'} top-1/2 -translate-y-1/2`}>V2610 · {label}</span> : null}
+  </>;
 }
 
 type MembershipRequirementOverlayProps = {
@@ -1205,8 +1212,7 @@ type MembershipRequirementOverlayProps = {
 
 function MembershipRequirementOverlay({ moduleKey, label, style }: MembershipRequirementOverlayProps) {
   return <div data-membership-requirement-module={moduleKey} className="pointer-events-none absolute z-40" style={style}>
-    <div className="absolute inset-0 rounded-[18px] border-2 border-dashed border-[#ff665b]" aria-hidden="true" />
-    <span className="absolute right-2 top-2 rounded-[5px] bg-[#ff665b] px-2.5 py-1 text-[10px] font-semibold text-white shadow-[0_3px_8px_rgba(255,102,91,.2)]">V2610 · {label}</span>
+    <RequirementLineAnnotation label={label} />
   </div>;
 }
 
