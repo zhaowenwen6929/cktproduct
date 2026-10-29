@@ -60,6 +60,7 @@ type EvalCase = {
     allowedHosts?: string[];
     finalUrlContains?: string;
     textContains?: string;
+    ignoreHTTPSErrors?: boolean;
   };
 };
 
