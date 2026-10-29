@@ -23,12 +23,16 @@ import { UserAuthorizationViewPage } from './components/UserAuthorizationViewPag
 import { MembershipActivationPage } from './components/MembershipActivationPage';
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AgentEvaluationPage } from './components/AgentEvaluationPage';
+import { AgentEvaluationProjectsPage, AgentEvaluationRequirementsPage } from './components/AgentEvaluationDirectoryPage';
+import { getEvalProject, getEvalRequirement } from './components/agentEvaluationData';
 import { DeveloperPlatformPage } from './components/DeveloperPlatformPage';
 import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval';
+type AgentEvaluationProjectRoute = `/agent-eval/project/${string}`;
+type AgentEvaluationRequirementRoute = `/agent-eval/project/${string}/requirement/${string}`;
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval';
 
 type AppHistoryState = {
   appRoute?: AppRoute;
@@ -76,6 +80,8 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/plugin-prototype') return '/plugin-prototype';
   if (pathname === '/connector-auth') return '/connector-auth';
   if (pathname === '/agent-eval') return '/agent-eval';
+  if (pathname.startsWith('/agent-eval/project/') && pathname.includes('/requirement/')) return pathname as AgentEvaluationRequirementRoute;
+  if (pathname.startsWith('/agent-eval/project/')) return pathname as AgentEvaluationProjectRoute;
   if (pathname === '/agent-skills-home/templates') return '/agent-skills-home/templates';
   if (pathname === '/agent-skills-home') return '/agent-skills-home';
   if (pathname === '/membership-upgrade') return '/membership-upgrade';
@@ -1358,7 +1364,7 @@ export default function App() {
     if (typeof document === 'undefined') return;
 
     const metaDescription = document.querySelector('meta[name="description"]');
-    const titleMap: Record<AppRoute, { title: string; description: string }> = {
+    const titleMap: Record<string, { title: string; description: string }> = {
       '/': {
         title: '创客贴需求原型',
         description: '创客贴需求原型首页，展示需求与项目情况。',
@@ -1376,8 +1382,8 @@ export default function App() {
         description: 'AI 连接器授权原型，模拟创客贴登录、Access Key 选择与 WorkBuddy 授权回跳流程。',
       },
       '/agent-eval': {
-        title: '自动化验证平台｜Agent / Skill 评测',
-        description: '自动化验证平台，支持批量导入 Agent / Skill 用例、接口请求、浏览器操作和结果轨迹查看。',
+        title: '自动化验证平台｜测试项目',
+        description: '自动化验证平台，按测试项目和测试需求管理接口、浏览器用例及执行结果。',
       },
       '/agent-skills-home': {
         title: 'Agent skills 创作首页',
@@ -1477,7 +1483,9 @@ export default function App() {
       },
     };
 
-    const next = titleMap[currentRoute];
+    const next = currentRoute.startsWith('/agent-eval/project/')
+      ? { title: '自动化验证平台｜测试需求', description: '进入具体测试需求，管理测试用例、接口配置、浏览器操作和执行结果。' }
+      : titleMap[currentRoute];
     document.title = next.title;
     if (metaDescription) {
       metaDescription.setAttribute('content', next.description);
@@ -1524,7 +1532,7 @@ export default function App() {
       },
       {
         title: '自动化验证平台',
-        description: '批量导入 Agent / Skill 测试用例，执行接口请求或浏览器操作，并查看验收结果与完整轨迹。',
+        description: '先按测试项目区分业务域，再创建测试需求，进入需求后管理用例、接口请求、浏览器操作和执行结果。',
         href: '/agent-eval' as AppRoute,
         available: true,
       },
@@ -1675,7 +1683,28 @@ export default function App() {
   }
 
   if (currentRoute === '/agent-eval') {
-    return <AgentEvaluationPage onBack={() => navigateTo('/')} />;
+    return <AgentEvaluationProjectsPage onBack={() => navigateTo('/')} onOpenProject={(projectId) => navigateTo(`/agent-eval/project/${projectId}`)} />;
+  }
+
+  const agentEvaluationRequirementMatch = currentRoute.match(/^\/agent-eval\/project\/([^/]+)\/requirement\/([^/]+)$/);
+  if (agentEvaluationRequirementMatch) {
+    const [, projectId, requirementId] = agentEvaluationRequirementMatch;
+    const project = getEvalProject(projectId);
+    const requirement = getEvalRequirement(projectId, requirementId);
+    if (project && requirement) {
+      return <AgentEvaluationPage projectName={project.name} requirementName={requirement.name} caseIds={requirement.caseIds} onBack={() => navigateTo(`/agent-eval/project/${projectId}`)} />;
+    }
+    return <AgentEvaluationProjectsPage onBack={() => navigateTo('/')} onOpenProject={(nextProjectId) => navigateTo(`/agent-eval/project/${nextProjectId}`)} />;
+  }
+
+  const agentEvaluationProjectMatch = currentRoute.match(/^\/agent-eval\/project\/([^/]+)$/);
+  if (agentEvaluationProjectMatch) {
+    const [, projectId] = agentEvaluationProjectMatch;
+    const project = getEvalProject(projectId);
+    if (project) {
+      return <AgentEvaluationRequirementsPage project={project} onBack={() => navigateTo('/agent-eval')} onOpenRequirement={(requirementId) => navigateTo(`/agent-eval/project/${projectId}/requirement/${requirementId}`)} />;
+    }
+    return <AgentEvaluationProjectsPage onBack={() => navigateTo('/')} onOpenProject={(nextProjectId) => navigateTo(`/agent-eval/project/${nextProjectId}`)} />;
   }
 
   if (currentRoute === '/agent-skills-home/templates') {

@@ -151,8 +151,8 @@ const SAMPLE_CASES: EvalCase[] = [
     tags: ['浏览器', 'DOM断言', '截图'],
     browser: {
       steps: [
-        { action: 'goto', url: 'http://localhost:3000/agent-eval' },
-        { action: 'waitForText', text: 'Agent / Skill 自动化测试' },
+        { action: 'goto', url: 'http://localhost:3000/agent-eval/project/agent-skill/requirement/browser-result' },
+        { action: 'waitForText', text: '测试用例管理' },
         { action: 'screenshot', name: 'agent-eval-result' },
       ],
       allowedHosts: ['localhost'],
@@ -243,8 +243,9 @@ function StatCard({ label, value, suffix, color }: { label: string; value: strin
     <div className="mt-2 flex items-baseline gap-1"><span className="text-[26px] font-semibold tracking-[-.04em]" style={{ color }}>{value}</span>{suffix ? <span className="text-[12px] text-[#98a3b4]">{suffix}</span> : null}</div>
   </div>;
 }
-export function AgentEvaluationPage({ onBack }: { onBack: () => void }) {
-  const [cases, setCases] = useState<EvalCase[]>(SAMPLE_CASES);
+export function AgentEvaluationPage({ onBack, projectName = '自动化验证平台', requirementName = 'Agent / Skill 自动化测试', caseIds }: { onBack: () => void; projectName?: string; requirementName?: string; caseIds?: string[] }) {
+  const initialCases = caseIds?.length ? SAMPLE_CASES.filter((item) => caseIds.includes(item.id)) : SAMPLE_CASES;
+  const [cases, setCases] = useState<EvalCase[]>(initialCases);
   const [config, setConfig] = useState<EndpointConfig>(DEFAULT_CONFIG);
   const [activeTab, setActiveTab] = useState<ActiveTab>('cases');
   const [isRunning, setIsRunning] = useState(false);
@@ -318,12 +319,13 @@ export function AgentEvaluationPage({ onBack }: { onBack: () => void }) {
   };
 
   const loadSampleCases = () => {
-    setCases(SAMPLE_CASES);
+    const sampleCases = caseIds?.length ? SAMPLE_CASES.filter((item) => caseIds.includes(item.id)) : SAMPLE_CASES;
+    setCases(sampleCases);
     setResults([]);
     setRunIndex(0);
     setSelectedResult(null);
     setActiveTab('cases');
-    showNotice('已载入 6 条示例用例，包含接口和浏览器用例');
+    showNotice(`已载入 ${sampleCases.length} 条当前测试需求示例用例`);
   };
 
   const importFile = async (file: File) => {
@@ -436,7 +438,7 @@ export function AgentEvaluationPage({ onBack }: { onBack: () => void }) {
   return <div className="min-h-screen bg-[#f3f6fb] text-[#1c2738]">
     <header className="sticky top-0 z-30 border-b border-[#e2e8f0] bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-[62px] max-w-[1440px] items-center justify-between px-5 lg:px-8">
-        <div className="flex items-center gap-4"><button type="button" onClick={onBack} className="inline-flex items-center gap-1.5 text-[13px] text-[#6c7890] transition hover:text-[#0773fc]"><ArrowLeft className="h-4 w-4" />返回项目入口</button><span className="h-5 w-px bg-[#e6eaf0]" /><div className="flex items-center gap-2 text-[14px] font-semibold"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#eaf3ff] text-[#0773fc]"><Activity className="h-4 w-4" /></span>自动化验证平台</div></div>
+        <div className="flex items-center gap-4"><button type="button" onClick={onBack} className="inline-flex items-center gap-1.5 text-[13px] text-[#6c7890] transition hover:text-[#0773fc]"><ArrowLeft className="h-4 w-4" />返回测试需求</button><span className="h-5 w-px bg-[#e6eaf0]" /><div className="flex items-center gap-2 text-[14px] font-semibold"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#eaf3ff] text-[#0773fc]"><Activity className="h-4 w-4" /></span>{projectName}<span className="text-[12px] font-normal text-[#a1adbd]">/</span><span className="text-[12px] font-normal text-[#6f7d91]">{requirementName}</span></div></div>
         <div className="flex items-center gap-3 text-[12px] text-[#8190a4]"><ShieldCheck className="h-4 w-4 text-[#07af4c]" />离线评测环境 <span className="rounded-full bg-[#effaf4] px-2.5 py-1 text-[#27885a]">MVP</span></div>
       </div>
     </header>
@@ -444,7 +446,7 @@ export function AgentEvaluationPage({ onBack }: { onBack: () => void }) {
     <main className="mx-auto max-w-[1440px] space-y-4 px-5 py-5 lg:px-8 lg:py-7">
       <section className="overflow-hidden rounded-2xl border border-[#e1e9f5] bg-white shadow-[0_12px_32px_rgba(37,72,112,.06)]">
         <div className="flex flex-wrap items-start justify-between gap-5 bg-[linear-gradient(120deg,#f4f8ff,#fbf7ff)] px-6 py-6 lg:px-8">
-          <div><div className="mb-3 flex items-center gap-2"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#0773fc,#7b61ff)] text-white"><Zap className="h-5 w-5" /></span><Badge>MVP 评测工作台</Badge></div><h1 className="text-[25px] font-semibold tracking-[-.04em] text-[#172235]">Agent / Skill 自动化测试</h1><p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#68758b]">同一批用例可以混合执行接口请求和浏览器操作，并查看路由、耗时、页面截图、完整轨迹和验收结果。</p></div>
+          <div><div className="mb-3 flex items-center gap-2"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#0773fc,#7b61ff)] text-white"><Zap className="h-5 w-5" /></span><Badge>测试需求工作台</Badge></div><h1 className="text-[25px] font-semibold tracking-[-.04em] text-[#172235]">{requirementName}</h1><p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#68758b]">当前测试需求的用例、接口配置、浏览器操作、执行结果和历史轨迹统一在这里管理。</p></div>
           <div className="flex items-center gap-2"><Badge tone={config.mockMode ? 'blue' : runnerStatus === 'online' ? 'green' : 'amber'}>{config.mockMode ? 'Mock Runner' : runnerStatus === 'online' ? '真实 Runner 在线' : runnerStatus === 'checking' ? 'Runner 检查中' : '真实 Runner 离线'}</Badge><button type="button" onClick={loadSampleCases} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#d8e0eb] bg-white px-3 text-[12px] font-medium text-[#526177] transition hover:border-[#a9c8ef] hover:text-[#0773fc]"><RefreshCw className="h-3.5 w-3.5" />载入示例</button></div>
         </div>
       </section>

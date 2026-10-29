@@ -28,6 +28,8 @@ View your app in AI Studio: https://ai.studio/apps/5cc29dc5-8529-4080-802d-173a2
 
 Runner 默认监听 `http://localhost:4174`，支持 HTTP 接口请求和 Playwright 浏览器步骤。浏览器用例只允许访问工作台配置的域名白名单；如需指定 Chrome 路径，可设置 `BROWSER_EXECUTABLE_PATH`，如需显示浏览器窗口可设置 `EVAL_HEADLESS=0`。
 
+评测平台按“测试项目 → 测试需求 → 测试用例 → 执行结果”组织。访问 `/agent-eval` 后先选择测试项目，再进入项目内的测试需求；新建测试需求后会直接进入对应工作台。
+
 ## Public Deployment
 
 This project can be deployed as a static Vite site.
