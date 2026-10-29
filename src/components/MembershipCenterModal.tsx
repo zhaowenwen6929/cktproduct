@@ -1202,19 +1202,50 @@ type MembershipRequirementFrameProps = {
   labelPlacement?: 'outside' | 'inside';
 };
 
+function useRequirementRailOffset(elementRef: { current: HTMLElement | null }) {
+  const [railOffset, setRailOffset] = useState(0);
+
+  useLayoutEffect(() => {
+    const updateRailOffset = () => {
+      const element = elementRef.current;
+      const main = element?.closest('main');
+      if (!element || !main) return;
+      setRailOffset(main.getBoundingClientRect().right - element.getBoundingClientRect().right);
+    };
+
+    updateRailOffset();
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateRailOffset);
+    if (elementRef.current) resizeObserver?.observe(elementRef.current);
+    const main = elementRef.current?.closest('main');
+    if (main) resizeObserver?.observe(main);
+    window.addEventListener('resize', updateRailOffset);
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateRailOffset);
+    };
+  }, [elementRef]);
+
+  return railOffset;
+}
+
 function MembershipRequirementFrame({ moduleKey, label, children, className = '', showLabel = true, labelPlacement = 'outside' }: MembershipRequirementFrameProps) {
+  const frameRef = useRef<HTMLDivElement>(null);
+  const railOffset = useRequirementRailOffset(frameRef);
   return <div data-membership-requirement-module={moduleKey} className={`relative ${className}`}>
-    <RequirementLineAnnotation label={label} showLabel={showLabel} labelPlacement={labelPlacement} />
+    <div ref={frameRef} className="pointer-events-none absolute inset-0" aria-hidden="true" />
+    <RequirementLineAnnotation label={label} showLabel={showLabel} labelPlacement={labelPlacement} railOffset={railOffset} />
     {children}
   </div>;
 }
 
-function RequirementLineAnnotation({ label, showLabel = true, labelPlacement = 'outside' }: Pick<MembershipRequirementFrameProps, 'label' | 'showLabel' | 'labelPlacement'>) {
+function RequirementLineAnnotation({ label, showLabel = true, labelPlacement = 'outside', railOffset }: Pick<MembershipRequirementFrameProps, 'label' | 'showLabel' | 'labelPlacement'> & { railOffset: number }) {
+  const lineStyle = { right: -railOffset };
+  const arrowStyle = { right: -(railOffset + 8) };
   return <>
-    <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-20 border-r-2 border-dashed border-[#ff665b]" aria-hidden="true" />
-    <ArrowUp className="pointer-events-none absolute right-[-8px] top-[-8px] z-30 h-4 w-4 stroke-[3] text-[#ff554c]" aria-hidden="true" />
-    <ArrowDown className="pointer-events-none absolute bottom-[-8px] right-[-8px] z-30 h-4 w-4 stroke-[3] text-[#ff554c]" aria-hidden="true" />
-    {showLabel ? <span className={`pointer-events-none absolute z-30 whitespace-nowrap text-[13px] font-medium text-[#ff554c] ${labelPlacement === 'inside' ? 'right-2' : 'right-[-10px] translate-x-full'} top-1/2 -translate-y-1/2`}>V2610 · {label}</span> : null}
+    <div style={lineStyle} className="pointer-events-none absolute bottom-3 top-3 z-20 border-r-2 border-dashed border-[#ff665b]" aria-hidden="true" />
+    <ArrowUp style={arrowStyle} className="pointer-events-none absolute top-1 z-30 h-4 w-4 stroke-[3] text-[#ff554c]" aria-hidden="true" />
+    <ArrowDown style={arrowStyle} className="pointer-events-none absolute bottom-1 z-30 h-4 w-4 stroke-[3] text-[#ff554c]" aria-hidden="true" />
+    {showLabel ? <span style={lineStyle} className={`pointer-events-none absolute z-30 whitespace-nowrap text-[13px] font-medium text-[#ff554c] ${labelPlacement === 'inside' ? '' : 'translate-x-full'} top-1/2 -translate-y-1/2`}>V2610 · {label}</span> : null}
   </>;
 }
 
@@ -1225,8 +1256,10 @@ type MembershipRequirementOverlayProps = {
 };
 
 function MembershipRequirementOverlay({ moduleKey, label, style }: MembershipRequirementOverlayProps) {
-  return <div data-membership-requirement-module={moduleKey} className="pointer-events-none absolute z-40" style={style}>
-    <RequirementLineAnnotation label={label} />
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const railOffset = useRequirementRailOffset(overlayRef);
+  return <div ref={overlayRef} data-membership-requirement-module={moduleKey} className="pointer-events-none absolute z-40" style={style}>
+    <RequirementLineAnnotation label={label} railOffset={railOffset} />
   </div>;
 }
 
