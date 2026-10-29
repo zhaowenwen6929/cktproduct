@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
 import { Check, ChevronDown, Image as ImageIcon, QrCode, Sparkles, Ticket, Video, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipBenefitItem, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
@@ -1009,7 +1009,7 @@ function getBenefitItemIcon(item: MembershipBenefitItem): 'image' | 'video' | un
   return undefined;
 }
 
-function PlanCard({ plan, section, selected, cycleKey, cycleName, tierIndex = 0, onTierChange, enterprise = false, seats = 1, minimumSeats = 1, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked, purchaseButtonRef, coupons = [], currentMemberLevel, currentMemberName }: { plan: MembershipPlan; section: 'purchase' | 'benefit'; selected: boolean; cycleKey: string; cycleName: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; minimumSeats?: number; onSeatChange?: (delta: number) => void; onContactAdvisor?: () => void; onPurchase?: () => void; onOpenUpgradePage?: () => void; onPurchaseBlocked?: (message: string) => void; purchaseButtonRef?: Ref<HTMLButtonElement>; coupons?: MembershipCoupon[]; currentMemberLevel?: number | null; currentMemberName?: string }) {
+function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierChange, enterprise = false, seats = 1, minimumSeats = 1, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked, purchaseButtonRef, coupons = [], currentMemberLevel, currentMemberName }: { plan: MembershipPlan; selected: boolean; cycleKey: string; cycleName: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; minimumSeats?: number; onSeatChange?: (delta: number) => void; onContactAdvisor?: () => void; onPurchase?: () => void; onOpenUpgradePage?: () => void; onPurchaseBlocked?: (message: string) => void; purchaseButtonRef?: Ref<HTMLButtonElement>; coupons?: MembershipCoupon[]; currentMemberLevel?: number | null; currentMemberName?: string }) {
   const isBlue = plan.color === 'blue';
   const isOrange = plan.color === 'orange';
   const cycleData = getCyclePlanData(plan, cycleKey);
@@ -1086,7 +1086,8 @@ function PlanCard({ plan, section, selected, cycleKey, cycleName, tierIndex = 0,
     borderColor: purchaseInfoStyle.borderColor,
   };
 
-  const purchaseContent = <>
+  return <article className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`}>
+    <div data-membership-annotation-region="purchase">
     {promoBanner ? <div className="h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7" style={{ backgroundColor: promoBanner.color, color: '#ffffff' }}>{promoBanner.text}</div> : null}
     <div className="px-5 pb-4 pt-5">
       <div className="flex items-start justify-between gap-2"><div className="min-w-0 flex-1"><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 h-8 overflow-hidden text-[11px] leading-4 text-[#8590a0] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{plan.subtitle}</p></div>{promoTag ? <span className="shrink-0 rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.color, color: '#ffffff' }}>{promoTag.text}</span> : null}</div>
@@ -1097,8 +1098,8 @@ function PlanCard({ plan, section, selected, cycleKey, cycleName, tierIndex = 0,
     {cycleData.tierOptions ? <div className="mx-5 mt-1 h-[64px] px-0"><div className="mb-1.5 flex items-center justify-between text-[10px] text-[#586474]">{cycleData.tierOptions.map((tier, index) => <button type="button" key={tier.quotaLabel} onClick={() => onTierChange?.(index)} className={`cursor-pointer ${index === tierIndex ? 'font-semibold text-[#202938]' : 'hover:text-[#168ff2]'}`}>{tier.quotaLabel}</button>)}</div><div className="relative h-5"><div className="absolute left-0 right-0 top-2 h-[4px] rounded-full bg-[#4b4f55]" /><span className="pointer-events-none absolute top-0 h-4 w-4 -translate-x-1/2 rounded-full border border-[#6f747b] bg-white shadow-[0_1px_3px_rgba(31,41,55,.16)]" style={{ left: `${tierProgress}%` }} /><input type="range" min={0} max={cycleData.tierOptions.length - 1} step={1} value={tierIndex} onChange={(event) => onTierChange?.(Number(event.currentTarget.value))} aria-label="高级会员积分档位" className="absolute inset-0 h-5 w-full cursor-pointer opacity-0" /></div></div> : <div className="mx-5 mt-1 h-[64px]" aria-hidden="true" />}
     <div className={`mx-4 rounded-[12px] px-4 py-3 ${emphasized ? isOrange ? 'bg-[#fff0dc]' : isBlue ? 'bg-[#eaf4ff]' : 'bg-[#eef1f5]' : 'bg-[#f7f8fa]'}`}><div className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: emphasized ? accent : '#3e4858' }}><Sparkles className="h-3.5 w-3.5" />{pointsDisplayLabel}</div><p className="mt-1 text-[10px] text-[#8e98a7]">{displayPointsDescription || displayPointsNote}</p></div>
     <div className="px-4 pt-4"><button ref={purchaseButtonRef} type="button" aria-disabled={isPurchaseDisabled} title={isEnterpriseContractSeatBlocked ? '请选择企业使用的非签约套餐' : isDowngradePurchase ? purchaseAction.helperText : undefined} onClick={isPurchaseDisabled ? () => onPurchaseBlocked?.(purchaseBlockedMessage) : isLargeEnterprisePurchase ? onContactAdvisor : purchaseAction.kind === 'upgrade' && onOpenUpgradePage ? onOpenUpgradePage : onPurchase} className={`h-9 w-full rounded-full text-[12px] font-medium transition ${isPurchaseDisabled ? 'cursor-not-allowed bg-[#eef1f5] text-[#9aa3af] shadow-none' : emphasized ? isOrange ? 'bg-[#ff7910] text-white hover:bg-[#ed6904]' : 'bg-[#168ff2] text-white hover:bg-[#087edc]' : 'bg-[#202938] text-white shadow-[0_5px_12px_rgba(32,41,56,.16)] hover:bg-[#111827]'}`}>{isDowngradePurchase ? purchaseAction.buttonText : isEnterpriseContractSeatBlocked ? '请选择企业使用的非签约套餐' : isLargeEnterprisePurchase ? '联系专属顾问' : purchaseAction.buttonText}</button>{isDowngradePurchase ? <p className="mt-2 text-center text-[10px] leading-4 text-[#f04444]">{purchaseAction.helperText}</p> : isEnterpriseContractSeatBlocked ? <p className="mt-2 text-center text-[10px] leading-4 text-[#f04444]">当前席位数高于可购买的席位数无法购买</p> : isLargeEnterprisePurchase ? <p className="mt-2 text-center text-[10px] leading-4 text-[#f04444]">大规模企业采购，联系专属客服获取优惠</p> : isContractPlan ? <div className={`mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] leading-4 ${purchaseInfoHasContainerStyle ? 'rounded-[5px] border px-2 py-1' : ''}`} style={purchaseInfoInlineStyle}><span style={{ color: purchaseInfoStyle.secondaryColor ?? purchaseInfoStyle.textColor ?? '#90a0b7' }}>到期后将按照{getRenewalPeriod(cycleData.period)}<strong className="font-semibold text-[#202938]">{renewalPriceText}</strong>自动续费，可随时取消</span><span aria-label="续费说明" title="续费说明" className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#edf0f4] text-[10px] font-semibold text-[#8793a5]">?</span></div> : expiryDate ? <div className={`mt-2 text-center text-[10px] leading-4 ${purchaseInfoHasContainerStyle ? 'rounded-[5px] border px-2 py-1' : ''}`} style={purchaseInfoInlineStyle}><span style={{ color: purchaseInfoStyle.dateColor ?? purchaseInfoStyle.textColor ?? '#9aa2ae' }}>购买后有效期至：{expiryDate}</span></div> : <p className={`mt-2 text-center text-[10px] ${purchaseInfoHasContainerStyle ? 'rounded-[5px] border px-2 py-1' : ''}`} style={purchaseInfoInlineStyle}>一次性购买</p>}</div>
-  </>;
-  const benefitContent = <div className="flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5">
+    </div>
+    <div data-membership-annotation-region="benefit" className="mt-5 flex-1 border-t border-[#eef0f3] px-5 pb-5 pt-5">
       {benefitSections.map((section, sectionIndex) => {
         const sectionStyle = section.highlightStyle;
         const highlightedSection = Boolean(sectionStyle && sectionStyle.enabled !== false);
@@ -1155,12 +1156,8 @@ function PlanCard({ plan, section, selected, cycleKey, cycleName, tierIndex = 0,
         </div> : null}
       </section>;
       })}
-  </div>;
-  const cardClassName = section === 'purchase'
-    ? `relative flex ${isFeatured ? 'min-h-[388px] -mt-7' : 'min-h-[360px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`
-    : `relative flex min-h-[320px] flex-col overflow-hidden rounded-[18px] border ${shell}`;
-
-  return <article className={cardClassName}>{section === 'purchase' ? purchaseContent : benefitContent}</article>;
+    </div>
+  </article>;
 }
 
 type MembershipPromotionBannerProps = {
@@ -1197,6 +1194,19 @@ function MembershipRequirementFrame({ moduleKey, label, children, className = ''
     <div className="pointer-events-none absolute inset-0 z-20 rounded-[18px] border-2 border-dashed border-[#ff665b]" aria-hidden="true" />
     {showLabel ? <span className={`pointer-events-none absolute z-30 rounded-[5px] bg-[#ff665b] px-2.5 py-1 text-[10px] font-semibold text-white shadow-[0_3px_8px_rgba(255,102,91,.2)] ${labelPosition}`}>V2610 · {label}</span> : null}
     {children}
+  </div>;
+}
+
+type MembershipRequirementOverlayProps = {
+  moduleKey: string;
+  label: string;
+  style: CSSProperties;
+};
+
+function MembershipRequirementOverlay({ moduleKey, label, style }: MembershipRequirementOverlayProps) {
+  return <div data-membership-requirement-module={moduleKey} className="pointer-events-none absolute z-40" style={style}>
+    <div className="absolute inset-0 rounded-[18px] border-2 border-dashed border-[#ff665b]" aria-hidden="true" />
+    <span className="absolute right-2 top-2 rounded-[5px] bg-[#ff665b] px-2.5 py-1 text-[10px] font-semibold text-white shadow-[0_3px_8px_rgba(255,102,91,.2)]">V2610 · {label}</span>
   </div>;
 }
 
@@ -1246,22 +1256,62 @@ type MembershipPackageModuleProps = {
 };
 
 function MembershipPackageModule({ plans, membershipType, activeCycleKey, cycleName, tierSelections, enterpriseMinimumSeats, availableCoupons, currentMemberLevel, currentMemberName, purchaseButtonRef, getEnterpriseSeatCount, onTierChange, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked }: MembershipPackageModuleProps) {
+  const packageAreaRef = useRef<HTMLDivElement>(null);
+  const [annotationBounds, setAnnotationBounds] = useState<{ purchase: CSSProperties | null; benefit: CSSProperties | null }>({ purchase: null, benefit: null });
   const gridClassName = `grid w-full grid-cols-1 gap-4 sm:grid-cols-2 ${plans.length === 1 ? 'max-w-[720px] xl:grid-cols-1' : plans.length === 2 ? 'mx-auto max-w-[1120px] xl:grid-cols-2' : plans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`;
   const gridStyle = plans.length === 1 ? { width: '100%', maxWidth: '720px', margin: '0 auto', gridTemplateColumns: 'minmax(0, 1fr)' } : undefined;
-  const renderPlans = (section: 'purchase' | 'benefit') => <div className={gridClassName} style={gridStyle}>
+  useLayoutEffect(() => {
+    const root = packageAreaRef.current;
+    if (!root) return undefined;
+
+    const updateAnnotationBounds = () => {
+      const rootRect = root.getBoundingClientRect();
+      const measureRegion = (region: 'purchase' | 'benefit') => {
+        const elements = Array.from(root.querySelectorAll<HTMLElement>(`[data-membership-annotation-region="${region}"]`));
+        if (!elements.length) return null;
+        let left = Number.POSITIVE_INFINITY;
+        let top = Number.POSITIVE_INFINITY;
+        let right = Number.NEGATIVE_INFINITY;
+        let bottom = Number.NEGATIVE_INFINITY;
+        elements.forEach((element) => {
+          const rect = element.getBoundingClientRect();
+          left = Math.min(left, rect.left - rootRect.left);
+          top = Math.min(top, rect.top - rootRect.top);
+          right = Math.max(right, rect.right - rootRect.left);
+          bottom = Math.max(bottom, rect.bottom - rootRect.top);
+        });
+        const padding = 8;
+        return { left: left - padding, top: top - padding, width: right - left + padding * 2, height: bottom - top + padding * 2 };
+      };
+
+      setAnnotationBounds({ purchase: measureRegion('purchase'), benefit: measureRegion('benefit') });
+    };
+
+    updateAnnotationBounds();
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateAnnotationBounds);
+    resizeObserver?.observe(root);
+    window.addEventListener('resize', updateAnnotationBounds);
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateAnnotationBounds);
+    };
+  }, [activeCycleKey, membershipType, plans, tierSelections]);
+
+  return <section className={`${plans.length === 1 ? 'flex justify-center' : ''}`} style={plans.length === 1 ? { display: 'flex', justifyContent: 'center' } : undefined}>
+    <div ref={packageAreaRef} className="relative w-full">
+      <div className={gridClassName} style={gridStyle}>
     {plans.map((plan, index) => {
       const tierKey = `${membershipType}:${plan.memberType ?? plan.planKey}:${activeCycleKey}`;
       const cycleData = getCyclePlanData(plan, activeCycleKey);
       const hasTiers = Boolean(cycleData.tierOptions?.length);
       const tierIndex = tierSelections[tierKey] ?? 0;
       const seats = getEnterpriseSeatCount(plan.planKey);
-      return <PlanCard key={`${section}-${plan.memberType ?? plan.planKey}-${index}`} plan={plan} section={section} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} cycleName={cycleName || cycleData.period} tierIndex={tierIndex} onTierChange={hasTiers ? (value) => onTierChange(tierKey, value) : undefined} enterprise={membershipType === 'enterprise'} minimumSeats={enterpriseMinimumSeats} seats={seats} onSeatChange={membershipType === 'enterprise' ? (delta) => onSeatChange(plan.planKey, delta) : undefined} onContactAdvisor={onContactAdvisor} onPurchase={() => onPurchase(plan, tierIndex, seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage(plan) : undefined} onPurchaseBlocked={onPurchaseBlocked} purchaseButtonRef={section === 'purchase' && index === 0 ? purchaseButtonRef : undefined} coupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} />;
+      return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} cycleName={cycleName || cycleData.period} tierIndex={tierIndex} onTierChange={hasTiers ? (value) => onTierChange(tierKey, value) : undefined} enterprise={membershipType === 'enterprise'} minimumSeats={enterpriseMinimumSeats} seats={seats} onSeatChange={membershipType === 'enterprise' ? (delta) => onSeatChange(plan.planKey, delta) : undefined} onContactAdvisor={onContactAdvisor} onPurchase={() => onPurchase(plan, tierIndex, seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage(plan) : undefined} onPurchaseBlocked={onPurchaseBlocked} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} coupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} />;
     })}
-  </div>;
-
-  return <section className={`${plans.length === 1 ? 'flex justify-center' : ''}`} style={plans.length === 1 ? { display: 'flex', justifyContent: 'center' } : undefined}>
-    <MembershipRequirementFrame moduleKey="package-purchase" label="套餐展示购买区" labelPlacement="inside">{renderPlans('purchase')}</MembershipRequirementFrame>
-    <MembershipRequirementFrame moduleKey="benefit-overview" label="权益概览区" labelPlacement="inside" className="mt-5">{renderPlans('benefit')}</MembershipRequirementFrame>
+      </div>
+      {annotationBounds.purchase ? <MembershipRequirementOverlay moduleKey="package-purchase" label="套餐展示购买区" style={annotationBounds.purchase} /> : null}
+      {annotationBounds.benefit ? <MembershipRequirementOverlay moduleKey="benefit-overview" label="权益概览区" style={annotationBounds.benefit} /> : null}
+    </div>
   </section>;
 }
 
