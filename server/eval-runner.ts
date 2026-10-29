@@ -168,6 +168,8 @@ async function executeBrowserStep(page: Page, step: BrowserStep, allowedHosts: s
     return `填写元素：${step.selector}`;
   }
   if (step.action === 'press') {
+    if (!step.selector?.trim()) throw new Error('press 步骤缺少 selector，请指定接收按键的元素');
+    if (!step.key?.trim()) throw new Error('press 步骤缺少 key，请指定要发送的按键');
     await page.locator(step.selector).first().press(step.key, { timeout: defaultTimeout });
     return `按键操作：${step.selector} → ${step.key}`;
   }
