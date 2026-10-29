@@ -49,13 +49,15 @@ type RunnerConfig = {
 type RunnerResult = {
   id: string;
   name: string;
-  status: 'passed' | 'failed';
+  status: 'passed' | 'failed' | 'error';
   duration: number;
   actual: string;
   trace: string[];
   finishedAt: string;
   screenshot?: string;
 };
+
+class AssertionFailure extends Error {}
 
 const port = Number(process.env.EVAL_RUNNER_PORT ?? 4174);
 const defaultAllowedHosts = (process.env.EVAL_ALLOWED_HOSTS ?? 'localhost,127.0.0.1,example.com')
@@ -203,13 +205,13 @@ async function runBrowserCase(testCase: RunnerCase, config: RunnerConfig, browse
       const currentUrl = page.url();
       const passed = currentUrl.includes(testCase.browser.finalUrlContains);
       trace.push(passed ? `URL 断言通过：${testCase.browser.finalUrlContains}` : `URL 断言失败：${currentUrl}`);
-      if (!passed) throw new Error(`当前 URL 不包含 ${testCase.browser.finalUrlContains}`);
+      if (!passed) throw new AssertionFailure(`当前 URL 不包含 ${testCase.browser.finalUrlContains}`);
     }
     if (testCase.browser?.textContains) {
       const bodyText = await page.locator('body').innerText();
       const passed = bodyText.includes(testCase.browser.textContains);
       trace.push(passed ? `页面文本断言通过：${testCase.browser.textContains}` : '页面文本断言失败');
-      if (!passed) throw new Error(`页面文本不包含 ${testCase.browser.textContains}`);
+      if (!passed) throw new AssertionFailure(`页面文本不包含 ${testCase.browser.textContains}`);
     }
     if (!screenshots.length) {
       const buffer = await page.screenshot({ type: 'png', fullPage: true });
@@ -224,7 +226,7 @@ async function runBrowserCase(testCase: RunnerCase, config: RunnerConfig, browse
       const buffer = await page.screenshot({ type: 'png', fullPage: true }).catch(() => undefined);
       if (buffer) screenshots.push(`data:image/png;base64,${buffer.toString('base64')}`);
     }
-    return { id: testCase.id, name: testCase.name, status: 'failed', duration: Date.now() - startedAt, actual: message, trace, finishedAt: now(), screenshot: screenshots.at(-1) };
+    return { id: testCase.id, name: testCase.name, status: error instanceof AssertionFailure ? 'failed' : 'error', duration: Date.now() - startedAt, actual: message, trace, finishedAt: now(), screenshot: screenshots.at(-1) };
   } finally {
     await context.close();
   }
@@ -254,7 +256,7 @@ app.post('/api/eval/run', async (request, response) => {
         results.push((testCase.mode ?? 'api') === 'browser' ? await runBrowserCase(testCase, runnerConfig, browser!) : await runApiCase(testCase, runnerConfig));
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        results.push({ id: testCase.id, name: testCase.name, status: 'failed', duration: 0, actual: message, trace: [`执行失败：${message}`], finishedAt: now() });
+        results.push({ id: testCase.id, name: testCase.name, status: 'error', duration: 0, actual: message, trace: [`执行失败：${message}`], finishedAt: now() });
       }
     }
     response.json({ results });
