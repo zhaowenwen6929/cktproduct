@@ -19,9 +19,19 @@ import {
 import type { EvalRequirement } from './agentEvaluationData';
 
 type EvalKind = 'Agent' | 'Skill' | 'Page' | 'Feature' | 'API' | 'Workflow';
+type RunScope = 'all' | EvalKind;
 type ExecutionMode = 'api' | 'browser';
 type ResultStatus = 'passed' | 'failed';
 type ActiveTab = 'cases' | 'endpoint' | 'results';
+
+const EVAL_KIND_LABELS: Record<EvalKind, string> = {
+  Page: '页面',
+  Feature: '功能',
+  Agent: 'Agent',
+  Skill: 'Skill',
+  API: 'API',
+  Workflow: 'Workflow',
+};
 
 type EvalCase = {
   id: string;
@@ -260,6 +270,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
   const initialCases = caseIds?.length ? SAMPLE_CASES.filter((item) => caseIds.includes(item.id)) : SAMPLE_CASES;
   const [cases, setCases] = useState<EvalCase[]>(initialCases);
   const [displayRequirementName, setDisplayRequirementName] = useState(requirementName);
+  const [runScope, setRunScope] = useState<RunScope>('all');
   const [config, setConfig] = useState<EndpointConfig>(DEFAULT_CONFIG);
   const [activeTab, setActiveTab] = useState<ActiveTab>('cases');
   const [isRunning, setIsRunning] = useState(false);
@@ -275,7 +286,9 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
   const passedCount = results.filter((item) => item.status === 'passed').length;
   const failedCount = results.filter((item) => item.status === 'failed').length;
   const averageDuration = results.length ? Math.round(results.reduce((sum, item) => sum + item.duration, 0) / results.length) : 0;
-  const progress = cases.length ? Math.round((results.length / cases.length) * 100) : 0;
+  const executionCases = useMemo(() => runScope === 'all' ? cases : cases.filter((item) => item.kind === runScope), [cases, runScope]);
+  const availableKinds = useMemo(() => Array.from(new Set(cases.map((item) => item.kind))), [cases]);
+  const progress = executionCases.length ? Math.round((results.length / executionCases.length) * 100) : 0;
 
   const summary = useMemo(() => [
     { label: '用例总数', value: cases.length, suffix: '条', color: '#0773fc' },
@@ -299,13 +312,13 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
 
   useEffect(() => {
     if (!isRunning || !config.mockMode) return;
-    if (runIndex >= cases.length) {
+    if (runIndex >= executionCases.length) {
       setIsRunning(false);
       setLogs((current) => [...current, { id: `complete-${Date.now()}`, level: 'success', time: formatTime(new Date().toISOString()), text: `执行完成：${passedCount} 条通过，${failedCount} 条失败。` }]);
       return;
     }
 
-    const currentCase = cases[runIndex];
+    const currentCase = executionCases[runIndex];
     const timer = window.setTimeout(() => {
       const shouldFail = currentCase.id === 'skill-003';
       const duration = 420 + runIndex * 85;
@@ -323,7 +336,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
     }, 620);
 
     return () => window.clearTimeout(timer);
-  }, [cases, config.mockMode, failedCount, isRunning, passedCount, runIndex]);
+  }, [config.mockMode, executionCases, failedCount, isRunning, passedCount, runIndex]);
 
   const updateConfig = <K extends keyof EndpointConfig>(key: K, value: EndpointConfig[K]) => setConfig((current) => ({ ...current, [key]: value }));
 
@@ -335,6 +348,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
   const loadSampleCases = () => {
     const sampleCases = caseIds?.length ? SAMPLE_CASES.filter((item) => caseIds.includes(item.id)) : SAMPLE_CASES;
     setCases(sampleCases);
+    setRunScope('all');
     setResults([]);
     setRunIndex(0);
     setSelectedResult(null);
@@ -397,7 +411,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          cases,
+          cases: executionCases,
           config: {
             endpoint: config.endpoint,
             method: config.method,
@@ -413,7 +427,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
       const payload = await response.json() as { message?: string; results?: Array<Partial<EvalResult> & { id: string }> };
       if (!response.ok) throw new Error(payload.message || 'Runner 执行失败');
       const nextResults = (payload.results ?? []).map((result) => ({
-        ...cases.find((item) => item.id === result.id),
+        ...executionCases.find((item) => item.id === result.id),
         ...result,
       })) as EvalResult[];
       setResults(nextResults);
@@ -435,7 +449,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
   };
 
   const startRun = () => {
-    if (!cases.length) {
+    if (!executionCases.length) {
       showNotice('请先导入至少一条用例');
       setActiveTab('cases');
       return;
@@ -445,7 +459,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
       setActiveTab('endpoint');
       return;
     }
-    if (cases.some((item) => item.mode === 'api') && !config.endpoint.trim()) {
+    if (executionCases.some((item) => item.mode === 'api') && !config.endpoint.trim()) {
       showNotice('请先填写接口地址');
       setActiveTab('endpoint');
       return;
@@ -455,7 +469,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
     setSelectedResult(null);
     setIsRunning(true);
     setActiveTab('results');
-    setLogs([{ id: `start-${Date.now()}`, level: 'info', time: formatTime(new Date().toISOString()), text: `开始执行 ${cases.length} 条用例 · ${config.mockMode ? 'Mock Runner' : '本地 HTTP + Browser Runner'}` }]);
+    setLogs([{ id: `start-${Date.now()}`, level: 'info', time: formatTime(new Date().toISOString()), text: `开始执行 ${executionCases.length} 条用例 · ${config.mockMode ? 'Mock Runner' : '本地 HTTP + Browser Runner'}` }]);
     if (!config.mockMode) {
       void runWithLocalRunner();
     }
@@ -464,7 +478,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
   const stopRun = () => {
     runnerAbortRef.current?.abort();
     setIsRunning(false);
-    setLogs((current) => [...current, { id: `stop-${Date.now()}`, level: 'warning', time: formatTime(new Date().toISOString()), text: `已暂停执行，当前完成 ${results.length}/${cases.length} 条。` }]);
+    setLogs((current) => [...current, { id: `stop-${Date.now()}`, level: 'warning', time: formatTime(new Date().toISOString()), text: `已暂停执行，当前完成 ${results.length}/${executionCases.length} 条。` }]);
   };
 
   return <div className="min-h-screen bg-[#f3f6fb] text-[#1c2738]">
@@ -494,7 +508,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
         </section>
 
         <aside className="space-y-4">
-          <section className="rounded-xl border border-[#e1e7ef] bg-white p-4 shadow-[0_6px_20px_rgba(38,58,88,.04)]"><div className="mb-4 flex items-start justify-between"><div><h2 className="text-[14px] font-semibold">执行控制</h2><p className="mt-1 text-[11px] text-[#8591a4]">选择运行参数后开始批量执行</p></div><span className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${isRunning ? 'text-[#0773fc]' : results.length ? 'text-[#07af4c]' : 'text-[#8a96a8]'}`}><span className={`h-2 w-2 rounded-full ${isRunning ? 'animate-pulse bg-[#0773fc]' : results.length ? 'bg-[#07af4c]' : 'bg-[#b8c1ce]'}`} />{isRunning ? '执行中' : results.length ? '已完成' : '待执行'}</span></div><div className="space-y-4"><div className="rounded-lg bg-[#f7f9fc] p-3"><div className="mb-2 flex items-center justify-between text-[12px] text-[#617087]"><span>执行进度</span><span className="font-medium text-[#344158]">{results.length}/{cases.length}</span></div><div className="h-2 overflow-hidden rounded-full bg-[#e5eaf2]"><div className={`h-full rounded-full transition-all ${failedCount ? 'bg-[#f59e0b]' : 'bg-[#0773fc]'}`} style={{ width: `${progress}%` }} /></div></div><div className="grid grid-cols-2 gap-3"><label className="text-[12px] font-medium text-[#536178]">测试范围<select className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] bg-white px-2 text-[11px] outline-none"><option>Agent + Skill 全部</option><option>仅 Agent</option><option>仅 Skill</option></select></label><label className="text-[12px] font-medium text-[#536178]">并发数<input type="number" min={1} max={10} value={config.concurrency} onChange={(event) => updateConfig('concurrency', Number(event.target.value) || 1)} className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] bg-white px-2 text-[11px] outline-none" /></label></div><div className="flex items-center justify-between rounded-lg border border-[#e8edf3] px-3 py-2.5"><div><div className="text-[12px] font-medium text-[#536178]">{config.mockMode ? 'Mock Runner' : '真实 Runner'}</div><div className="mt-0.5 text-[10px] text-[#98a4b5]">{config.mockMode ? '用模拟响应演示执行链路' : runnerStatus === 'online' ? 'HTTP + Playwright 浏览器执行' : 'Runner 未连接'}</div></div><button type="button" role="switch" aria-checked={config.mockMode} onClick={() => updateConfig('mockMode', !config.mockMode)} className={`relative h-5 w-9 rounded-full transition ${config.mockMode ? 'bg-[#0773fc]' : 'bg-[#07af4c]'}`}><span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${config.mockMode ? 'left-[18px]' : 'left-0.5'}`} /></button></div><div className="flex gap-2"><button type="button" disabled={isRunning} onClick={startRun} className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#0773fc] text-[12px] font-medium text-white shadow-[0_4px_10px_rgba(7,115,252,.2)] transition hover:bg-[#0667e2] disabled:cursor-not-allowed disabled:opacity-50"><Play className="h-3.5 w-3.5 fill-current" />开始执行</button><button type="button" disabled={!isRunning} onClick={stopRun} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#dce3ed] px-3 text-[12px] font-medium text-[#69778d] transition hover:border-[#f0b6a9] hover:text-[#d66854] disabled:cursor-not-allowed disabled:opacity-40"><CircleStop className="h-3.5 w-3.5" />暂停</button></div></div></section>
+          <section className="rounded-xl border border-[#e1e7ef] bg-white p-4 shadow-[0_6px_20px_rgba(38,58,88,.04)]"><div className="mb-4 flex items-start justify-between"><div><h2 className="text-[14px] font-semibold">执行控制</h2><p className="mt-1 text-[11px] text-[#8591a4]">选择运行参数后开始批量执行</p></div><span className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${isRunning ? 'text-[#0773fc]' : results.length ? 'text-[#07af4c]' : 'text-[#8a96a8]'}`}><span className={`h-2 w-2 rounded-full ${isRunning ? 'animate-pulse bg-[#0773fc]' : results.length ? 'bg-[#07af4c]' : 'bg-[#b8c1ce]'}`} />{isRunning ? '执行中' : results.length ? '已完成' : '待执行'}</span></div><div className="space-y-4"><div className="rounded-lg bg-[#f7f9fc] p-3"><div className="mb-2 flex items-center justify-between text-[12px] text-[#617087]"><span>执行进度</span><span className="font-medium text-[#344158]">{results.length}/{executionCases.length}</span></div><div className="h-2 overflow-hidden rounded-full bg-[#e5eaf2]"><div className={`h-full rounded-full transition-all ${failedCount ? 'bg-[#f59e0b]' : 'bg-[#0773fc]'}`} style={{ width: `${progress}%` }} /></div></div><div className="grid grid-cols-2 gap-3"><label className="text-[12px] font-medium text-[#536178]">执行范围<select value={runScope} disabled={isRunning} onChange={(event) => { const nextScope = event.target.value as RunScope; setRunScope(nextScope); setResults([]); setRunIndex(0); setSelectedResult(null); }} className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] bg-white px-2 text-[11px] outline-none disabled:cursor-not-allowed disabled:bg-[#f7f9fc]"><option value="all">全部用例</option>{availableKinds.map((kind) => <option key={kind} value={kind}>仅{EVAL_KIND_LABELS[kind]}</option>)}</select></label><label className="text-[12px] font-medium text-[#536178]">并发数<input type="number" min={1} max={10} value={config.concurrency} onChange={(event) => updateConfig('concurrency', Number(event.target.value) || 1)} className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] bg-white px-2 text-[11px] outline-none" /></label></div><div className="flex items-center justify-between rounded-lg border border-[#e8edf3] px-3 py-2.5"><div><div className="text-[12px] font-medium text-[#536178]">{config.mockMode ? 'Mock Runner' : '真实 Runner'}</div><div className="mt-0.5 text-[10px] text-[#98a4b5]">{config.mockMode ? '用模拟响应演示执行链路' : runnerStatus === 'online' ? 'HTTP + Playwright 浏览器执行' : 'Runner 未连接'}</div></div><button type="button" role="switch" aria-checked={config.mockMode} onClick={() => updateConfig('mockMode', !config.mockMode)} className={`relative h-5 w-9 rounded-full transition ${config.mockMode ? 'bg-[#0773fc]' : 'bg-[#07af4c]'}`}><span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${config.mockMode ? 'left-[18px]' : 'left-0.5'}`} /></button></div><div className="flex gap-2"><button type="button" disabled={isRunning} onClick={startRun} className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#0773fc] text-[12px] font-medium text-white shadow-[0_4px_10px_rgba(7,115,252,.2)] transition hover:bg-[#0667e2] disabled:cursor-not-allowed disabled:opacity-50"><Play className="h-3.5 w-3.5 fill-current" />开始执行</button><button type="button" disabled={!isRunning} onClick={stopRun} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#dce3ed] px-3 text-[12px] font-medium text-[#69778d] transition hover:border-[#f0b6a9] hover:text-[#d66854] disabled:cursor-not-allowed disabled:opacity-40"><CircleStop className="h-3.5 w-3.5" />暂停</button></div></div></section>
           <section className="rounded-xl border border-[#e1e7ef] bg-[#18243a] p-4 text-white shadow-[0_6px_20px_rgba(38,58,88,.08)]"><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2 text-[13px] font-medium"><TerminalSquare className="h-4 w-4 text-[#91bdfb]" />运行日志</div><span className="text-[10px] text-[#8493ad]">{logs.length} 条</span></div><div className="max-h-[340px] space-y-2 overflow-y-auto pr-1">{logs.map((log) => <div key={log.id} className="flex gap-2 text-[11px] leading-5"><span className="shrink-0 text-[#72819c]">{log.time}</span><span className={log.level === 'success' ? 'text-[#8be0b2]' : log.level === 'warning' ? 'text-[#f8c67a]' : 'text-[#bfd0eb]'}>{log.text}</span></div>)}</div></section>
         </aside>
       </div>
