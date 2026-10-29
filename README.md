@@ -30,6 +30,16 @@ Runner 默认监听 `http://localhost:4174`，支持 HTTP 接口请求和 Playwr
 
 评测平台按“测试项目 → 测试需求 → 测试用例 → 执行结果”组织。访问 `/agent-eval` 后先选择测试项目，再进入项目内的测试需求；新建测试需求后会直接进入对应工作台。
 
+### 测试用例输出规范
+
+测试用例不要求必须对应已有产品需求文档，也可以直接针对开发完成的页面、功能、Agent、Skill、API 或 Workflow 输出。平台提供“用例规范”入口和模板，标准包格式为 `ckt-eval/v1`，顶层包含 `requirement` 与 `cases`：
+
+```text
+测试项目 → 测试需求 → 测试用例 → 执行结果
+```
+
+测试需求应提供编号、名称、验证目标、页面/功能路径、版本或发布批次、测试范围、环境、前置条件和测试数据。每条用例应提供稳定 ID、`kind`、`mode`、测试对象、输入、步骤/请求、可判定期望结果、优先级和标签；浏览器步骤优先使用 `data-testid` 等稳定选择器，并配置 `allowedHosts`。完整字段和 JSON 示例见[自动化验证平台测试用例规范](/Users/zhaowenwen/Cursor/创客贴-无限画布/docs/自动化验证平台测试用例规范.md)。
+
 ## Public Deployment
 
 This project can be deployed as a static Vite site.

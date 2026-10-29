@@ -16,8 +16,9 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react';
+import type { EvalRequirement } from './agentEvaluationData';
 
-type EvalKind = 'Agent' | 'Skill';
+type EvalKind = 'Agent' | 'Skill' | 'Page' | 'Feature' | 'API' | 'Workflow';
 type ExecutionMode = 'api' | 'browser';
 type ResultStatus = 'passed' | 'failed';
 type ActiveTab = 'cases' | 'endpoint' | 'results';
@@ -32,6 +33,9 @@ type EvalCase = {
   expected: string;
   priority: string;
   tags: string[];
+  preconditions?: string[];
+  testData?: string;
+  pagePath?: string;
   api?: {
     endpoint?: string;
     method?: string;
@@ -141,7 +145,7 @@ const SAMPLE_CASES: EvalCase[] = [
   },
   {
     id: 'browser-001',
-    kind: 'Agent',
+    kind: 'Page',
     mode: 'browser',
     target: '浏览器结果校验',
     name: '打开页面并验证结果',
@@ -199,6 +203,10 @@ const normalizeCases = (rows: Array<Record<string, unknown>>): EvalCase[] => row
     const tags = Array.isArray(rawTags)
       ? rawTags.map(String)
       : String(rawTags).split(/[,，|]/).map((item) => item.trim()).filter(Boolean);
+    const rawPreconditions = row.preconditions ?? row.precondition ?? '';
+    const preconditions = Array.isArray(rawPreconditions)
+      ? rawPreconditions.map(String)
+      : String(rawPreconditions).split(/[\n；;]/).map((item) => item.trim()).filter(Boolean);
     const parseObject = (value: unknown) => {
       if (value && typeof value === 'object' && !Array.isArray(value)) return value;
       if (typeof value !== 'string' || !value.trim()) return undefined;
@@ -212,7 +220,7 @@ const normalizeCases = (rows: Array<Record<string, unknown>>): EvalCase[] => row
 
     return {
       id: String(row.id ?? row.case_id ?? `imported-${String(index + 1).padStart(3, '0')}`),
-      kind: (kindValue.includes('agent') ? 'Agent' : 'Skill') as EvalKind,
+      kind: (kindValue.includes('agent') ? 'Agent' : kindValue.includes('skill') ? 'Skill' : kindValue.includes('page') || kindValue.includes('页面') ? 'Page' : kindValue.includes('feature') || kindValue.includes('功能') ? 'Feature' : kindValue.includes('api') ? 'API' : kindValue.includes('workflow') || kindValue.includes('流程') ? 'Workflow' : 'Feature') as EvalKind,
       mode: (modeValue.includes('browser') || modeValue.includes('浏览器') ? 'browser' : 'api') as ExecutionMode,
       target: String(row.target ?? row.agent ?? row.skill ?? '自定义目标'),
       name: String(row.name ?? row.title ?? row.case_name ?? `导入用例 ${index + 1}`),
@@ -220,11 +228,16 @@ const normalizeCases = (rows: Array<Record<string, unknown>>): EvalCase[] => row
       expected: String(row.expected ?? row.expected_output ?? row.acceptance ?? '结果满足验收标准'),
       priority: String(row.priority ?? 'P1'),
       tags,
+      preconditions,
+      testData: String(row.testData ?? row.test_data ?? row.data ?? ''),
+      pagePath: String(row.pagePath ?? row.page_path ?? row.path ?? ''),
       api: parseObject(row.api) as EvalCase['api'],
       browser: parseObject(row.browser) as EvalCase['browser'],
     };
   })
   .filter((item) => item.input.trim());
+
+type ImportedRequirementInfo = Partial<Pick<EvalRequirement, 'name' | 'key' | 'target' | 'pagePath' | 'version' | 'scope' | 'environment' | 'preconditions' | 'testData'>>;
 
 function Badge({ children, tone = 'blue' }: { children: ReactNode; tone?: 'blue' | 'purple' | 'green' | 'amber' | 'red' | 'slate' }) {
   const tones = {
@@ -243,9 +256,10 @@ function StatCard({ label, value, suffix, color }: { label: string; value: strin
     <div className="mt-2 flex items-baseline gap-1"><span className="text-[26px] font-semibold tracking-[-.04em]" style={{ color }}>{value}</span>{suffix ? <span className="text-[12px] text-[#98a3b4]">{suffix}</span> : null}</div>
   </div>;
 }
-export function AgentEvaluationPage({ onBack, projectName = '自动化验证平台', requirementName = 'Agent / Skill 自动化测试', caseIds }: { onBack: () => void; projectName?: string; requirementName?: string; caseIds?: string[] }) {
+export function AgentEvaluationPage({ onBack, projectName = '自动化验证平台', requirementName = 'Agent / Skill 自动化测试', requirement, caseIds, onImportRequirement }: { onBack: () => void; projectName?: string; requirementName?: string; requirement?: EvalRequirement; caseIds?: string[]; onImportRequirement?: (patch: ImportedRequirementInfo) => void }) {
   const initialCases = caseIds?.length ? SAMPLE_CASES.filter((item) => caseIds.includes(item.id)) : SAMPLE_CASES;
   const [cases, setCases] = useState<EvalCase[]>(initialCases);
+  const [displayRequirementName, setDisplayRequirementName] = useState(requirementName);
   const [config, setConfig] = useState<EndpointConfig>(DEFAULT_CONFIG);
   const [activeTab, setActiveTab] = useState<ActiveTab>('cases');
   const [isRunning, setIsRunning] = useState(false);
@@ -332,13 +346,16 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
     try {
       const text = await file.text();
       let rows: Array<Record<string, unknown>> = [];
+      let packageRequirement: Record<string, unknown> | undefined;
       if (file.name.toLowerCase().endsWith('.csv')) {
         rows = parseCsv(text);
       } else if (file.name.toLowerCase().endsWith('.jsonl')) {
         rows = text.split(/\r?\n/).filter((line) => line.trim()).map((line) => JSON.parse(line));
       } else {
         const parsed: unknown = JSON.parse(text);
-        const rawRows = Array.isArray(parsed) ? parsed : parsed && typeof parsed === 'object' && Array.isArray((parsed as { cases?: unknown[] }).cases) ? (parsed as { cases: unknown[] }).cases : [parsed];
+        const parsedObject = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : undefined;
+        packageRequirement = parsedObject?.requirement && typeof parsedObject.requirement === 'object' && !Array.isArray(parsedObject.requirement) ? parsedObject.requirement as Record<string, unknown> : undefined;
+        const rawRows = Array.isArray(parsed) ? parsed : parsedObject && Array.isArray(parsedObject.cases) ? parsedObject.cases : [parsed];
         rows = rawRows.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object' && !Array.isArray(item));
       }
       const imported = normalizeCases(rows);
@@ -351,7 +368,22 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
       setRunIndex(0);
       setSelectedResult(null);
       setActiveTab('cases');
-      showNotice(`已导入 ${imported.length} 条用例`);
+      if (packageRequirement && onImportRequirement) {
+        const importedRequirement: ImportedRequirementInfo = {
+          name: String(packageRequirement.name ?? '').trim() || undefined,
+          key: String(packageRequirement.key ?? packageRequirement.requirementKey ?? '').trim() || undefined,
+          target: String(packageRequirement.target ?? '').trim() || undefined,
+          pagePath: String(packageRequirement.pagePath ?? packageRequirement.page_path ?? packageRequirement.path ?? '').trim() || undefined,
+          version: String(packageRequirement.version ?? '').trim() || undefined,
+          scope: String(packageRequirement.scope ?? '').trim() || undefined,
+          environment: String(packageRequirement.environment ?? '').trim() || undefined,
+          preconditions: String(packageRequirement.preconditions ?? '').trim() || undefined,
+          testData: String(packageRequirement.testData ?? packageRequirement.test_data ?? '').trim() || undefined,
+        };
+        onImportRequirement(importedRequirement);
+        if (importedRequirement.name) setDisplayRequirementName(importedRequirement.name);
+      }
+      showNotice(`已导入 ${imported.length} 条用例${packageRequirement ? '，并读取测试需求信息' : ''}`);
     } catch {
       showNotice('用例导入失败，请使用 JSON、JSONL 或 CSV 格式');
     }
@@ -446,7 +478,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
     <main className="mx-auto max-w-[1440px] space-y-4 px-5 py-5 lg:px-8 lg:py-7">
       <section className="overflow-hidden rounded-2xl border border-[#e1e9f5] bg-white shadow-[0_12px_32px_rgba(37,72,112,.06)]">
         <div className="flex flex-wrap items-start justify-between gap-5 bg-[linear-gradient(120deg,#f4f8ff,#fbf7ff)] px-6 py-6 lg:px-8">
-          <div><div className="mb-3 flex items-center gap-2"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#0773fc,#7b61ff)] text-white"><Zap className="h-5 w-5" /></span><Badge>测试需求工作台</Badge></div><h1 className="text-[25px] font-semibold tracking-[-.04em] text-[#172235]">{requirementName}</h1><p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#68758b]">当前测试需求的用例、接口配置、浏览器操作、执行结果和历史轨迹统一在这里管理。</p></div>
+          <div><div className="mb-3 flex items-center gap-2"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#0773fc,#7b61ff)] text-white"><Zap className="h-5 w-5" /></span><Badge>测试需求工作台</Badge>{requirement?.key ? <Badge tone="purple">{requirement.key}</Badge> : null}</div><h1 className="text-[25px] font-semibold tracking-[-.04em] text-[#172235]">{displayRequirementName}</h1><p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#68758b]">当前测试需求的用例、接口配置、浏览器操作、执行结果和历史轨迹统一在这里管理。</p><div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#7e8b9e]"><span>验证目标：{requirement?.target || '待补充'}</span><span>页面/功能：{requirement?.pagePath || '待补充'}</span><span>版本：{requirement?.version || '待补充'}</span><span>环境：{requirement?.environment || '待补充'}</span></div></div>
           <div className="flex items-center gap-2"><Badge tone={config.mockMode ? 'blue' : runnerStatus === 'online' ? 'green' : 'amber'}>{config.mockMode ? 'Mock Runner' : runnerStatus === 'online' ? '真实 Runner 在线' : runnerStatus === 'checking' ? 'Runner 检查中' : '真实 Runner 离线'}</Badge><button type="button" onClick={loadSampleCases} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#d8e0eb] bg-white px-3 text-[12px] font-medium text-[#526177] transition hover:border-[#a9c8ef] hover:text-[#0773fc]"><RefreshCw className="h-3.5 w-3.5" />载入示例</button></div>
         </div>
       </section>
@@ -456,7 +488,7 @@ export function AgentEvaluationPage({ onBack, projectName = '自动化验证平�
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,.65fr)]">
         <section className="overflow-hidden rounded-xl border border-[#e1e7ef] bg-white shadow-[0_6px_20px_rgba(38,58,88,.04)]">
           <div className="flex items-center gap-1 border-b border-[#e9edf3] px-4 pt-3"><button type="button" onClick={() => setActiveTab('cases')} className={`inline-flex items-center gap-1.5 border-b-2 px-4 pb-3 text-[13px] font-medium ${activeTab === 'cases' ? 'border-[#0773fc] text-[#0773fc]' : 'border-transparent text-[#7f8b9f]'}`}><FileText className="h-3.5 w-3.5" />用例集</button><button type="button" onClick={() => setActiveTab('endpoint')} className={`inline-flex items-center gap-1.5 border-b-2 px-4 pb-3 text-[13px] font-medium ${activeTab === 'endpoint' ? 'border-[#0773fc] text-[#0773fc]' : 'border-transparent text-[#7f8b9f]'}`}><Settings2 className="h-3.5 w-3.5" />接口配置</button><button type="button" onClick={() => setActiveTab('results')} className={`inline-flex items-center gap-1.5 border-b-2 px-4 pb-3 text-[13px] font-medium ${activeTab === 'results' ? 'border-[#0773fc] text-[#0773fc]' : 'border-transparent text-[#7f8b9f]'}`}><CheckCircle2 className="h-3.5 w-3.5" />执行结果{results.length ? <span className="rounded-full bg-[#eaf3ff] px-1.5 text-[10px]">{results.length}</span> : null}</button></div>
-          {activeTab === 'cases' ? <div className="p-4"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-[14px] font-semibold">测试用例管理</h2><p className="mt-1 text-[11px] text-[#8591a4]">支持 JSON、JSONL、CSV；接口用例走 HTTP，浏览器用例按 steps 执行点击、输入、断言和截图。</p></div><div className="flex items-center gap-2"><input ref={fileInputRef} type="file" accept=".json,.jsonl,.csv" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importFile(file); event.target.value = ''; }} /><button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#cfe0f8] bg-white px-3 text-[11px] font-medium text-[#3979b7] hover:bg-[#f5f9ff]"><CloudUpload className="h-3.5 w-3.5" />导入用例</button><button type="button" onClick={loadSampleCases} className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium text-[#3979b7] hover:bg-[#f5f9ff]"><RefreshCw className="h-3.5 w-3.5" />使用示例</button></div></div><div className="overflow-x-auto rounded-lg border border-[#e8edf3]"><table className="min-w-full text-left text-[12px]"><thead className="bg-[#f8fafc] text-[#8490a3]"><tr><th className="px-3 py-3 font-medium">用例</th><th className="px-3 py-3 font-medium">类型</th><th className="px-3 py-3 font-medium">执行方式</th><th className="px-3 py-3 font-medium">目标</th><th className="px-3 py-3 font-medium">优先级</th><th className="min-w-[280px] px-3 py-3 font-medium">输入</th></tr></thead><tbody>{cases.map((item) => <tr key={item.id} className="border-t border-[#edf0f4] align-top hover:bg-[#fbfdff]"><td className="px-3 py-3"><div className="max-w-[220px] truncate font-medium text-[#344158]">{item.name}</div><div className="mt-1 text-[10px] text-[#9aa5b5]">{item.id}</div></td><td className="px-3 py-3"><Badge tone={item.kind === 'Agent' ? 'blue' : 'purple'}>{item.kind}</Badge></td><td className="px-3 py-3"><Badge tone={item.mode === 'browser' ? 'amber' : 'green'}>{item.mode === 'browser' ? '浏览器' : '接口'}</Badge></td><td className="max-w-[160px] truncate px-3 py-3 text-[#5d6a7f]">{item.target}</td><td className="px-3 py-3"><Badge tone={item.priority === 'P0' ? 'red' : item.priority === 'P1' ? 'amber' : 'slate'}>{item.priority}</Badge></td><td className="max-w-[380px] px-3 py-3 text-[#5d6a7f]">{item.input}<div className="mt-1 flex flex-wrap gap-1">{item.tags.map((tag) => <span key={tag} className="text-[10px] text-[#9aa5b5]">#{tag}</span>)}</div></td></tr>)}</tbody></table></div></div> : null}
+          {activeTab === 'cases' ? <div className="p-4"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-[14px] font-semibold">测试用例管理</h2><p className="mt-1 text-[11px] text-[#8591a4]">支持标准测试包 JSON、JSONL、CSV；接口用例走 HTTP，浏览器用例按 steps 执行点击、输入、断言和截图。</p></div><div className="flex items-center gap-2"><input ref={fileInputRef} type="file" accept=".json,.jsonl,.csv" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importFile(file); event.target.value = ''; }} /><button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#cfe0f8] bg-white px-3 text-[11px] font-medium text-[#3979b7] hover:bg-[#f5f9ff]"><CloudUpload className="h-3.5 w-3.5" />导入用例/测试包</button><button type="button" onClick={loadSampleCases} className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium text-[#3979b7] hover:bg-[#f5f9ff]"><RefreshCw className="h-3.5 w-3.5" />使用示例</button></div></div><div className="overflow-x-auto rounded-lg border border-[#e8edf3]"><table className="min-w-full text-left text-[12px]"><thead className="bg-[#f8fafc] text-[#8490a3]"><tr><th className="px-3 py-3 font-medium">用例</th><th className="px-3 py-3 font-medium">类型</th><th className="px-3 py-3 font-medium">执行方式</th><th className="px-3 py-3 font-medium">目标</th><th className="px-3 py-3 font-medium">优先级</th><th className="min-w-[280px] px-3 py-3 font-medium">输入</th></tr></thead><tbody>{cases.map((item) => <tr key={item.id} className="border-t border-[#edf0f4] align-top hover:bg-[#fbfdff]"><td className="px-3 py-3"><div className="max-w-[220px] truncate font-medium text-[#344158]">{item.name}</div><div className="mt-1 text-[10px] text-[#9aa5b5]">{item.id}</div></td><td className="px-3 py-3"><Badge tone={item.kind === 'Agent' ? 'blue' : item.kind === 'Skill' ? 'purple' : item.kind === 'Page' ? 'amber' : 'slate'}>{item.kind}</Badge></td><td className="px-3 py-3"><Badge tone={item.mode === 'browser' ? 'amber' : 'green'}>{item.mode === 'browser' ? '浏览器' : '接口'}</Badge></td><td className="max-w-[160px] truncate px-3 py-3 text-[#5d6a7f]">{item.target}</td><td className="px-3 py-3"><Badge tone={item.priority === 'P0' ? 'red' : item.priority === 'P1' ? 'amber' : 'slate'}>{item.priority}</Badge></td><td className="max-w-[380px] px-3 py-3 text-[#5d6a7f]">{item.input}<div className="mt-1 flex flex-wrap gap-1">{item.tags.map((tag) => <span key={tag} className="text-[10px] text-[#9aa5b5]">#{tag}</span>)}</div></td></tr>)}</tbody></table></div></div> : null}
           {activeTab === 'endpoint' ? <div className="space-y-4 p-5"><div className="rounded-lg border border-[#cfe0ff] bg-[#f5f9ff] p-3 text-[12px] text-[#697a93]"><div className="font-semibold text-[#0773fc]">混合执行适配层</div><div className="mt-1 leading-5">接口用例由本地 Runner 发起 HTTP 请求；浏览器用例由 Playwright 打开页面、点击、输入、断言并回传截图。默认仍是 Mock Runner。</div></div><div className="grid grid-cols-1 gap-3 md:grid-cols-2"><label className="text-[12px] font-medium text-[#536178]">配置名称<input value={config.name} onChange={(event) => updateConfig('name', event.target.value)} className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] px-3 text-[12px] outline-none focus:border-[#77aef0]" /></label><label className="text-[12px] font-medium text-[#536178]">请求方法<select value={config.method} onChange={(event) => updateConfig('method', event.target.value as EndpointConfig['method'])} className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] bg-white px-3 text-[12px] outline-none focus:border-[#77aef0]"><option value="POST">POST</option><option value="GET">GET</option></select></label><label className="text-[12px] font-medium text-[#536178] md:col-span-2">接口地址<input value={config.endpoint} onChange={(event) => updateConfig('endpoint', event.target.value)} placeholder="https://your-api.example.com/v1/agent/execute" className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] px-3 text-[12px] outline-none focus:border-[#77aef0]" /></label><label className="text-[12px] font-medium text-[#536178]">认证方式<select value={config.auth} onChange={(event) => updateConfig('auth', event.target.value as EndpointConfig['auth'])} className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] bg-white px-3 text-[12px] outline-none focus:border-[#77aef0]"><option value="none">无认证</option><option value="bearer">Bearer Token</option><option value="api-key">API Key</option></select></label><label className="text-[12px] font-medium text-[#536178]">超时（秒）<input type="number" min={1} max={300} value={config.timeout} onChange={(event) => updateConfig('timeout', Number(event.target.value) || 30)} className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] px-3 text-[12px] outline-none focus:border-[#77aef0]" /></label><label className="text-[12px] font-medium text-[#536178] md:col-span-2">Token / API Key<input type="password" value={config.token} onChange={(event) => updateConfig('token', event.target.value)} placeholder="仅在本地 Runner 中使用，不会写入结果报告" className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] px-3 text-[12px] outline-none focus:border-[#77aef0]" /></label><label className="text-[12px] font-medium text-[#536178] md:col-span-2">本地 Runner 地址<input value={config.runnerEndpoint} onChange={(event) => updateConfig('runnerEndpoint', event.target.value)} placeholder="http://localhost:4174" className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] px-3 text-[12px] outline-none focus:border-[#77aef0]" /><span className={`mt-1 block text-[10px] ${runnerStatus === 'online' ? 'text-emerald-600' : runnerStatus === 'checking' ? 'text-amber-600' : 'text-slate-400'}`}>{runnerStatus === 'online' ? 'Runner 在线：支持 API + Browser 两种执行模式' : runnerStatus === 'checking' ? '正在检查 Runner 状态…' : 'Runner 离线：可继续使用 Mock，真实执行前请运行 npm run eval-runner'}</span></label><label className="text-[12px] font-medium text-[#536178] md:col-span-2">浏览器允许访问的域名<input value={config.allowedHosts} onChange={(event) => updateConfig('allowedHosts', event.target.value)} placeholder="localhost,127.0.0.1,example.com" className="mt-1.5 h-9 w-full rounded-lg border border-[#dce3ed] px-3 text-[12px] outline-none focus:border-[#77aef0]" /><span className="mt-1 block text-[10px] text-[#98a4b5]">多个域名用逗号分隔；浏览器用例只能打开白名单域名。</span></label></div></div> : null}
           {activeTab === 'results' ? <div className="p-4"><div className="mb-3 flex items-center justify-between"><div><h2 className="text-[14px] font-semibold">执行结果</h2><p className="mt-1 text-[11px] text-[#8591a4]">规则评分优先，失败样本可展开查看完整轨迹。</p></div>{results.length ? <Badge tone={failedCount ? 'amber' : 'green'}>{failedCount ? `${failedCount} 条待复核` : '全部通过'}</Badge> : null}</div>{results.length === 0 ? <div className="flex min-h-[270px] flex-col items-center justify-center rounded-lg border border-dashed border-[#d9e1eb] bg-[#fbfcfe] text-center"><FileJson className="h-8 w-8 text-[#b5c1d1]" /><div className="mt-3 text-[13px] font-medium text-[#637188]">还没有执行结果</div><div className="mt-1 text-[11px] text-[#9aa5b5]">在右侧点击“开始执行”，运行当前用例集</div></div> : <div className="overflow-x-auto rounded-lg border border-[#e8edf3]"><table className="min-w-full text-left text-[12px]"><thead className="bg-[#f8fafc] text-[#8490a3]"><tr><th className="px-3 py-3 font-medium">用例</th><th className="px-3 py-3 font-medium">执行方式</th><th className="px-3 py-3 font-medium">结果</th><th className="px-3 py-3 font-medium">耗时</th><th className="min-w-[280px] px-3 py-3 font-medium">执行信息</th><th className="px-3 py-3 font-medium">操作</th></tr></thead><tbody>{results.map((item) => <tr key={`${item.id}-${item.finishedAt}`} className="border-t border-[#edf0f4] align-top hover:bg-[#fbfdff]"><td className="px-3 py-3"><div className="font-medium text-[#344158]">{item.name}</div><div className="mt-1 text-[10px] text-[#9aa5b5]">{item.id}</div></td><td className="px-3 py-3"><Badge tone={item.mode === 'browser' ? 'amber' : 'green'}>{item.mode === 'browser' ? '浏览器' : '接口'}</Badge></td><td className="px-3 py-3">{item.status === 'passed' ? <Badge tone="green"><CheckCircle2 className="mr-1 h-3 w-3" />通过</Badge> : <Badge tone="red"><XCircle className="mr-1 h-3 w-3" />失败</Badge>}</td><td className="px-3 py-3 text-[#66758b]">{item.duration}ms</td><td className="max-w-[420px] px-3 py-3 text-[#66758b]">{item.actual}</td><td className="px-3 py-3"><button type="button" onClick={() => setSelectedResult(item)} className="inline-flex items-center gap-1 text-[11px] font-medium text-[#3979b7] hover:text-[#0773fc]">详情<ChevronRight className="h-3 w-3" /></button></td></tr>)}</tbody></table></div>}</div> : null}
         </section>

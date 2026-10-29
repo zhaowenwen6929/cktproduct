@@ -24,7 +24,7 @@ import { MembershipActivationPage } from './components/MembershipActivationPage'
 import { RequirementDocumentPage } from './components/RequirementDocumentPage';
 import { AgentEvaluationPage } from './components/AgentEvaluationPage';
 import { AgentEvaluationProjectsPage, AgentEvaluationRequirementsPage } from './components/AgentEvaluationDirectoryPage';
-import { getEvalProject, getEvalRequirement } from './components/agentEvaluationData';
+import { getEvalProject, getEvalRequirement, updateEvalRequirement } from './components/agentEvaluationData';
 import { DeveloperPlatformPage } from './components/DeveloperPlatformPage';
 import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
@@ -1692,7 +1692,7 @@ export default function App() {
     const project = getEvalProject(projectId);
     const requirement = getEvalRequirement(projectId, requirementId);
     if (project && requirement) {
-      return <AgentEvaluationPage projectName={project.name} requirementName={requirement.name} caseIds={requirement.caseIds} onBack={() => navigateTo(`/agent-eval/project/${projectId}`)} />;
+      return <AgentEvaluationPage projectName={project.name} requirementName={requirement.name} requirement={requirement} caseIds={requirement.caseIds} onImportRequirement={(patch) => updateEvalRequirement(requirement.id, patch)} onBack={() => navigateTo(`/agent-eval/project/${projectId}`)} />;
     }
     return <AgentEvaluationProjectsPage onBack={() => navigateTo('/')} onOpenProject={(nextProjectId) => navigateTo(`/agent-eval/project/${nextProjectId}`)} />;
   }

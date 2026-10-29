@@ -18,6 +18,12 @@ export type EvalRequirement = {
   updatedAt: string;
   caseIds: string[];
   modes: Array<'接口' | '浏览器'>;
+  pagePath?: string;
+  version?: string;
+  scope?: string;
+  environment?: string;
+  preconditions?: string;
+  testData?: string;
 };
 
 export const DEFAULT_EVAL_PROJECTS: EvalProject[] = [
@@ -51,6 +57,12 @@ export const DEFAULT_EVAL_REQUIREMENTS: EvalRequirement[] = [
     updatedAt: '2026-10-29',
     caseIds: ['agent-001', 'skill-001', 'skill-002', 'agent-002', 'skill-003', 'browser-001'],
     modes: ['接口', '浏览器'],
+    pagePath: 'Agent / Skill 评测工作台',
+    version: 'V2610',
+    scope: 'Agent 路由、Skill 参数和页面结果',
+    environment: '本地评测环境',
+    preconditions: '已启动本地 Runner，浏览器域名已加入白名单。',
+    testData: '使用示例 Agent / Skill 输入和本地评测页面。',
   },
   {
     id: 'agent-routing',
@@ -63,6 +75,8 @@ export const DEFAULT_EVAL_REQUIREMENTS: EvalRequirement[] = [
     updatedAt: '2026-10-28',
     caseIds: ['agent-001', 'agent-002'],
     modes: ['接口'],
+    pagePath: 'Agent / Skill 评测工作台 > Agent 路由',
+    version: 'V2610',
   },
   {
     id: 'skill-params',
@@ -75,6 +89,8 @@ export const DEFAULT_EVAL_REQUIREMENTS: EvalRequirement[] = [
     updatedAt: '2026-10-28',
     caseIds: ['skill-001', 'skill-002', 'skill-003'],
     modes: ['接口'],
+    pagePath: 'Agent / Skill 评测工作台 > Skill 参数',
+    version: 'V2610',
   },
   {
     id: 'browser-result',
@@ -87,6 +103,9 @@ export const DEFAULT_EVAL_REQUIREMENTS: EvalRequirement[] = [
     updatedAt: '2026-10-28',
     caseIds: ['browser-001'],
     modes: ['浏览器'],
+    pagePath: 'Agent / Skill 评测工作台 > 浏览器结果',
+    version: 'V2610',
+    environment: '本地评测环境',
   },
   {
     id: 'oauth-api',
@@ -99,6 +118,8 @@ export const DEFAULT_EVAL_REQUIREMENTS: EvalRequirement[] = [
     updatedAt: '2026-10-27',
     caseIds: [],
     modes: ['接口'],
+    pagePath: '创客贴开放平台 > OAuth 授权',
+    version: 'V2610',
   },
 ];
 
@@ -137,6 +158,12 @@ export function readEvalRequirements() {
 
 export function saveEvalRequirements(requirements: EvalRequirement[]) {
   writeStorage(REQUIREMENT_STORAGE_KEY, requirements);
+}
+
+export function updateEvalRequirement(requirementId: string, patch: Partial<EvalRequirement>) {
+  const nextRequirements = readEvalRequirements().map((requirement) => requirement.id === requirementId ? { ...requirement, ...patch, updatedAt: new Date().toISOString().slice(0, 10) } : requirement);
+  saveEvalRequirements(nextRequirements);
+  return nextRequirements.find((requirement) => requirement.id === requirementId);
 }
 
 export function getEvalProject(projectId: string) {
