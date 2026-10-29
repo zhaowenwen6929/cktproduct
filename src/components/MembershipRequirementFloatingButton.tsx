@@ -151,7 +151,7 @@ const MEMBERSHIP_SECTION_DESCRIPTIONS: Record<string, string> = {
   '支付弹框字段与计算': '定义支付选择回传、套餐字段重匹配、金额、有效期、每积分价格和二维码生成边界。',
   '弹框样式与交互': '定义弹框容器、滚动、吸顶、关闭、说明面板和 V2610 视觉标识。',
   '统一使用方式与模块边界': '定义会员支付弹框的统一使用方式和模块之间的业务边界，保证会员页入口和购买流程复用同一套能力。',
-  'Banner区': '定义促销文案、倒计时和视觉结构的来源边界；当前 Banner 文案和倒计时为固定前端展示规则，不与套餐价格字段混用。',
+  'Banner区': '定义 Banner 广告的配置来源、有效广告筛选、双图叠加展示、倒计时触发条件、空数据占位和点击跳转边界。',
   '套餐切换区': '定义个人/企业 tab、时间 options、更多收纳和购买积分入口的配置来源、排序与交互联动。',
   '套餐展示购买区': '定义会员等级、套餐明细、积分档位、席位控件、按钮状态、卡片样式和支付触发的字段映射与计算口径。',
   '购买与支付规则': '定义选中套餐如何传给支付弹框，支付金额、优惠、有效期和二维码的重算边界，以及不可购买时的替代提示。',
@@ -391,10 +391,12 @@ export const MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS: MembershipRequirementSectio
   {
     title: 'Banner区',
     items: [
-      '结构：Banner 位于会员弹框内容顶部，包含活动标签、主促销文案、赠送文案和右侧天/小时/分钟/秒倒计时；小屏隐藏倒计时块，保留左侧文案。',
-      '文案来源：当前原型“✦ Seedance 2.5”“四重福利”“¥0.19超低单秒价备战双11”“最高额外加赠2个月会员、4万+积分”为固定前端活动文案；后续接入活动服务时应替换为活动配置字段，不从会员套餐明细推导。',
-      '倒计时规则：活动倒计时使用固定活动时长，打开弹框时开始计算，每秒刷新并按天/小时/分钟/秒格式化；倒计时归零后显示 00，不影响套餐购买资格。',
-      '样式：蓝到黄色渐变背景、圆角、阴影、白色标签和黄色赠送文案；Banner 只负责视觉活动信息，不承载会员等级、价格、积分或支付按钮。',
+      '数据来源：通过广告位 **web_vippop_top_ad** 配置对应的数据，仅获取该广告位下按有效状态过滤后的 **第 1 条广告信息**进行展示。',
+      '广告位标识：**web_vippop_top_ad**；该标识需要在广告位配置和需求联调中保持一致，并作为 Banner 数据来源的重点识别字段。',
+      '图片展示：读取广告配置中的 **两张图片**，按照广告配置的前后层级进行 **叠加展示**；Banner 不从会员套餐明细推导活动图片或促销内容。',
+      '倒计时规则：右侧为倒计时区域，**仅当广告剩余时长不足 7 天时显示倒计时**；广告剩余时长不少于 7 天时不显示倒计时区域，倒计时按天/小时/分钟/秒展示。',
+      '无广告处理：**获取不到有效广告信息时，Banner 整体不展示且不占位**，不显示空白容器或默认活动内容。',
+      '点击行为：广告配置了 **跳转地址** 时，点击 Banner 跳转到对应页面；**未配置跳转地址时点击无反应**，不得跳转到默认页面或触发会员购买。',
     ],
   },
   {
@@ -573,6 +575,15 @@ function getMembershipRequirementItemContent(item: string, index: number) {
   return item.startsWith(prefix) ? item.slice(prefix.length).trim() : item;
 }
 
+function renderMembershipRequirementText(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={`${part}-${index}`} className="font-semibold text-[#c43f3f]">{part.slice(2, -2)}</strong>;
+    }
+    return <span key={`${part}-${index}`}>{part}</span>;
+  });
+}
+
 function buildMembershipRequirementPrompt(title: string, subtitle: string, sections: MembershipRequirementSection[], meta: MembershipRequirementDocumentMeta) {
   const body = sections.map((section, index) => `### ${index + 1}. ${section.title}\n${MEMBERSHIP_SECTION_DESCRIPTIONS[section.title] ?? ''}\n${section.items.map((item, itemIndex) => `- ${getMembershipRequirementItemLabel(item, itemIndex)}：${getMembershipRequirementItemContent(item, itemIndex)}`).join('\n')}`).join('\n\n');
   return `你是一名资深后台产品经理、交互设计师和前端开发者。请严格根据下面的需求说明，设计并实现“${title}”功能，不要擅自扩展业务范围。\n\n## 需求标识\nV2610（2026年10月会员改版）\n\n## 需求概述\n${subtitle}\n\n## 需求背景\n${meta.background}\n\n## 需求目标\n${meta.goal}\n\n## 页面路径\n${meta.path}\n\n## 具体需求\n${body}\n\n## 验收标准\n${meta.acceptance.map((item) => `- ${item}`).join('\n')}\n\n## 验证辅助项（非业务需求）\n${meta.verificationNotes.map((item) => `- ${item}`).join('\n')}\n\n## 输出要求\n请先梳理页面信息架构、组件划分、交互流程、数据来源、字段映射、权限差异、购买限制、空态、加载态和错误态，再给出实现方案。保持现有项目的视觉风格和路由结构；涉及接口时说明请求参数、返回数据和异常处理，不要编造未确认的后端能力。`;
@@ -655,7 +666,7 @@ export function MembershipRequirementFloatingButton({ title, subtitle, sections,
         <div className="space-y-3 border-t border-[#edf0f4] px-4 py-4">
           {sections.map((section, index) => <section key={section.title} className={`rounded-[10px] border p-4 ${section.highlight ? 'border-[#f2caca] bg-[#fff8f7]' : 'border-[#e8ecf2] bg-white'}`}>
             <div className="flex items-start gap-3"><span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px] text-[10px] font-semibold ${section.highlight ? 'bg-[#fff0ed] text-[#c43f3f]' : 'bg-[#edf4ff] text-[#4c87d7]'}`}>{String(index + 1).padStart(2, '0')}</span><div><h2 className={`text-[14px] font-semibold ${section.highlight ? 'text-[#c43f3f]' : 'text-[#344158]'}`}>{section.title}</h2><p className="mt-1 text-[10px] leading-5 text-[#8b96a7]">{MEMBERSHIP_SECTION_DESCRIPTIONS[section.title] ?? '按页面功能拆分可定位、可验收的需求点。'}</p></div></div>
-            <div className="mt-3 grid gap-2">{section.items.map((item, itemIndex) => <div key={item} className={`rounded-[8px] px-3 py-2.5 ${section.highlight ? 'bg-white/80' : 'bg-[#f8fafc]'}`}><div className={`text-[10px] font-medium ${section.highlight ? 'text-[#b34c4c]' : 'text-[#536178]'}`}>{getMembershipRequirementItemLabel(item, itemIndex)}</div><p className="mt-1 text-[11px] leading-5 text-[#778397]">{getMembershipRequirementItemContent(item, itemIndex)}</p></div>)}</div>
+            <div className="mt-3 grid gap-2">{section.items.map((item, itemIndex) => <div key={item} className={`rounded-[8px] px-3 py-2.5 ${section.highlight ? 'bg-white/80' : 'bg-[#f8fafc]'}`}><div className={`text-[10px] font-medium ${section.highlight ? 'text-[#b34c4c]' : 'text-[#536178]'}`}>{getMembershipRequirementItemLabel(item, itemIndex)}</div><p className="mt-1 text-[11px] leading-5 text-[#778397]">{renderMembershipRequirementText(getMembershipRequirementItemContent(item, itemIndex))}</p></div>)}</div>
           </section>)}
         </div>
         <section className="mx-4 mb-4 rounded-[10px] border border-[#dfeafc] bg-[#f6f9ff] p-4"><h2 className="text-[14px] font-semibold text-[#344158]">验收标准</h2><div className="mt-2 grid gap-2">{meta.acceptance.map((item) => <div key={item} className="flex items-start gap-2 text-[11px] leading-5 text-[#647187]"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#4e9a7b]" />{item}</div>)}</div></section>
