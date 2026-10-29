@@ -31,6 +31,7 @@ type RunnerCase = {
     allowedHosts?: string[];
     finalUrlContains?: string;
     textContains?: string;
+    ignoreHTTPSErrors?: boolean;
   };
 };
 
@@ -189,7 +190,7 @@ async function runBrowserCase(testCase: RunnerCase, config: RunnerConfig, browse
   const steps = testCase.browser?.steps ?? [];
   if (!steps.length) throw new Error('浏览器用例缺少 steps');
 
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ignoreHTTPSErrors: Boolean(testCase.browser?.ignoreHTTPSErrors) });
   const page = await context.newPage();
   const trace: string[] = ['浏览器会话已启动'];
   const screenshots: string[] = [];
