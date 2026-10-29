@@ -451,6 +451,18 @@ function formatPackageDurationLabel(duration?: number, fallback = '') {
   return fallback;
 }
 
+function formatContractPackageLabel(cycleName: string, duration?: number) {
+  if (cycleName.includes('半年')) return '连续包半年';
+  if (cycleName.includes('季') || cycleName.includes('季度')) return '连续包季';
+  if (cycleName.includes('月')) return '连续包月';
+  if (cycleName.includes('年')) return '连续包年';
+  if (duration === 180) return '连续包半年';
+  if (duration === 90) return '连续包季';
+  if (duration === 30) return '连续包月';
+  if (typeof duration === 'number' && duration >= 365) return '连续包年';
+  return cycleName;
+}
+
 function formatPackageMonthlyPrice(price: number, duration: number) {
   const months = getPackageMonths(duration);
   return months ? String(Number((price / months).toFixed(2))) : '-';
@@ -1027,7 +1039,6 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
   const pointsUnit = displayPointsNote.split('·')[0]?.trim() ?? '每人';
   const displayPointsDescription = activeTier?.pointsDescription || cycleData.pointsDescription;
   const displayMonthlyPrice = activeTier?.monthlyPrice ?? cycleData.monthlyPrice;
-  const durationLabel = formatPackageDurationLabel(activeTier?.durationDays ?? cycleData.durationDays, cycleData.period);
   const pointPrice = formatPackagePointPrice(pointsAreOneTime ? displayPrice : displayMonthlyPrice, activeTier?.points ?? displayPoints);
   const monthlyPriceLabel = displayMonthlyPrice === '-' ? '月价暂无' : `¥${displayMonthlyPrice}${enterprise ? '/席位' : ''}/月`;
   const pointPriceLabel = pointPrice === '-' ? '积分价暂无' : `¥${pointPrice}/积分`;
@@ -1037,6 +1048,9 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
   const packageType = activeTier?.packageType ?? cycleData.packageType;
   const expiryDate = formatExpiryDate(durationDays);
   const isContractPlan = (packageType === '订阅套餐' || packageType === '低价试用且订阅套餐') && Boolean(expiryDate);
+  const durationLabel = isContractPlan
+    ? formatContractPackageLabel(cycleName || cycleData.period, durationDays)
+    : formatPackageDurationLabel(durationDays, cycleData.period);
   const seatCount = enterprise && isContractPlan ? 1 : Math.max(minimumSeats, seats);
   const isLargeEnterprisePurchase = enterprise && seatCount > 20;
   const purchaseAction = getMembershipPurchaseAction(currentMemberLevel, plan.memberLevel, currentMemberName);
