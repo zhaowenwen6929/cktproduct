@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
-import { Check, ChevronDown, Image as ImageIcon, QrCode, Sparkles, Ticket, Video, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, ChevronDown, Image as ImageIcon, QrCode, Sparkles, Ticket, Video, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipBenefitItem, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 import { getEnterpriseSeatUnitPrice, readWebMembershipPackageDetails, type PackageDetailRow } from './MembershipPackagePage';
@@ -1197,9 +1197,9 @@ function MembershipRequirementFrame({ moduleKey, label, children, className = ''
 
 function RequirementLineAnnotation({ label, showLabel = true, labelPlacement = 'outside' }: Pick<MembershipRequirementFrameProps, 'label' | 'showLabel' | 'labelPlacement'>) {
   return <>
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 border-t-2 border-dashed border-[#ff665b]" aria-hidden="true" />
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 border-b-2 border-dashed border-[#ff665b]" aria-hidden="true" />
     <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-20 border-r-2 border-dashed border-[#ff665b]" aria-hidden="true" />
+    <ArrowUp className="pointer-events-none absolute right-[-8px] top-[-8px] z-30 h-4 w-4 stroke-[3] text-[#ff554c]" aria-hidden="true" />
+    <ArrowDown className="pointer-events-none absolute bottom-[-8px] right-[-8px] z-30 h-4 w-4 stroke-[3] text-[#ff554c]" aria-hidden="true" />
     {showLabel ? <span className={`pointer-events-none absolute z-30 whitespace-nowrap text-[13px] font-medium text-[#ff554c] ${labelPlacement === 'inside' ? 'right-2' : 'right-[-10px] translate-x-full'} top-1/2 -translate-y-1/2`}>V2610 · {label}</span> : null}
   </>;
 }
