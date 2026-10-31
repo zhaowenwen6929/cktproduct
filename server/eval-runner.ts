@@ -44,6 +44,9 @@ type RunnerConfig = {
   allowedHosts?: string[];
   headless?: boolean;
   ignoreHTTPSErrors?: boolean;
+  browserAuthMode?: 'none' | 'storage-state';
+  authProfile?: string;
+  storageStatePath?: string;
 };
 
 type RunnerResult = {
@@ -194,13 +197,21 @@ async function runBrowserCase(testCase: RunnerCase, config: RunnerConfig, browse
   const allowedHosts = [...new Set([...(config.allowedHosts ?? defaultAllowedHosts), ...(testCase.browser?.allowedHosts ?? [])])];
   const steps = testCase.browser?.steps ?? [];
   if (!steps.length) throw new Error('浏览器用例缺少 steps');
+  if (config.browserAuthMode === 'storage-state' && !config.storageStatePath?.trim()) throw new Error('浏览器登录态未配置，请填写 storageState 文件路径');
 
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ignoreHTTPSErrors: Boolean(config.ignoreHTTPSErrors || testCase.browser?.ignoreHTTPSErrors) });
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    ignoreHTTPSErrors: Boolean(config.ignoreHTTPSErrors || testCase.browser?.ignoreHTTPSErrors),
+    storageState: config.browserAuthMode === 'storage-state' ? config.storageStatePath : undefined,
+  });
   const page = await context.newPage();
   const trace: string[] = ['浏览器会话已启动'];
   const screenshots: string[] = [];
   try {
-    for (const step of steps) trace.push(await executeBrowserStep(page, step, allowedHosts, timeout, screenshots));
+    for (const step of steps) {
+      trace.push(await executeBrowserStep(page, step, allowedHosts, timeout, screenshots));
+      if (/\/(?:login|signin|sso)(?:[/?#]|$)/i.test(page.url())) throw new Error('Moni 登录态失效，页面已跳转到登录页');
+    }
     if (testCase.browser?.finalUrlContains) {
       const currentUrl = page.url();
       const passed = currentUrl.includes(testCase.browser.finalUrlContains);

@@ -24,6 +24,8 @@ export type EvalRequirement = {
   environment?: string;
   preconditions?: string;
   testData?: string;
+  authMode?: 'none' | 'bearer' | 'storage-state';
+  authProfile?: string;
 };
 
 export const DEFAULT_EVAL_PROJECTS: EvalProject[] = [
@@ -125,6 +127,7 @@ export const DEFAULT_EVAL_REQUIREMENTS: EvalRequirement[] = [
 
 const PROJECT_STORAGE_KEY = 'agent-eval-projects';
 const REQUIREMENT_STORAGE_KEY = 'agent-eval-requirements';
+const CASE_STORAGE_PREFIX = 'agent-eval-cases:';
 
 function readStorage<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -158,6 +161,29 @@ export function readEvalRequirements() {
 
 export function saveEvalRequirements(requirements: EvalRequirement[]) {
   writeStorage(REQUIREMENT_STORAGE_KEY, requirements);
+}
+
+function removeRequirementCases(requirementId: string) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(`${CASE_STORAGE_PREFIX}${requirementId}`);
+}
+
+export function deleteEvalRequirement(requirementId: string) {
+  const nextRequirements = readEvalRequirements().filter((requirement) => requirement.id !== requirementId);
+  saveEvalRequirements(nextRequirements);
+  removeRequirementCases(requirementId);
+  return nextRequirements;
+}
+
+export function deleteEvalProject(projectId: string) {
+  const requirements = readEvalRequirements();
+  const deletedRequirementIds = requirements.filter((requirement) => requirement.projectId === projectId).map((requirement) => requirement.id);
+  const nextProjects = readEvalProjects().filter((project) => project.id !== projectId);
+  const nextRequirements = requirements.filter((requirement) => requirement.projectId !== projectId);
+  saveEvalProjects(nextProjects);
+  saveEvalRequirements(nextRequirements);
+  deletedRequirementIds.forEach(removeRequirementCases);
+  return { projects: nextProjects, requirements: nextRequirements };
 }
 
 export function updateEvalRequirement(requirementId: string, patch: Partial<EvalRequirement>) {

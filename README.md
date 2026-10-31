@@ -26,9 +26,9 @@ View your app in AI Studio: https://ai.studio/apps/5cc29dc5-8529-4080-802d-173a2
 1. `npm run dev`
 2. `npm run eval-runner`
 
-Runner 默认监听 `http://localhost:4174`，支持 HTTP 接口请求和 Playwright 浏览器步骤。浏览器用例只允许访问工作台配置的域名白名单；如需指定 Chrome 路径，可设置 `BROWSER_EXECUTABLE_PATH`，如需显示浏览器窗口可设置 `EVAL_HEADLESS=0`。
+Runner 默认监听 `http://localhost:4174`，支持 HTTP 接口请求和 Playwright 浏览器步骤。浏览器用例只允许访问工作台配置的域名白名单；需要登录的 Moni 页面可在“接口配置”中选择“Moni 登录态文件”，填写本地 Runner 可读取的 Playwright `storageState` 文件路径；登录态失效会返回明确的执行失败。Token、Cookie 和登录态文件不要提交到 Git。如需指定 Chrome 路径，可设置 `BROWSER_EXECUTABLE_PATH`，如需显示浏览器窗口可设置 `EVAL_HEADLESS=0`。
 
-评测平台按“测试项目 → 测试需求 → 测试用例 → 执行结果”组织。访问 `/agent-eval` 后先选择测试项目，再进入项目内的测试需求；新建测试需求后会直接进入对应工作台。
+评测平台按“测试项目 → 测试需求 → 测试用例 → 执行结果”组织。访问 `/agent-eval` 后先选择测试项目，再进入项目内的测试需求；新建测试需求后会直接进入对应工作台。测试项目和测试需求均支持删除，删除前必须二次确认；删除项目会级联清理所属需求和本地用例数据。
 
 ### 测试用例输出规范
 
