@@ -7,13 +7,19 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  CircleCheck,
   CircleHelp,
+  CheckSquare,
   Clock3,
+  CloudUpload,
+  Folder,
+  FolderPlus,
   FileImage,
   Grid2x2,
   Home,
   Image as ImageIcon,
   LayoutTemplate,
+  Lock,
   Menu,
   Plus,
   Puzzle,
@@ -502,6 +508,308 @@ const navItems = [
   { label: '品牌', icon: Shirt },
 ];
 
+type WorkspaceAssetKind = 'blank' | 'blueprint' | 'paper' | 'photo' | 'poster' | 'yellow' | 'note' | 'phone' | 'butterfly' | 'red' | 'package' | 'sweater' | 'calendar' | 'landscape' | 'warm' | 'fruit' | 'portrait';
+type WorkspaceAssetCategory = '创意画布' | '设计' | '素材' | '模型' | 'AI生成';
+
+type WorkspaceAsset = {
+  title: string;
+  category: WorkspaceAssetCategory;
+  kind: WorkspaceAssetKind;
+  badge?: string;
+  isNew?: boolean;
+};
+
+const workspaceFolders = ['111', '测试文件夹'];
+const workspaceTypeFilters = ['全部', '创意画布', '设计', '素材', '模型', 'AI生成'];
+
+const workspaceAssets: WorkspaceAsset[] = [
+  { title: '未命名', category: '创意画布', kind: 'blank', badge: '画布', isNew: true },
+  { title: '28586093', category: 'AI生成', kind: 'blueprint', badge: 'AI创作', isNew: true },
+  { title: '28585974', category: '创意画布', kind: 'paper', badge: '画布', isNew: true },
+  { title: '黄昏小船与自由', category: '创意画布', kind: 'photo', badge: '画布' },
+  { title: '未命名', category: '创意画布', kind: 'poster', badge: '画布' },
+  { title: '趣味大字报职场主题小红书...', category: '设计', kind: 'yellow', badge: '设计' },
+  { title: '立冬', category: '设计', kind: 'landscape', badge: '设计' },
+  { title: '27710990.mp4', category: 'AI生成', kind: 'phone', badge: 'AI生成' },
+  { title: '27624752', category: '素材', kind: 'butterfly', badge: 'AI电商' },
+  { title: '24482126', category: 'AI生成', kind: 'red', badge: 'AI创作' },
+  { title: '26912489', category: 'AI生成', kind: 'note', badge: 'AI创作' },
+  { title: '26977181', category: '素材', kind: 'package', badge: 'AI电商' },
+  { title: '26912488', category: 'AI生成', kind: 'note', badge: 'AI创作' },
+  { title: '扁平插画风世界读书日主题...', category: '设计', kind: 'paper', badge: '设计' },
+  { title: '26768436.mp4', category: 'AI生成', kind: 'phone', badge: 'AI生成' },
+  { title: '26693436.mp4', category: 'AI生成', kind: 'phone', badge: 'AI生成' },
+  { title: '26688909', category: 'AI生成', kind: 'portrait', badge: 'AI电商' },
+  { title: 'female模特-1', category: 'AI生成', kind: 'photo', badge: 'AI生成' },
+  { title: '25039808', category: 'AI生成', kind: 'package', badge: 'AI创作' },
+  { title: '24639438', category: 'AI生成', kind: 'package', badge: 'AI创作' },
+  { title: '24507078', category: 'AI生成', kind: 'sweater', badge: 'AI创作' },
+  { title: '办公场景桌牌文案', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '夏日海边情感海报', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '烤红薯促销海报介绍', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '生成小猫咪图片', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '关于eeed的讨论', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '空间满需删作品', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '表述不明的话语', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '生成小猫咪图片', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '大雪节气海报解析', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '关于数字444', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '未命名', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '产品置于樱桃上', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '关于eeed的讨论', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: 'VOGUE杂志封面设计', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '23201138', category: 'AI生成', kind: 'poster', badge: 'AI创作' },
+  { title: '23207534', category: 'AI生成', kind: 'poster', badge: 'AI创作' },
+  { title: '未命名', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '未命名', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '油画风早安日签', category: '设计', kind: 'landscape', badge: '设计' },
+  { title: '这幅图展现了一幅绝美', category: '创意画布', kind: 'paper', badge: '画布' },
+  { title: '关于eeee的讨论', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '紧急情况', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '点点滴滴', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '烤红薯促销海报介绍', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '夏日海边情感海报', category: '创意画布', kind: 'blank', badge: '画布' },
+  { title: '变身软糯米白毛绒质感', category: '创意画布', kind: 'warm', badge: '画布' },
+  { title: '手绘风格降醇节气主题海报', category: '设计', kind: 'fruit', badge: '设计' },
+  { title: '清明', category: '设计', kind: 'landscape', badge: '设计' },
+  { title: '神话人物主题设计', category: '设计', kind: 'poster', badge: '设计' },
+];
+
+function WorkspaceAssetArtwork({ asset }: { asset: WorkspaceAsset }) {
+  return (
+    <div className={`workspace-asset-art workspace-asset-art--${asset.kind}`} aria-hidden="true">
+      {asset.kind === 'blueprint' && <><span className="workspace-art-kicker">PRODUCT DESIGN</span><strong>产品经理招聘</strong><small>AI · SOLUTION · 2026</small></>}
+      {asset.kind === 'yellow' && <><strong>职场<br />激燃</strong><small>打工人的高效指南</small><i>冲</i></>}
+      {asset.kind === 'landscape' && <><span className="workspace-landscape-moon" /><strong>今日<br />新闻</strong><small>立冬</small></>}
+      {asset.kind === 'phone' && <><span className="workspace-phone-screen"><i>09:41</i><b>▦</b><em>⌨</em></span><small>AI VIDEO</small></>}
+      {asset.kind === 'butterfly' && <><span className="workspace-butterfly" /><small>AI MODEL</small></>}
+      {asset.kind === 'red' && <><strong>放假通知</strong><b>4.29-5.3日</b><small>共 5 天假期</small></>}
+      {asset.kind === 'note' && <><span className="workspace-note-lines" /><strong>停止无效内耗</strong><small>90% 进步来自持续行动</small></>}
+      {asset.kind === 'package' && <><span className="workspace-package" /><strong>制药级品质</strong><small>天然成分 · 高效守护</small></>}
+      {asset.kind === 'sweater' && <span className="workspace-sweater" />}
+      {asset.kind === 'poster' && <><strong>桃桃酪酪</strong><small>FRUIT TEA · PEACH CHEESE</small><span className="workspace-cup" /></>}
+      {asset.kind === 'paper' && <span className="workspace-paper-wave" />}
+      {asset.kind === 'photo' && <><span className="workspace-photo-sky" /><span className="workspace-photo-subject" /></>}
+      {asset.kind === 'portrait' && <><span className="workspace-portrait-head" /><span className="workspace-portrait-body" /><strong>智能识别</strong><small>高效准确</small></>}
+      {asset.kind === 'warm' && <><span className="workspace-warm-window" /><strong>暖冬好物</strong></>}
+      {asset.kind === 'fruit' && <><strong>小满</strong><span className="workspace-fruit-sun" /><small>轻盈生活提案</small></>}
+      {asset.kind === 'blank' && <><span className="workspace-blank-shape workspace-blank-shape--one" /><span className="workspace-blank-shape workspace-blank-shape--two" /></>}
+    </div>
+  );
+}
+
+function MyWorkspacePage() {
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('我的空间');
+  const [activeType, setActiveType] = useState('全部');
+  const [searchValue, setSearchValue] = useState('');
+  const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [toast, setToast] = useState('');
+
+  const notify = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(''), 1800);
+  };
+
+  const visibleAssets = workspaceAssets.filter((asset) => {
+    const matchesType = activeType === '全部' || asset.category === activeType;
+    const matchesSearch = !searchValue.trim() || asset.title.toLowerCase().includes(searchValue.trim().toLowerCase());
+    return matchesType && matchesSearch;
+  });
+
+  return (
+    <section className="workspace-page" aria-label="我的空间">
+      <div className="workspace-top-tabs">
+        <div className="workspace-tab-list">
+          {['我的空间', '我的收藏', '与我协作', '包装设计', '回收站'].map((tab) => (
+            <button key={tab} type="button" className={activeWorkspaceTab === tab ? 'is-active' : ''} onClick={() => { setActiveWorkspaceTab(tab); notify(tab === '我的空间' ? '已切换到我的空间' : `${tab}功能即将上线`); }}>{tab}</button>
+          ))}
+        </div>
+        <div className="workspace-actions">
+          <label className="workspace-search"><Search size={18} /><input value={searchValue} onChange={(event) => setSearchValue(event.currentTarget.value)} placeholder="搜索我的空间" aria-label="搜索我的空间" /><kbd>⌕</kbd></label>
+          <button type="button" className="workspace-manage-button" onClick={() => notify('空间管理即将上线')}><Settings2 size={16} />空间管理</button>
+          <div className="workspace-create-wrap">
+            <button type="button" className="workspace-create-button" onClick={() => setShowUploadMenu((value) => !value)}><Plus size={18} />新建/上传<ChevronDown size={14} /></button>
+            {showUploadMenu && <div className="workspace-create-menu"><button type="button" onClick={() => { setShowUploadMenu(false); notify('已创建空白画布'); }}><Plus size={15} />新建设计</button><button type="button" onClick={() => { setShowUploadMenu(false); notify('上传入口已打开'); }}><CloudUpload size={15} />上传文件</button></div>}
+          </div>
+          <div className="workspace-storage" aria-label="空间使用率"><strong>10.3%</strong><span /></div>
+        </div>
+      </div>
+
+      <div className="workspace-folder-heading"><span>文件夹 (2)</span><ChevronDown size={15} /></div>
+      <div className="workspace-folders">
+        <button type="button" className="workspace-folder-card workspace-folder-card--new" onClick={() => notify('已打开新建文件夹')}><FolderPlus size={25} /><span>新建文件夹</span></button>
+        {workspaceFolders.map((folder) => <button key={folder} type="button" className="workspace-folder-card" onClick={() => notify(`打开文件夹：${folder}`)}><Folder size={44} fill="#ffc72c" stroke="#f5a623" /><span>{folder}</span></button>)}
+      </div>
+
+      <div className="workspace-filter-bar">
+        <div className="workspace-type-tabs">{workspaceTypeFilters.map((filter) => <button key={filter} type="button" className={activeType === filter ? 'is-active' : ''} onClick={() => setActiveType(filter)}>{filter}{filter === 'AI生成' && <ChevronDown size={13} />}</button>)}</div>
+        <div className="workspace-sort-actions">
+          {['场景', '格式', '标签', '修改时间'].map((filter) => <button key={filter} type="button" onClick={() => notify(`${filter}筛选即将上线`)}>{filter}<ChevronDown size={12} /></button>)}
+          <button type="button" className="workspace-icon-button" onClick={() => notify('已切换网格视图')} aria-label="网格视图"><Grid2x2 size={18} /></button>
+          <button type="button" className="workspace-icon-button" onClick={() => notify('已打开批量筛选')} aria-label="批量筛选"><CheckSquare size={18} /></button>
+        </div>
+      </div>
+
+      <div className="workspace-assets-grid">
+        {visibleAssets.map((asset, index) => (
+          <button type="button" className="workspace-asset-card" key={`${asset.title}-${asset.kind}-${index}`} onClick={() => notify(`打开：${asset.title}`)}>
+            <div className="workspace-asset-thumb"><WorkspaceAssetArtwork asset={asset} />{asset.isNew && <span className="workspace-new-label">NEW</span>}{asset.badge && <span className="workspace-asset-badge"><Sparkles size={11} />{asset.badge}</span>}</div>
+            <span className="workspace-asset-title">{asset.isNew && <i>NEW</i>}{asset.title}</span>
+          </button>
+        ))}
+        {visibleAssets.length === 0 && <div className="workspace-empty"><CircleCheck size={22} /><span>没有找到匹配的设计</span></div>}
+      </div>
+      {toast && <div className="workspace-toast" role="status">{toast}</div>}
+    </section>
+  );
+}
+
+type TeamResourceKind = 'team-orange' | 'team-blue' | 'team-purple' | 'team-black' | 'team-red' | 'team-doc' | 'team-lock' | 'team-pink' | 'team-web' | 'team-yellow' | 'team-dark';
+
+type TeamResource = {
+  title: string;
+  kind: TeamResourceKind;
+  badge: string;
+  shared?: boolean;
+};
+
+const teamFolders = [
+  '创客贴设计部门...',
+  '兴业银行模板海报',
+  '渠道发展部',
+  '品牌对外资料',
+  '人力行政中心',
+  '中台支持中心',
+  '创意服务中心',
+  '产研中心',
+  '个人与SMB运营部',
+  '企业营销部',
+];
+
+const teamResources: TeamResource[] = [
+  { title: '棕色秋季班招生手机海报', kind: 'team-orange', badge: '模板' },
+  { title: '朋友圈素材_20260909_证券...', kind: 'team-blue', badge: '模板' },
+  { title: '9月第2批-中长图图文素材...', kind: 'team-purple', badge: '模板' },
+  { title: '国泰_第一套_三张', kind: 'team-black', badge: '模板' },
+  { title: '看盘炒股利器shangchuan(2...', kind: 'team-red', badge: '模板' },
+  { title: '看盘炒股利器shangchuan(2...', kind: 'team-orange', badge: '模板' },
+  { title: '看盘炒股利器shangchuan.psd', kind: 'team-red', badge: '模板' },
+  { title: '银行金融讲解学人物理财动...', kind: 'team-doc', badge: '模板' },
+  { title: '国泰动效版.psd', kind: 'team-doc', badge: '模板' },
+  { title: 'chuangkit_360shoply', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_zolkjhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_lianxiangkhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_tengxunjkhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_huaweishopkhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_huanujrjkhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_ddookhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_baidusemkhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit', kind: 'team-lock', badge: 'EXE', shared: true },
+  { title: 'chuangkit_360ruanjankhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_360rjgjkhd', kind: 'team-lock', badge: 'EXE' },
+  { title: 'chuangkit_360semkhd', kind: 'team-lock', badge: 'EXE' },
+  { title: '斗鱼_陪玩福利社--新(9)', kind: 'team-pink', badge: 'JPG' },
+  { title: 'web', kind: 'team-purple', badge: 'JPG' },
+  { title: 'h5', kind: 'team-purple', badge: 'JPG' },
+  { title: 'web', kind: 'team-dark', badge: 'JPG' },
+  { title: 'kv(2)', kind: 'team-purple', badge: 'JPG' },
+  { title: 'h5', kind: 'team-purple', badge: 'JPG' },
+  { title: 'Web-斗鱼-PUBG进阶挑战-周...', kind: 'team-yellow', badge: 'PNG' },
+  { title: 'Web-斗鱼-PUBG进阶挑战-观...', kind: 'team-yellow', badge: 'PNG' },
+  { title: 'H5-斗鱼-PUBG进阶挑战-周...', kind: 'team-yellow', badge: 'PNG' },
+  { title: '斗鱼宣传页', kind: 'team-yellow', badge: 'PNG' },
+  { title: '品牌活动KV', kind: 'team-orange', badge: 'JPG' },
+  { title: '新客福利活动页', kind: 'team-blue', badge: 'PNG' },
+  { title: '社媒传播物料', kind: 'team-red', badge: 'PNG' },
+  { title: '创客贴周年活动', kind: 'team-dark', badge: 'PSD' },
+];
+
+function TeamResourceArtwork({ resource }: { resource: TeamResource }) {
+  if (resource.kind === 'team-lock') {
+    return <div className="team-resource-art team-resource-art--lock"><span><Lock size={38} strokeWidth={1.5} /></span></div>;
+  }
+
+  return (
+    <div className={`team-resource-art team-resource-art--${resource.kind}`} aria-hidden="true">
+      {resource.kind === 'team-orange' && <><span className="team-art-burst">✦</span><strong>秋季招生</strong><b>福利开学季</b><small>1699元起</small></>}
+      {resource.kind === 'team-blue' && <><strong>给新客</strong><b>福利季</b><small>限时活动 · 立即领取</small></>}
+      {resource.kind === 'team-purple' && <><strong>新客福利</strong><b>快来领取</b><small>福利活动素材</small></>}
+      {resource.kind === 'team-black' && <><small>国泰海通证券</small><strong>情绪告诉你</strong><b>新客福利有5重礼</b></>}
+      {resource.kind === 'team-red' && <><strong>盘面看不懂</strong><b>先换工具</b><small>炒股工具全解析</small></>}
+      {resource.kind === 'team-doc' && <><span className="team-doc-lines" /><small>金融行业解决方案</small><b>专业服务说明</b></>}
+      {resource.kind === 'team-pink' && <><strong>陪玩<br />福利社</strong><small>斗鱼 · 全新活动</small></>}
+      {resource.kind === 'team-web' && <><span className="team-web-window" /><b>品牌活动页</b></>}
+      {resource.kind === 'team-yellow' && <><strong>PUBG</strong><b>进阶挑战</b><small>精彩活动正式开启</small></>}
+      {resource.kind === 'team-dark' && <><strong>声控福利社</strong><small>全新活动专题</small><span className="team-dark-orb" /></>}
+    </div>
+  );
+}
+
+function TeamWorkspacePage() {
+  const [activeIndustry, setActiveIndustry] = useState('全部');
+  const [searchValue, setSearchValue] = useState('');
+  const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [toast, setToast] = useState('');
+
+  const notify = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(''), 1800);
+  };
+
+  const visibleResources = teamResources.filter((resource) => !searchValue.trim() || resource.title.toLowerCase().includes(searchValue.trim().toLowerCase()));
+
+  return (
+    <section className="team-page" aria-label="团队空间">
+      <aside className="team-sidebar">
+        <div className="team-sidebar-label">团队资产</div>
+        <button type="button" className="team-sidebar-link" onClick={() => notify('我的空间已打开')}><UserRound size={17} />我的空间</button>
+        <button type="button" className="team-sidebar-link is-active" onClick={() => notify('当前为团队空间')}><CircleHelp size={17} />团队空间<ChevronDown size={14} /></button>
+        <div className="team-sidebar-tree">
+          <button type="button" className="team-sidebar-tree-item is-selected" onClick={() => notify('已切换到北京艺源酷科技有限公司')}><span>北京艺源酷科技有...</span></button>
+          {['产研中心', '品牌市场部', '创意服务中心｜案...', '🌞参考模板库🌞', '🌞字体资源汇总🌞', '印刷制作商品展示库', 'AIGC关键词（注...', '测试', '小组1', '验证团队模板', '测试资源库2', 'AI电商测试物料', '新建资源库'].map((item) => <button type="button" className="team-sidebar-tree-item" key={item} onClick={() => notify(`打开资源库：${item}`)}><span>{item}</span></button>)}
+        </div>
+        <div className="team-sidebar-group-title">合规检测</div>
+        {['文案合规', '入库审批', '下载审批'].map((item) => <button type="button" className="team-sidebar-service" key={item} onClick={() => notify(`${item}即将上线`)}><CheckSquare size={17} />{item}</button>)}
+        <div className="team-sidebar-group-title">更多服务</div>
+        <button type="button" className="team-sidebar-service" onClick={() => notify('企业定制服务即将上线')}><BriefcaseBusiness size={17} />企业定制服务</button>
+        <div className="team-storage"><span><i /></span><div><b>4.46TB/12TB</b><small>已使用空间</small></div><button type="button" onClick={() => notify('扩充容量即将上线')}>扩充容量</button></div>
+      </aside>
+
+      <div className="team-content">
+        <div className="team-content-topbar">
+          <h1>北京艺源酷科技有限公司</h1>
+          <div className="team-content-actions">
+            <label className="workspace-search team-search"><Search size={18} /><input value={searchValue} onChange={(event) => setSearchValue(event.currentTarget.value)} placeholder="搜索当前库" aria-label="搜索当前库" /><kbd>⌕</kbd></label>
+            <button type="button" aria-label="添加成员" className="team-add-member" onClick={() => notify('添加成员即将上线')}><UserRound size={16} /><Plus size={15} /></button>
+            <button type="button" className="workspace-manage-button" onClick={() => notify('团队设置即将上线')}><Settings2 size={16} />设置</button>
+            <div className="workspace-create-wrap">
+              <button type="button" className="workspace-create-button" onClick={() => setShowUploadMenu((value) => !value)}><Plus size={18} />新建/上传<ChevronDown size={14} /></button>
+              {showUploadMenu && <div className="workspace-create-menu"><button type="button" onClick={() => { setShowUploadMenu(false); notify('已创建团队画布'); }}><Plus size={15} />新建设计</button><button type="button" onClick={() => { setShowUploadMenu(false); notify('上传入口已打开'); }}><CloudUpload size={15} />上传文件</button></div>}
+            </div>
+            <div className="team-storage-meter"><strong>37.19%</strong><span /></div>
+          </div>
+        </div>
+
+        <div className="team-industry-tabs"><span>零售行业</span>{['全部', '互联网信息服务业', '互联网直播游戏', '零售行业', '金融行业', '汽车制造业'].map((industry) => <button key={industry} type="button" className={activeIndustry === industry ? 'is-active' : ''} onClick={() => setActiveIndustry(industry)}>{industry}</button>)}</div>
+
+        <div className="team-section-heading"><span>文件夹 (10)</span><ChevronDown size={15} /><label><input type="checkbox" defaultChecked />显示子文件夹内的资源</label></div>
+        <div className="team-folder-grid">
+          <button type="button" className="team-folder-card team-folder-card--new" onClick={() => notify('已打开新建文件夹')}><FolderPlus size={25} /><span>新建文件夹</span></button>
+          {teamFolders.map((folder) => <button type="button" className="team-folder-card" key={folder} onClick={() => notify(`打开文件夹：${folder}`)}><Folder size={44} fill="#ffc72c" stroke="#f5a623" /><span>{folder}</span></button>)}
+        </div>
+
+        <div className="team-resource-toolbar"><div><strong>资源 (525)</strong>{['类型', '场景', '格式', '标签', '创建人', '时间'].map((filter) => <button type="button" key={filter} onClick={() => notify(`${filter}筛选即将上线`)}>{filter}<ChevronDown size={12} /></button>)}</div><div><button type="button" onClick={() => notify('按创建时间排序')} >创建时间<ChevronDown size={12} /></button><button type="button" aria-label="网格视图"><Grid2x2 size={18} /></button><button type="button" aria-label="批量筛选"><CheckSquare size={18} /></button></div></div>
+
+        <div className="team-resource-grid">
+          {visibleResources.map((resource, index) => <button type="button" className="team-resource-card" key={`${resource.title}-${index}`} onClick={() => notify(`打开：${resource.title}`)}><div className="team-resource-thumb"><TeamResourceArtwork resource={resource} />{resource.shared && <span className="team-shared-label">分享中</span>}<span className="team-resource-badge">{resource.badge}</span></div><span className="team-resource-title">{resource.title}</span></button>)}
+          {visibleResources.length === 0 && <div className="workspace-empty"><CircleCheck size={22} /><span>没有找到匹配的资源</span></div>}
+        </div>
+      </div>
+      {toast && <div className="workspace-toast" role="status">{toast}</div>}
+    </section>
+  );
+}
+
 interface AgentSkillsHomePageProps {
   onBackToDirectory: () => void;
   onOpenCanvas: () => void;
@@ -512,6 +820,7 @@ interface AgentSkillsHomePageProps {
 
 export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTemplates, onOpenMembershipUpgrade, onStartCanvasGeneration }: AgentSkillsHomePageProps) {
   const [mode, setMode] = useState<HomeMode>('templates');
+  const [activeNav, setActiveNav] = useState('首页');
   const [searchTerm, setSearchTerm] = useState('');
   const [homePrompt, setHomePrompt] = useState('');
   const [homeAttachments, setHomeAttachments] = useState<GenerationAttachment[]>([]);
@@ -522,6 +831,21 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   const [membershipOpen, setMembershipOpen] = useState(false);
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, FieldValue>>>({});
   const skillsRailRef = useRef<HTMLDivElement>(null);
+
+  const handleNavClick = (label: string) => {
+    setActiveNav(label);
+    if (label === '模板') {
+      onOpenTemplates();
+      return;
+    }
+    if (label === 'AI工具') {
+      setMode('agent');
+      return;
+    }
+    if (label === '首页') {
+      setMode('templates');
+    }
+  };
 
   const visibleSkills = useMemo(() => {
     const base = activeCategory === '最近使用'
@@ -726,15 +1050,15 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white font-sans text-[#1d2943]">
-      <aside className="fixed inset-y-0 left-0 z-30 flex w-[92px] flex-col items-center border-r border-[#e8edf7] bg-[linear-gradient(180deg,#f4f8ff_0%,#f1f5ff_100%)] py-4">
+    <div className={`min-h-screen overflow-x-hidden bg-white font-sans text-[#1d2943] ${activeNav === '我的' ? 'is-workspace-shell' : ''} ${activeNav === '团队' ? 'is-team-workspace-shell' : ''}`}>
+      <aside className={`fixed inset-y-0 left-0 z-30 flex w-[92px] flex-col items-center border-r border-[#e8edf7] bg-[linear-gradient(180deg,#f4f8ff_0%,#f1f5ff_100%)] py-4 ${activeNav === '我的' || activeNav === '团队' ? 'workspace-sidebar' : ''}`}>
         <button type="button" onClick={onBackToDirectory} className="mb-6 flex h-9 w-9 items-center justify-center rounded-xl text-[#52617b] transition hover:bg-white" title="返回目录"><Menu className="h-5 w-5" /></button>
         <div className="flex w-full flex-col items-center gap-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
             return <React.Fragment key={item.label}>
               {item.label === '我的' ? <div className="my-1 h-px w-[52px] bg-[#e1e7f1]" /> : null}
-              <button type="button" onClick={() => item.label === '模板' ? onOpenTemplates() : item.label === 'AI工具' ? setMode('agent') : item.label === '首页' ? setMode('templates') : undefined} className={`flex w-[62px] flex-col items-center gap-1 rounded-[12px] py-2 text-[11px] transition ${item.active ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'text-[#596986] hover:bg-white/80'}`}><Icon className="h-[22px] w-[22px]" /><span>{item.label}</span></button>
+              <button type="button" onClick={() => handleNavClick(item.label)} className={`flex w-[62px] flex-col items-center gap-1 rounded-[12px] py-2 text-[11px] transition ${activeNav === item.label ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'text-[#596986] hover:bg-white/80'}`}><Icon className="h-[22px] w-[22px]" /><span>{item.label}</span></button>
             </React.Fragment>;
           })}
         </div>
@@ -744,23 +1068,23 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         </div>
       </aside>
 
-      <header className="fixed left-[92px] right-0 top-0 z-20 flex h-[86px] items-center justify-between border-b border-[#f1f3f8] bg-white/90 px-10 backdrop-blur-xl">
+      <header className={`fixed left-[92px] right-0 top-0 z-20 flex h-[86px] items-center justify-between border-b border-[#f1f3f8] bg-white/90 px-10 backdrop-blur-xl ${activeNav === '我的' || activeNav === '团队' ? 'workspace-header' : ''}`}>
         <button type="button" onClick={onBackToDirectory} className="flex items-center"><img src={cktAiEcomLogo} alt="创客贴" className="h-[40px] w-auto" /></button>
         <div className="flex items-center gap-7 text-[#4f5870]">
           <button type="button" onClick={() => setMode('agent')} className="flex items-center gap-1 text-[15px] transition hover:text-[#1677f8]"><Zap className="h-4 w-4 text-[#ffbc3b]" />PPT生成</button>
           <button type="button" className="text-[15px] transition hover:text-[#1677f8]">印刷店</button>
           <Grid2x2 className="h-[21px] w-[21px]" />
           <span className="relative"><Bell className="h-[23px] w-[23px]" /><i className="absolute -right-2 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff5e58] px-1 text-[11px] font-medium not-italic text-white">4</i></span>
-          <div className="relative">
-            <div className="pointer-events-none absolute -inset-1 rounded-[16px] border border-dashed border-[#ff665b]" aria-hidden="true" />
-            <span className="absolute -right-5 -top-3 z-10"><RequirementHint text={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT} requirementName={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME} sections={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS} /></span>
-            <button type="button" onClick={() => setMembershipOpen(true)} aria-label="会员中心" className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>会员中心</button>
-          </div>
+          {activeNav !== '团队' ? <div className="relative">
+            {activeNav !== '我的' ? <><div className="pointer-events-none absolute -inset-1 rounded-[16px] border border-dashed border-[#ff665b]" aria-hidden="true" /><span className="absolute -right-5 -top-3 z-10"><RequirementHint text={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT} requirementName={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME} sections={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS} /></span></> : null}
+            <button type="button" onClick={() => setMembershipOpen(true)} aria-label={activeNav === '我的' ? '开通会员' : '会员中心'} className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>{activeNav === '我的' ? '开通会员' : '会员中心'}</button>
+          </div> : null}
           <span className="relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#ead1b3,#7d9eb7)] text-white shadow-sm"><UserRound className="h-6 w-6" /><i className="absolute bottom-0 right-0 rounded-full bg-[#4b8eea] px-1 text-[9px] not-italic">团</i></span>
         </div>
       </header>
 
-      <main className="ml-[92px] pt-[86px]">
+      <main className={`ml-[92px] pt-[86px] ${activeNav === '我的' || activeNav === '团队' ? 'workspace-main' : ''}`}>
+        {activeNav === '我的' ? <MyWorkspacePage /> : activeNav === '团队' ? <TeamWorkspacePage /> : <>
         <section className={`relative ${mode === 'templates' ? 'min-h-[382px]' : 'min-h-[360px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-8 pt-[42px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
@@ -918,6 +1242,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             {templateGallerySections.map((section) => <TemplateGallerySection key={section.title} section={section} />)}
           </section>
         ) : null}
+        </>}
       </main>
 
       <button type="button" className="fixed bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#7a879b] shadow-[0_5px_22px_rgba(63,78,112,0.17)]"><CircleHelp className="h-5 w-5" /></button>
