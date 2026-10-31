@@ -2,6 +2,10 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent,
 import { ChevronDown, ChevronRight, Eye, Pencil, Plus, Search, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { AdminSidebar, TopHeader } from './AdminBackofficePage';
+import { MEMBERSHIP_LEVEL_BY_NAME, MEMBERSHIP_LEVEL_OPTIONS } from './membershipLevelCatalog';
+import { isLifetimeDuration, LIFETIME_MEMBER_DAYS } from './membershipPackageRules';
+
+export { isLifetimeDuration, LIFETIME_MEMBER_DAYS } from './membershipPackageRules';
 
 type PackageRow = {
   id: number;
@@ -82,39 +86,12 @@ const initialPackages: PackageRow[] = [
 const CONFIGURED_PACKAGE_IDS = new Set([1, 2, 6, 7, 8, 9]);
 const WEB_PACKAGE_ID = 8;
 
-export type MemberTypeOption = { name: string; level?: number };
+export type MemberTypeOption = { name: string; level: number };
 
-export const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = [
-  { name: '个人版VIP' },
-  { name: '标准版(个人)' },
-  { name: '标准版(企业)' },
-  { name: '标准版(大企业)' },
-  { name: '个人高级版' },
-  { name: '企业高级版' },
-  { name: '高级版' },
-  { name: '协作版' },
-  { name: '旗舰版' },
-  { name: '高级版(大企业)' },
-  { name: '通用版(个人)' },
-  { name: '通用版(企业)' },
-  { name: '高级版(团队)' },
-  { name: '专业版(团队)' },
-  { name: '至尊版(团队)' },
-  { name: '基础版(单人)' },
-  { name: '高级版(单人)' },
-  { name: '专业版(单人)' },
-  { name: '至尊版(单人)' },
-  { name: '基础版（个人）', level: 240 },
-  { name: '专业版（个人）', level: 241 },
-  { name: '基础版（企业）', level: 310 },
-  { name: '专业版（企业）', level: 311 },
-  { name: '旗舰版（企业）', level: 312 },
-];
+/** 套餐配置技能使用的会员等级选项，名称与 level 均来自实际 vipLevelList。 */
+export const MEMBER_TYPE_OPTIONS: MemberTypeOption[] = MEMBERSHIP_LEVEL_OPTIONS.map(({ name, level }) => ({ name, level }));
 
-export const MEMBER_LEVEL_BY_NAME: Record<string, number> = Object.fromEntries(
-  MEMBER_TYPE_OPTIONS.filter((option): option is MemberTypeOption & { level: number } => option.level != null)
-    .map((option) => [option.name, option.level]),
-);
+export const MEMBER_LEVEL_BY_NAME = MEMBERSHIP_LEVEL_BY_NAME;
 
 export function getMemberLevelByName(member: string) {
   return MEMBER_LEVEL_BY_NAME[member];
@@ -138,10 +115,35 @@ export function getEnterpriseSeatUnitPrice(memberLevel?: number, member?: string
 const PERSONAL_MEMBER_LEVELS = new Set([240, 241]);
 const ENTERPRISE_MEMBER_LEVELS = new Set([310, 311, 312]);
 
+/**
+ * 这些等级虽然现在也有真实 level，但仍按历史会员的开通规则处理：
+ * 自动带出历史积分/终身时长，避免补充 level 后改变既有开通流程。
+ */
+const HISTORICAL_MEMBER_TYPE_NAMES = new Set([
+  '个人版VIP',
+  '标准版(个人)',
+  '标准版(企业)',
+  '标准版(大企业)',
+  '个人高级版',
+  '企业高级版',
+  '高级版',
+  '协作版',
+  '旗舰版',
+  '高级版(大企业)',
+  '通用版(个人)',
+  '通用版(企业)',
+  '高级版(团队)',
+  '专业版(团队)',
+  '至尊版(团队)',
+  '基础版(单人)',
+  '高级版(单人)',
+  '专业版(单人)',
+  '至尊版(单人)',
+]);
+
 type MemberPointsConfig = Pick<PackageDetailRow, 'points' | 'pointsUnit' | 'pointsCycle'> & { display?: string };
 
 const LIFETIME_MEMBER_TYPES = new Set(['个人版VIP', '标准版(个人)', '通用版(个人)', '基础版(单人)']);
-export const LIFETIME_MEMBER_DAYS = 99 * 365;
 
 const MEMBER_LEVEL_POINTS: Record<string, MemberPointsConfig> = {
   '个人版VIP': { points: 600, pointsUnit: '每人', pointsCycle: '按月' },
@@ -175,15 +177,11 @@ export function getMemberPointsConfig(member: string) {
 }
 
 export function isHistoricalMemberType(member: string) {
-  return Boolean(member) && MEMBER_TYPE_OPTIONS.some((option) => option.name === member && option.level == null);
+  return HISTORICAL_MEMBER_TYPE_NAMES.has(member);
 }
 
 export function getDefaultMemberDurationDays(member: string) {
   return LIFETIME_MEMBER_TYPES.has(member) ? String(LIFETIME_MEMBER_DAYS) : '';
-}
-
-export function isLifetimeDuration(duration: string | number) {
-  return Number(duration) === LIFETIME_MEMBER_DAYS;
 }
 
 export function getMemberPointsConfigForDuration(member: string, duration: string | number) {
@@ -704,6 +702,7 @@ type DetailEditValues = {
   points: string;
   pointsUnit: string;
   pointsCycle: string;
+  memberLevel: string;
 };
 
 export type RequirementSection = { title: string; items: string[]; highlight?: boolean };
@@ -726,9 +725,9 @@ export const POINTS_REQUIREMENT = POINTS_REQUIREMENT_SECTIONS.flatMap((section) 
 export const MEMBER_TYPE_REQUIREMENT_NAME = '会员套餐管理新增新会员等级';
 export const OPEN_MEMBER_TYPE_REQUIREMENT_NAME = '开通会员新增新会员等级';
 export const MEMBER_TYPE_REQUIREMENT_SECTIONS: RequirementSection[] = [
-  { title: '功能说明', items: ['会员类型列表新增 5 个会员等级及对应 level。'] },
-  { title: '新增会员', items: ['基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。'] },
-  { title: '列表展示规则', items: ['会员类型显示名称在前，level 数字在后。'] },
+  { title: '功能说明', items: ['会员类型列表使用实际 vipLevelList，共 24 个会员等级，并保存会员名称与 level 的对应关系。'] },
+  { title: '数据规则', items: ['接口项的 versionId 作为 level；name 末尾数字作为校验值，去掉末尾数字后的中文/名称作为会员等级名称。', '标准版(个人)存在 199、200 两个 level，必须按选中的 level 区分，不能只按名称猜测。'] },
+  { title: '列表展示规则', items: ['会员类型显示名称在前，level 数字在后；保存时同时记录所属会员名称和会员等级 level。'] },
 ];
 export const MEMBER_TYPE_REQUIREMENT = MEMBER_TYPE_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
 
@@ -818,17 +817,18 @@ export function RequirementEntryFrame({ children, text = MEMBER_TYPE_REQUIREMENT
   );
 }
 
-export function MemberTypeDropdown({ value, onChange, disabled = false, className = 'w-[240px]', requirementName = MEMBER_TYPE_REQUIREMENT_NAME }: { value: string; onChange: (value: string) => void; disabled?: boolean; className?: string; requirementName?: string }) {
+export function MemberTypeDropdown({ value, memberLevel, onChange, disabled = false, className = 'w-[240px]', requirementName = MEMBER_TYPE_REQUIREMENT_NAME }: { value: string; memberLevel?: number; onChange: (value: string, level: number) => void; disabled?: boolean; className?: string; requirementName?: string }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const selected = MEMBER_TYPE_OPTIONS.find((member) => member.name === value);
-  const existingOptions = MEMBER_TYPE_OPTIONS.filter((member) => !member.level);
+  const selected = MEMBER_TYPE_OPTIONS.find((member) => member.name === value && (memberLevel == null || member.level === memberLevel))
+    ?? MEMBER_TYPE_OPTIONS.find((member) => member.name === value);
   const newOptions = MEMBER_TYPE_OPTIONS.filter((member) => member.level);
   const formatLabel = (member: MemberTypeOption) => member.level ? member.name + ' ' + member.level : member.name;
-  const choose = (nextValue: string) => {
-    onChange(nextValue);
+  const choose = (nextValue: string, nextLevel: number) => {
+    onChange(nextValue, nextLevel);
     setOpen(false);
   };
+  const isSelected = (member: MemberTypeOption) => member.name === value && member.level === (memberLevel ?? selected?.level);
   useEffect(() => {
     if (!open) return undefined;
     const closeOnOutsidePointer = (event: globalThis.MouseEvent) => {
@@ -854,11 +854,10 @@ export function MemberTypeDropdown({ value, onChange, disabled = false, classNam
         </button>
       </RequirementEntryFrame>
       {open ? <div role="listbox" className="absolute left-0 top-full z-[100] mt-1 max-h-[430px] w-full overflow-y-auto rounded-[4px] border border-[#e1e4e8] bg-white p-1 shadow-[0_8px_20px_rgba(31,45,61,.18)]">
-        <button type="button" onClick={() => choose('')} className={!value ? 'block w-full rounded-[2px] bg-[#f4f6f9] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#f7f9fc]'}>请选择会员类型</button>
-        {existingOptions.map((member) => <button type="button" role="option" aria-selected={member.name === value} key={member.name} onClick={() => choose(member.name)} className={member.name === value ? 'block w-full rounded-[2px] bg-[#f4f6f9] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#f7f9fc]'}>{formatLabel(member)}</button>)}
+        <button type="button" onClick={() => { onChange('', 0); setOpen(false); }} className={!value ? 'block w-full rounded-[2px] bg-[#f4f6f9] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#f7f9fc]'}>请选择会员类型</button>
         <div className="relative mt-3 rounded-[5px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-1 pb-1 pt-3">
           <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={requirementName} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div>
-          {newOptions.map((member) => <button type="button" role="option" aria-selected={member.name === value} key={member.name} onClick={() => choose(member.name)} className={member.name === value ? 'block w-full rounded-[2px] bg-[#ffe6e1] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#fff0ed]'}>{formatLabel(member)}</button>)}
+          {newOptions.map((member) => <button type="button" role="option" aria-selected={isSelected(member)} key={`${member.name}-${member.level}`} onClick={() => choose(member.name, member.level)} className={isSelected(member) ? 'block w-full rounded-[2px] bg-[#ffe6e1] px-3 py-2 text-left text-[12px] text-[#333]' : 'block w-full rounded-[2px] px-3 py-2 text-left text-[12px] text-[#596579] hover:bg-[#fff0ed]'}>{formatLabel(member)}</button>)}
         </div>
       </div> : null}
     </div>
@@ -911,18 +910,20 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
     points: isCreate ? '' : memberPoints?.points == null ? '' : String(memberPoints.points),
     pointsUnit: memberPoints?.pointsUnit ?? '每人',
     pointsCycle: memberPoints?.pointsCycle ?? '按月',
+    memberLevel: isCreate ? '' : row.memberLevel == null ? '' : String(row.memberLevel),
     sort: String(row.sort),
     segment: isCreate ? '0' : row.segment === '/' ? '0' : row.segment,
     validDays: '',
     remark: '',
   });
   const update = (key: keyof DetailEditValues, value: string) => setForm((current) => ({ ...current, [key]: value }));
-  const handleMemberChange = (member: string) => {
+  const handleMemberChange = (member: string, memberLevel: number) => {
     const memberDuration = getDefaultMemberDurationDays(member);
     const isHistorical = isHistoricalMemberType(member);
     setForm((current) => ({
       ...current,
       member,
+      memberLevel: memberLevel ? String(memberLevel) : '',
       duration: isHistorical ? memberDuration || (isLifetimeDuration(current.duration) ? '' : current.duration) : '',
       points: isHistorical && getMemberPointsConfigForDuration(member, memberDuration)?.points != null ? String(getMemberPointsConfigForDuration(member, memberDuration)?.points) : '',
       pointsUnit: getMemberPointsConfigForDuration(member, memberDuration)?.pointsUnit ?? '每人',
@@ -952,7 +953,7 @@ function DetailEditModal({ row, mode = 'edit', onClose, onSave }: { row: Package
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>名称：</span><input value={form.name} onChange={(event) => update('name', event.currentTarget.value)} placeholder={isCreate ? '请输入名称' : undefined} className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>显示名称：</span><input disabled={!isCreate} value={form.displayName} onChange={(event) => update('displayName', event.currentTarget.value)} placeholder={isCreate ? '请输入显示名称' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>售卖描述：</span><input value={form.saleDescription} onChange={(event) => update('saleDescription', event.currentTarget.value)} placeholder={isCreate ? '请输入售卖描述' : undefined} className={`${inputClass} placeholder:text-[#c8c8c8]`} /></label>
-          <div className="relative mb-6"><div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div><div className="rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3"><label className="grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>所属会员：</span><MemberTypeDropdown value={form.member} onChange={handleMemberChange} disabled={!isCreate} className="w-full" /></label></div></div>
+          <div className="relative mb-6"><div className="absolute -right-[54px] -top-2 z-10"><RequirementHint text={MEMBER_TYPE_REQUIREMENT} requirementName={MEMBER_TYPE_REQUIREMENT_NAME} sections={MEMBER_TYPE_REQUIREMENT_SECTIONS} /></div><div className="rounded-[8px] border border-dashed border-[#ff665b] bg-[#fff7f5] px-3 py-3"><label className="grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>所属会员：</span><MemberTypeDropdown value={form.member} memberLevel={form.memberLevel ? Number(form.memberLevel) : undefined} onChange={handleMemberChange} disabled={!isCreate} className="w-full" /></label></div></div>
           <div className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐类型：</span><div className={`flex items-center gap-5 text-[13px] ${isCreate ? 'text-[#333]' : 'text-[#c1c1c1]'}`}><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '普通套餐'} onChange={() => update('packageType', '普通套餐')} disabled={!isCreate} />普通套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '订阅套餐'} onChange={() => update('packageType', '订阅套餐')} disabled={!isCreate} />订阅套餐</label><label className="flex items-center gap-2"><input type="radio" checked={form.packageType === '低价试用且订阅套餐'} onChange={() => update('packageType', '低价试用且订阅套餐')} disabled={!isCreate} />低价试用且订阅套餐</label><span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#c7c7c7] text-[10px] font-bold text-white">?</span></div></div>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐时长(天)：</span><input disabled={!isCreate} value={form.duration} onChange={(event) => handleDurationChange(event.currentTarget.value)} placeholder={isCreate ? '请输入套餐时长(天)' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
           <label className="mb-6 grid grid-cols-[150px_1fr] items-center gap-2 text-[13px] text-[#333]"><span className="text-right"><b className="mr-1 font-normal text-[#ff4d4f]">*</b>套餐价格原价（元）：</span><input disabled={!isCreate} value={form.originalPrice} onChange={(event) => update('originalPrice', event.currentTarget.value)} placeholder={isCreate ? '请输入套餐价格原价（元）' : undefined} className={`${isCreate ? inputClass : disabledClass} placeholder:text-[#c8c8c8]`} /></label>
@@ -994,10 +995,11 @@ function MembershipPackageDetailPage({ packageId, packageName, onBack, onBackToD
 
   const toggleDisplay = (id: number) => updateDetails((current) => current.map((row) => row.id === id ? { ...row, status: row.status === '显示' ? '隐藏' : '显示' } : row));
   const saveDetail = (values: DetailEditValues) => {
+    const selectedMemberLevel = values.memberLevel.trim() ? Number(values.memberLevel) : getMemberLevelByName(values.member);
     updateDetails((current) => {
       if (values.id === 0) {
         const nextId = Math.max(...current.map((row) => row.id), 0) + 1;
-        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', memberLevel: getMemberLevelByName(values.member), sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: isHistoricalMemberType(values.member) ? undefined : Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人', pointsCycle: values.pointsCycle === '一次性' ? '一次性' : '按月', saleDescription: values.saleDescription.trim(), pointsDescription: getDefaultPointsDescription(values.member, Number(values.points) || 0) }, ...current];
+        return [{ id: nextId, name: values.name || '新套餐', displayName: values.displayName || '-', duration: Number(values.duration) || 0, originalPrice: Number(values.originalPrice) || 0, discount: Number(values.discount) || 0, currentPrice: Number(values.currentPrice) || 0, contractPrice: '-', packageType: values.packageType || '普通套餐', member: values.member || '未选择', memberLevel: selectedMemberLevel, sort: Number(values.sort) || 0, trialDays: 0, segment: values.segment || '/', displayTime: '/', status: '显示', points: isHistoricalMemberType(values.member) ? undefined : Number(values.points) || 0, pointsUnit: values.pointsUnit === '团队' ? '团队' : '每人', pointsCycle: values.pointsCycle === '一次性' ? '一次性' : '按月', saleDescription: values.saleDescription.trim(), pointsDescription: getDefaultPointsDescription(values.member, Number(values.points) || 0) }, ...current];
       }
       return current.map((row) => row.id === values.id ? { ...row, name: values.name, discount: Number(values.discount) || row.discount, sort: Number(values.sort) || 0, segment: values.segment || '/', saleDescription: values.saleDescription.trim() } : row);
     });

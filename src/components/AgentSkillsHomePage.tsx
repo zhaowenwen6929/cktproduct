@@ -35,7 +35,8 @@ import { RequirementHint, type RequirementSection } from './MembershipPackagePag
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME = '首页会员中心入口改版';
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '入口位置', items: ['创客贴首页 > 顶部导航 > 会员中心。'] },
-  { title: '入口文案', items: ['右上角原“开通会员”改为“会员中心”，点击后打开会员中心弹框。'] },
+  { title: '入口文案', items: ['右上角原“开通会员”改为“会员中心”，点击后统一打开 /price/vip?openVipPop=1&fmodule=topbar_vip&fpage=topbar。'] },
+  { title: '打开协议', items: ['会员页地址为 /price/vip，弹框打开标识为 openVipPop=1；当前原型点击后直接打开同一套 MembershipCenterModal，线上入口需按统一地址和来源参数透传。'] },
   { title: '需求标识', items: ['改动区域沿用 2026年10月会员改版标识 V2610，标识不遮挡入口按钮。'] },
 ];
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT = MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');

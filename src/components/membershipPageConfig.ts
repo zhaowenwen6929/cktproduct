@@ -1,4 +1,6 @@
 import { getWebMembershipCycleOptions } from './MembershipPackagePage';
+import { MEMBERSHIP_LEVEL_BY_NAME as MEMBER_LEVEL_BY_NAME, MEMBERSHIP_NAME_BY_LEVEL } from './membershipLevelCatalog';
+import { LIFETIME_MEMBER_DAYS } from './membershipPackageRules';
 
 export type PlatformKey = 'web' | 'mobile';
 
@@ -50,8 +52,6 @@ export type MembershipMemberLevelDisplayConfig = {
   bannerTxt: MembershipMemberLevelBadgeConfig;
   tag: MembershipMemberLevelBadgeConfig;
 };
-
-const LIFETIME_MEMBER_DAYS = 99 * 365;
 
 export function getDefaultMembershipPlanMemberType(tabKey: 'personal' | 'enterprise', planKey: string) {
   const memberTypes = tabKey === 'personal'
@@ -1203,18 +1203,6 @@ const normalizeMemberLevelBadge = (value: unknown, fallback: MembershipMemberLev
   };
 };
 
-const MEMBER_LEVEL_BY_NAME: Record<string, number> = {
-  '基础版（个人）': 240,
-  '专业版（个人）': 241,
-  '基础版（企业）': 310,
-  '专业版（企业）': 311,
-  '旗舰版（企业）': 312,
-};
-
-const MEMBER_NAME_BY_LEVEL: Record<string, string> = Object.fromEntries(
-  Object.entries(MEMBER_LEVEL_BY_NAME).map(([memberName, level]) => [String(level), memberName]),
-);
-
 const normalizeMemberLevelDisplay = (value: unknown, fallback: Record<string, MembershipMemberLevelDisplayConfig>): Record<string, MembershipMemberLevelDisplayConfig> => {
   const rawValue = value && typeof value === 'object' ? value as Record<string, unknown> : {};
   const raw = Object.fromEntries(Object.entries(rawValue).map(([key, display]) => [String(MEMBER_LEVEL_BY_NAME[key] ?? key), display]));
@@ -1222,7 +1210,7 @@ const normalizeMemberLevelDisplay = (value: unknown, fallback: Record<string, Me
   return Object.fromEntries([...keys].map((memberType) => {
     const fallbackDisplay = fallback[memberType] ?? {
       level: Number(memberType),
-      memberName: MEMBER_NAME_BY_LEVEL[memberType] ?? '',
+      memberName: MEMBERSHIP_NAME_BY_LEVEL[Number(memberType)] ?? '',
       bannerTxt: createMemberLevelBadge(),
       tag: createMemberLevelBadge(),
     };

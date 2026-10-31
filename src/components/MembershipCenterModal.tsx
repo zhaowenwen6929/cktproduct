@@ -3,6 +3,8 @@ import { ArrowDown, ArrowUp, Check, ChevronDown, Image as ImageIcon, QrCode, Spa
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
 import { readMembershipPageConfig, type MembershipBenefitItem, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
 import { getEnterpriseSeatUnitPrice, readWebMembershipPackageDetails, type PackageDetailRow } from './MembershipPackagePage';
+import { MEMBERSHIP_NAME_BY_LEVEL } from './membershipLevelCatalog';
+import { LIFETIME_MEMBER_DAYS } from './membershipPackageRules';
 import { MEMBERSHIP_CENTER_REQUIREMENT_META, MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_REQUIREMENT_DRAWER_WIDTH, MembershipRequirementFloatingButton } from './MembershipRequirementFloatingButton';
 
 export type MembershipCurrentMember = {
@@ -50,14 +52,6 @@ const MEMBER_LEVEL_RANK_GROUPS: number[][] = [
 
 const MEMBER_LEVEL_RANK = new Map<number, number>(MEMBER_LEVEL_RANK_GROUPS.flatMap((levels, rank) => levels.map((level) => [level, rank])));
 
-const MEMBER_NAME_BY_LEVEL: Record<number, string> = {
-  240: '基础版（个人）',
-  241: '专业版（个人）',
-  310: '基础版（企业）',
-  311: '专业版（企业）',
-  312: '旗舰版（企业）',
-};
-
 type MembershipPreviewIdentity = {
   key: 'free-1' | 'free-5' | 'personal-basic-1' | 'personal-basic-3' | 'enterprise-professional-3';
   label: string;
@@ -98,7 +92,7 @@ export function getMembershipPurchaseAction(currentMemberLevel: number | null | 
   if (currentRank === targetRank) return { kind: 'renew', buttonText: '立即续费' };
   if (currentRank < targetRank) return { kind: 'upgrade', buttonText: '立即升级' };
 
-  const memberName = currentMemberName || MEMBER_NAME_BY_LEVEL[currentMemberLevel] || '当前会员';
+  const memberName = currentMemberName || MEMBERSHIP_NAME_BY_LEVEL[currentMemberLevel] || '当前会员';
   return { kind: 'downgrade', buttonText: `请购买${memberName}及以上会员`, helperText: '无法降级购买低版本会员' };
 }
 
@@ -446,7 +440,7 @@ function getPackageMonths(duration: number) {
 }
 
 function formatPackageDurationLabel(duration?: number, fallback = '') {
-  if (duration === 36135) return '终身';
+  if (duration === LIFETIME_MEMBER_DAYS) return '终身';
   if (typeof duration === 'number' && duration > 0) return `${getPackageMonths(duration)}个月`;
   return fallback;
 }
@@ -1046,6 +1040,11 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
   const renewalPriceText = renewalPrice ? `${renewalPrice}元` : '当前套餐价格';
   const durationDays = activeTier?.durationDays ?? cycleData.durationDays;
   const packageType = activeTier?.packageType ?? cycleData.packageType;
+  const shouldHidePointPrice = plan.memberType === '基础版（个人）'
+    || plan.memberType === '基础版（企业）'
+    || plan.memberLevel === 240
+    || plan.memberLevel === 310
+    || durationDays === LIFETIME_MEMBER_DAYS;
   const expiryDate = formatExpiryDate(durationDays);
   const isContractPlan = (packageType === '订阅套餐' || packageType === '低价试用且订阅套餐') && Boolean(expiryDate);
   const durationLabel = isContractPlan
@@ -1106,7 +1105,7 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
     <div className="px-5 pb-4 pt-5">
       <div className="flex items-start justify-between gap-2"><div className="min-w-0 flex-1"><h3 className="text-[16px] font-semibold text-[#202938]">{plan.name}</h3><p className="mt-1 h-8 overflow-hidden text-[11px] leading-4 text-[#8590a0] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{plan.subtitle}</p></div>{promoTag ? <span className="shrink-0 rounded-[5px] px-1.5 py-1 text-[9px] font-medium" style={{ backgroundColor: promoTag.color, color: '#ffffff' }}>{promoTag.text}</span> : null}</div>
       <div className="mt-4 flex items-end gap-1 text-[#212a3a]"><span className="mb-1 text-[12px]">¥</span><AnimatedDiscountedPrice price={displayPrice} couponDiscount={couponDiscount} />{enterprise ? <span className="mb-1 text-[11px] text-[#7f8999]">/席位/{durationLabel}</span> : <span className="mb-1 text-[10px] text-[#7f8999]">/{durationLabel}</span>}{couponDiscount > 0 ? <span className="mb-1 ml-1 rounded-[4px] bg-[#fff0f0] px-1.5 py-0.5 text-[9px] font-medium text-[#f04444]">已优惠{formatMoney(couponDiscount)}元</span> : null}{displayOriginalPrice ? <del className="mb-1 ml-1 text-[10px] text-[#aeb5bf]">¥{displayOriginalPrice}</del> : null}</div>
-      <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">{monthlyPriceLabel}<span className="mx-1 text-[#c1c7d0]">·</span>{pointPriceLabel}</p>
+      <p className="mt-2 text-[10px] leading-4 text-[#929aa7]">{monthlyPriceLabel}{shouldHidePointPrice ? null : <><span className="mx-1 text-[#c1c7d0]">·</span>{pointPriceLabel}</>}</p>
     {enterprise ? <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-[#566274]"><div className="flex items-center overflow-hidden rounded-[9px] border border-[#eef0f3] bg-white"><button type="button" aria-label="减少席位" disabled={isContractPlan || seatCount <= minimumSeats} title={isContractPlan ? '签约套餐仅支持1个席位' : seatCount <= minimumSeats ? `最少需要${minimumSeats}个席位` : undefined} onClick={() => onSeatChange?.(-1)} className="flex h-8 w-8 items-center justify-center text-[16px] text-[#aab2bd] disabled:cursor-not-allowed disabled:opacity-40 hover:text-[#168ff2]">−</button><span className="min-w-[54px] text-center font-medium text-[#374255]">{seatCount} 席位</span><button type="button" aria-label="增加席位" disabled={isContractPlan} title={isContractPlan ? '签约套餐仅支持1个席位' : undefined} onClick={() => onSeatChange?.(1)} className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[16px] text-[#566274] shadow-[0_1px_5px_rgba(34,48,70,.06)] disabled:cursor-not-allowed disabled:opacity-40 hover:text-[#168ff2]">＋</button></div><span className="whitespace-nowrap text-[#6d7888]">合计 <b className="text-[13px] text-[#293548]">{couponDiscount > 0 ? discountedTotalPrice : totalPrice}元</b></span></div> : null}
     </div>
     {cycleData.tierOptions ? <div className="mx-5 mt-1 h-[64px] px-0"><div className="mb-1.5 flex items-center justify-between text-[10px] text-[#586474]">{cycleData.tierOptions.map((tier, index) => <button type="button" key={tier.quotaLabel} onClick={() => onTierChange?.(index)} className={`cursor-pointer ${index === tierIndex ? 'font-semibold text-[#202938]' : 'hover:text-[#168ff2]'}`}>{tier.quotaLabel}</button>)}</div><div className="relative h-5"><div className="absolute left-0 right-0 top-2 h-[4px] rounded-full bg-[#4b4f55]" /><span className="pointer-events-none absolute top-0 h-4 w-4 -translate-x-1/2 rounded-full border border-[#6f747b] bg-white shadow-[0_1px_3px_rgba(31,41,55,.16)]" style={{ left: `${tierProgress}%` }} /><input type="range" min={0} max={cycleData.tierOptions.length - 1} step={1} value={tierIndex} onChange={(event) => onTierChange?.(Number(event.currentTarget.value))} aria-label="高级会员积分档位" className="absolute inset-0 h-5 w-full cursor-pointer opacity-0" /></div></div> : <div className="mx-5 mt-1 h-[64px]" aria-hidden="true" />}
