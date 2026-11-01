@@ -1406,8 +1406,8 @@ export default function App() {
         description: '创客贴设计 AI 创作移动端对话页，支持通过对话生成设计。',
       },
       '/developer-platform': {
-        title: '创客贴开放平台·开发者中心',
-        description: '创客贴开放平台开发者中心，支持应用注册、凭证、OAuth、REST API、CLI、MCP 与调用管理。',
+        title: '创客贴开发者中心',
+        description: '创客贴开发者中心，支持应用注册、凭证、OAuth、REST API、CLI、MCP 与调用管理。',
       },
       '/admin-backoffice': {
         title: '创客贴管理后台｜需求列表',
@@ -1537,7 +1537,7 @@ export default function App() {
         available: true,
       },
       {
-        title: '创客贴开放平台·开发者中心',
+        title: '创客贴开发者中心',
         description: '面向开发者、企业技术团队和 AI Agent 的高保真开放平台原型，覆盖应用、凭证、OAuth、Scope、MCP、API 测试和调用管理。',
         href: '/developer-platform' as AppRoute,
         available: true,
