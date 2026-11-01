@@ -24,6 +24,8 @@ export type MembershipCenterModalProps = {
   onOpenChange?: (open: boolean) => void;
   onOpenUpgradePage?: (currentMember: MembershipCurrentMember) => void;
   currentMember?: MembershipCurrentMember;
+  /** 外部入口传入 morePoints=1 时，打开后定位到更多积分套餐。 */
+  focusMorePoints?: boolean;
 };
 
 type MembershipPurchaseAction = {
@@ -53,7 +55,7 @@ const MEMBER_LEVEL_RANK_GROUPS: number[][] = [
 const MEMBER_LEVEL_RANK = new Map<number, number>(MEMBER_LEVEL_RANK_GROUPS.flatMap((levels, rank) => levels.map((level) => [level, rank])));
 
 type MembershipPreviewIdentity = {
-  key: 'free-1' | 'free-5' | 'personal-basic-1' | 'personal-basic-3' | 'enterprise-professional-3';
+  key: string;
   label: string;
   memberLevel: number | null;
   memberName: string;
@@ -67,16 +69,28 @@ type MembershipPreviewIdentity = {
 const MEMBERSHIP_PREVIEW_IDENTITIES: MembershipPreviewIdentity[] = [
   { key: 'free-1', label: '免费版 1人', memberLevel: null, memberName: '免费版', validUntil: '长期有效', remainingPoints: 66, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
   { key: 'free-5', label: '免费版 5人', memberLevel: null, memberName: '免费版', validUntil: '长期有效', remainingPoints: 66, teamMemberCount: 5, purchasedSeats: null, membershipType: 'enterprise' },
-  { key: 'personal-basic-1', label: '基础版（个人）1人', memberLevel: 240, memberName: '基础版（个人）', validUntil: '2027-10-25', remainingPoints: 200, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
-  { key: 'personal-basic-3', label: '基础版（个人）3人', memberLevel: 240, memberName: '基础版（个人）', validUntil: '2027-10-25', remainingPoints: 200, teamMemberCount: 3, purchasedSeats: null, membershipType: 'personal' },
-  { key: 'enterprise-professional-3', label: '专业版（企业）3人', memberLevel: 311, memberName: '专业版（企业）', validUntil: '2027-10-25', remainingPoints: 1200, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
+  { key: 'personal-basic-1', label: '基础版（个人）·200积分', memberLevel: 240, memberName: '基础版（个人）', validUntil: '2027-10-25', remainingPoints: 200, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
+  { key: 'personal-professional-1200', label: '专业版（个人）·1200积分', memberLevel: 241, memberName: '专业版（个人）', validUntil: '2027-10-25', remainingPoints: 1200, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
+  { key: 'personal-professional-2500', label: '专业版（个人）·2500积分', memberLevel: 241, memberName: '专业版（个人）', validUntil: '2027-10-25', remainingPoints: 2500, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
+  { key: 'personal-professional-8000', label: '专业版（个人）·8000积分', memberLevel: 241, memberName: '专业版（个人）', validUntil: '2027-10-25', remainingPoints: 8000, teamMemberCount: 1, purchasedSeats: null, membershipType: 'personal' },
+  { key: 'enterprise-basic-400', label: '基础版（企业）·400积分', memberLevel: 310, memberName: '基础版（企业）', validUntil: '2027-10-25', remainingPoints: 400, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
+  { key: 'enterprise-professional-3', label: '专业版（企业）·1200积分', memberLevel: 311, memberName: '专业版（企业）', validUntil: '2027-10-25', remainingPoints: 1200, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
+  { key: 'enterprise-professional-4000', label: '专业版（企业）·4000积分', memberLevel: 311, memberName: '专业版（企业）', validUntil: '2027-10-25', remainingPoints: 4000, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
+  { key: 'enterprise-flagship-1200', label: '旗舰版（企业）·1200积分', memberLevel: 312, memberName: '旗舰版（企业）', validUntil: '2027-10-25', remainingPoints: 1200, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
+  { key: 'enterprise-flagship-100000', label: '旗舰版（企业）·100000积分', memberLevel: 312, memberName: '旗舰版（企业）', validUntil: '2027-10-25', remainingPoints: 100000, teamMemberCount: 3, purchasedSeats: 3, membershipType: 'enterprise' },
 ];
 
 function resolveMembershipPreviewIdentity(member?: MembershipCurrentMember) {
   const memberLevel = member?.memberLevel ?? null;
   const memberCount = Math.max(1, member?.purchasedSeats ?? member?.teamMemberCount ?? 1);
-  if (memberLevel === 240) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === (memberCount >= 3 ? 'personal-basic-3' : 'personal-basic-1')) ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+  const remainingPoints = Number(member?.remainingPoints);
+  const exactIdentity = MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.memberLevel === memberLevel && Number.isFinite(remainingPoints) && identity.remainingPoints === remainingPoints);
+  if (exactIdentity) return exactIdentity;
+  if (memberLevel === 240) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === 'personal-basic-1') ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+  if (memberLevel === 241) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === 'personal-professional-1200') ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+  if (memberLevel === 310) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === 'enterprise-basic-400') ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
   if (memberLevel === 311) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === 'enterprise-professional-3') ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
+  if (memberLevel === 312) return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === 'enterprise-flagship-1200') ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
   return MEMBERSHIP_PREVIEW_IDENTITIES.find((identity) => identity.key === (memberCount >= 5 ? 'free-5' : 'free-1')) ?? MEMBERSHIP_PREVIEW_IDENTITIES[0];
 }
 
@@ -593,6 +607,65 @@ function hydratePlan(plan: MembershipPlanDisplayConfig, membershipType: Membersh
   return { ...data, ...plan, memberType, memberLevel };
 }
 
+export type MembershipMorePointsTarget = {
+  cycleKey: string;
+  cycleIndex: number;
+  planKey: string;
+  planLevel: number;
+  tierIndex: number;
+  reason: 'same-level-points' | 'higher-level';
+};
+
+function getPlanPointOptions(plan: MembershipPlan, cycleKey: string) {
+  const cycleData = getCyclePlanData(plan, cycleKey);
+  if (cycleData.tierOptions?.length) {
+    return cycleData.tierOptions.map((tier, index) => ({ points: Number(tier.points.replace(/,/g, '')) || 0, tierIndex: index }));
+  }
+  const points = Number(cycleData.points.replace(/,/g, '').match(/\d+(?:\.\d+)?/)?.[0] ?? 0);
+  return [{ points, tierIndex: 0 }];
+}
+
+/**
+ * 更多积分定位规则：优先同等级内选择刚好高于当前积分的最小档位；
+ * 同等级没有更高积分时，再选择当前使用类型下等级更高的第一个会员档位。
+ */
+export function resolveMorePointsTarget({ plans, cycleOptions, activeCycleIndex = 0, currentMemberLevel, currentPoints }: { plans: MembershipPlan[]; cycleOptions: MembershipCycleConfig[]; activeCycleIndex?: number; currentMemberLevel?: number | null; currentPoints?: number | string | null }): MembershipMorePointsTarget | null {
+  if (!plans.length || !cycleOptions.length) return null;
+  const pointValue = Number(currentPoints);
+  const hasCurrentPoints = currentPoints !== null && currentPoints !== undefined && String(currentPoints).trim() !== '' && Number.isFinite(pointValue);
+  const orderedCycleIndexes = [activeCycleIndex, ...cycleOptions.map((_, index) => index).filter((index) => index !== activeCycleIndex)];
+
+  if (currentMemberLevel != null && hasCurrentPoints) {
+    for (const cycleIndex of orderedCycleIndexes) {
+      const cycle = cycleOptions[cycleIndex];
+      if (!cycle) continue;
+      const sameLevelCandidates = plans
+        .filter((plan) => plan.memberLevel === currentMemberLevel)
+        .flatMap((plan) => getPlanPointOptions(plan, cycle.key).map((option) => ({ plan, ...option })))
+        .filter((candidate) => candidate.points > pointValue)
+        .sort((left, right) => left.points - right.points);
+      const target = sameLevelCandidates[0];
+      if (target) {
+        return { cycleKey: cycle.key, cycleIndex, planKey: target.plan.planKey, planLevel: target.plan.memberLevel, tierIndex: target.tierIndex, reason: 'same-level-points' };
+      }
+    }
+  }
+
+  const currentRank = getMemberLevelRank(currentMemberLevel);
+  const higherLevelPlans = plans
+    .filter((plan) => plan.memberLevel != null && (currentMemberLevel == null || getMemberLevelRank(plan.memberLevel) > currentRank))
+    .sort((left, right) => getMemberLevelRank(left.memberLevel) - getMemberLevelRank(right.memberLevel));
+  for (const cycleIndex of orderedCycleIndexes) {
+    const cycle = cycleOptions[cycleIndex];
+    if (!cycle) continue;
+    for (const plan of higherLevelPlans) {
+      if (!getPlanPointOptions(plan, cycle.key).length) continue;
+      return { cycleKey: cycle.key, cycleIndex, planKey: plan.planKey, planLevel: plan.memberLevel, tierIndex: 0, reason: 'higher-level' };
+    }
+  }
+  return null;
+}
+
 const promotionDurationMs = (((4 * 24 + 1) * 60 + 51) * 60 + 59) * 1000;
 
 function formatCountdown(remainingMs: number) {
@@ -1015,7 +1088,7 @@ function getBenefitItemIcon(item: MembershipBenefitItem): 'image' | 'video' | un
   return undefined;
 }
 
-function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierChange, enterprise = false, seats = 1, minimumSeats = 1, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked, purchaseButtonRef, coupons = [], currentMemberLevel, currentMemberName }: { plan: MembershipPlan; selected: boolean; cycleKey: string; cycleName: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; minimumSeats?: number; onSeatChange?: (delta: number) => void; onContactAdvisor?: () => void; onPurchase?: () => void; onOpenUpgradePage?: () => void; onPurchaseBlocked?: (message: string) => void; purchaseButtonRef?: Ref<HTMLButtonElement>; coupons?: MembershipCoupon[]; currentMemberLevel?: number | null; currentMemberName?: string }) {
+function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierChange, enterprise = false, seats = 1, minimumSeats = 1, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked, purchaseButtonRef, coupons = [], currentMemberLevel, currentMemberName, morePointsTarget }: { plan: MembershipPlan; selected: boolean; cycleKey: string; cycleName: string; tierIndex?: number; onTierChange?: (index: number) => void; enterprise?: boolean; seats?: number; minimumSeats?: number; onSeatChange?: (delta: number) => void; onContactAdvisor?: () => void; onPurchase?: () => void; onOpenUpgradePage?: () => void; onPurchaseBlocked?: (message: string) => void; purchaseButtonRef?: Ref<HTMLButtonElement>; coupons?: MembershipCoupon[]; currentMemberLevel?: number | null; currentMemberName?: string; morePointsTarget?: MembershipMorePointsTarget | null }) {
   const isBlue = plan.color === 'blue';
   const isOrange = plan.color === 'orange';
   const cycleData = getCyclePlanData(plan, cycleKey);
@@ -1098,8 +1171,9 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
     backgroundColor: purchaseInfoStyle.backgroundColor,
     borderColor: purchaseInfoStyle.borderColor,
   };
+  const isMorePointsTarget = morePointsTarget?.cycleKey === cycleKey && morePointsTarget.planLevel === plan.memberLevel && morePointsTarget.tierIndex === tierIndex;
 
-  return <article className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell}`}>
+  return <article data-membership-plan-level={plan.memberLevel} className={`relative flex ${isFeatured ? 'min-h-[678px] -mt-7' : 'min-h-[650px]'} flex-col overflow-hidden rounded-[18px] border ${shell} ${isMorePointsTarget ? 'ring-2 ring-[#6961f4] ring-offset-4' : ''}`}>
     <div data-membership-annotation-region="purchase">
     {promoBanner ? <div className="h-7 shrink-0 px-4 text-center text-[10px] font-medium leading-7" style={{ backgroundColor: promoBanner.color, color: '#ffffff' }}>{promoBanner.text}</div> : null}
     <div className="px-5 pb-4 pt-5">
@@ -1305,9 +1379,10 @@ type MembershipPackageModuleProps = {
   onPurchase: (plan: MembershipPlan, tierIndex: number, seats: number) => void;
   onOpenUpgradePage?: (plan: MembershipPlan) => void;
   onPurchaseBlocked: (message: string) => void;
+  morePointsTarget?: MembershipMorePointsTarget | null;
 };
 
-function MembershipPackageModule({ plans, membershipType, activeCycleKey, cycleName, tierSelections, enterpriseMinimumSeats, availableCoupons, currentMemberLevel, currentMemberName, purchaseButtonRef, getEnterpriseSeatCount, onTierChange, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked }: MembershipPackageModuleProps) {
+function MembershipPackageModule({ plans, membershipType, activeCycleKey, cycleName, tierSelections, enterpriseMinimumSeats, availableCoupons, currentMemberLevel, currentMemberName, purchaseButtonRef, getEnterpriseSeatCount, onTierChange, onSeatChange, onContactAdvisor, onPurchase, onOpenUpgradePage, onPurchaseBlocked, morePointsTarget }: MembershipPackageModuleProps) {
   const packageAreaRef = useRef<HTMLDivElement>(null);
   const [annotationBounds, setAnnotationBounds] = useState<{ purchase: CSSProperties | null; benefit: CSSProperties | null }>({ purchase: null, benefit: null });
   const gridClassName = `grid w-full grid-cols-1 gap-4 sm:grid-cols-2 ${plans.length === 1 ? 'max-w-[720px] xl:grid-cols-1' : plans.length === 2 ? 'mx-auto max-w-[1120px] xl:grid-cols-2' : plans.length <= 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`;
@@ -1358,7 +1433,7 @@ function MembershipPackageModule({ plans, membershipType, activeCycleKey, cycleN
       const hasTiers = Boolean(cycleData.tierOptions?.length);
       const tierIndex = tierSelections[tierKey] ?? 0;
       const seats = getEnterpriseSeatCount(plan.planKey);
-      return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} cycleName={cycleName || cycleData.period} tierIndex={tierIndex} onTierChange={hasTiers ? (value) => onTierChange(tierKey, value) : undefined} enterprise={membershipType === 'enterprise'} minimumSeats={enterpriseMinimumSeats} seats={seats} onSeatChange={membershipType === 'enterprise' ? (delta) => onSeatChange(plan.planKey, delta) : undefined} onContactAdvisor={onContactAdvisor} onPurchase={() => onPurchase(plan, tierIndex, seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage(plan) : undefined} onPurchaseBlocked={onPurchaseBlocked} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} coupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} />;
+      return <PlanCard key={`${plan.memberType ?? plan.planKey}-${index}`} plan={plan} cycleKey={activeCycleKey} selected={plan.color === 'blue' || plan.color === 'orange'} cycleName={cycleName || cycleData.period} tierIndex={tierIndex} onTierChange={hasTiers ? (value) => onTierChange(tierKey, value) : undefined} enterprise={membershipType === 'enterprise'} minimumSeats={enterpriseMinimumSeats} seats={seats} onSeatChange={membershipType === 'enterprise' ? (delta) => onSeatChange(plan.planKey, delta) : undefined} onContactAdvisor={onContactAdvisor} onPurchase={() => onPurchase(plan, tierIndex, seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage(plan) : undefined} onPurchaseBlocked={onPurchaseBlocked} purchaseButtonRef={index === 0 ? purchaseButtonRef : undefined} coupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} morePointsTarget={morePointsTarget} />;
     })}
       </div>
       {annotationBounds.purchase ? <MembershipRequirementOverlay moduleKey="package-purchase" label="套餐展示购买区" style={annotationBounds.purchase} /> : null}
@@ -1367,7 +1442,7 @@ function MembershipPackageModule({ plans, membershipType, activeCycleKey, cycleN
   </section>;
 }
 
-export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOpenUpgradePage, currentMember }: MembershipCenterModalProps) {
+export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOpenUpgradePage, currentMember, focusMorePoints = false }: MembershipCenterModalProps) {
   const currentIdentity = resolveMembershipPreviewIdentity(currentMember);
   const initialIdentity = currentIdentity;
   const [selectedIdentityKey, setSelectedIdentityKey] = useState<MembershipPreviewIdentity['key']>(initialIdentity.key);
@@ -1400,7 +1475,9 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const packageSectionRef = useRef<HTMLDivElement>(null);
   const purchaseButtonRef = useRef<HTMLButtonElement>(null);
+  const morePointsFocusRef = useRef('');
   const [showStickyPurchase, setShowStickyPurchase] = useState(false);
+  const [morePointsTarget, setMorePointsTarget] = useState<MembershipMorePointsTarget | null>(null);
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef<number | null>(null);
   const enterpriseMinimumSeats = currentMemberLevel == null ? Math.max(1, currentTeamMemberCount) : Math.max(1, currentPurchasedSeats ?? 1);
@@ -1500,6 +1577,33 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
     .filter((plan) => !selectedCycleConfig || getCyclePackageRows(plan.memberLevel, selectedCycleConfig, packageDetails).length > 0)
     .filter((plan, index, plans) => plans.findIndex((item) => item.memberLevel === plan.memberLevel) === index);
   const activeCycleKey = cycleOptions[selectedCycle]?.key ?? 'yearly';
+  useEffect(() => {
+    if (!focusMorePoints) {
+      morePointsFocusRef.current = '';
+      setMorePointsTarget(null);
+      return;
+    }
+    const target = resolveMorePointsTarget({ plans: visiblePlans, cycleOptions, activeCycleIndex: selectedCycle, currentMemberLevel, currentPoints: currentMemberRemainingPoints });
+    if (!target) {
+      morePointsFocusRef.current = '';
+      setMorePointsTarget(null);
+      return;
+    }
+    if (target.cycleIndex !== selectedCycle) {
+      setActiveCycle(target.cycleIndex);
+      return;
+    }
+    const focusKey = `${membershipType}:${currentMemberLevel ?? 'free'}:${currentMemberRemainingPoints ?? '-'}:${target.cycleKey}:${target.planLevel}:${target.tierIndex}`;
+    if (morePointsFocusRef.current === focusKey) return;
+    morePointsFocusRef.current = focusKey;
+    setMorePointsTarget(target);
+    const targetPlan = visiblePlans.find((plan) => plan.planKey === target.planKey && plan.memberLevel === target.planLevel);
+    const tierKey = `${membershipType}:${targetPlan?.memberType ?? target.planKey}:${target.cycleKey}`;
+    setTierSelections((current) => current[tierKey] === target.tierIndex ? current : { ...current, [tierKey]: target.tierIndex });
+    window.requestAnimationFrame(() => {
+      packageSectionRef.current?.querySelector<HTMLElement>(`[data-membership-plan-level="${target.planLevel}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [focusMorePoints, visiblePlans, cycleOptions, selectedCycle, activeCycleKey, membershipType, currentMemberLevel, currentMemberRemainingPoints]);
   const couponCycleKeys = new Set(cycleOptions.filter((cycle) => visiblePlans.some((plan) => {
     const cycleData = getCyclePlanData(plan, cycle.key);
     const activeTier = cycleData.tierOptions?.[0];
@@ -1561,7 +1665,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
       <main className="relative mx-auto max-w-[1240px] px-5 pb-20 pt-0">
         <MembershipRequirementFrame moduleKey="promotion-banner" label="Banner区"><MembershipPromotionBanner countdown={countdown} /></MembershipRequirementFrame>
         <MembershipRequirementFrame moduleKey="package-switch" label="套餐切换区"><MembershipTypeCycleModule membershipType={membershipType} personalName={personalTab?.name} enterpriseName={enterpriseTab?.name} cycleOptions={cycleOptions} selectedCycle={selectedCycle} couponCycleKeys={couponCycleKeys} onMembershipTypeChange={changeMembershipType} onCycleChange={setActiveCycle} onOpenPointsPurchase={() => setPointsPurchaseOpen(true)} /></MembershipRequirementFrame>
-        <div ref={packageSectionRef} className="mt-[68px]"><MembershipPackageModule plans={visiblePlans} membershipType={membershipType} activeCycleKey={activeCycleKey} cycleName={selectedCycleConfig?.name ?? ''} tierSelections={tierSelections} enterpriseMinimumSeats={enterpriseMinimumSeats} availableCoupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} purchaseButtonRef={purchaseButtonRef} getEnterpriseSeatCount={getEnterpriseSeatCount} onTierChange={(tierKey, value) => setTierSelections((current) => ({ ...current, [tierKey]: value }))} onSeatChange={updateEnterpriseSeats} onContactAdvisor={() => setEnterprisePurchaseContactOpen(true)} onPurchase={(plan, tierIndex, seats) => openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, tierIndex, membershipType === 'enterprise', seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage({ memberLevel: currentMemberLevel, memberName: currentMemberName, validUntil: currentMemberValidUntil, remainingPoints: currentMemberRemainingPoints, teamMemberCount: currentTeamMemberCount, purchasedSeats: currentPurchasedSeats, membershipType }) : undefined} onPurchaseBlocked={showToast} /></div>
+        <div ref={packageSectionRef} className="mt-[68px]"><MembershipPackageModule plans={visiblePlans} membershipType={membershipType} activeCycleKey={activeCycleKey} cycleName={selectedCycleConfig?.name ?? ''} tierSelections={tierSelections} enterpriseMinimumSeats={enterpriseMinimumSeats} availableCoupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} morePointsTarget={morePointsTarget} purchaseButtonRef={purchaseButtonRef} getEnterpriseSeatCount={getEnterpriseSeatCount} onTierChange={(tierKey, value) => setTierSelections((current) => ({ ...current, [tierKey]: value }))} onSeatChange={updateEnterpriseSeats} onContactAdvisor={() => setEnterprisePurchaseContactOpen(true)} onPurchase={(plan, tierIndex, seats) => openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, tierIndex, membershipType === 'enterprise', seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage({ memberLevel: currentMemberLevel, memberName: currentMemberName, validUntil: currentMemberValidUntil, remainingPoints: currentMemberRemainingPoints, teamMemberCount: currentTeamMemberCount, purchasedSeats: currentPurchasedSeats, membershipType }) : undefined} onPurchaseBlocked={showToast} /></div>
         <MembershipRequirementFrame moduleKey="detailed-benefits" label="详细权益区" className="mx-auto mt-12 max-w-[1120px]"><section className="rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} /> : <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section></MembershipRequirementFrame>
         <MembershipRequirementFrame moduleKey="model-consumption" label="AI模型消耗区" className="mx-auto mt-4 max-w-[1120px]"><section className="rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.modelConsumption.title}</h2><p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section></MembershipRequirementFrame>
         <CommercialLicenseOverview config={pageConfig.commercialLicense} />

@@ -1,8 +1,10 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import cktAiEcomLogo from '../assets/ckt-ai-ecom-logo.svg';
 import {
   Bell,
+  BarChart3,
   BriefcaseBusiness,
+  CalendarDays,
   Camera,
   ChevronDown,
   ChevronLeft,
@@ -12,17 +14,25 @@ import {
   CheckSquare,
   Clock3,
   CloudUpload,
+  Copy,
+  CreditCard,
+  Download,
   Folder,
   FolderPlus,
   FileImage,
+  FileText,
   Grid2x2,
   Home,
   Image as ImageIcon,
+  KeyRound,
   LayoutTemplate,
   Lock,
   Menu,
+  MessageCircle,
   Plus,
   Puzzle,
+  RefreshCw,
+  Ticket,
   Search,
   Settings2,
   Shirt,
@@ -37,15 +47,24 @@ import {
 import { GenerationAttachment } from '../types';
 import { MembershipCenterModal, type MembershipCurrentMember } from './MembershipCenterModal';
 import { RequirementHint, type RequirementSection } from './MembershipPackagePage';
+import { RequirementDocumentDrawer, type RequirementSpec } from './RequirementDocumentPage';
 
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME = '首页会员中心入口改版';
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS: RequirementSection[] = [
   { title: '入口位置', items: ['创客贴首页 > 顶部导航 > 会员中心。'] },
   { title: '入口文案', items: ['右上角原“开通会员”改为“会员中心”，点击后统一打开 /price/vip?openVipPop=1&fmodule=topbar_vip&fpage=topbar。'] },
-  { title: '打开协议', items: ['会员页地址为 /price/vip，弹框打开标识为 openVipPop=1；当前原型点击后直接打开同一套 MembershipCenterModal，线上入口需按统一地址和来源参数透传。'] },
+  { title: '打开协议', items: ['会员页地址为 /price/vip，弹框打开标识为 openVipPop=1；传入 morePoints=1 时定位到更多积分套餐；当前原型点击后直接打开同一套 MembershipCenterModal，线上入口需按统一地址和来源参数透传。'] },
   { title: '需求标识', items: ['改动区域沿用 2026年10月会员改版标识 V2610，标识不遮挡入口按钮。'] },
 ];
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT = MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS.flatMap((section) => section.items).join(' ');
+
+function readMembershipEntryIntent() {
+  if (typeof window === 'undefined') return { openVipPop: false, morePoints: false };
+  const params = new URLSearchParams(window.location.search);
+  const openVipPop = ['1', 'true'].includes(params.get('openVipPop') ?? '');
+  const morePoints = ['1', 'true'].includes(params.get('morePoints') ?? '') || ['1', 'true'].includes(params.get('needMorePoints') ?? '');
+  return { openVipPop, morePoints };
+}
 
 type SkillField =
   | { id: string; label: string; type: 'upload'; required?: boolean; max?: number; description?: string }
@@ -745,6 +764,396 @@ function TeamResourceArtwork({ resource }: { resource: TeamResource }) {
   );
 }
 
+const teamManagementNavGroups = [
+  {
+    label: '',
+    items: [
+      { label: '账户概览', icon: UserRound },
+      { label: '使用统计', icon: ImageIcon },
+    ],
+  },
+  {
+    label: '品牌管理',
+    items: [
+      { label: '品牌设置', icon: Shirt },
+      { label: '品牌管制', icon: Settings2 },
+    ],
+  },
+  {
+    label: '团队管理',
+    items: [
+      { label: '成员管理', icon: UserRound },
+      { label: '团队空间管理', icon: BriefcaseBusiness },
+      { label: '模块管理', icon: Folder },
+      { label: '设计推送管理', icon: ImageIcon },
+    ],
+  },
+  {
+    label: '团队设置',
+    items: [
+      { label: '团队信息', icon: BriefcaseBusiness },
+      { label: '个性化设置', icon: Sparkles },
+      { label: '更多设置', icon: Settings2 },
+    ],
+  },
+];
+
+function TeamManagementBrandMark({ className = '' }: { className?: string }) {
+  return (
+    <div className={`team-management-brand-mark ${className}`} aria-label="创客贴品牌标识">
+      <span className="team-management-brand-mark__icon"><img src={cktAiEcomLogo} alt="" /></span>
+      <span className="team-management-brand-mark__word"><img src={cktAiEcomLogo} alt="创客贴" /></span>
+    </div>
+  );
+}
+
+function TeamManagementMemberAvatars() {
+  const members = ['创', '泽', '林', '白', '陈', '静'];
+  return (
+    <div className="team-management-avatars" aria-label="团队成员头像">
+      {members.map((member, index) => <span key={`${member}-${index}`} className={`team-management-avatar team-management-avatar--${index}`}>{member}</span>)}
+      <span className="team-management-avatar team-management-avatar--more">+181</span>
+    </div>
+  );
+}
+
+function UserAccountAvatar({ large = false }: { large?: boolean }) {
+  return <span className={`user-account-avatar ${large ? 'is-large' : ''}`}><span className="user-account-avatar__photo">🐱</span><i>会员</i></span>;
+}
+
+interface UserProfileDropdownProps {
+  onClose: () => void;
+  onNavigateToManagement: () => void;
+  onNotify: (message: string) => void;
+}
+
+function UserProfileDropdown({ onClose, onNavigateToManagement, onNotify }: UserProfileDropdownProps) {
+  const action = (message: string, navigate = false) => {
+    onClose();
+    if (navigate) {
+      onNavigateToManagement();
+      return;
+    }
+    onNotify(message);
+  };
+
+  const menuItems = [
+    { label: '团队管理', icon: Settings2, message: '团队管理即将打开', navigate: true },
+    { label: '订单/发票', icon: CreditCard, message: '订单/发票即将打开' },
+    { label: '我的授权记录', icon: FileImage, message: '授权记录即将打开' },
+    { label: '消息中心', icon: MessageCircle, message: '消息中心即将打开', badge: '4' },
+    { label: '我的优惠券', icon: Ticket, message: '优惠券即将打开' },
+  ];
+
+  return (
+    <div className="user-profile-dropdown" role="dialog" aria-label="用户菜单" onClick={(event) => event.stopPropagation()}>
+      <div className="user-profile-summary">
+        <UserAccountAvatar large />
+        <div className="user-profile-identity">
+          <div className="user-profile-name">zww <span>管理员</span></div>
+          <div className="user-profile-id">用户ID：18777988 <button type="button" aria-label="复制用户ID" onClick={() => action('用户ID已复制')}><Copy /></button></div>
+        </div>
+        <button type="button" className="user-profile-access-key" onClick={() => action('Access Key即将打开')}><KeyRound />Access Key</button>
+      </div>
+
+      <section className="user-profile-plan">
+        <div className="user-profile-plan-copy">
+          <div className="user-profile-plan-title"><span>V</span><strong>旗舰版</strong></div>
+          <div className="user-profile-plan-expire">有效期至 2026年12月31日</div>
+          <span className="user-profile-plan-status">会员权益生效中</span>
+        </div>
+        <button type="button" onClick={() => action('续费入口即将打开')}>立即续费</button>
+      </section>
+
+      <div className="user-profile-metrics">
+        <div className="user-profile-metric-card">
+          <div className="user-profile-metric-heading"><strong>储存空间</strong><button type="button" onClick={() => action('扩展储存空间即将打开')}>扩容 <span>›</span></button></div>
+          <div className="user-profile-storage-progress"><span /></div>
+          <div className="user-profile-storage-value">4.46TB <i>/</i> <em>12TB</em></div>
+        </div>
+        <div className="user-profile-metric-card user-profile-points-card">
+          <div className="user-profile-metric-heading"><strong>AI积分 <CircleHelp /></strong><button type="button" onClick={() => action('购买积分即将打开')}>加购 <span>›</span></button></div>
+          <div className="user-profile-points-value">369320</div>
+        </div>
+      </div>
+
+      <div className="user-profile-team-switch-anchor">
+        <button type="button" className="user-profile-team-card" onClick={() => action('切换团队即将打开')}>
+          <TeamManagementBrandMark className="user-profile-team-logo" />
+          <span><strong>北京艺源酷</strong><small>旗舰版 · 187人</small></span>
+          <span className="user-profile-switch"><RefreshCw />切换团队</span>
+        </button>
+        <div className="user-profile-team-switch-panel" role="listbox" aria-label="切换团队">
+          <button type="button" className="user-profile-team-option is-current" onClick={() => action('已切换到团队版')}><span className="team-switch-avatar team-switch-avatar--team">团</span><span><strong>团队版</strong><small>免费版 · 4人</small></span></button>
+          <button type="button" className="user-profile-team-option" onClick={() => action('已切换到Hello的团队')}><span className="team-switch-avatar team-switch-avatar--hello">H</span><span><strong>Hello的团队</strong><small>免费版 · 2人</small></span></button>
+          <button type="button" className="user-profile-team-option" onClick={() => action('已切换到1234567890')}><span className="team-switch-avatar team-switch-avatar--personal">◫</span><span><strong>1234567890</strong><small>标准版（个人） · 10人</small></span></button>
+          <button type="button" className="user-profile-team-option" onClick={() => action('已切换到测试团队')}><span className="team-switch-avatar team-switch-avatar--test">测</span><span><strong>测试团队</strong><small>免费版 · 2人</small></span></button>
+        </div>
+      </div>
+
+      <div className="user-profile-menu-list">
+        {menuItems.map(({ label, icon: Icon, message, navigate, badge }) => <button type="button" key={label} onClick={() => action(message, navigate)}><Icon /><span>{label}</span>{badge ? <i>{badge}</i> : null}</button>)}
+      </div>
+
+      <button type="button" className="user-profile-logout" onClick={() => action('退出登录即将打开')}>退出登录</button>
+    </div>
+  );
+}
+
+const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
+  title: '团队积分统计',
+  requirementKey: 'TEAM-CREDIT-STATISTICS',
+  status: '待开发',
+  eyebrow: 'TEAM CREDIT STATISTICS',
+  summary: '在团队管理的使用统计入口中，集中展示团队积分余额、周期消耗趋势和成员使用明细，帮助管理员快速了解积分使用情况并定位异常消耗。',
+  background: '团队积分同时被 AI 生成、设计功能和其他团队服务消耗，当前账户概览只能看到剩余积分，管理员无法按时间、成员和功能查看消耗结构，也无法对统计结果进行导出和复核。',
+  goal: '提供可筛选、可追溯的团队积分统计页：管理员进入页面即可看到核心指标和消耗趋势，通过筛选条件查看明细，并能在数据为空、加载失败或无权限时得到明确反馈。',
+  sections: [
+    {
+      title: '页面入口与权限',
+      description: '页面从团队管理侧边栏进入，沿用团队管理的顶部导航和左侧菜单。',
+      items: [
+        { label: '入口', content: '进入首页底部“管理”后，点击团队管理侧边栏中的“使用统计”，页面标题显示“积分统计”。' },
+        { label: '适用角色', content: '团队管理员可查看当前团队统计数据；普通成员无权访问团队级统计页，需展示无权限状态并保留返回账户概览入口。' },
+        { label: '数据范围', content: '默认统计当前团队“北京艺源酷”的积分，不跨团队合并数据；团队切换后应重新加载所选团队的数据。' },
+      ],
+    },
+    {
+      title: '核心指标卡片',
+      description: '首屏提供当前余额与周期消耗概览，数值变化应有明确口径。',
+      items: [
+        { label: '当前剩余', content: '展示团队当前可用积分 369320，并标注统计时点；数值为 0 时显示 0，不使用空白或短横线替代。' },
+        { label: '本月消耗', content: '展示当前自然月已消耗积分，并与积分消耗明细的筛选口径一致。' },
+        { label: '本月新增', content: '展示当前自然月已发放或购买到账的积分；未配置发放记录时显示 0。' },
+        { label: '今日消耗', content: '展示当前自然日已消耗积分，用于快速识别当天异常消耗。' },
+      ],
+    },
+    {
+      title: '消耗趋势与筛选',
+      description: '按时间范围查看积分消耗变化，并支持按使用类型和成员缩小范围。',
+      items: [
+        { label: '时间范围', content: '支持近7天、近30天、近90天和自定义时间范围；默认选中近30天。自定义范围不可超过90天，开始日期不得晚于结束日期。' },
+        { label: '使用类型', content: '支持全部、AI生成、设计功能、会员/活动四类筛选；切换类型后同步刷新趋势图和明细列表。' },
+        { label: '趋势图', content: '展示所选时间范围内按日聚合的积分消耗，纵轴为积分数量，横轴为日期；无数据时显示空态，不渲染误导性的零线图。' },
+        { label: '成员查询', content: '支持按成员昵称或用户ID查询，查询结果只影响明细列表和对应汇总，不改变团队当前剩余积分。' },
+      ],
+    },
+    {
+      title: '积分消耗明细',
+      description: '明细记录用于定位每一次积分消耗的来源和归属。',
+      items: [
+        { label: '字段', content: '列表展示消耗时间、使用成员、使用功能、使用类型、消耗积分和消耗后余额；时间按倒序排列。' },
+        { label: '分页', content: '明细按分页加载，默认每页10条；切换筛选条件、时间范围或成员后回到第一页。' },
+        { label: '导出', content: '管理员可导出当前筛选条件下的明细；导出范围、文件格式和单次最大条数由后端接口确认。' },
+      ],
+    },
+    {
+      title: '页面状态与异常',
+      description: '所有状态都必须保留页面结构并给出下一步操作。',
+      items: [
+        { label: '加载中', content: '首次进入或变更筛选条件时显示骨架屏或加载提示，避免展示上一条件的数据造成误解。' },
+        { label: '空数据', content: '当前筛选范围没有积分记录时，趋势区和明细区分别显示“暂无积分消耗数据”，并保留清空筛选操作。' },
+        { label: '加载失败', content: '接口失败时显示“积分统计加载失败，请重试”，提供重试按钮，失败期间不覆盖最近一次已成功的数据。' },
+        { label: '权限异常', content: '无团队统计权限时显示权限说明，不展示其他团队或未经授权的积分数据。' },
+      ],
+    },
+    {
+      title: '数据与接口依赖',
+      description: '页面当前使用原型数据，正式联调时由接口提供真实值。',
+      items: [
+        { label: '统计接口', content: '待后端确认团队积分概览、趋势和明细的接口拆分方式、请求参数、时区和缓存策略。' },
+        { label: '精度口径', content: '积分均按整数展示；趋势聚合、余额计算和明细消耗必须使用同一团队、同一时区和同一积分账本口径。' },
+        { label: '示例数据', content: '当前页面中的团队名称、余额、消耗记录和趋势数据仅用于原型验证，不能作为真实财务或积分结算依据。' },
+      ],
+    },
+  ],
+  acceptance: [
+    '从管理 > 使用统计进入后，页面标题为“积分统计”，且团队管理侧边栏正确高亮“使用统计”。',
+    '首屏展示当前剩余、本月消耗、本月新增和今日消耗四项指标，数值格式统一且不会因 0 值出现空白。',
+    '切换近7天、近30天、近90天和自定义时间范围时，趋势图和明细列表使用同一筛选条件刷新。',
+    '切换使用类型或输入成员查询条件后，列表回到第一页，结果只展示匹配的当前团队记录。',
+    '趋势图按日展示积分消耗；数据为空时展示空态，不使用虚构曲线替代。',
+    '明细列表至少展示时间、成员、功能、类型、消耗积分和余额，并按消耗时间倒序排列。',
+    '点击导出明细会携带当前筛选条件；当前原型未接真实接口时给出明确的演示提示，不伪造下载结果。',
+    '加载失败、无权限和空数据状态均有明确文案与可执行的下一步操作。',
+    '页面需求说明入口可打开完整需求文档，并支持复制结构化 AI 提示词。',
+  ],
+};
+
+type CreditUsageType = 'AI生成' | '设计功能' | '会员/活动';
+
+const creditUsageTrend = [
+  { label: '10/26', value: 920 },
+  { label: '10/27', value: 1460 },
+  { label: '10/28', value: 1180 },
+  { label: '10/29', value: 2080 },
+  { label: '10/30', value: 1760 },
+  { label: '10/31', value: 2510 },
+  { label: '11/01', value: 1260 },
+];
+
+const creditUsageRecords: Array<{ time: string; member: string; memberId: string; feature: string; type: CreditUsageType; points: number; balance: number }> = [
+  { time: '2026-11-01 10:42', member: 'zww', memberId: '18777988', feature: 'AI海报生成', type: 'AI生成', points: 360, balance: 369320 },
+  { time: '2026-11-01 09:18', member: '林晓', memberId: '18778102', feature: '商品套图', type: 'AI生成', points: 520, balance: 369680 },
+  { time: '2026-10-31 18:36', member: '陈静', memberId: '18778231', feature: '团队模板下载', type: '设计功能', points: 180, balance: 370200 },
+  { time: '2026-10-31 16:12', member: '白杨', memberId: '18778306', feature: 'AI视频生成', type: 'AI生成', points: 680, balance: 370380 },
+  { time: '2026-10-31 14:08', member: '泽宇', memberId: '18778391', feature: '积分赠送', type: '会员/活动', points: 1000, balance: 371060 },
+  { time: '2026-10-30 20:44', member: '创意小组', memberId: '团队服务', feature: '品牌素材处理', type: '设计功能', points: 420, balance: 370060 },
+];
+
+function TeamCreditStatisticsContent({ onNotify, onOpenRequirement }: { onNotify: (message: string) => void; onOpenRequirement: () => void }) {
+  const [range, setRange] = useState('近30天');
+  const [activeType, setActiveType] = useState<'全部' | CreditUsageType>('全部');
+  const [memberQuery, setMemberQuery] = useState('');
+  const trendMax = Math.max(...creditUsageTrend.map((item) => item.value));
+  const filteredRecords = creditUsageRecords.filter((record) => {
+    const typeMatched = activeType === '全部' || record.type === activeType;
+    const query = memberQuery.trim().toLowerCase();
+    const memberMatched = !query || `${record.member}${record.memberId}${record.feature}`.toLowerCase().includes(query);
+    return typeMatched && memberMatched;
+  });
+
+  return (
+    <div className="team-credit-statistics-page">
+      <div className="team-credit-statistics-heading">
+        <div>
+          <div className="team-management-breadcrumb">团队管理 <ChevronRight /> 使用统计</div>
+          <h1>积分统计</h1>
+          <p>查看北京艺源酷团队的积分余额、消耗趋势和成员使用明细</p>
+        </div>
+        <div className="team-credit-statistics-actions">
+          <button type="button" className="team-credit-requirement-button" onClick={onOpenRequirement}><FileText />需求说明</button>
+          <button type="button" className="team-credit-export-button" onClick={() => onNotify('当前筛选条件下的明细已准备导出')}><Download />导出明细</button>
+        </div>
+      </div>
+
+      <div className="team-credit-summary-grid">
+        <div className="team-credit-summary-card team-credit-summary-card--primary"><span>当前剩余</span><strong>369320</strong><small>积分</small><i>实时余额</i></div>
+        <div className="team-credit-summary-card"><span>本月消耗</span><strong>42680</strong><small>积分</small><i>较上月 <em>+12.6%</em></i></div>
+        <div className="team-credit-summary-card"><span>本月新增</span><strong>120000</strong><small>积分</small><i>已发放 3 笔</i></div>
+        <div className="team-credit-summary-card"><span>今日消耗</span><strong>1260</strong><small>积分</small><i>占本月 <em>2.95%</em></i></div>
+      </div>
+
+      <div className="team-credit-toolbar">
+        <div className="team-credit-tabs" role="tablist" aria-label="积分使用类型">
+          {(['全部', 'AI生成', '设计功能', '会员/活动'] as const).map((type) => <button key={type} type="button" role="tab" aria-selected={activeType === type} className={activeType === type ? 'is-active' : ''} onClick={() => setActiveType(type)}>{type}</button>)}
+        </div>
+        <div className="team-credit-filters">
+          <label className="team-credit-member-search"><Search /><input value={memberQuery} onChange={(event) => setMemberQuery(event.currentTarget.value)} placeholder="搜索成员或功能" aria-label="搜索成员或功能" /></label>
+          <label className="team-credit-range-select"><CalendarDays /><select value={range} onChange={(event) => setRange(event.currentTarget.value)} aria-label="统计时间范围"><option>近7天</option><option>近30天</option><option>近90天</option><option>自定义</option></select><ChevronDown /></label>
+        </div>
+      </div>
+
+      <section className="team-credit-panel team-credit-trend-panel">
+        <div className="team-credit-panel-heading"><div><h2>积分消耗趋势</h2><p>{range === '自定义' ? '自定义时间范围 · 原型数据' : `${range}每日消耗情况`}</p></div><span>单位：积分</span></div>
+        <div className="team-credit-chart" aria-label="积分消耗趋势图">
+          <div className="team-credit-chart-y-axis"><span>{trendMax}</span><span>{Math.round(trendMax * .66)}</span><span>{Math.round(trendMax * .33)}</span><span>0</span></div>
+          <div className="team-credit-chart-body">
+            <div className="team-credit-chart-grid"><i /><i /><i /><i /></div>
+            <div className="team-credit-bars">{creditUsageTrend.map((item) => <div className="team-credit-bar-column" key={item.label}><span className="team-credit-bar-value">{item.value}</span><div className="team-credit-bar" style={{ height: `${Math.max(8, item.value / trendMax * 100)}%` }} title={`${item.label} ${item.value}积分`} /><small>{item.label}</small></div>)}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="team-credit-panel team-credit-record-panel">
+        <div className="team-credit-panel-heading"><div><h2>积分消耗明细</h2><p>共 {filteredRecords.length} 条记录 · 仅展示当前团队数据</p></div><button type="button" className="team-credit-clear-button" onClick={() => { setActiveType('全部'); setMemberQuery(''); setRange('近30天'); }}>清空筛选</button></div>
+        <div className="team-credit-table-wrap">
+          <table className="team-credit-table"><thead><tr><th>消耗时间</th><th>使用成员</th><th>使用功能</th><th>使用类型</th><th>消耗积分</th><th>消耗后余额</th></tr></thead><tbody>{filteredRecords.map((record) => <tr key={`${record.time}-${record.member}`}><td>{record.time}</td><td><strong>{record.member}</strong><small>{record.memberId}</small></td><td>{record.feature}</td><td><span className={`team-credit-type team-credit-type--${record.type === 'AI生成' ? 'ai' : record.type === '设计功能' ? 'design' : 'event'}`}>{record.type}</span></td><td className="team-credit-points-cell">-{record.points}</td><td>{record.balance}</td></tr>)}</tbody></table>
+          {filteredRecords.length === 0 ? <div className="team-credit-empty"><BarChart3 /><strong>暂无积分消耗数据</strong><span>请调整时间范围、使用类型或成员关键词后重试</span></div> : null}
+        </div>
+        <div className="team-credit-pagination"><span>每页 10 条</span><span>1 / 1</span><button type="button" disabled>上一页</button><button type="button" disabled>下一页</button></div>
+      </section>
+    </div>
+  );
+}
+
+function TeamManagementPage() {
+  const [activeSection, setActiveSection] = useState('账户概览');
+  const [toast, setToast] = useState('');
+  const [requirementOpen, setRequirementOpen] = useState(false);
+
+  const notify = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(''), 1600);
+  };
+
+  return (
+    <section className="team-management-page" aria-label="团队管理">
+      <aside className="team-management-sidebar">
+        {teamManagementNavGroups.map((group) => (
+          <React.Fragment key={group.label || 'overview'}>
+            {group.label ? <div className="team-management-group-label">{group.label}</div> : null}
+            <div className="team-management-group-items">
+              {group.items.map(({ label, icon: Icon }) => (
+                <button type="button" key={label} className={`team-management-nav-item ${activeSection === label ? 'is-active' : ''}`} onClick={() => { setActiveSection(label); if (label !== '账户概览' && label !== '使用统计') notify(`${label}即将上线`); }}>
+                  <Icon className="team-management-nav-icon" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </React.Fragment>
+        ))}
+      </aside>
+
+      <div className="team-management-content">
+        {activeSection === '使用统计' ? <TeamCreditStatisticsContent onNotify={notify} onOpenRequirement={() => setRequirementOpen(true)} /> : <div className="team-management-grid">
+          <main className="team-management-main">
+            <h1>账户概览</h1>
+
+            <section className="team-management-section team-management-account-section">
+              <h2>账户信息</h2>
+              <div className="team-management-account-row">
+                <TeamManagementBrandMark />
+                <div className="team-management-account-details">
+                  <div><span>团队名称：</span><strong>北京艺源酷</strong></div>
+                  <div><span>团队ID：</span><strong>12733833</strong></div>
+                  <div><span>版本：</span><strong>旗舰版</strong><em>（有效期至2026-12-31）</em></div>
+                </div>
+                <button type="button" className="team-management-renew-button" onClick={() => notify('续费入口即将打开')}>立即续费</button>
+              </div>
+            </section>
+
+            <section className="team-management-section team-management-members-section">
+              <h2>团队成员</h2>
+              <div className="team-management-metric-row">
+                <div className="team-management-progress-wrap"><div className="team-management-progress"><span style={{ width: '62.33%' }} /></div><span>187/300</span></div>
+                <TeamManagementMemberAvatars />
+                <button type="button" className="team-management-secondary-button" onClick={() => { setActiveSection('成员管理'); notify('成员管理即将打开'); }}>成员管理</button>
+              </div>
+            </section>
+
+            <section className="team-management-section">
+              <h2>储存空间</h2>
+              <div className="team-management-metric-row">
+                <div className="team-management-progress-wrap"><div className="team-management-progress team-management-progress--storage"><span style={{ width: '37.17%' }} /></div><span>4.46TB/12TB</span><button type="button" className="team-management-inline-link" onClick={() => notify('扩展储存空间即将打开')}>扩展&gt;</button></div>
+                <button type="button" className="team-management-secondary-button" onClick={() => notify('储存空间明细即将打开')}>查看明细</button>
+              </div>
+            </section>
+
+            <section className="team-management-section team-management-points-section">
+              <h2>团队积分 <CircleHelp className="team-management-help-icon" /></h2>
+              <div className="team-management-metric-row">
+                <div className="team-management-points-value"><span>当前剩余：369320</span><button type="button" className="team-management-inline-link" onClick={() => notify('购买积分即将打开')}>购买积分&gt;</button></div>
+                <button type="button" className="team-management-secondary-button" onClick={() => notify('团队积分明细即将打开')}>查看明细</button>
+              </div>
+            </section>
+          </main>
+
+          <aside className="team-management-quick-panel">
+            <h2>快捷入口</h2>
+            <button type="button" className="team-management-quick-card" onClick={() => notify('邀请成员即将打开')}><UserRound /><span><strong>邀请成员</strong><small>邀请成员加入团队/企业</small></span></button>
+            <button type="button" className="team-management-quick-card" onClick={() => notify('品牌设置即将打开')}><Settings2 /><span><strong>品牌设置</strong><small>设置品牌色、品牌字体、品牌logo，保证品牌<br className="team-management-quick-break" />一致性</small></span></button>
+            <button type="button" className="team-management-quick-card" onClick={() => notify('快捷开票即将打开')}><FileImage /><span><strong>快捷开票</strong><small>开票入口进度查询</small></span></button>
+            <button type="button" className="team-management-quick-card" onClick={() => notify('常见问题即将打开')}><CircleHelp /><span><strong>常见问题</strong><small>获取常见问题和使用指南</small></span></button>
+          </aside>
+        </div>}
+      </div>
+      {toast ? <div className="workspace-toast" role="status">{toast}</div> : null}
+      {requirementOpen ? <RequirementDocumentDrawer spec={TEAM_CREDIT_STATISTICS_REQUIREMENT} onClose={() => setRequirementOpen(false)} /> : null}
+    </section>
+  );
+}
+
 function TeamWorkspacePage() {
   const [activeIndustry, setActiveIndustry] = useState('全部');
   const [searchValue, setSearchValue] = useState('');
@@ -829,8 +1238,23 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   const [activeHomeSkillCategory, setActiveHomeSkillCategory] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
   const [membershipOpen, setMembershipOpen] = useState(false);
+  const [membershipFocusMorePoints, setMembershipFocusMorePoints] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [profileToast, setProfileToast] = useState('');
+  const [membershipEntryIntent] = useState(readMembershipEntryIntent);
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, FieldValue>>>({});
   const skillsRailRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!membershipEntryIntent.openVipPop) return;
+    setMembershipFocusMorePoints(membershipEntryIntent.morePoints);
+    setMembershipOpen(true);
+  }, [membershipEntryIntent]);
+
+  const notifyProfile = (message: string) => {
+    setProfileToast(message);
+    window.setTimeout(() => setProfileToast(''), 1600);
+  };
 
   const handleNavClick = (label: string) => {
     setActiveNav(label);
@@ -1050,8 +1474,8 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   };
 
   return (
-    <div className={`min-h-screen overflow-x-hidden bg-white font-sans text-[#1d2943] ${activeNav === '我的' ? 'is-workspace-shell' : ''} ${activeNav === '团队' ? 'is-team-workspace-shell' : ''}`}>
-      <aside className={`fixed inset-y-0 left-0 z-30 flex w-[92px] flex-col items-center border-r border-[#e8edf7] bg-[linear-gradient(180deg,#f4f8ff_0%,#f1f5ff_100%)] py-4 ${activeNav === '我的' || activeNav === '团队' ? 'workspace-sidebar' : ''}`}>
+    <div className={`min-h-screen overflow-x-hidden bg-white font-sans text-[#1d2943] ${activeNav === '我的' ? 'is-workspace-shell' : ''} ${activeNav === '团队' ? 'is-team-workspace-shell' : ''} ${activeNav === '管理' ? 'is-team-management-shell' : ''}`}>
+      <aside className={`fixed inset-y-0 left-0 z-30 flex w-[92px] flex-col items-center border-r border-[#e8edf7] bg-[linear-gradient(180deg,#f4f8ff_0%,#f1f5ff_100%)] py-4 ${activeNav === '我的' || activeNav === '团队' || activeNav === '管理' ? 'workspace-sidebar' : ''}`}>
         <button type="button" onClick={onBackToDirectory} className="mb-6 flex h-9 w-9 items-center justify-center rounded-xl text-[#52617b] transition hover:bg-white" title="返回目录"><Menu className="h-5 w-5" /></button>
         <div className="flex w-full flex-col items-center gap-1.5">
           {navItems.map((item) => {
@@ -1064,27 +1488,30 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         </div>
         <div className="mt-auto flex flex-col items-center gap-4 pb-1 text-[11px] text-[#596986]">
           <button type="button" className="flex flex-col items-center gap-1"><UserRound className="h-[22px] w-[22px]" />成员</button>
-          <button type="button" className="flex flex-col items-center gap-1"><Settings2 className="h-[22px] w-[22px]" />管理</button>
+          <button type="button" onClick={() => handleNavClick('管理')} className={`flex flex-col items-center gap-1 rounded-[12px] px-2 py-2 transition ${activeNav === '管理' ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'hover:bg-white/80'}`}><Settings2 className="h-[22px] w-[22px]" />管理</button>
         </div>
       </aside>
 
-      <header className={`fixed left-[92px] right-0 top-0 z-20 flex h-[86px] items-center justify-between border-b border-[#f1f3f8] bg-white/90 px-10 backdrop-blur-xl ${activeNav === '我的' || activeNav === '团队' ? 'workspace-header' : ''}`}>
+      <header className={`fixed left-[92px] right-0 top-0 z-20 flex h-[86px] items-center justify-between border-b border-[#f1f3f8] bg-white/90 px-10 backdrop-blur-xl ${activeNav === '我的' || activeNav === '团队' || activeNav === '管理' ? 'workspace-header' : ''}`}>
         <button type="button" onClick={onBackToDirectory} className="flex items-center"><img src={cktAiEcomLogo} alt="创客贴" className="h-[40px] w-auto" /></button>
         <div className="flex items-center gap-7 text-[#4f5870]">
           <button type="button" onClick={() => setMode('agent')} className="flex items-center gap-1 text-[15px] transition hover:text-[#1677f8]"><Zap className="h-4 w-4 text-[#ffbc3b]" />PPT生成</button>
           <button type="button" className="text-[15px] transition hover:text-[#1677f8]">印刷店</button>
           <Grid2x2 className="h-[21px] w-[21px]" />
           <span className="relative"><Bell className="h-[23px] w-[23px]" /><i className="absolute -right-2 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff5e58] px-1 text-[11px] font-medium not-italic text-white">4</i></span>
-          {activeNav !== '团队' ? <div className="relative">
+          {activeNav !== '团队' && activeNav !== '管理' ? <div className="relative">
             {activeNav !== '我的' ? <><div className="pointer-events-none absolute -inset-1 rounded-[16px] border border-dashed border-[#ff665b]" aria-hidden="true" /><span className="absolute -right-5 -top-3 z-10"><RequirementHint text={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT} requirementName={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME} sections={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS} /></span></> : null}
-            <button type="button" onClick={() => setMembershipOpen(true)} aria-label={activeNav === '我的' ? '开通会员' : '会员中心'} className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>{activeNav === '我的' ? '开通会员' : '会员中心'}</button>
+            <button type="button" onClick={() => { setMembershipFocusMorePoints(false); setMembershipOpen(true); }} aria-label={activeNav === '我的' ? '开通会员' : '会员中心'} className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>{activeNav === '我的' ? '开通会员' : '会员中心'}</button>
           </div> : null}
-          <span className="relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#ead1b3,#7d9eb7)] text-white shadow-sm"><UserRound className="h-6 w-6" /><i className="absolute bottom-0 right-0 rounded-full bg-[#4b8eea] px-1 text-[9px] not-italic">团</i></span>
+          <div className="user-profile-anchor">
+            <button type="button" className="user-profile-trigger" aria-label="打开用户菜单" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((value) => !value)}><UserAccountAvatar /></button>
+            {profileMenuOpen ? <UserProfileDropdown onClose={() => setProfileMenuOpen(false)} onNavigateToManagement={() => { setProfileMenuOpen(false); handleNavClick('管理'); }} onNotify={notifyProfile} /> : null}
+          </div>
         </div>
       </header>
 
-      <main className={`ml-[92px] pt-[86px] ${activeNav === '我的' || activeNav === '团队' ? 'workspace-main' : ''}`}>
-        {activeNav === '我的' ? <MyWorkspacePage /> : activeNav === '团队' ? <TeamWorkspacePage /> : <>
+      <main className={`ml-[92px] pt-[86px] ${activeNav === '我的' || activeNav === '团队' || activeNav === '管理' ? 'workspace-main' : ''}`}>
+        {activeNav === '我的' ? <MyWorkspacePage /> : activeNav === '团队' ? <TeamWorkspacePage /> : activeNav === '管理' ? <TeamManagementPage /> : <>
         <section className={`relative ${mode === 'templates' ? 'min-h-[382px]' : 'min-h-[360px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-8 pt-[42px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
@@ -1288,7 +1715,9 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
         </div>
       ) : null}
 
-      {membershipOpen ? <MembershipCenterModal open={membershipOpen} onOpenChange={setMembershipOpen} onClose={() => setMembershipOpen(false)} onOpenUpgradePage={(currentMember) => { setMembershipOpen(false); onOpenMembershipUpgrade(currentMember); }} /> : null}
+      {membershipOpen ? <MembershipCenterModal open={membershipOpen} onOpenChange={(open) => { setMembershipOpen(open); if (!open) setMembershipFocusMorePoints(false); }} onClose={() => { setMembershipOpen(false); setMembershipFocusMorePoints(false); }} focusMorePoints={membershipFocusMorePoints} onOpenUpgradePage={(currentMember) => { setMembershipOpen(false); setMembershipFocusMorePoints(false); onOpenMembershipUpgrade(currentMember); }} /> : null}
+
+      {profileToast ? <div className="workspace-toast user-profile-toast" role="status">{profileToast}</div> : null}
 
       {selectedSkill ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1b2335]/40 p-4 backdrop-blur-[3px]" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedSkill(null); }}>
