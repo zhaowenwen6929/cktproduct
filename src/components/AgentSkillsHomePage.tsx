@@ -45,7 +45,7 @@ import {
   X,
 } from 'lucide-react';
 import { GenerationAttachment } from '../types';
-import { MembershipCenterModal, type MembershipCurrentMember } from './MembershipCenterModal';
+import { MembershipCenterModal, MembershipPointsPurchaseModal, type MembershipCurrentMember } from './MembershipCenterModal';
 import { RequirementHint, type RequirementSection } from './MembershipPackagePage';
 import { RequirementDocumentDrawer, type RequirementSpec } from './RequirementDocumentPage';
 
@@ -933,8 +933,8 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
       title: '今日使用',
       description: '实时获取最近 24 小时的使用数据，展示最新消耗和成员消耗。',
       items: [
-        { label: '最新消耗', content: '实时获取最近 24 小时内的所有消耗明细并展示，最多显示 5000 条。点击对应的成员名字，在右侧“成员消耗”卡片中展示该成员当前团队最近 24 小时的消耗统计。', highlightTerms: ['24 小时', '5000', '成员名字', '成员消耗'] },
-        { label: '成员消耗', content: '展示成员名称、成员标签、最近 24 小时、消耗总积分和消耗总次数；原型示例为张美丽、成员、200 积分、50 次。点击“我知道了”收起当前成员消耗内容。', highlightTerms: ['成员名称', '成员标签', '最近 24 小时', '消耗总积分', '消耗总次数'] },
+        { label: '最新消耗', content: '实时获取最近 24 小时内的所有消耗明细并展示，最多显示 5000 条。成员消耗卡片默认隐藏，点击对应的成员名字后，以不遮挡列表内容的右侧浮层展示该成员当前团队最近 24 小时的消耗统计。', highlightTerms: ['24 小时', '5000', '默认隐藏', '成员名字', '右侧浮层'] },
+        { label: '成员消耗', content: '展示成员名称、成员标签、最近 24 小时、消耗总积分和消耗总次数；原型示例为张美丽、成员、200 积分、50 次。点击“我知道了”或关闭按钮收起当前成员消耗浮层。', highlightTerms: ['成员名称', '成员标签', '最近 24 小时', '消耗总积分', '消耗总次数', '成员消耗浮层'] },
         { label: '查看全部', content: '点击“查看全部”跳转至“积分管理 > 积分明细 > 消耗明细”。', highlightTerms: ['查看全部', '积分管理 > 积分明细 > 消耗明细'] },
       ],
     },
@@ -990,7 +990,7 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
     '从管理 > 积分统计进入后，页面标题为“积分概览”，且积分统计与使用统计在团队管理侧边栏保持同级。',
     '页面包含积分概览、今日使用、消耗趋势和消耗榜单四部分，积分概览和今日使用为实时数据，消耗趋势和消耗榜单为 T+1 数据。',
     '积分概览按规则展示剩余积分、升级会员/增购、本月已消耗和今日已消耗，并支持变化率 hover 详情。',
-    '今日使用最多显示最近24小时5000条消耗明细，点击对应成员名字后在右侧成员消耗卡片展示总积分和总次数，查看全部跳转到消耗明细。',
+    '今日使用最多显示最近24小时5000条消耗明细，成员消耗卡片默认隐藏；点击对应成员名字后以不遮挡列表的右侧浮层展示总积分和总次数，关闭后恢复隐藏，查看全部跳转到消耗明细。',
     '趋势区域支持过去7天、过去30天、上周、上月、最长90天日期范围，以及天/周/月统计粒度。',
     '趋势区域支持消耗积分、消耗成员、消耗功能三个维度，并按原型展示 hover 分析信息和三类趋势数据。',
     '消耗榜单分别展示成员和功能 Top10，包含名称、消耗占比和消耗积分。',
@@ -1088,7 +1088,7 @@ const creditTrendDetail = {
   '消耗功能': ['总消耗功能：2，共消耗积分1000', '消耗最多的功能：无限画布，共消耗300积分，占当日比xx%', '消耗最多的成员：张三，共消耗1000积分'],
 } satisfies Record<CreditTrendTab, string[]>;
 
-function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void }) {
+function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership, onOpenPointsPurchase }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void }) {
   const [trendTab, setTrendTab] = useState<CreditTrendTab>('消耗积分');
   const [period, setPeriod] = useState('过去7天');
   const [granularity, setGranularity] = useState('按天');
@@ -1124,7 +1124,7 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
         <section className="credit-overview-metric credit-overview-metric--remaining">
           <span>剩余团队积分数</span>
           <strong>89373737</strong>
-          <div className={`credit-overview-metric-actions ${currentTeamLevel >= 302 ? 'is-upgrade-hidden' : ''}`}>{currentTeamLevel < 302 ? <button type="button" onClick={() => onOpenMembership(false)}>升级会员领更多积分</button> : null}<button type="button" className={currentTeamLevel >= 302 ? 'is-large' : ''} onClick={() => onOpenMembership(true)}>增购</button></div>
+          <div className={`credit-overview-metric-actions ${currentTeamLevel >= 302 ? 'is-upgrade-hidden' : ''}`}>{currentTeamLevel < 302 ? <button type="button" onClick={() => onOpenMembership(false)}>升级会员领更多积分</button> : null}<button type="button" className={currentTeamLevel >= 302 ? 'is-large' : ''} onClick={onOpenPointsPurchase}>增购</button></div>
         </section>
         <section className="credit-overview-metric">
           <span>本月已消耗</span>
@@ -1138,18 +1138,18 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
         </section>
       </div>
 
-      <div className="credit-overview-main-grid">
-        <section className="credit-overview-recent">
+      <div className={`credit-overview-main-grid ${selectedMember ? 'has-selected-member' : ''}`}>
+        <section className={`credit-overview-recent ${selectedMember ? 'is-member-popover-open' : ''}`}>
           <div className="credit-overview-section-heading"><h2>最新消耗</h2><button type="button" onClick={() => onNotify('已打开全部积分消耗记录')}>查看全部</button></div>
           <div className="credit-overview-recent-list">
             {creditRecentConsumption.map((record, index) => <div className="credit-overview-recent-row" key={`${record.time}-${record.member}-${index}`}><span>{record.time}</span><button type="button" className={`credit-overview-member-trigger ${selectedMember === record.member ? 'is-selected' : ''}`} onClick={() => setSelectedMember(record.member)}>{record.member}</button><p>{record.detail} <em>消耗 {record.points}</em></p></div>)}
           </div>
         </section>
 
-        <aside className="credit-overview-member-card">
-          <h2>成员消耗</h2>
-          {selectedMember && selectedMemberStats ? <><div className="credit-overview-member-label"><strong>{selectedMember}</strong><span>成员</span></div><p>最近24小时</p><dl><div><dt>消耗总积分</dt><dd>{selectedMemberStats.points}</dd></div><div><dt>消耗总次数</dt><dd>{selectedMemberStats.count}</dd></div></dl><button type="button" className="credit-overview-member-link" onClick={() => onNotify(`已打开${selectedMember}的消耗明细`)}>查看消耗明细</button><button type="button" className="credit-overview-member-close" onClick={() => setSelectedMember(null)}>我知道了</button></> : <div className="credit-overview-member-empty"><UserRound /><strong>点击成员名字</strong><span>查看对应成员最近24小时的消耗</span></div>}
-        </aside>
+        {selectedMember && selectedMemberStats ? <aside className="credit-overview-member-card" role="dialog" aria-label={`${selectedMember}成员消耗`}>
+          <div className="credit-overview-member-card-heading"><h2>成员消耗</h2><button type="button" onClick={() => setSelectedMember(null)} aria-label="关闭成员消耗">×</button></div>
+          <div className="credit-overview-member-label"><strong>{selectedMember}</strong><span>成员</span></div><p>最近24小时</p><dl><div><dt>消耗总积分</dt><dd>{selectedMemberStats.points}</dd></div><div><dt>消耗总次数</dt><dd>{selectedMemberStats.count}</dd></div></dl><button type="button" className="credit-overview-member-link" onClick={() => onNotify(`已打开${selectedMember}的消耗明细`)}>查看消耗明细</button><button type="button" className="credit-overview-member-close" onClick={() => setSelectedMember(null)}>我知道了</button>
+        </aside> : null}
       </div>
 
       <section className="credit-overview-trend-section">
@@ -1178,7 +1178,7 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
   );
 }
 
-function TeamManagementPage({ onOpenMembership }: { onOpenMembership: (focusMorePoints: boolean) => void }) {
+function TeamManagementPage({ onOpenMembership, onOpenPointsPurchase }: { onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void }) {
   const [activeSection, setActiveSection] = useState('账户概览');
   const [toast, setToast] = useState('');
   const [requirementOpen, setRequirementOpen] = useState(false);
@@ -1207,7 +1207,7 @@ function TeamManagementPage({ onOpenMembership }: { onOpenMembership: (focusMore
       </aside>
 
       <div className="team-management-content">
-        {activeSection === '积分统计' ? <TeamCreditStatisticsContent onNotify={notify} onOpenRequirement={() => setRequirementOpen(true)} onOpenMembership={onOpenMembership} /> : activeSection === '使用统计' ? <div className="team-management-placeholder"><BarChart3 /><h1>使用统计</h1><p>使用统计功能即将上线</p></div> : <div className="team-management-grid">
+        {activeSection === '积分统计' ? <TeamCreditStatisticsContent onNotify={notify} onOpenRequirement={() => setRequirementOpen(true)} onOpenMembership={onOpenMembership} onOpenPointsPurchase={onOpenPointsPurchase} /> : activeSection === '使用统计' ? <div className="team-management-placeholder"><BarChart3 /><h1>使用统计</h1><p>使用统计功能即将上线</p></div> : <div className="team-management-grid">
           <main className="team-management-main">
             <h1>账户概览</h1>
 
@@ -1350,6 +1350,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
   const [membershipOpen, setMembershipOpen] = useState(false);
   const [membershipFocusMorePoints, setMembershipFocusMorePoints] = useState(false);
+  const [pointsPurchaseOpen, setPointsPurchaseOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileToast, setProfileToast] = useState('');
   const [membershipEntryIntent] = useState(readMembershipEntryIntent);
@@ -1631,7 +1632,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
       </header>
 
       <main className={`ml-[92px] pt-[86px] ${activeNav === '我的' || activeNav === '团队' || activeNav === '管理' ? 'workspace-main' : ''}`}>
-        {activeNav === '我的' ? <MyWorkspacePage /> : activeNav === '团队' ? <TeamWorkspacePage /> : activeNav === '管理' ? <TeamManagementPage onOpenMembership={(focusMorePoints) => { setMembershipFocusMorePoints(focusMorePoints); setMembershipOpen(true); }} /> : <>
+        {activeNav === '我的' ? <MyWorkspacePage /> : activeNav === '团队' ? <TeamWorkspacePage /> : activeNav === '管理' ? <TeamManagementPage onOpenMembership={(focusMorePoints) => { setMembershipFocusMorePoints(focusMorePoints); setMembershipOpen(true); }} onOpenPointsPurchase={() => setPointsPurchaseOpen(true)} /> : <>
         <section className={`relative ${mode === 'templates' ? 'min-h-[382px]' : 'min-h-[360px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-8 pt-[42px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
@@ -1836,6 +1837,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
       ) : null}
 
       {membershipOpen ? <MembershipCenterModal open={membershipOpen} onOpenChange={(open) => { setMembershipOpen(open); if (!open) setMembershipFocusMorePoints(false); }} onClose={() => { setMembershipOpen(false); setMembershipFocusMorePoints(false); }} focusMorePoints={membershipFocusMorePoints} onOpenUpgradePage={(currentMember) => { setMembershipOpen(false); setMembershipFocusMorePoints(false); onOpenMembershipUpgrade(currentMember); }} /> : null}
+      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
 
       {profileToast ? <div className="workspace-toast user-profile-toast" role="status">{profileToast}</div> : null}
 

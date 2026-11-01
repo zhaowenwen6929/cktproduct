@@ -362,7 +362,7 @@ const MEMBERSHIP_POINTS_PACKAGES: MembershipPointsPackage[] = [
   { id: 'points-7500', points: 7500, price: 495, originalPrice: 1100, outputText: '约生750~1875张图' },
 ];
 
-function MembershipPointsPurchaseModal({ onClose }: MembershipPointsPurchaseModalProps) {
+export function MembershipPointsPurchaseModal({ onClose }: MembershipPointsPurchaseModalProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedPackage = MEMBERSHIP_POINTS_PACKAGES[selectedIndex] ?? MEMBERSHIP_POINTS_PACKAGES[0];
   const expiryDate = formatExpiryDate(365);
