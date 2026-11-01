@@ -769,7 +769,12 @@ const teamManagementNavGroups = [
     label: '',
     items: [
       { label: '账户概览', icon: UserRound },
-      { label: '使用统计', icon: ImageIcon },
+    ],
+  },
+  {
+    label: '使用统计',
+    items: [
+      { label: '积分统计', icon: ImageIcon },
     ],
   },
   {
@@ -913,7 +918,7 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
       title: '页面入口与权限',
       description: '页面从团队管理侧边栏进入，沿用团队管理的顶部导航和左侧菜单。',
       items: [
-        { label: '入口', content: '进入首页底部“管理”后，点击团队管理侧边栏中的“使用统计”，页面标题显示“积分统计”。' },
+        { label: '入口', content: '进入首页底部“管理”后，展开团队管理侧边栏中的“使用统计”目录，点击“积分统计”，页面标题显示“积分统计”。' },
         { label: '适用角色', content: '团队管理员可查看当前团队统计数据；普通成员无权访问团队级统计页，需展示无权限状态并保留返回账户概览入口。' },
         { label: '数据范围', content: '默认统计当前团队“北京艺源酷”的积分，不跨团队合并数据；团队切换后应重新加载所选团队的数据。' },
       ],
@@ -936,6 +941,15 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
         { label: '使用类型', content: '支持全部、AI生成、设计功能、会员/活动四类筛选；切换类型后同步刷新趋势图和明细列表。' },
         { label: '趋势图', content: '展示所选时间范围内按日聚合的积分消耗，纵轴为积分数量，横轴为日期；无数据时显示空态，不渲染误导性的零线图。' },
         { label: '成员查询', content: '支持按成员昵称或用户ID查询，查询结果只影响明细列表和对应汇总，不改变团队当前剩余积分。' },
+      ],
+    },
+    {
+      title: '积分构成与成员排行',
+      description: '在趋势图前提供结构化概览，帮助管理员快速判断积分主要消耗在哪类功能和成员上。',
+      items: [
+        { label: '使用构成', content: '按 AI生成、设计功能、会员/活动展示当前筛选范围内的积分消耗占比、积分数量和进度条，合计占比为 100%。' },
+        { label: '成员排行', content: '按当前筛选范围展示消耗积分最高的成员及用户 ID，展示积分数量和相对第一名的进度；无数据时显示空态。' },
+        { label: '筛选联动', content: '使用类型、时间范围或成员/功能关键词变化后，使用构成、成员排行、趋势图和明细统一使用新的筛选条件。' },
       ],
     },
     {
@@ -968,11 +982,12 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
     },
   ],
   acceptance: [
-    '从管理 > 使用统计进入后，页面标题为“积分统计”，且团队管理侧边栏正确高亮“使用统计”。',
+    '从管理 > 使用统计 > 积分统计进入后，页面标题为“积分统计”，且团队管理侧边栏正确高亮“积分统计”。',
     '首屏展示当前剩余、本月消耗、本月新增和今日消耗四项指标，数值格式统一且不会因 0 值出现空白。',
     '切换近7天、近30天、近90天和自定义时间范围时，趋势图和明细列表使用同一筛选条件刷新。',
     '切换使用类型或输入成员查询条件后，列表回到第一页，结果只展示匹配的当前团队记录。',
     '趋势图按日展示积分消耗；数据为空时展示空态，不使用虚构曲线替代。',
+    '趋势图前展示积分使用构成和成员消耗排行，筛选条件变化后三个统计模块与明细保持一致。',
     '明细列表至少展示时间、成员、功能、类型、消耗积分和余额，并按消耗时间倒序排列。',
     '点击导出明细会携带当前筛选条件；当前原型未接真实接口时给出明确的演示提示，不伪造下载结果。',
     '加载失败、无权限和空数据状态均有明确文案与可执行的下一步操作。',
@@ -1001,28 +1016,50 @@ const creditUsageRecords: Array<{ time: string; member: string; memberId: string
   { time: '2026-10-30 20:44', member: '创意小组', memberId: '团队服务', feature: '品牌素材处理', type: '设计功能', points: 420, balance: 370060 },
 ];
 
+const creditUsageBreakdown: Array<{ label: CreditUsageType; value: number; points: string; tone: 'ai' | 'design' | 'event' }> = [
+  { label: 'AI生成', value: 62, points: '26,461', tone: 'ai' },
+  { label: '设计功能', value: 24, points: '10,243', tone: 'design' },
+  { label: '会员/活动', value: 14, points: '5,976', tone: 'event' },
+];
+
+const creditUsageRanking = [
+  { name: 'zww', memberId: '18777988', points: '8,420', ratio: 100 },
+  { name: '林晓', memberId: '18778102', points: '6,980', ratio: 83 },
+  { name: '白杨', memberId: '18778306', points: '5,640', ratio: 67 },
+  { name: '陈静', memberId: '18778231', points: '4,820', ratio: 57 },
+];
+
 function TeamCreditStatisticsContent({ onNotify, onOpenRequirement }: { onNotify: (message: string) => void; onOpenRequirement: () => void }) {
   const [range, setRange] = useState('近30天');
   const [activeType, setActiveType] = useState<'全部' | CreditUsageType>('全部');
   const [memberQuery, setMemberQuery] = useState('');
-  const trendMax = Math.max(...creditUsageTrend.map((item) => item.value));
+  const query = memberQuery.trim().toLowerCase();
+  const typeScale = activeType === 'AI生成' ? .62 : activeType === '设计功能' ? .24 : activeType === '会员/活动' ? .14 : 1;
+  const visibleTrend = creditUsageTrend.map((item) => ({ ...item, value: Math.round(item.value * typeScale) }));
+  const trendMax = Math.max(...visibleTrend.map((item) => item.value), 1);
   const filteredRecords = creditUsageRecords.filter((record) => {
     const typeMatched = activeType === '全部' || record.type === activeType;
-    const query = memberQuery.trim().toLowerCase();
     const memberMatched = !query || `${record.member}${record.memberId}${record.feature}`.toLowerCase().includes(query);
     return typeMatched && memberMatched;
   });
+  const visibleBreakdown = creditUsageBreakdown.map((item) => activeType === '全部' || activeType === item.label
+    ? item
+    : { ...item, value: 0, points: '0' });
+  const visibleRanking = creditUsageRanking
+    .filter((item) => !query || `${item.name}${item.memberId}`.toLowerCase().includes(query))
+    .map((item) => ({ ...item, points: Math.round(Number(item.points.replace(',', '')) * typeScale).toLocaleString('en-US') }));
+  const breakdownTotal = activeType === 'AI生成' ? '26,461' : activeType === '设计功能' ? '10,243' : activeType === '会员/活动' ? '5,976' : '42,680';
 
   return (
     <div className="team-credit-statistics-page">
+      <button type="button" className="team-credit-requirement-float" onClick={onOpenRequirement}><FileText />需求说明</button>
       <div className="team-credit-statistics-heading">
         <div>
-          <div className="team-management-breadcrumb">团队管理 <ChevronRight /> 使用统计</div>
+          <div className="team-management-breadcrumb">团队管理 <ChevronRight /> 使用统计 <ChevronRight /> 积分统计</div>
           <h1>积分统计</h1>
           <p>查看北京艺源酷团队的积分余额、消耗趋势和成员使用明细</p>
         </div>
         <div className="team-credit-statistics-actions">
-          <button type="button" className="team-credit-requirement-button" onClick={onOpenRequirement}><FileText />需求说明</button>
           <button type="button" className="team-credit-export-button" onClick={() => onNotify('当前筛选条件下的明细已准备导出')}><Download />导出明细</button>
         </div>
       </div>
@@ -1044,13 +1081,43 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement }: { onNotify
         </div>
       </div>
 
+      <div className="team-credit-overview-grid">
+        <section className="team-credit-panel team-credit-breakdown-panel">
+          <div className="team-credit-panel-heading">
+            <div><h2>积分使用构成</h2><p>{range}各类型消耗占比</p></div>
+            <strong className="team-credit-overview-total">{breakdownTotal} <small>积分</small></strong>
+          </div>
+          <div className="team-credit-breakdown-list">
+            {visibleBreakdown.map((item) => <div className="team-credit-breakdown-row" key={item.label}>
+              <div className="team-credit-breakdown-meta"><span><i className={`team-credit-dot team-credit-dot--${item.tone}`} />{item.label}</span><strong>{item.points} <small>{item.value}%</small></strong></div>
+              <div className="team-credit-breakdown-track"><span className={`team-credit-breakdown-fill team-credit-breakdown-fill--${item.tone}`} style={{ width: `${item.value}%` }} /></div>
+            </div>)}
+          </div>
+        </section>
+
+        <section className="team-credit-panel team-credit-ranking-panel">
+          <div className="team-credit-panel-heading">
+            <div><h2>成员消耗排行</h2><p>{range}消耗积分最高成员</p></div>
+            <button type="button" className="team-credit-panel-link" onClick={() => onNotify('成员消耗排行已按当前筛选展示')}>查看全部 <ChevronRight /></button>
+          </div>
+          <div className="team-credit-ranking-list">
+            {visibleRanking.length > 0 ? visibleRanking.map((item, index) => <div className="team-credit-ranking-row" key={item.memberId}>
+              <span className={`team-credit-ranking-index ${index < 3 ? 'is-top' : ''}`}>{index + 1}</span>
+              <span className="team-credit-ranking-person"><strong>{item.name}</strong><small>{item.memberId}</small></span>
+              <span className="team-credit-ranking-bar"><i style={{ width: `${item.ratio}%` }} /></span>
+              <strong className="team-credit-ranking-points">{item.points}</strong>
+            </div>) : <div className="team-credit-ranking-empty">暂无匹配成员</div>}
+          </div>
+        </section>
+      </div>
+
       <section className="team-credit-panel team-credit-trend-panel">
         <div className="team-credit-panel-heading"><div><h2>积分消耗趋势</h2><p>{range === '自定义' ? '自定义时间范围 · 原型数据' : `${range}每日消耗情况`}</p></div><span>单位：积分</span></div>
         <div className="team-credit-chart" aria-label="积分消耗趋势图">
-          <div className="team-credit-chart-y-axis"><span>{trendMax}</span><span>{Math.round(trendMax * .66)}</span><span>{Math.round(trendMax * .33)}</span><span>0</span></div>
+            <div className="team-credit-chart-y-axis"><span>{trendMax}</span><span>{Math.round(trendMax * .66)}</span><span>{Math.round(trendMax * .33)}</span><span>0</span></div>
           <div className="team-credit-chart-body">
             <div className="team-credit-chart-grid"><i /><i /><i /><i /></div>
-            <div className="team-credit-bars">{creditUsageTrend.map((item) => <div className="team-credit-bar-column" key={item.label}><span className="team-credit-bar-value">{item.value}</span><div className="team-credit-bar" style={{ height: `${Math.max(8, item.value / trendMax * 100)}%` }} title={`${item.label} ${item.value}积分`} /><small>{item.label}</small></div>)}</div>
+            <div className="team-credit-bars">{visibleTrend.map((item) => <div className="team-credit-bar-column" key={item.label}><span className="team-credit-bar-value">{item.value}</span><div className="team-credit-bar" style={{ height: `${Math.max(8, item.value / trendMax * 100)}%` }} title={`${item.label} ${item.value}积分`} /><small>{item.label}</small></div>)}</div>
           </div>
         </div>
       </section>
@@ -1085,7 +1152,7 @@ function TeamManagementPage() {
             {group.label ? <div className="team-management-group-label">{group.label}</div> : null}
             <div className="team-management-group-items">
               {group.items.map(({ label, icon: Icon }) => (
-                <button type="button" key={label} className={`team-management-nav-item ${activeSection === label ? 'is-active' : ''}`} onClick={() => { setActiveSection(label); if (label !== '账户概览' && label !== '使用统计') notify(`${label}即将上线`); }}>
+                <button type="button" key={label} className={`team-management-nav-item ${activeSection === label ? 'is-active' : ''}`} onClick={() => { setActiveSection(label); if (label !== '账户概览' && label !== '积分统计') notify(`${label}即将上线`); }}>
                   <Icon className="team-management-nav-icon" />
                   <span>{label}</span>
                 </button>
@@ -1096,7 +1163,7 @@ function TeamManagementPage() {
       </aside>
 
       <div className="team-management-content">
-        {activeSection === '使用统计' ? <TeamCreditStatisticsContent onNotify={notify} onOpenRequirement={() => setRequirementOpen(true)} /> : <div className="team-management-grid">
+        {activeSection === '积分统计' ? <TeamCreditStatisticsContent onNotify={notify} onOpenRequirement={() => setRequirementOpen(true)} /> : <div className="team-management-grid">
           <main className="team-management-main">
             <h1>账户概览</h1>
 
@@ -1503,8 +1570,8 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             {activeNav !== '我的' ? <><div className="pointer-events-none absolute -inset-1 rounded-[16px] border border-dashed border-[#ff665b]" aria-hidden="true" /><span className="absolute -right-5 -top-3 z-10"><RequirementHint text={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT} requirementName={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME} sections={MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS} /></span></> : null}
             <button type="button" onClick={() => { setMembershipFocusMorePoints(false); setMembershipOpen(true); }} aria-label={activeNav === '我的' ? '开通会员' : '会员中心'} className="flex h-[48px] items-center gap-2 rounded-[14px] bg-[#ffead9] px-4 text-[16px] font-semibold text-[#805638] transition hover:bg-[#ffe1ca]"><span className="rounded-sm bg-[#8d5c34] px-1.5 py-0.5 text-[11px] font-bold text-[#ffe6b9]">VIP</span>{activeNav === '我的' ? '开通会员' : '会员中心'}</button>
           </div> : null}
-          <div className="user-profile-anchor">
-            <button type="button" className="user-profile-trigger" aria-label="打开用户菜单" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((value) => !value)}><UserAccountAvatar /></button>
+          <div className="user-profile-anchor" onMouseEnter={() => setProfileMenuOpen(true)} onMouseLeave={() => setProfileMenuOpen(false)}>
+            <button type="button" className="user-profile-trigger" aria-label="打开用户菜单" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen(true)}><UserAccountAvatar /></button>
             {profileMenuOpen ? <UserProfileDropdown onClose={() => setProfileMenuOpen(false)} onNavigateToManagement={() => { setProfileMenuOpen(false); handleNavClick('管理'); }} onNotify={notifyProfile} /> : null}
           </div>
         </div>

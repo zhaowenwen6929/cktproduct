@@ -1891,9 +1891,9 @@ button {
 }
 
 .team-management-group-label {
-  margin: 26px 0 10px 9px;
+  margin: 24px 0 9px 9px;
   color: #91a1c1;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
 }
 
@@ -1901,15 +1901,15 @@ button {
   display: flex;
   align-items: center;
   width: 190px;
-  height: 37px;
-  gap: 14px;
-  padding: 0 15px;
+  height: 36px;
+  gap: 13px;
+  padding: 0 14px;
   border: 0;
   border-radius: 9px;
   background: transparent;
   color: #202b43;
   cursor: pointer;
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1;
   text-align: left;
   transition: background .15s ease, color .15s ease;
@@ -1950,9 +1950,9 @@ button {
 .team-management-main > h1 {
   margin: 0 0 15px;
   color: #1b263d;
-  font-size: 27px;
+  font-size: 25px;
   font-weight: 700;
-  line-height: 34px;
+  line-height: 32px;
   letter-spacing: -.045em;
 }
 
@@ -1966,7 +1966,7 @@ button {
   gap: 7px;
   margin: 0 0 12px;
   color: #1e2940;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 26px;
   letter-spacing: -.035em;
@@ -2040,7 +2040,7 @@ button {
   flex-direction: column;
   gap: 7px;
   color: #56627b;
-  font-size: 17px;
+  font-size: 15px;
   line-height: 24px;
   white-space: nowrap;
 }
@@ -2069,7 +2069,7 @@ button {
   background: #1478f5;
   color: #fff;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
   transition: background .15s ease;
@@ -2172,7 +2172,7 @@ button {
   background: #f0f2f8;
   color: #202b43;
   cursor: pointer;
-  font-size: 17px;
+  font-size: 15px;
   white-space: nowrap;
   transition: background .15s ease;
 }
@@ -2188,7 +2188,7 @@ button {
   background: transparent;
   color: #0878fa;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   white-space: nowrap;
 }
 
@@ -2205,33 +2205,33 @@ button {
 
 .team-management-points-value {
   color: #56627b;
-  font-size: 17px;
+  font-size: 15px;
   white-space: nowrap;
 }
 
 .team-management-quick-panel {
-  margin-top: 28px;
-  padding: 20px;
+  margin-top: 24px;
+  padding: 17px;
   border-radius: 12px;
   background: #f3f6fe;
 }
 
 .team-management-quick-panel h2 {
-  margin: 0 0 16px;
+  margin: 0 0 13px;
   color: #202b43;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 25px;
 }
 
 .team-management-quick-card {
   display: flex;
   align-items: flex-start;
   width: 100%;
-  min-height: 70px;
-  gap: 14px;
-  margin: 0 0 12px;
-  padding: 14px 14px 13px;
+  min-height: 64px;
+  gap: 12px;
+  margin: 0 0 10px;
+  padding: 12px;
   border: 0;
   border-radius: 9px;
   background: #fff;
@@ -2251,9 +2251,9 @@ button {
 }
 
 .team-management-quick-card > svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
   margin-top: 1px;
   stroke-width: 1.8;
 }
@@ -2262,25 +2262,26 @@ button {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
 }
 
 .team-management-quick-card strong {
   color: #202b43;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 24px;
+  line-height: 21px;
   white-space: nowrap;
 }
 
 .team-management-quick-card small {
   color: #596681;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 13px;
+  line-height: 19px;
   white-space: nowrap;
 }
 
 .team-credit-statistics-page {
+  position: relative;
   min-width: 0;
   max-width: 1180px;
 }
@@ -2289,8 +2290,9 @@ button {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 22px;
-  margin-bottom: 22px;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding-right: 94px;
 }
 
 .team-management-breadcrumb {
@@ -2310,46 +2312,57 @@ button {
 .team-credit-statistics-heading h1 {
   margin: 0;
   color: #1b263d;
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 700;
-  line-height: 36px;
+  line-height: 32px;
   letter-spacing: -.045em;
 }
 
 .team-credit-statistics-heading p {
-  margin: 7px 0 0;
+  margin: 5px 0 0;
   color: #8290aa;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 13px;
+  line-height: 20px;
 }
 
 .team-credit-statistics-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-top: 19px;
+  gap: 8px;
+  padding-top: 17px;
 }
 
-.team-credit-requirement-button,
 .team-credit-export-button {
   display: inline-flex;
-  height: 36px;
+  height: 32px;
   align-items: center;
-  gap: 6px;
-  padding: 0 13px;
-  border-radius: 7px;
+  gap: 5px;
+  padding: 0 11px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
-.team-credit-requirement-button {
+.team-credit-requirement-float {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
   border: 1px solid #ffb5ab;
+  border-radius: 6px;
   background: #fff4f1;
   color: #e35f53;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
-.team-credit-requirement-button:hover {
+.team-credit-requirement-float:hover {
   background: #ffe9e5;
 }
 
@@ -2364,10 +2377,10 @@ button {
   background: #f6faff;
 }
 
-.team-credit-requirement-button svg,
+.team-credit-requirement-float svg,
 .team-credit-export-button svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
 }
 
 .team-credit-summary-grid {
@@ -2379,8 +2392,8 @@ button {
 
 .team-credit-summary-card {
   position: relative;
-  min-height: 122px;
-  padding: 17px 18px 14px;
+  min-height: 112px;
+  padding: 15px 16px 12px;
   overflow: hidden;
   border: 1px solid #e4e9f1;
   border-radius: 11px;
@@ -2417,9 +2430,9 @@ button {
 
 .team-credit-summary-card strong {
   display: inline-block;
-  margin-top: 9px;
+  margin-top: 7px;
   color: #202b43;
-  font-size: 27px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -.035em;
   line-height: 31px;
@@ -2432,7 +2445,7 @@ button {
 }
 
 .team-credit-summary-card i {
-  margin-top: 7px;
+  margin-top: 6px;
   font-size: 11px;
 }
 
@@ -2443,11 +2456,11 @@ button {
 
 .team-credit-toolbar {
   display: flex;
-  min-height: 54px;
+  min-height: 50px;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 0 16px;
+  padding: 0 14px;
   border: 1px solid #e4e9f1;
   border-radius: 10px;
   background: #fff;
@@ -2552,8 +2565,201 @@ button {
   height: 13px;
 }
 
+.team-credit-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: 14px;
+}
+
+.team-credit-overview-grid .team-credit-panel {
+  margin-top: 14px;
+}
+
+.team-credit-overview-total {
+  color: #27334c;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.team-credit-overview-total small {
+  margin-left: 3px;
+  color: #9aa7bc;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.team-credit-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 16px 18px 18px;
+}
+
+.team-credit-breakdown-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.team-credit-breakdown-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #596780;
+  font-size: 12px;
+}
+
+.team-credit-breakdown-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-credit-breakdown-meta strong {
+  color: #35425c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.team-credit-breakdown-meta strong small {
+  margin-left: 5px;
+  color: #9aa7bc;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.team-credit-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.team-credit-dot--ai,
+.team-credit-breakdown-fill--ai { background: #7769ef; }
+.team-credit-dot--design,
+.team-credit-breakdown-fill--design { background: #4ca8dc; }
+.team-credit-dot--event,
+.team-credit-breakdown-fill--event { background: #f3b34e; }
+
+.team-credit-breakdown-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #edf0f6;
+}
+
+.team-credit-breakdown-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.team-credit-panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #5c6b86;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.team-credit-panel-link:hover {
+  color: #287def;
+}
+
+.team-credit-panel-link svg {
+  width: 13px;
+  height: 13px;
+}
+
+.team-credit-ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 15px 18px 17px;
+}
+
+.team-credit-ranking-row {
+  display: grid;
+  grid-template-columns: 18px minmax(76px, .7fr) minmax(70px, 1fr) 52px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.team-credit-ranking-index {
+  color: #9da8ba;
+  font-size: 11px;
+  text-align: center;
+}
+
+.team-credit-ranking-index.is-top {
+  color: #eea52f;
+  font-weight: 700;
+}
+
+.team-credit-ranking-person {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-credit-ranking-person strong {
+  overflow: hidden;
+  color: #35425c;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-credit-ranking-person small {
+  overflow: hidden;
+  color: #a0adbf;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-credit-ranking-bar {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #eef1f6;
+}
+
+.team-credit-ranking-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9ebfff, #4f8df5);
+}
+
+.team-credit-ranking-points {
+  color: #52617b;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.team-credit-ranking-empty {
+  padding: 18px 0 20px;
+  color: #9aa7bc;
+  font-size: 11px;
+  text-align: center;
+}
+
 .team-credit-panel {
-  margin-top: 18px;
+  margin-top: 16px;
   border: 1px solid #e4e9f1;
   border-radius: 11px;
   background: #fff;
@@ -2564,15 +2770,15 @@ button {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 20px 0;
+  padding: 16px 18px 0;
 }
 
 .team-credit-panel-heading h2 {
   margin: 0;
   color: #202b43;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  line-height: 26px;
+  line-height: 23px;
 }
 
 .team-credit-panel-heading p {
@@ -2863,10 +3069,19 @@ button {
 
   .team-credit-statistics-heading {
     flex-direction: column;
+    padding-right: 0;
+  }
+
+  .team-credit-overview-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .team-credit-statistics-actions {
     padding-top: 0;
+  }
+
+  .team-credit-requirement-float {
+    top: 0;
   }
 }
 
@@ -2940,6 +3155,10 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .team-credit-overview-grid {
+    gap: 0;
+  }
+
   .team-credit-toolbar {
     align-items: stretch;
     flex-direction: column;
@@ -2969,7 +3188,6 @@ button {
     width: 100%;
   }
 
-  .team-credit-requirement-button,
   .team-credit-export-button {
     flex: 1;
     justify-content: center;
@@ -3231,7 +3449,7 @@ button {
 
 .user-profile-dropdown {
   position: absolute;
-  top: 55px;
+  top: 44px;
   right: -16px;
   z-index: 70;
   box-sizing: border-box;
@@ -3261,17 +3479,17 @@ button {
   align-items: center;
   gap: 8px;
   color: #202b43;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 22px;
 }
 
 .user-profile-name span {
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 6px;
   background: #f1f2f8;
   color: #66728e;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
   line-height: 20px;
 }
@@ -3282,7 +3500,7 @@ button {
   gap: 3px;
   margin-top: 3px;
   color: #8594b0;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 20px;
   white-space: nowrap;
 }
@@ -3297,8 +3515,8 @@ button {
 }
 
 .user-profile-id button svg {
-  width: 19px;
-  height: 19px;
+  width: 17px;
+  height: 17px;
   stroke-width: 1.8;
 }
 
@@ -3306,20 +3524,20 @@ button {
   display: inline-flex;
   height: 24px;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 6px;
+  padding: 0 10px;
   border: 0;
   border-radius: 7px;
   background: #f0efff;
   color: #6158ff;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
 .user-profile-access-key svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   stroke-width: 1.8;
 }
 
@@ -3327,13 +3545,13 @@ button {
   position: relative;
   display: flex;
   box-sizing: border-box;
-  min-height: 100px;
+  min-height: 96px;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 14px;
   overflow: hidden;
-  padding: 14px 16px;
+  padding: 13px 14px;
   border-radius: 8px;
   background: linear-gradient(112deg, #3c414a 0%, #292d32 68%, #1f2328 100%);
 }
@@ -3359,57 +3577,57 @@ button {
 .user-profile-plan-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #ffddb0;
 }
 
 .user-profile-plan-title span {
   display: grid;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   place-items: center;
   border-radius: 4px;
   background: #1b1d22;
   color: #ffdfb3;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .user-profile-plan-title strong {
-  font-size: 20px;
-  line-height: 24px;
+  font-size: 18px;
+  line-height: 22px;
 }
 
 .user-profile-plan-expire {
-  margin-top: 7px;
+  margin-top: 6px;
   color: #aeb3bc;
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .user-profile-plan-status {
   display: inline-flex;
-  margin-top: 9px;
+  margin-top: 8px;
   padding: 2px 8px;
   border-radius: 5px;
   background: linear-gradient(90deg, #a6f1ff 0%, #fff6c4 100%);
   color: #53667a;
-  font-size: 16px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 18px;
 }
 
 .user-profile-plan > button {
   position: relative;
   z-index: 1;
   align-self: center;
-  width: 68px;
-  height: 32px;
+  width: 66px;
+  height: 30px;
   border: 0;
   border-radius: 7px;
   background: #ffe5c4;
   color: #242d40;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   white-space: nowrap;
 }
 
@@ -3417,13 +3635,13 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .user-profile-metric-card {
   box-sizing: border-box;
-  height: 84px;
-  padding: 11px 12px;
+  height: 80px;
+  padding: 10px 11px;
   border: 1px solid #e2e6ee;
   border-radius: 8px;
   background: #fff;
@@ -3440,13 +3658,13 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 18px;
-  line-height: 24px;
+  font-size: 16px;
+  line-height: 21px;
 }
 
 .user-profile-metric-heading strong svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   color: #aeb8cb;
   stroke-width: 1.8;
 }
@@ -3457,20 +3675,20 @@ button {
   background: transparent;
   color: #5b6881;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   white-space: nowrap;
 }
 
 .user-profile-metric-heading button span {
   margin-left: 3px;
-  font-size: 24px;
+  font-size: 21px;
   line-height: 12px;
   vertical-align: -2px;
 }
 
 .user-profile-storage-progress {
   height: 6px;
-  margin-top: 11px;
+  margin-top: 9px;
   overflow: hidden;
   border-radius: 5px;
   background: #e9edf4;
@@ -3485,9 +3703,9 @@ button {
 }
 
 .user-profile-storage-value {
-  margin-top: 7px;
+  margin-top: 6px;
   color: #202b43;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 20px;
 }
 
@@ -3503,21 +3721,21 @@ button {
 }
 
 .user-profile-points-value {
-  margin-top: 9px;
+  margin-top: 7px;
   color: #1e2940;
-  font-size: 30px;
-  line-height: 34px;
+  font-size: 28px;
+  line-height: 31px;
 }
 
 .user-profile-team-card {
   display: flex;
   box-sizing: border-box;
   width: 100%;
-  height: 58px;
+  height: 56px;
   align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-  padding: 0 12px;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 0 11px;
   border: 1px solid #e2e6ee;
   border-radius: 8px;
   background: #fff;
@@ -3572,9 +3790,9 @@ button {
 
 .user-profile-team-option {
   display: flex;
-  min-height: 58px;
+  min-height: 54px;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 0 8px;
   border: 0;
   border-bottom: 1px solid #e6e9ef;
@@ -3603,30 +3821,30 @@ button {
 .user-profile-team-option strong {
   overflow: hidden;
   color: #202b43;
-  font-size: 17px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .user-profile-team-option small {
   color: #596681;
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: 16px;
   white-space: nowrap;
 }
 
 .team-switch-avatar {
   display: grid;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   place-items: center;
   overflow: hidden;
   border: 1px solid #dfe3eb;
   border-radius: 50%;
   color: #56627b;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -3691,29 +3909,29 @@ button {
 
 .user-profile-team-card strong {
   color: #202b43;
-  font-size: 18px;
-  line-height: 22px;
+  font-size: 16px;
+  line-height: 20px;
 }
 
 .user-profile-team-card small {
   color: #596681;
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .user-profile-switch {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-left: auto;
   color: #596681;
-  font-size: 16px;
+  font-size: 14px;
   white-space: nowrap;
 }
 
 .user-profile-switch svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   stroke-width: 1.9;
 }
 
@@ -3725,15 +3943,15 @@ button {
   position: relative;
   display: flex;
   width: 100%;
-  height: 40px;
+  height: 37px;
   align-items: center;
-  gap: 16px;
-  padding: 0 12px;
+  gap: 13px;
+  padding: 0 11px;
   border: 0;
   background: transparent;
   color: #202b43;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   text-align: left;
 }
 
@@ -3743,9 +3961,9 @@ button {
 }
 
 .user-profile-menu-list button > svg {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
   stroke-width: 1.8;
 }
 
@@ -3767,7 +3985,7 @@ button {
   display: flex;
   box-sizing: border-box;
   width: calc(100% + 32px);
-  height: 40px;
+  height: 38px;
   align-items: center;
   justify-content: center;
   margin: 8px -16px 0;
@@ -3777,7 +3995,7 @@ button {
   background: #fff;
   color: #596681;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 @media (max-width: 700px) {
