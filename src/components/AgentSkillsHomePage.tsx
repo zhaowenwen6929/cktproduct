@@ -914,7 +914,7 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
       title: '页面入口与权限',
       description: '页面从团队管理侧边栏进入，沿用团队管理的顶部导航和左侧菜单。',
       items: [
-        { label: '入口', content: '进入首页底部“管理”后，点击与“账户概览”“使用统计”同级的“积分统计”，页面标题显示“积分概览”。“使用统计”当前仅保留入口，暂未放置内容。' },
+        { label: '入口', content: '进入首页底部“管理”后，点击与“账户概览”“使用统计”同级的“积分统计”，页面标题显示“积分概览”。“使用统计”当前仅保留入口，暂未放置内容。', highlightTerms: ['积分统计', '使用统计', '积分概览'] },
         { label: '适用角色', content: '团队管理员可查看当前团队统计数据；普通成员无权访问团队级统计页，需展示无权限状态并保留返回账户概览入口。' },
         { label: '数据范围', content: '默认统计当前团队“北京艺源酷”的积分，不跨团队合并数据；团队切换后应重新加载所选团队的数据。' },
       ],
@@ -923,38 +923,38 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
       title: '核心指标卡片',
       description: '积分概览使用实时数据，截止到当前最近数据；剩余积分、本月已消耗和今日已消耗均按当前团队展示。',
       items: [
-        { label: '剩余积分', content: '数值为当前团队账户剩余的积分数。当前团队等级小于 302 时显示“升级会员领更多积分”按钮，点击打开会员版本选择弹框；团队等级达到 302 及以上时只显示“增购”入口。' },
-        { label: '增购', content: '增购入口一直显示；当不显示升级会员按钮时，增购显示为大按钮。点击打开积分购买弹框。' },
-        { label: '本月已消耗积分', content: '数值为当前团队本月已消耗积分总和，包括功能消耗和到期自动失效。较上月展示变化率，支持 hover 查看详情；计算公式为（本月消耗值－上月消耗值）/上月消耗值，保留 2 位小数，正数绿色、负数红色、0 按常规黑色，上月为 0 时显示“－”。' },
-        { label: '今日已消耗积分', content: '数值为当前团队今日已消耗积分总和，包括功能消耗和到期自动失效。较昨日展示变化率，支持 hover 查看详情；计算公式为（今日消耗值－昨日消耗值）/昨日消耗值，保留 2 位小数，正数绿色、负数红色、0 按常规黑色，昨日为 0 时显示“－”。' },
+        { label: '剩余积分', content: '数值为当前团队账户剩余的积分数。当前团队等级小于 302 时显示“升级会员领更多积分”按钮，点击打开会员版本选择弹框；团队等级达到 302 及以上时只显示“增购”入口。', highlightTerms: ['302', '升级会员领更多积分', '增购'] },
+        { label: '增购', content: '增购入口一直显示；当不显示升级会员按钮时，增购显示为大按钮。点击打开积分购买弹框。', highlightTerms: ['一直显示', '大按钮', '积分购买弹框'] },
+        { label: '本月已消耗积分', content: '数值为当前团队本月已消耗积分总和，包括功能消耗和到期自动失效。较上月展示变化率，支持 hover 查看详情；计算公式为（本月消耗值－上月消耗值）/上月消耗值，保留 2 位小数，正数绿色、负数红色、0 按常规黑色，上月为 0 时显示“－”。', highlightTerms: ['实时数据', 'hover', '正数绿色', '负数红色', '上月为 0'] },
+        { label: '今日已消耗积分', content: '数值为当前团队今日已消耗积分总和，包括功能消耗和到期自动失效。较昨日展示变化率，支持 hover 查看详情；计算公式为（今日消耗值－昨日消耗值）/昨日消耗值，保留 2 位小数，正数绿色、负数红色、0 按常规黑色，昨日为 0 时显示“－”。', highlightTerms: ['实时数据', 'hover', '正数绿色', '负数红色', '昨日为 0'] },
       ],
     },
     {
       title: '今日使用',
       description: '实时获取最近 24 小时的使用数据，展示最新消耗和成员消耗。',
       items: [
-        { label: '最新消耗', content: '实时获取最近 24 小时内的所有消耗明细并展示，最多显示 5000 条。点击某个成员，弹框显示该成员当前团队最近 24 小时的消耗统计。' },
-        { label: '成员消耗', content: '展示成员名称、成员标签、最近 24 小时、消耗总积分和消耗总次数；原型示例为张美丽、成员、200 积分、50 次。' },
-        { label: '查看全部', content: '点击“查看全部”跳转至“积分管理 > 积分明细 > 消耗明细”。' },
+        { label: '最新消耗', content: '实时获取最近 24 小时内的所有消耗明细并展示，最多显示 5000 条。点击对应的成员名字，在右侧“成员消耗”卡片中展示该成员当前团队最近 24 小时的消耗统计。', highlightTerms: ['24 小时', '5000', '成员名字', '成员消耗'] },
+        { label: '成员消耗', content: '展示成员名称、成员标签、最近 24 小时、消耗总积分和消耗总次数；原型示例为张美丽、成员、200 积分、50 次。点击“我知道了”收起当前成员消耗内容。', highlightTerms: ['成员名称', '成员标签', '最近 24 小时', '消耗总积分', '消耗总次数'] },
+        { label: '查看全部', content: '点击“查看全部”跳转至“积分管理 > 积分明细 > 消耗明细”。', highlightTerms: ['查看全部', '积分管理 > 积分明细 > 消耗明细'] },
       ],
     },
     {
       title: '消耗趋势',
       description: '消耗趋势使用 T+1 数据，默认统计周期为过去 7 天。',
       items: [
-        { label: '时间范围及统计粒度', content: '预置周期支持过去 7 天、过去 30 天、上周、上月，默认过去 7 天；日期选择器展示所选日期范围，点击可展开日历，最晚可选至昨日、最早可选至积分上线时间，最长选择周期 90 天；统计粒度支持天、周、月，默认按天。' },
-        { label: '消耗积分趋势', content: '按时间范围和粒度展示周期内总消耗积分、功能消耗积分数、到期失效积分数趋势图。hover 对应点显示日期、总消耗积分、功能消耗、到期失效、消耗最多的成员及其占比、消耗最多的功能及其占比。' },
-        { label: '消耗成员趋势', content: '按时间范围和粒度展示周期内消耗成员趋势图。hover 显示总消耗成员数、共消耗积分、消耗最多的成员及其占比、消耗最多的功能及其占比。' },
-        { label: '消耗功能趋势', content: '按时间范围和粒度展示周期内消耗功能趋势图。hover 显示总消耗功能数、共消耗积分、消耗最多的功能及其占比、消耗最多的成员及其占比。' },
-        { label: '导出', content: '趋势图右侧提供“导出”，仅导出当前趋势条件下的功能数据。' },
+        { label: '时间范围及统计粒度', content: '预置周期支持过去 7 天、过去 30 天、上周、上月，默认过去 7 天；日期选择器展示所选日期范围，点击可展开日历，最晚可选至昨日、最早可选至积分上线时间，最长选择周期 90 天；统计粒度支持天、周、月，默认按天。', highlightTerms: ['过去 7 天', '过去 30 天', '上周', '上月', '90 天', '天、周、月'] },
+        { label: '消耗积分趋势', content: '按时间范围和粒度展示周期内总消耗积分、功能消耗积分数、到期失效积分数趋势图。hover 对应点显示日期、总消耗积分、功能消耗、到期失效、消耗最多的成员及其占比、消耗最多的功能及其占比。', highlightTerms: ['总消耗积分', '功能消耗积分数', '到期失效积分数', 'hover'] },
+        { label: '消耗成员趋势', content: '按时间范围和粒度展示周期内消耗成员趋势图。hover 显示总消耗成员数、共消耗积分、消耗最多的成员及其占比、消耗最多的功能及其占比。', highlightTerms: ['总消耗成员数', '共消耗积分', 'hover'] },
+        { label: '消耗功能趋势', content: '按时间范围和粒度展示周期内消耗功能趋势图。hover 显示总消耗功能数、共消耗积分、消耗最多的功能及其占比、消耗最多的成员及其占比。', highlightTerms: ['总消耗功能数', '共消耗积分', 'hover'] },
+        { label: '导出', content: '趋势图右侧提供“导出”，仅导出当前趋势条件下的功能数据。', highlightTerms: ['导出', '仅导出当前趋势条件下的功能数据'] },
       ],
     },
     {
       title: '消耗榜单',
       description: '消耗榜单使用 T+1 数据，时间范围与消耗趋势上方选择的时间范围保持一致。',
       items: [
-        { label: '成员消耗榜单', content: '按照时间范围及统计粒度内的消耗量从高到低展示 Top 10 成员；展示成员名称、消耗占比和消耗积分数。消耗占比为周期内成员消耗积分数 / 所有成员的消耗积分数。' },
-        { label: '功能消耗榜单', content: '按照时间范围及统计粒度内的消耗量从高到低展示 Top 10 功能；展示功能名称、消耗占比和消耗积分数。消耗占比为周期内功能消耗积分数 / 所有功能的消耗积分数。' },
+        { label: '成员消耗榜单', content: '按照时间范围及统计粒度内的消耗量从高到低展示 Top 10 成员；展示成员名称、消耗占比和消耗积分数。消耗占比为周期内成员消耗积分数 / 所有成员的消耗积分数。', highlightTerms: ['Top 10', '成员名称', '消耗占比', '消耗积分数'] },
+        { label: '功能消耗榜单', content: '按照时间范围及统计粒度内的消耗量从高到低展示 Top 10 功能；展示功能名称、消耗占比和消耗积分数。消耗占比为周期内功能消耗积分数 / 所有功能的消耗积分数。', highlightTerms: ['Top 10', '功能名称', '消耗占比', '消耗积分数'] },
       ],
     },
     {
@@ -962,8 +962,8 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
       description: '产品说明入口和功能导出入口相互独立。',
       items: [
         { label: '页面入口', content: '积分统计与使用统计保持同一级别；使用统计暂未放置页面内容。积分统计包括积分概览、今日使用、消耗趋势和消耗榜单四部分统计。' },
-        { label: '需求说明', content: '页面右上角悬浮“需求说明”按钮打开完整需求文档；该入口属于功能外的产品说明。' },
-        { label: '导出', content: '需求说明不加入导出数据；趋势模块“导出”只处理当前趋势功能数据。' },
+        { label: '需求说明', content: '页面右上角悬浮“需求说明”按钮打开完整需求文档；该入口属于功能外的产品说明。', highlightTerms: ['需求说明', '功能外的产品说明'] },
+        { label: '导出', content: '需求说明不加入导出数据；趋势模块“导出”只处理当前趋势功能数据。', highlightTerms: ['不加入导出数据', '导出'] },
       ],
     },
     {
@@ -990,7 +990,7 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
     '从管理 > 积分统计进入后，页面标题为“积分概览”，且积分统计与使用统计在团队管理侧边栏保持同级。',
     '页面包含积分概览、今日使用、消耗趋势和消耗榜单四部分，积分概览和今日使用为实时数据，消耗趋势和消耗榜单为 T+1 数据。',
     '积分概览按规则展示剩余积分、升级会员/增购、本月已消耗和今日已消耗，并支持变化率 hover 详情。',
-    '今日使用最多显示最近24小时5000条消耗明细，成员卡片展示总积分和总次数，查看全部跳转到消耗明细。',
+    '今日使用最多显示最近24小时5000条消耗明细，点击对应成员名字后在右侧成员消耗卡片展示总积分和总次数，查看全部跳转到消耗明细。',
     '趋势区域支持过去7天、过去30天、上周、上月、最长90天日期范围，以及天/周/月统计粒度。',
     '趋势区域支持消耗积分、消耗成员、消耗功能三个维度，并按原型展示 hover 分析信息和三类趋势数据。',
     '消耗榜单分别展示成员和功能 Top10，包含名称、消耗占比和消耗积分。',
@@ -1012,15 +1012,49 @@ const creditRecentConsumption = [
   { time: '昨天 05:18:54', member: '小熊熊', detail: '使用 AI文案 生文本', points: '10积分' },
 ];
 
+const creditMemberStats: Record<string, { points: number; count: number }> = {
+  张三: { points: 300, count: 30 },
+  小强: { points: 10, count: 1 },
+  李四: { points: 200, count: 2 },
+  王五: { points: 20, count: 2 },
+  系统: { points: 1000, count: 1 },
+  小熊熊: { points: 10, count: 1 },
+};
+
+type CreditTrendMetricKey = 'total' | 'feature' | 'expiry' | 'memberCount' | 'memberPoints' | 'functionCount' | 'functionPoints';
+
 const creditTrendBars = [
-  { label: '1月28日', total: 2200, feature: 1120, expiry: 980 },
-  { label: '1月29日', total: 3100, feature: 1640, expiry: 1420 },
-  { label: '1月30日', total: 2750, feature: 1380, expiry: 1260 },
-  { label: '1月31日', total: 3450, feature: 1780, expiry: 1600 },
-  { label: '2月1日', total: 2800, feature: 1450, expiry: 1320 },
-  { label: '2月2日', total: 3780, feature: 1900, expiry: 1800 },
-  { label: '2月3日', total: 3040, feature: 1650, expiry: 1390 },
-];
+  { label: '1月28日', total: 2200, feature: 1120, expiry: 980, memberCount: 22, memberPoints: 1120, functionCount: 2, functionPoints: 1120 },
+  { label: '1月29日', total: 3100, feature: 1640, expiry: 1420, memberCount: 31, memberPoints: 1640, functionCount: 3, functionPoints: 1640 },
+  { label: '1月30日', total: 2750, feature: 1380, expiry: 1260, memberCount: 27, memberPoints: 1380, functionCount: 3, functionPoints: 1380 },
+  { label: '1月31日', total: 3450, feature: 1780, expiry: 1600, memberCount: 35, memberPoints: 1780, functionCount: 4, functionPoints: 1780 },
+  { label: '2月1日', total: 2800, feature: 1450, expiry: 1320, memberCount: 28, memberPoints: 1450, functionCount: 3, functionPoints: 1450 },
+  { label: '2月2日', total: 3780, feature: 1900, expiry: 1800, memberCount: 39, memberPoints: 1900, functionCount: 5, functionPoints: 1900 },
+  { label: '2月3日', total: 3040, feature: 1650, expiry: 1390, memberCount: 32, memberPoints: 1650, functionCount: 2, functionPoints: 1650 },
+] satisfies Array<{ label: string } & Record<CreditTrendMetricKey, number>>;
+
+const creditTrendPresentations: Record<CreditTrendTab, {
+  axis: string[];
+  max: number;
+  barKey: CreditTrendMetricKey;
+  lineKeys: [CreditTrendMetricKey, CreditTrendMetricKey];
+  barClass: string;
+  lineClasses: [string, string];
+  legend: Array<{ label: string; className: string }>;
+}> = {
+  消耗积分: {
+    axis: ['3800', '2850', '1900', '950', '0'], max: 3800, barKey: 'total', lineKeys: ['feature', 'expiry'], barClass: 'is-total', lineClasses: ['is-feature', 'is-expiry'],
+    legend: [{ label: '总消耗', className: 'is-total' }, { label: '功能消耗', className: 'is-feature' }, { label: '到期失效', className: 'is-expiry' }],
+  },
+  消耗成员: {
+    axis: ['40', '30', '20', '10', '0'], max: 40, barKey: 'memberCount', lineKeys: ['memberPoints', 'memberCount'], barClass: 'is-member', lineClasses: ['is-member', 'is-member-points'],
+    legend: [{ label: '消耗成员', className: 'is-member' }, { label: '成员消耗积分', className: 'is-member-points' }],
+  },
+  消耗功能: {
+    axis: ['5', '4', '3', '2', '0'], max: 5, barKey: 'functionCount', lineKeys: ['functionPoints', 'functionCount'], barClass: 'is-function', lineClasses: ['is-function', 'is-function-points'],
+    legend: [{ label: '消耗功能', className: 'is-function' }, { label: '功能消耗积分', className: 'is-function-points' }],
+  },
+};
 
 const creditMemberRanking = [
   { name: '张三', percent: '100%', points: 500 },
@@ -1060,10 +1094,12 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
   const [granularity, setGranularity] = useState('按天');
   const [dateRange, setDateRange] = useState('2026-02-21~2026-02-27');
   const [hoveredTrendIndex, setHoveredTrendIndex] = useState(creditTrendBars.length - 1);
-  const maxTrendValue = 3800;
-  const featurePoints = creditTrendBars.map((item, index) => `${(index / (creditTrendBars.length - 1)) * 100},${100 - (item.feature / maxTrendValue) * 78}`).join(' ');
-  const expiryPoints = creditTrendBars.map((item, index) => `${(index / (creditTrendBars.length - 1)) * 100},${100 - (item.expiry / maxTrendValue) * 78}`).join(' ');
+  const [selectedMember, setSelectedMember] = useState<string | null>(null);
+  const trendPresentation = creditTrendPresentations[trendTab];
+  const primaryPoints = creditTrendBars.map((item, index) => `${(index / (creditTrendBars.length - 1)) * 100},${100 - (item[trendPresentation.lineKeys[0]] / trendPresentation.max) * 78}`).join(' ');
+  const secondaryPoints = creditTrendBars.map((item, index) => `${(index / (creditTrendBars.length - 1)) * 100},${100 - (item[trendPresentation.lineKeys[1]] / trendPresentation.max) * 78}`).join(' ');
   const selectedTrendDate = creditTrendBars[hoveredTrendIndex]?.label ?? '2月3日';
+  const selectedMemberStats = selectedMember ? creditMemberStats[selectedMember] ?? { points: 0, count: 0 } : null;
   const periodRanges: Record<string, string> = {
     '过去7天': '2026-02-21~2026-02-27',
     '过去30天': '2026-01-29~2026-02-27',
@@ -1106,32 +1142,28 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
         <section className="credit-overview-recent">
           <div className="credit-overview-section-heading"><h2>最新消耗</h2><button type="button" onClick={() => onNotify('已打开全部积分消耗记录')}>查看全部</button></div>
           <div className="credit-overview-recent-list">
-            {creditRecentConsumption.map((record, index) => <div className="credit-overview-recent-row" key={`${record.time}-${record.member}-${index}`}><span>{record.time}</span><strong>{record.member}</strong><p>{record.detail} <em>消耗 {record.points}</em></p></div>)}
+            {creditRecentConsumption.map((record, index) => <div className="credit-overview-recent-row" key={`${record.time}-${record.member}-${index}`}><span>{record.time}</span><button type="button" className={`credit-overview-member-trigger ${selectedMember === record.member ? 'is-selected' : ''}`} onClick={() => setSelectedMember(record.member)}>{record.member}</button><p>{record.detail} <em>消耗 {record.points}</em></p></div>)}
           </div>
         </section>
 
         <aside className="credit-overview-member-card">
           <h2>成员消耗</h2>
-          <div className="credit-overview-member-label"><strong>张美丽</strong><span>成员</span></div>
-          <p>最近24小时</p>
-          <dl><div><dt>消耗总积分</dt><dd>200</dd></div><div><dt>消耗总次数</dt><dd>50</dd></div></dl>
-          <button type="button" className="credit-overview-member-link" onClick={() => onNotify('已打开成员消耗明细')}>查看消耗明细</button>
-          <button type="button" className="credit-overview-member-close" onClick={() => onNotify('成员消耗提示已关闭')}>我知道了</button>
+          {selectedMember && selectedMemberStats ? <><div className="credit-overview-member-label"><strong>{selectedMember}</strong><span>成员</span></div><p>最近24小时</p><dl><div><dt>消耗总积分</dt><dd>{selectedMemberStats.points}</dd></div><div><dt>消耗总次数</dt><dd>{selectedMemberStats.count}</dd></div></dl><button type="button" className="credit-overview-member-link" onClick={() => onNotify(`已打开${selectedMember}的消耗明细`)}>查看消耗明细</button><button type="button" className="credit-overview-member-close" onClick={() => setSelectedMember(null)}>我知道了</button></> : <div className="credit-overview-member-empty"><UserRound /><strong>点击成员名字</strong><span>查看对应成员最近24小时的消耗</span></div>}
         </aside>
       </div>
 
       <section className="credit-overview-trend-section">
         <div className="credit-overview-trend-heading"><h2>消耗趋势</h2><div className="credit-overview-periods">{['过去7天', '过去30天', '上周', '上月'].map((item) => <button type="button" key={item} className={period === item ? 'is-active' : ''} onClick={() => selectPeriod(item)}>{item}</button>)}<select aria-label="日期范围" value={dateRange} onChange={(event) => { setDateRange(event.currentTarget.value); setPeriod('自定义'); }}><option>2026-02-21~2026-02-27</option><option>2026-01-29~2026-02-27</option><option>2026-02-14~2026-02-20</option><option>2026-01-01~2026-01-31</option></select><select aria-label="统计粒度" value={granularity} onChange={(event) => setGranularity(event.currentTarget.value)}><option>按天</option><option>按周</option><option>按月</option></select></div></div>
         <div className="credit-overview-trend-toolbar"><div className="credit-overview-trend-tabs">{(['消耗积分', '消耗成员', '消耗功能'] as const).map((item) => <button type="button" key={item} className={trendTab === item ? 'is-active' : ''} onClick={() => setTrendTab(item)}>{item}</button>)}</div><button type="button" className="credit-overview-export" onClick={() => onNotify('当前趋势数据已准备导出')}>导出</button></div>
-        <div className="credit-overview-chart" aria-label="积分消耗趋势图">
-          <div className="credit-overview-chart-axis"><span>3800</span><span>2850</span><span>1900</span><span>950</span><span>0</span></div>
+        <div className="credit-overview-chart" aria-label={`${trendTab}趋势图`}>
+          <div className="credit-overview-chart-axis">{trendPresentation.axis.map((value) => <span key={value}>{value}</span>)}</div>
           <div className="credit-overview-chart-body">
             <div className="credit-overview-chart-grid"><i /><i /><i /><i /><i /></div>
-            <div className="credit-overview-chart-bars">{creditTrendBars.map((item, index) => <div className="credit-overview-chart-column" key={item.label} onMouseEnter={() => setHoveredTrendIndex(index)}><div className="credit-overview-chart-bar" style={{ height: `${item.total / maxTrendValue * 100}%` }} title={`${item.label} ${item.total}积分`} /><span>{item.label}</span></div>)}</div>
-            <svg className="credit-overview-chart-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline className="is-feature" points={featurePoints} /><polyline className="is-expiry" points={expiryPoints} /></svg>
+            <div className="credit-overview-chart-bars">{creditTrendBars.map((item, index) => <div className="credit-overview-chart-column" key={item.label} onMouseEnter={() => setHoveredTrendIndex(index)}><div className={`credit-overview-chart-bar ${trendPresentation.barClass}`} style={{ height: `${item[trendPresentation.barKey] / trendPresentation.max * 100}%` }} title={`${item.label} ${item[trendPresentation.barKey]}`} /><span>{item.label}</span></div>)}</div>
+            <svg className="credit-overview-chart-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline className={trendPresentation.lineClasses[0]} points={primaryPoints} /><polyline className={trendPresentation.lineClasses[1]} points={secondaryPoints} /></svg>
           </div>
         </div>
-        <div className="credit-overview-chart-legend"><span><i className="is-total" />总消耗</span><span><i className="is-feature" />功能消耗</span><span><i className="is-expiry" />到期失效</span></div>
+        <div className="credit-overview-chart-legend">{trendPresentation.legend.map((item) => <span key={item.label}><i className={item.className} />{item.label}</span>)}</div>
         <div className="credit-overview-trend-detail"><strong>2026年{selectedTrendDate.replace('月', '月').replace('日', '日')}消耗</strong>{creditTrendDetail[trendTab].map((line) => <p key={line}>{line}</p>)}</div>
       </section>
 

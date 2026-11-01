@@ -4869,3 +4869,356 @@ button {
     font-size: 10px;
   }
 }
+
+/* Refined typography and interactive member/trend states. */
+.credit-overview-heading {
+  margin: 5px 0 20px;
+}
+
+.credit-overview-heading h1 {
+  font-size: 25px;
+  line-height: 32px;
+}
+
+.credit-overview-metric {
+  min-height: 136px;
+  padding: 20px 23px 18px;
+}
+
+.credit-overview-metric > span {
+  font-size: 15px;
+  line-height: 21px;
+}
+
+.credit-overview-metric > strong {
+  margin-top: 8px;
+  font-size: 36px;
+  line-height: 43px;
+}
+
+.credit-overview-metric-actions {
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.credit-overview-metric-actions button {
+  height: 38px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+.credit-overview-change {
+  margin-top: 15px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.credit-overview-main-grid {
+  grid-template-columns: minmax(0, 1fr) 286px;
+  gap: 28px;
+  margin-top: 42px;
+}
+
+.credit-overview-section-heading h2,
+.credit-overview-trend-heading h2,
+.credit-overview-ranking-heading h2 {
+  font-size: 21px;
+  line-height: 28px;
+}
+
+.credit-overview-section-heading button,
+.credit-overview-ranking-heading button {
+  font-size: 14px;
+}
+
+.credit-overview-recent-list {
+  margin-top: 14px;
+}
+
+.credit-overview-recent-row {
+  grid-template-columns: 160px 92px minmax(0, 1fr);
+  min-height: 41px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.credit-overview-member-trigger {
+  width: max-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #252525;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: color .14s ease, font-weight .14s ease;
+}
+
+.credit-overview-member-trigger:hover,
+.credit-overview-member-trigger.is-selected {
+  color: #1769e8;
+  font-weight: 600;
+}
+
+.credit-overview-member-card {
+  min-height: 350px;
+  padding: 23px 21px 20px;
+}
+
+.credit-overview-member-card h2 {
+  margin-bottom: 23px;
+  font-size: 21px;
+  line-height: 28px;
+}
+
+.credit-overview-member-label strong,
+.credit-overview-member-card > p,
+.credit-overview-member-card dt {
+  font-size: 15px;
+}
+
+.credit-overview-member-card > p {
+  margin: 35px 0 28px;
+}
+
+.credit-overview-member-card dd {
+  font-size: 22px;
+}
+
+.credit-overview-member-link {
+  margin-top: 32px;
+  font-size: 14px;
+}
+
+.credit-overview-member-close {
+  height: 44px;
+  margin-top: 32px;
+  font-size: 15px;
+}
+
+.credit-overview-member-empty {
+  display: flex;
+  min-height: 250px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+  color: #98a4b8;
+  text-align: center;
+}
+
+.credit-overview-member-empty svg {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 6px;
+  color: #b6c2d5;
+  stroke-width: 1.6;
+}
+
+.credit-overview-member-empty strong {
+  color: #5b6880;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.credit-overview-member-empty span {
+  font-size: 12px;
+}
+
+.credit-overview-trend-section {
+  margin-top: 58px;
+}
+
+.credit-overview-periods {
+  gap: 22px;
+  margin-left: 14px;
+}
+
+.credit-overview-periods button,
+.credit-overview-periods select {
+  height: 34px;
+  font-size: 14px;
+}
+
+.credit-overview-periods select {
+  min-width: 250px;
+}
+
+.credit-overview-periods select:last-child {
+  min-width: 118px;
+}
+
+.credit-overview-trend-tabs button {
+  height: 35px;
+  padding: 0 17px;
+  font-size: 14px;
+}
+
+.credit-overview-export {
+  font-size: 14px;
+}
+
+.credit-overview-chart {
+  height: 315px;
+  margin-top: 26px;
+}
+
+.credit-overview-chart-bar.is-member {
+  background: rgba(92, 156, 239, .68);
+}
+
+.credit-overview-chart-bar.is-function {
+  background: rgba(125, 109, 239, .64);
+}
+
+.credit-overview-chart-line polyline.is-member {
+  stroke: #4e9cf0;
+}
+
+.credit-overview-chart-line polyline.is-member-points {
+  stroke: #8c76ee;
+}
+
+.credit-overview-chart-line polyline.is-function {
+  stroke: #7b69e9;
+}
+
+.credit-overview-chart-line polyline.is-function-points {
+  stroke: #f39b10;
+}
+
+.credit-overview-chart-legend {
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.credit-overview-chart-legend i.is-member,
+.credit-overview-chart-legend i.is-member-points {
+  background: #4e9cf0;
+}
+
+.credit-overview-chart-legend i.is-member-points {
+  background: #8c76ee;
+}
+
+.credit-overview-chart-legend i.is-function {
+  background: #7b69e9;
+}
+
+.credit-overview-chart-legend i.is-function-points {
+  background: #f39b10;
+}
+
+.credit-overview-trend-detail {
+  min-height: 69px;
+  margin-top: 16px;
+  padding: 9px 11px;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.credit-overview-ranking-section {
+  margin-top: 40px;
+}
+
+.credit-overview-ranking-heading {
+  margin-bottom: 15px;
+}
+
+.credit-overview-ranking-card {
+  padding: 15px 15px 12px;
+}
+
+.credit-overview-ranking-card h3 {
+  margin-bottom: 11px;
+  font-size: 13px;
+}
+
+.credit-overview-ranking-list {
+  gap: 6px;
+}
+
+.credit-overview-ranking-row {
+  grid-template-columns: 25px minmax(65px, 1fr) minmax(90px, 1.6fr) 50px 38px;
+  min-height: 25px;
+  gap: 6px;
+  font-size: 10px;
+}
+
+.credit-overview-ranking-row > b {
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+}
+
+.credit-overview-ranking-row > strong {
+  font-size: 11px;
+}
+
+@media (max-width: 1300px) {
+  .credit-overview-metric > strong {
+    font-size: 32px;
+  }
+
+  .credit-overview-recent-row {
+    grid-template-columns: 142px 78px minmax(0, 1fr);
+    font-size: 13px;
+  }
+
+  .credit-overview-periods {
+    gap: 12px;
+  }
+
+  .credit-overview-periods select {
+    min-width: 205px;
+  }
+}
+
+.prototype-requirement-drawer--credit .credit-requirement-section,
+.prototype-requirement-page--credit .credit-requirement-section {
+  border-color: #f0d4a8;
+  background: #fff5e5;
+}
+
+.prototype-requirement-drawer--credit .credit-requirement-section > div:first-child h2,
+.prototype-requirement-page--credit .credit-requirement-section > div:first-child h2 {
+  color: #6814c7;
+}
+
+.prototype-requirement-drawer--credit .credit-requirement-section > div:first-child p,
+.prototype-requirement-page--credit .credit-requirement-section > div:first-child p {
+  color: #3f3f3f;
+}
+
+.prototype-requirement-drawer--credit .credit-requirement-section .bg-\[\#f8fafc\],
+.prototype-requirement-page--credit .credit-requirement-section .bg-\[\#f8fafc\] {
+  background: rgba(255, 255, 255, .6);
+}
+
+.prototype-requirement-drawer--credit .credit-requirement-section .text-\[\#536178\],
+.prototype-requirement-page--credit .credit-requirement-section .text-\[\#536178\] {
+  color: #202020;
+}
+
+.prototype-requirement-drawer--credit .credit-requirement-section .text-\[\#778397\],
+.prototype-requirement-page--credit .credit-requirement-section .text-\[\#778397\] {
+  color: #242424;
+}
+
+@media (max-width: 700px) {
+  .credit-overview-recent-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 8px 0;
+  }
+
+  .credit-overview-recent-row > p {
+    white-space: normal;
+  }
+
+  .credit-overview-periods select,
+  .credit-overview-periods select:last-child {
+    min-width: 0;
+    flex: 1;
+  }
+}
