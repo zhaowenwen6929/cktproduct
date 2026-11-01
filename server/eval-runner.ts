@@ -1,5 +1,8 @@
 import express from 'express';
-import { chromium, type Browser, type Page } from 'playwright-core';
+import { randomUUID } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright-core';
 
 type RunnerMode = 'api' | 'browser';
 
@@ -69,6 +72,25 @@ const defaultAllowedHosts = (process.env.EVAL_ALLOWED_HOSTS ?? 'localhost,127.0.
   .filter(Boolean);
 
 const app = express();
+type AuthSession = {
+  browser: Browser;
+  context: BrowserContext;
+  page: Page;
+  storageStatePath: string;
+  expiresTimer: ReturnType<typeof setTimeout>;
+};
+
+const authSessions = new Map<string, AuthSession>();
+
+async function closeAuthSession(sessionId: string) {
+  const session = authSessions.get(sessionId);
+  if (!session) return;
+  authSessions.delete(sessionId);
+  clearTimeout(session.expiresTimer);
+  await session.context.close().catch(() => undefined);
+  await session.browser.close().catch(() => undefined);
+}
+
 app.use(express.json({ limit: '8mb' }));
 app.use((request, response, next) => {
   const origin = process.env.EVAL_CORS_ORIGIN ?? '*';
@@ -245,6 +267,67 @@ async function runBrowserCase(testCase: RunnerCase, config: RunnerConfig, browse
 
 app.get('/api/eval/health', (_request, response) => {
   response.json({ ok: true, service: 'eval-runner', modes: ['api', 'browser'], allowedHosts: defaultAllowedHosts, executablePath: resolveExecutablePath() });
+});
+
+app.post('/api/eval/auth/start', async (request, response) => {
+  const { loginUrl, storageStatePath, allowedHosts, ignoreHTTPSErrors } = request.body as { loginUrl?: string; storageStatePath?: string; allowedHosts?: string[]; ignoreHTTPSErrors?: boolean };
+  if (!loginUrl?.trim()) {
+    response.status(400).json({ message: '请先填写 Moni 登录地址' });
+    return;
+  }
+  if (!storageStatePath?.trim()) {
+    response.status(400).json({ message: '请先填写登录态文件保存路径' });
+    return;
+  }
+  const hosts = [...new Set([...(allowedHosts ?? []), ...defaultAllowedHosts])];
+  if (!isAllowedUrl(loginUrl, hosts)) {
+    response.status(400).json({ message: `登录地址未在白名单中：${loginUrl}` });
+    return;
+  }
+
+  let browser: Browser | undefined;
+  try {
+    browser = await chromium.launch({ headless: false, executablePath: resolveExecutablePath() });
+    const context = await browser.newContext({ ignoreHTTPSErrors: Boolean(ignoreHTTPSErrors) });
+    const page = await context.newPage();
+    await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const sessionId = randomUUID();
+    const expiresTimer = setTimeout(() => { void closeAuthSession(sessionId); }, 10 * 60 * 1000);
+    authSessions.set(sessionId, { browser, context, page, storageStatePath, expiresTimer });
+    response.json({ sessionId, status: 'waiting', message: '浏览器已打开，请完成 Moni 登录后点击保存登录态。' });
+  } catch (error) {
+    await browser?.close().catch(() => undefined);
+    const message = error instanceof Error ? error.message : String(error);
+    response.status(500).json({ message: `无法打开登录浏览器：${message}` });
+  }
+});
+
+app.post('/api/eval/auth/complete', async (request, response) => {
+  const { sessionId } = request.body as { sessionId?: string };
+  if (!sessionId) {
+    response.status(400).json({ message: '缺少登录会话 ID' });
+    return;
+  }
+  const session = authSessions.get(sessionId);
+  if (!session) {
+    response.status(404).json({ message: '登录会话不存在或已过期，请重新打开登录浏览器' });
+    return;
+  }
+  try {
+    await mkdir(dirname(session.storageStatePath), { recursive: true });
+    await session.context.storageState({ path: session.storageStatePath });
+    await closeAuthSession(sessionId);
+    response.json({ status: 'saved', path: session.storageStatePath, message: '登录态已保存，可开始执行浏览器用例。' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    response.status(500).json({ message: `登录态保存失败：${message}` });
+  }
+});
+
+app.post('/api/eval/auth/cancel', async (request, response) => {
+  const { sessionId } = request.body as { sessionId?: string };
+  if (sessionId) await closeAuthSession(sessionId);
+  response.json({ status: 'cancelled' });
 });
 
 app.post('/api/eval/run', async (request, response) => {
