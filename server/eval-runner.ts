@@ -66,7 +66,7 @@ type RunnerResult = {
 class AssertionFailure extends Error {}
 
 const port = Number(process.env.EVAL_RUNNER_PORT ?? 4174);
-const defaultAllowedHosts = (process.env.EVAL_ALLOWED_HOSTS ?? 'localhost,127.0.0.1,example.com')
+const defaultAllowedHosts = (process.env.EVAL_ALLOWED_HOSTS ?? 'moniwww.chuangkit.com,www.chuangkit.com,localhost,127.0.0.1,example.com')
   .split(',')
   .map((host) => host.trim())
   .filter(Boolean);
