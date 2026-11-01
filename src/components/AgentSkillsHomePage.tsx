@@ -771,6 +771,7 @@ const teamManagementNavGroups = [
       { label: '账户概览', icon: UserRound },
       { label: '使用统计', icon: ImageIcon },
       { label: '积分统计', icon: BarChart3 },
+      { label: '积分管理', icon: CreditCard },
     ],
   },
   {
@@ -999,6 +1000,100 @@ const TEAM_CREDIT_STATISTICS_REQUIREMENT: RequirementSpec = {
   ],
 };
 
+const TEAM_CREDIT_MANAGEMENT_REQUIREMENT: RequirementSpec = {
+  title: '积分分配与管理',
+  requirementKey: 'TEAM-CREDIT-MANAGEMENT',
+  status: '待开发',
+  eyebrow: 'TEAM CREDIT MANAGEMENT',
+  summary: '在团队管理中提供积分配额管理和积分明细查询，支持共享池/配额模式、成员限额、临时加量、暂停与恢复消耗、重置和团队通用配额策略。',
+  background: '积分管理面向团队创建者和管理员，统一管理团队积分的分配方式、成员月度消耗上限及充值/奖励、消耗明细；所有团队版会员可见，具体操作按角色权限控制。',
+  goal: '按照原型还原积分分配与管理页面、配额管理和积分明细两个 Tab，并将编辑限额、成员临时加量、团队通用配额策略、暂停/恢复/重置确认和明细筛选等入口全部串联为可操作交互。',
+  sections: [
+    {
+      title: '页面入口与权限',
+      description: '积分管理与积分统计、使用统计保持同级，页面右上角提供独立需求说明入口。',
+      items: [
+        { label: '页面入口', content: '进入首页底部“管理”后，点击与“账户概览”“使用统计”“积分统计”同级的“积分管理”，页面标题显示“积分分配与管理”。', highlightTerms: ['积分管理', '积分分配与管理'] },
+        { label: '团队权限', content: '团队创建者和管理员可见并可操作积分管理；普通团队成员不可见该页面。', highlightTerms: ['团队创建者', '管理员'] },
+        { label: '会员限制', content: '所有团队版会员可见；非团队会员时显示“升级团队版会员，立即使用”入口和对应功能说明。', highlightTerms: ['所有团队版会员', '升级团队版会员，立即使用'] },
+      ],
+    },
+    {
+      title: '配额管理 Tab',
+      description: '默认进入配额管理，展示分配模式和成员配额。',
+      items: [
+        { label: '分配模式', content: '提供“共享池模式”和“配额模式”两个单选项，默认选中共享池模式。共享池模式下，所有团队成员均消耗共享团队积分池；配额模式下，每个成员按照自己的月度最大消耗额度消耗。', highlightTerms: ['共享池模式', '配额模式', '默认选中共享池模式'] },
+        { label: '模式切换', content: '两种方式在团队会员有效期内可以随意切换；团队会员过期后自动切换为共享池模式。切换分配模式时保留之前的配额设置。', highlightTerms: ['随意切换', '自动切换为共享池模式', '保留之前的配额设置'] },
+        { label: '团队通用配额策略', content: '成员配额区域右侧提供“团队通用配额策略”入口，点击打开策略配置弹框。', highlightTerms: ['团队通用配额策略', '策略配置弹框'] },
+      ],
+    },
+    {
+      title: '成员配额',
+      description: '按成员展示角色、当月消耗、当前限额、状态和操作。',
+      items: [
+        { label: '筛选与搜索', content: '支持按“全部角色”、创建者、管理员、设计师、成员筛选；支持输入成员名称/邮箱搜索。', highlightTerms: ['全部角色', '成员名称/邮箱搜索'] },
+        { label: '列表字段', content: '展示名称、角色、本月消耗、当前限额、状态、操作；本月消耗使用进度条展示消耗值与当前限额的比例，hover 进度条显示百分比。', highlightTerms: ['名称', '角色', '本月消耗', '当前限额', '状态', '操作', 'hover'] },
+        { label: '状态规则', content: '本月消耗比例小于 80% 时显示“正常”；大于 80% 且小于 100% 时显示“警告”；达到或超过 100% 时显示“已耗尽”；暂停成员后显示“已暂停”。无限限额只显示灰色进度条，不显示比例。', highlightTerms: ['正常', '警告', '已耗尽', '已暂停', '无限限额'] },
+        { label: '操作入口', content: '每个成员支持“编辑”“暂停/恢复”“加量”“重置”。无限限额成员的“加量”置灰不可操作；暂停、恢复和重置均需二次确认。', highlightTerms: ['编辑', '暂停/恢复', '加量', '重置', '二次确认'] },
+      ],
+    },
+    {
+      title: '成员限额弹框',
+      description: '编辑限额用于修改成员的分配模式和月度额度。',
+      items: [
+        { label: '编辑限额', content: '点击成员“编辑”打开“编辑限额”弹框，展示成员信息、成员角色和分配模式。', highlightTerms: ['编辑限额', '成员信息', '分配模式'] },
+        { label: '跟随团队策略', content: '选择“跟随团队策略”时，成员使用团队通用配额策略中的角色配置；该成员将使用团队通用配额策略中的「成员」角色的配额策略。', highlightTerms: ['跟随团队策略', '团队通用配额策略'] },
+        { label: '自定义独立额度', content: '选择“自定义独立额度”时，显示设置周期额度上限、积分/月、允许透支、透支比例和设为无上限选项；数值保存后仅作用于当前成员。', highlightTerms: ['自定义独立额度', '设置周期额度上限', '积分/月', '允许透支', '设为无上限'] },
+        { label: '取消与保存', content: '点击“取消”或右上角关闭按钮不保存修改；点击“保存”校验配置后关闭弹框并更新成员列表。', highlightTerms: ['取消', '保存'] },
+      ],
+    },
+    {
+      title: '临时加量、暂停、恢复与重置',
+      description: '所有会改变成员当前消耗状态的操作都必须给出明确确认和结果反馈。',
+      items: [
+        { label: '成员临时加量', content: '点击“加量”打开“成员临时加量”弹框，一次性增加积分上限，仅本月有效；可输入积分数或勾选“设为无上限”，保存后更新当前成员限额。', highlightTerms: ['成员临时加量', '一次性增加积分上限', '仅本月有效', '设为无上限'] },
+        { label: '暂停成员消耗', content: '点击“暂停”弹出“暂停成员消耗”确认框，确认后该成员无法继续发起新的积分消耗任务，列表状态变为“已暂停”。', highlightTerms: ['暂停成员消耗', '无法继续发起新的积分消耗任务', '已暂停'] },
+        { label: '恢复成员消耗', content: '已暂停成员点击“恢复”弹出“恢复成员消耗”确认框，确认后恢复成员积分消耗，列表状态回到正常规则。', highlightTerms: ['恢复成员消耗', '恢复成员积分消耗'] },
+        { label: '重置成员消耗', content: '点击“重置”弹出“重置成员消耗”确认框，将当前周期已用额度重置为 0；保留真实消耗明细，仅重置当前周期展示值和可用额度。', highlightTerms: ['重置成员消耗', '重置为 0', '保留真实消耗明细'] },
+        { label: '温馨提示', content: '当未启用角色配置或角色下未配置数值时，通用配额将不生效；保存前提示检查并核对后再保存。', highlightTerms: ['温馨提示', '不生效', '核对后再保存'] },
+      ],
+    },
+    {
+      title: '积分明细 Tab',
+      description: '积分明细分为充值/奖励和消耗明细，按月查看团队积分账本。',
+      items: [
+        { label: '充值/奖励', content: '展示月度累计积分、月份和来源筛选；列表展示来源、时间、金额变化。充值或奖励金额使用正数，例如平台赠送 +1000。', highlightTerms: ['充值/奖励', '月度累计积分', '来源', '+1000'] },
+        { label: '消耗明细', content: '展示月度消耗积分、月份、成员和功能筛选；列表展示时间、成员、功能、消耗积分。消耗金额使用负数，例如 -100。', highlightTerms: ['消耗明细', '月度消耗积分', '成员', '功能', '-100'] },
+        { label: '筛选规则', content: '月份默认为 2026年1月，成员默认为所有成员，功能默认为所有功能；切换筛选条件后重新展示对应账本明细。', highlightTerms: ['2026年1月', '所有成员', '所有功能'] },
+      ],
+    },
+    {
+      title: '功能入口与可用积分',
+      description: '功能入口根据分配模式显示团队或成员可用积分。',
+      items: [
+        { label: '共享池模式', content: '功能入口显示团队剩余积分，使用团队剩余积分。', highlightTerms: ['共享池模式', '团队剩余积分'] },
+        { label: '配额模式', content: '功能入口显示当前成员实际可用剩余量；设置为无限时显示团队剩余积分，其他情况显示成员配额剩余量。文案统一显示为团队可用积分。', highlightTerms: ['配额模式', '实际可用剩余量', '无限', '团队可用积分'] },
+      ],
+    },
+    {
+      title: '需求说明与导出边界',
+      description: '需求说明是功能外的产品文档，不与积分明细或其他功能数据混合。',
+      items: [
+        { label: '需求说明', content: '页面右上角悬浮“需求说明”按钮打开完整需求说明；文档同步记录页面入口、权限、成员配额、弹框、积分明细和功能入口规则。', highlightTerms: ['需求说明', '功能外的产品文档'] },
+        { label: '导出边界', content: '积分管理页面当前按照原型展示明细筛选和列表，不将需求说明、重点说明或验证批注加入任何业务导出数据。', highlightTerms: ['不将需求说明', '业务导出数据'] },
+      ],
+    },
+  ],
+  acceptance: [
+    '从管理 > 积分管理进入后，页面标题为“积分分配与管理”，并与账户概览、使用统计、积分统计保持同级。',
+    '配额管理默认打开，显示共享池模式/配额模式、成员配额、筛选搜索、进度条、状态和操作列；积分明细 Tab 可切换充值/奖励与消耗明细。',
+    '点击团队通用配额策略、编辑、加量、暂停/恢复、重置均打开对应弹框，取消、关闭、保存和二次确认行为可用。',
+    '成员消耗比例按本月消耗/当前限额显示进度，正常、警告、已耗尽、已暂停状态颜色与原型一致，无限限额不显示百分比。',
+    '积分明细按照月份、来源、成员和功能筛选，充值/奖励金额为正数，消耗明细金额为负数，列表字段与原型一致。',
+    '需求说明入口为页面右上角悬浮按钮，文档覆盖所有模块和弹框规则，不进入积分明细或业务导出数据。',
+  ],
+};
+
 type CreditTrendTab = '消耗积分' | '消耗成员' | '消耗功能';
 
 const creditRecentConsumption = [
@@ -1088,7 +1183,7 @@ const creditTrendDetail = {
   '消耗功能': ['总消耗功能：2，共消耗积分1000', '消耗最多的功能：无限画布，共消耗300积分，占当日比xx%', '消耗最多的成员：张三，共消耗1000积分'],
 } satisfies Record<CreditTrendTab, string[]>;
 
-function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership, onOpenPointsPurchase }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void }) {
+function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership, onOpenPointsPurchase, onOpenCreditManagementDetails }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void; onOpenCreditManagementDetails: () => void }) {
   const [trendTab, setTrendTab] = useState<CreditTrendTab>('消耗积分');
   const [period, setPeriod] = useState('过去7天');
   const [granularity, setGranularity] = useState('按天');
@@ -1140,7 +1235,7 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
 
       <div className={`credit-overview-main-grid ${selectedMember ? 'has-selected-member' : ''}`}>
         <section className={`credit-overview-recent ${selectedMember ? 'is-member-popover-open' : ''}`}>
-          <div className="credit-overview-section-heading"><h2>最新消耗</h2><button type="button" onClick={() => onNotify('已打开全部积分消耗记录')}>查看全部</button></div>
+          <div className="credit-overview-section-heading"><h2>最新消耗</h2><button type="button" onClick={onOpenCreditManagementDetails}>查看全部</button></div>
           <div className="credit-overview-recent-list">
             {creditRecentConsumption.map((record, index) => <div className="credit-overview-recent-row" key={`${record.time}-${record.member}-${index}`}><span>{record.time}</span><button type="button" className={`credit-overview-member-trigger ${selectedMember === record.member ? 'is-selected' : ''}`} onClick={() => setSelectedMember(record.member)}>{record.member}</button><p>{record.detail} <em>消耗 {record.points}</em></p></div>)}
           </div>
@@ -1178,10 +1273,193 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
   );
 }
 
+type CreditManagementLanding = 'quota' | 'reward' | 'consumption';
+type CreditManagementTab = 'quota' | 'details';
+type CreditDetailTab = 'reward' | 'consumption';
+type CreditMemberStatus = 'normal' | 'warning' | 'exhausted' | 'paused';
+
+type CreditQuotaMember = {
+  id: string;
+  name: string;
+  role: string;
+  consumed: number;
+  limit: number | null;
+  status: CreditMemberStatus;
+  allocationMode: 'team' | 'custom';
+  overdraft: boolean;
+};
+
+const CREDIT_MEMBER_STATUS_LABEL: Record<CreditMemberStatus, string> = {
+  normal: '正常',
+  warning: '警告',
+  exhausted: '已耗尽',
+  paused: '已暂停',
+};
+
+const initialCreditQuotaMembers: CreditQuotaMember[] = [
+  { id: 'zhang-meili', name: '张美丽', role: '创建者', consumed: 2500, limit: 3000, status: 'normal', allocationMode: 'team', overdraft: false },
+  { id: 'wang-xiaosi', name: '王小四', role: '管理员', consumed: 3000, limit: 3000, status: 'exhausted', allocationMode: 'team', overdraft: false },
+  { id: 'li-xiaobao-designer', name: '李小宝', role: '设计师', consumed: 2500, limit: 2800, status: 'warning', allocationMode: 'custom', overdraft: false },
+  { id: 'li-xiaobao-member', name: '李小宝', role: '成员', consumed: 2500, limit: null, status: 'normal', allocationMode: 'team', overdraft: false },
+];
+
+const creditRewardDetails = [
+  { source: '平台赠送', time: '2026-1-10 13:18:09', amount: '+1000' },
+  { source: '平台赠送', time: '2026-1-11 13:18:09', amount: '+1000' },
+  { source: '活动奖励', time: '2026-1-15 09:20:11', amount: '+500' },
+  { source: '平台赠送', time: '2026-1-20 18:08:33', amount: '+5892' },
+];
+
+const creditConsumptionDetails = [
+  { time: '2026年1月2日13:18:09', member: '赵文文', feature: 'AI创作', points: '-100' },
+  { time: '2026年1月2日13:18:09', member: '赵文文', feature: '无限画布', points: '-100' },
+  { time: '2026年1月2日13:18:09', member: '赵文文', feature: 'AI变清晰', points: '-100' },
+  { time: '2026年1月2日13:18:09', member: '赵文文', feature: 'AI生图', points: '-100' },
+];
+
+function CreditManagementModalFrame({ title, children, onClose, wide = false }: { title: string; children: React.ReactNode; onClose: () => void; wide?: boolean }) {
+  return <div className="credit-management-modal-backdrop" role="dialog" aria-modal="true" aria-label={title}>
+    <section className={`credit-management-modal ${wide ? 'is-wide' : ''}`}>
+      <header className="credit-management-modal-header"><h2>{title}</h2><button type="button" aria-label={`关闭${title}`} onClick={onClose}>×</button></header>
+      {children}
+    </section>
+  </div>;
+}
+
+function CreditManagementMemberInfo({ member }: { member: CreditQuotaMember }) {
+  return <div className="credit-management-member-info"><span>{member.name.slice(0, 1)}</span><div><strong>{member.name}</strong><small>{member.role}</small></div></div>;
+}
+
+function CreditManagementEditModal({ member, onClose, onSave }: { member: CreditQuotaMember; onClose: () => void; onSave: (data: { mode: 'team' | 'custom'; limit: number | null; overdraft: boolean }) => void }) {
+  const [mode, setMode] = useState<'team' | 'custom'>(member.allocationMode);
+  const [limit, setLimit] = useState(member.limit == null ? '' : String(member.limit));
+  const [unlimited, setUnlimited] = useState(member.limit == null);
+  const [overdraft, setOverdraft] = useState(member.overdraft);
+
+  return <CreditManagementModalFrame title="编辑限额" onClose={onClose}>
+    <div className="credit-management-modal-body">
+      <h3>成员信息</h3>
+      <CreditManagementMemberInfo member={member} />
+      <h3 className="credit-management-form-heading">分配模式</h3>
+      <div className="credit-management-radio-row"><label><input type="radio" checked={mode === 'team'} onChange={() => setMode('team')} />跟随团队策略</label><label><input type="radio" checked={mode === 'custom'} onChange={() => setMode('custom')} />自定义独立额度</label></div>
+      {mode === 'team' ? <p className="credit-management-helper">该成员将使用团队通用配额策略中“成员”角色的配额策略</p> : <div className="credit-management-custom-form">
+        <label>设置周期额度上限</label><div className="credit-management-input-with-unit"><input value={limit} disabled={unlimited} onChange={(event) => setLimit(event.currentTarget.value.replace(/\D/g, ''))} /><span>积分/月</span></div>
+        <label className="credit-management-checkbox"><input type="checkbox" checked={unlimited} onChange={(event) => setUnlimited(event.currentTarget.checked)} />设为无上限</label>
+        <label className="credit-management-checkbox"><input type="checkbox" checked={overdraft} onChange={(event) => setOverdraft(event.currentTarget.checked)} />允许透支</label>
+        {overdraft ? <div className="credit-management-input-with-unit"><input defaultValue="10" /><span>%</span></div> : null}
+      </div>}
+    </div>
+    <footer className="credit-management-modal-actions"><button type="button" className="is-secondary" onClick={onClose}>取消</button><button type="button" onClick={() => onSave({ mode, limit: unlimited ? null : Math.max(0, Number(limit) || 0), overdraft })}>保存</button></footer>
+  </CreditManagementModalFrame>;
+}
+
+function CreditManagementTemporaryModal({ member, onClose, onSave }: { member: CreditQuotaMember; onClose: () => void; onSave: (amount: number | null) => void }) {
+  const [amount, setAmount] = useState('');
+  const [unlimited, setUnlimited] = useState(false);
+  return <CreditManagementModalFrame title="成员临时加量" onClose={onClose}>
+    <div className="credit-management-modal-body"><h3>成员信息</h3><CreditManagementMemberInfo member={member} /><h3 className="credit-management-form-heading">临时加量</h3><p className="credit-management-helper">一次性增加积分上限，仅本月有效</p><div className="credit-management-input-with-unit"><input value={amount} disabled={unlimited} onChange={(event) => setAmount(event.currentTarget.value.replace(/\D/g, ''))} /><span>积分</span></div><label className="credit-management-checkbox"><input type="checkbox" checked={unlimited} onChange={(event) => setUnlimited(event.currentTarget.checked)} />设为无上限</label></div>
+    <footer className="credit-management-modal-actions"><button type="button" className="is-secondary" onClick={onClose}>取消</button><button type="button" onClick={() => onSave(unlimited ? null : Math.max(0, Number(amount) || 0))}>保存</button></footer>
+  </CreditManagementModalFrame>;
+}
+
+function CreditManagementStrategyModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
+  const [enabledRoles, setEnabledRoles] = useState<Record<string, boolean>>({ 创建者: true, 管理员: true, 设计师: false, 成员: false });
+  const [expandedRoles, setExpandedRoles] = useState<Record<string, boolean>>({ 创建者: true, 管理员: true, 设计师: false, 成员: false });
+  const [showWarning, setShowWarning] = useState(false);
+  const roleNames = ['创建者', '管理员', '设计师', '成员'];
+  const toggleRole = (role: string) => setEnabledRoles((current) => ({ ...current, [role]: !current[role] }));
+  return <CreditManagementModalFrame title="团队通用配额策略" onClose={onClose} wide>
+    <div className="credit-management-strategy-tabs"><button type="button" className="is-active">成员分配策略</button></div>
+    <div className="credit-management-strategy-body">
+      {roleNames.map((role) => <div className="credit-management-role-config" key={role}>
+        <div className="credit-management-role-heading"><label><input type="checkbox" checked={enabledRoles[role]} onChange={() => toggleRole(role)} />{role}</label><button type="button" onClick={() => setExpandedRoles((current) => ({ ...current, [role]: !current[role] }))}>{expandedRoles[role] ? '⌃' : '⌄'}</button></div>
+        {expandedRoles[role] ? <div className="credit-management-role-form"><label>设置周期额度上限</label><div className="credit-management-input-with-unit"><input defaultValue={role === '创建者' ? '' : role === '管理员' ? '' : ''} disabled={!enabledRoles[role]} /><span>积分/月</span></div><label className="credit-management-checkbox"><input type="checkbox" disabled={!enabledRoles[role]} />允许透支 <span>允许该角色透支团队公共积分池，最多透支</span><input className="credit-management-percent-input" defaultValue="10" disabled={!enabledRoles[role]} />%</label><label className="credit-management-checkbox"><input type="checkbox" disabled={!enabledRoles[role]} />设为无上限</label></div> : null}
+      </div>)}
+      <p className="credit-management-helper">新成员加入后将默认使用对应角色的配置</p>
+    </div>
+    {showWarning ? <div className="credit-management-inline-warning"><h3>温馨提示</h3><p>未启用角色配置 或 角色下配置为空时，通用配额将不生效，请检查并核对后再保存</p><div><button type="button" className="is-secondary" onClick={onClose}>暂不设置</button><button type="button" onClick={() => setShowWarning(false)}>返回设置团队通用配额</button></div></div> : <footer className="credit-management-modal-actions"><button type="button" className="is-secondary" onClick={onClose}>取消</button><button type="button" onClick={() => { if (Object.values(enabledRoles).every((enabled) => !enabled)) setShowWarning(true); else onSave(); }}>保存</button></footer>}
+  </CreditManagementModalFrame>;
+}
+
+function CreditManagementConfirmModal({ title, description, confirmLabel, onClose, onConfirm }: { title: string; description: React.ReactNode; confirmLabel: string; onClose: () => void; onConfirm: () => void }) {
+  return <CreditManagementModalFrame title={title} onClose={onClose}><div className="credit-management-confirm-body"><p>{description}</p></div><footer className="credit-management-modal-actions"><button type="button" className="is-secondary" onClick={onClose}>取消</button><button type="button" onClick={onConfirm}>{confirmLabel}</button></footer></CreditManagementModalFrame>;
+}
+
+function TeamCreditManagementContent({ landing, onNotify, onOpenRequirement }: { landing: CreditManagementLanding; onNotify: (message: string) => void; onOpenRequirement: () => void }) {
+  const initialTab: CreditManagementTab = landing === 'quota' ? 'quota' : 'details';
+  const initialDetailTab: CreditDetailTab = landing === 'consumption' ? 'consumption' : 'reward';
+  const [activeTab, setActiveTab] = useState<CreditManagementTab>(initialTab);
+  const [detailTab, setDetailTab] = useState<CreditDetailTab>(initialDetailTab);
+  const [allocationMode, setAllocationMode] = useState<'shared' | 'quota'>('shared');
+  const [roleFilter, setRoleFilter] = useState('全部角色');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [month, setMonth] = useState('2026年1月');
+  const [sourceFilter, setSourceFilter] = useState('选择来源');
+  const [memberFilter, setMemberFilter] = useState('所有成员');
+  const [featureFilter, setFeatureFilter] = useState('所有功能');
+  const [members, setMembers] = useState(initialCreditQuotaMembers);
+  const [modal, setModal] = useState<{ type: 'edit' | 'temporary' | 'strategy' | 'pause' | 'resume' | 'reset'; member?: CreditQuotaMember } | null>(null);
+
+  const filteredMembers = members.filter((member) => (roleFilter === '全部角色' || member.role === roleFilter) && (!memberSearch.trim() || member.name.includes(memberSearch.trim())));
+  const getStatus = (consumed: number, limit: number | null): CreditMemberStatus => {
+    if (limit == null) return 'normal';
+    const ratio = consumed / Math.max(limit, 1);
+    if (ratio >= 1) return 'exhausted';
+    if (ratio >= .8) return 'warning';
+    return 'normal';
+  };
+  const updateMember = (id: string, update: Partial<CreditQuotaMember>) => setMembers((current) => current.map((member) => member.id === id ? { ...member, ...update } : member));
+  const closeModal = () => setModal(null);
+  const currentMember = modal?.member;
+
+  const renderQuotaManagement = () => <>
+    <section className="credit-management-allocation-panel"><h2>分配模式</h2><div className="credit-management-radio-row"><label><input type="radio" checked={allocationMode === 'shared'} onChange={() => setAllocationMode('shared')} />共享池模式</label><label><input type="radio" checked={allocationMode === 'quota'} onChange={() => setAllocationMode('quota')} />配额模式</label></div><p>当前团队已选择使用<strong>{allocationMode === 'shared' ? '共享池模式' : '配额模式'}</strong>，{allocationMode === 'shared' ? '所有团队成员均将消耗共享团队积分池' : '每个成员按照自己的月度最大消耗额度进行消耗'}</p></section>
+    <section className="credit-management-members-panel"><div className="credit-management-section-heading"><h2>成员配额</h2><button type="button" onClick={() => setModal({ type: 'strategy' })}>团队通用配额策略</button></div><div className="credit-management-filters"><select value={roleFilter} onChange={(event) => setRoleFilter(event.currentTarget.value)} aria-label="角色筛选"><option>全部角色</option><option>创建者</option><option>管理员</option><option>设计师</option><option>成员</option></select><input value={memberSearch} onChange={(event) => setMemberSearch(event.currentTarget.value)} placeholder="输入成员名称/邮箱搜索" aria-label="成员名称或邮箱搜索" /></div><div className="credit-management-table" role="table" aria-label="成员配额列表"><div className="credit-management-table-row is-header" role="row"><span>名称</span><span>角色</span><span>本月消耗</span><span>当前限额</span><span>状态</span><span>操作</span></div>{filteredMembers.map((member) => { const percent = member.limit == null ? 0 : Math.min(100, Math.round(member.consumed / Math.max(member.limit, 1) * 100)); const canAdd = member.limit != null; return <div className="credit-management-table-row" role="row" key={member.id}><span className="credit-management-name-cell"><i>{member.name.slice(0, 1)}</i>{member.name}</span><span>{member.role}</span><span><div className={`credit-management-progress ${member.status}`}><i style={{ width: `${member.limit == null ? 100 : percent}%` }} /><b>{member.limit != null ? `${percent}%` : ''}</b></div><em>{member.consumed}</em></span><span>{member.limit == null ? '无限' : <><strong>{member.limit}</strong><button type="button" className="credit-management-pencil" aria-label={`编辑${member.name}限额`} onClick={() => setModal({ type: 'edit', member })}>✎</button></>}</span><span><b className={`credit-management-status is-${member.status}`}>{CREDIT_MEMBER_STATUS_LABEL[member.status]}</b></span><span className="credit-management-actions"><button type="button" onClick={() => setModal({ type: 'edit', member })}>编辑</button><button type="button" onClick={() => setModal({ type: member.status === 'paused' ? 'resume' : 'pause', member })}>{member.status === 'paused' ? '恢复' : '暂停'}</button><button type="button" disabled={!canAdd} onClick={() => setModal({ type: 'temporary', member })}>加量</button><button type="button" onClick={() => setModal({ type: 'reset', member })}>重置</button></span></div>; })}</div></section>
+  </>;
+
+  const renderDetails = () => detailTab === 'reward' ? <section className="credit-management-details-panel"><div className="credit-management-detail-tabs"><button type="button" className="is-active" onClick={() => setDetailTab('reward')}>充值/奖励</button><button type="button" onClick={() => setDetailTab('consumption')}>消耗明细</button></div><div className="credit-management-detail-summary"><strong>月度累计 8392积分</strong><div><select value={month} onChange={(event) => setMonth(event.currentTarget.value)} aria-label="明细月份"><option>2026年1月</option><option>2025年12月</option></select><select value={sourceFilter} onChange={(event) => setSourceFilter(event.currentTarget.value)} aria-label="积分来源"><option>选择来源</option><option>平台赠送</option><option>活动奖励</option></select></div></div><div className="credit-management-detail-table"><div className="is-header"><span>来源</span><span>时间</span><span>金额变化</span></div>{creditRewardDetails.map((row) => <div key={`${row.source}-${row.time}`}><span>{row.source}</span><span>{row.time}</span><strong className="is-positive">{row.amount}</strong></div>)}</div></section> : <section className="credit-management-details-panel"><div className="credit-management-detail-tabs"><button type="button" onClick={() => setDetailTab('reward')}>充值/奖励</button><button type="button" className="is-active" onClick={() => setDetailTab('consumption')}>消耗明细</button></div><div className="credit-management-detail-summary"><strong>月度消耗 8392积分</strong><div><select value={month} onChange={(event) => setMonth(event.currentTarget.value)} aria-label="消耗月份"><option>2026年1月</option><option>2025年12月</option></select><select value={memberFilter} onChange={(event) => setMemberFilter(event.currentTarget.value)} aria-label="成员筛选"><option>所有成员</option><option>赵文文</option><option>张美丽</option></select><select value={featureFilter} onChange={(event) => setFeatureFilter(event.currentTarget.value)} aria-label="功能筛选"><option>所有功能</option><option>AI创作</option><option>无限画布</option><option>AI变清晰</option><option>AI生图</option></select></div></div><div className="credit-management-detail-table is-consumption"><div className="is-header"><span>时间</span><span>成员</span><span>功能</span><span>消耗积分</span></div>{creditConsumptionDetails.filter((row) => (memberFilter === '所有成员' || row.member === memberFilter) && (featureFilter === '所有功能' || row.feature === featureFilter)).map((row) => <div key={`${row.time}-${row.feature}`}><span>{row.time}</span><span>{row.member}</span><span>{row.feature}</span><strong className="is-negative">{row.points}</strong></div>)}</div></section>;
+
+  const handleEditSave = (data: { mode: 'team' | 'custom'; limit: number | null; overdraft: boolean }) => {
+    if (!currentMember) return;
+    updateMember(currentMember.id, { allocationMode: data.mode, limit: data.limit, overdraft: data.overdraft, status: getStatus(currentMember.consumed, data.limit) });
+    onNotify(`已保存${currentMember.name}的限额`);
+    closeModal();
+  };
+  const handleTemporarySave = (amount: number | null) => {
+    if (!currentMember) return;
+    const nextLimit = amount == null ? null : (currentMember.limit == null ? amount : currentMember.limit + amount);
+    updateMember(currentMember.id, { limit: nextLimit, status: getStatus(currentMember.consumed, nextLimit) });
+    onNotify(`已保存${currentMember.name}的临时加量`);
+    closeModal();
+  };
+  const handleConfirm = () => {
+    if (!currentMember || !modal) return;
+    if (modal.type === 'pause') updateMember(currentMember.id, { status: 'paused' });
+    if (modal.type === 'resume') updateMember(currentMember.id, { status: getStatus(currentMember.consumed, currentMember.limit) });
+    if (modal.type === 'reset') updateMember(currentMember.id, { consumed: 0, status: 'normal' });
+    onNotify(`${currentMember.name}${modal.type === 'pause' ? '已暂停消耗' : modal.type === 'resume' ? '已恢复消耗' : '已重置消耗'}`);
+    closeModal();
+  };
+
+  return <div className="team-credit-management-page">
+    <button type="button" className="team-credit-requirement-float" onClick={onOpenRequirement}><FileText />需求说明</button>
+    <div className="credit-management-heading"><h1>积分分配与管理</h1></div>
+    <div className="credit-management-tabs"><button type="button" className={activeTab === 'quota' ? 'is-active' : ''} onClick={() => setActiveTab('quota')}>配额管理</button><button type="button" className={activeTab === 'details' ? 'is-active' : ''} onClick={() => setActiveTab('details')}>积分明细</button></div>
+    {activeTab === 'quota' ? renderQuotaManagement() : renderDetails()}
+    {modal?.type === 'edit' && currentMember ? <CreditManagementEditModal member={currentMember} onClose={closeModal} onSave={handleEditSave} /> : null}
+    {modal?.type === 'temporary' && currentMember ? <CreditManagementTemporaryModal member={currentMember} onClose={closeModal} onSave={handleTemporarySave} /> : null}
+    {modal?.type === 'strategy' ? <CreditManagementStrategyModal onClose={closeModal} onSave={() => { onNotify('团队通用配额策略已保存'); closeModal(); }} /> : null}
+    {modal?.type === 'pause' && currentMember ? <CreditManagementConfirmModal title="暂停成员消耗" description={<>即将暂停成员「{currentMember.name}」的积分消耗，暂停后其正在运行的积分消耗任务将中断，无法再发起新的积分消耗行为。</>} confirmLabel="确定暂停" onClose={closeModal} onConfirm={handleConfirm} /> : null}
+    {modal?.type === 'resume' && currentMember ? <CreditManagementConfirmModal title="恢复成员消耗" description={<>即将恢复成员「{currentMember.name}」的积分消耗，恢复后其因暂停中断的积分消耗任务无法自动恢复，需成员手动恢复。</>} confirmLabel="确定恢复" onClose={closeModal} onConfirm={handleConfirm} /> : null}
+    {modal?.type === 'reset' && currentMember ? <CreditManagementConfirmModal title="重置成员消耗" description={<>即将将成员「{currentMember.name}」的本月积分消耗量重置为 0，重置成功后仅本月计算可用积分时使用的已消耗量归零，真实消耗明细仍保留。</>} confirmLabel="确定重置" onClose={closeModal} onConfirm={handleConfirm} /> : null}
+  </div>;
+}
+
 function TeamManagementPage({ onOpenMembership, onOpenPointsPurchase }: { onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void }) {
   const [activeSection, setActiveSection] = useState('账户概览');
   const [toast, setToast] = useState('');
-  const [requirementOpen, setRequirementOpen] = useState(false);
+  const [requirementOpen, setRequirementOpen] = useState<'statistics' | 'management' | null>(null);
+  const [creditManagementLanding, setCreditManagementLanding] = useState<CreditManagementLanding>('quota');
 
   const notify = (message: string) => {
     setToast(message);
@@ -1196,7 +1474,7 @@ function TeamManagementPage({ onOpenMembership, onOpenPointsPurchase }: { onOpen
             {group.label ? <div className="team-management-group-label">{group.label}</div> : null}
             <div className="team-management-group-items">
               {group.items.map(({ label, icon: Icon }) => (
-                <button type="button" key={label} className={`team-management-nav-item ${activeSection === label ? 'is-active' : ''}`} onClick={() => { setActiveSection(label); if (label !== '账户概览' && label !== '积分统计') notify(`${label}即将上线`); }}>
+                <button type="button" key={label} className={`team-management-nav-item ${activeSection === label ? 'is-active' : ''}`} onClick={() => { setActiveSection(label); if (label === '积分管理') setCreditManagementLanding('quota'); if (label !== '账户概览' && label !== '积分统计' && label !== '积分管理') notify(`${label}即将上线`); }}>
                   <Icon className="team-management-nav-icon" />
                   <span>{label}</span>
                 </button>
@@ -1207,7 +1485,7 @@ function TeamManagementPage({ onOpenMembership, onOpenPointsPurchase }: { onOpen
       </aside>
 
       <div className="team-management-content">
-        {activeSection === '积分统计' ? <TeamCreditStatisticsContent onNotify={notify} onOpenRequirement={() => setRequirementOpen(true)} onOpenMembership={onOpenMembership} onOpenPointsPurchase={onOpenPointsPurchase} /> : activeSection === '使用统计' ? <div className="team-management-placeholder"><BarChart3 /><h1>使用统计</h1><p>使用统计功能即将上线</p></div> : <div className="team-management-grid">
+        {activeSection === '积分统计' ? <TeamCreditStatisticsContent onNotify={notify} onOpenRequirement={() => setRequirementOpen('statistics')} onOpenMembership={onOpenMembership} onOpenPointsPurchase={onOpenPointsPurchase} onOpenCreditManagementDetails={() => { setCreditManagementLanding('consumption'); setActiveSection('积分管理'); }} /> : activeSection === '积分管理' ? <TeamCreditManagementContent landing={creditManagementLanding} onNotify={notify} onOpenRequirement={() => setRequirementOpen('management')} /> : activeSection === '使用统计' ? <div className="team-management-placeholder"><BarChart3 /><h1>使用统计</h1><p>使用统计功能即将上线</p></div> : <div className="team-management-grid">
           <main className="team-management-main">
             <h1>账户概览</h1>
 
@@ -1244,8 +1522,8 @@ function TeamManagementPage({ onOpenMembership, onOpenPointsPurchase }: { onOpen
             <section className="team-management-section team-management-points-section">
               <h2>团队积分 <CircleHelp className="team-management-help-icon" /></h2>
               <div className="team-management-metric-row">
-                <div className="team-management-points-value"><span>当前剩余：369320</span><button type="button" className="team-management-inline-link" onClick={() => notify('购买积分即将打开')}>购买积分&gt;</button></div>
-                <button type="button" className="team-management-secondary-button" onClick={() => notify('团队积分明细即将打开')}>查看明细</button>
+                <div className="team-management-points-value"><span>当前剩余：369320</span><button type="button" className="team-management-inline-link" onClick={onOpenPointsPurchase}>购买积分&gt;</button></div>
+                <button type="button" className="team-management-secondary-button" onClick={() => { setCreditManagementLanding('consumption'); setActiveSection('积分管理'); }}>查看明细</button>
               </div>
             </section>
           </main>
@@ -1260,7 +1538,7 @@ function TeamManagementPage({ onOpenMembership, onOpenPointsPurchase }: { onOpen
         </div>}
       </div>
       {toast ? <div className="workspace-toast" role="status">{toast}</div> : null}
-      {requirementOpen ? <RequirementDocumentDrawer spec={TEAM_CREDIT_STATISTICS_REQUIREMENT} onClose={() => setRequirementOpen(false)} /> : null}
+      {requirementOpen ? <RequirementDocumentDrawer spec={requirementOpen === 'management' ? TEAM_CREDIT_MANAGEMENT_REQUIREMENT : TEAM_CREDIT_STATISTICS_REQUIREMENT} onClose={() => setRequirementOpen(null)} /> : null}
     </section>
   );
 }

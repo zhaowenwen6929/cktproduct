@@ -5299,3 +5299,686 @@ button {
     margin-top: 18px;
   }
 }
+
+/* 积分管理：沿用积分统计的紧凑后台比例，保留原型中的黑色主按钮、浅灰面板和状态色。 */
+.team-credit-management-page {
+  position: relative;
+  min-width: 0;
+  max-width: 1180px;
+  color: #303030;
+}
+
+.credit-management-heading h1 {
+  margin: 0 0 20px;
+  color: #292929;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 35px;
+  letter-spacing: -.04em;
+}
+
+.credit-management-tabs {
+  display: flex;
+  width: min(640px, 100%);
+  margin-bottom: 34px;
+}
+
+.credit-management-tabs button {
+  height: 42px;
+  flex: 1;
+  border: 1px solid #8c8c8c;
+  background: #fff;
+  color: #303030;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.credit-management-tabs button + button {
+  margin-left: -1px;
+}
+
+.credit-management-tabs button.is-active {
+  position: relative;
+  z-index: 1;
+  border-color: #000;
+  background: #000;
+  color: #fff;
+}
+
+.credit-management-allocation-panel {
+  margin-bottom: 40px;
+  padding: 21px 24px 24px;
+  background: #f3f3f3;
+}
+
+.credit-management-allocation-panel h2,
+.credit-management-members-panel h2 {
+  margin: 0;
+  color: #333;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.credit-management-radio-row {
+  display: flex;
+  gap: 28px;
+  margin-top: 20px;
+}
+
+.credit-management-radio-row label,
+.credit-management-checkbox,
+.credit-management-role-heading label {
+  color: #424242;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.credit-management-radio-row input,
+.credit-management-checkbox input,
+.credit-management-role-heading input {
+  margin: 0 6px 0 0;
+  accent-color: #000;
+}
+
+.credit-management-allocation-panel p {
+  margin: 14px 0 0;
+  color: #8b8b8b;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.credit-management-allocation-panel p strong {
+  color: #333;
+  font-weight: 700;
+}
+
+.credit-management-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.credit-management-section-heading button,
+.credit-management-detail-summary a {
+  border: 0;
+  background: transparent;
+  color: #001bff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.credit-management-filters {
+  display: flex;
+  gap: 16px;
+  margin: 24px 0 16px;
+}
+
+.credit-management-filters select,
+.credit-management-filters input,
+.credit-management-detail-summary select {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d5d5d5;
+  border-radius: 0;
+  background: #fff;
+  color: #444;
+  font-size: 14px;
+}
+
+.credit-management-filters select {
+  width: 164px;
+}
+
+.credit-management-filters input {
+  width: min(330px, 100%);
+}
+
+.credit-management-table {
+  overflow-x: auto;
+}
+
+.credit-management-table-row {
+  display: grid;
+  min-width: 940px;
+  grid-template-columns: 1.3fr 1fr 1.65fr 1.05fr .95fr 2.25fr;
+  align-items: center;
+  min-height: 78px;
+  border-bottom: 1px solid #ededed;
+  gap: 12px;
+  color: #3b3b3b;
+  font-size: 15px;
+}
+
+.credit-management-table-row.is-header {
+  min-height: 50px;
+  border-bottom: 1px solid #d7d7d7;
+  color: #333;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.credit-management-name-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.credit-management-name-cell i {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #a4a4a4;
+  color: #fff;
+  font-size: 15px;
+  font-style: normal;
+}
+
+.credit-management-progress {
+  position: relative;
+  display: inline-flex;
+  width: 130px;
+  height: 8px;
+  margin-right: 8px;
+  overflow: visible;
+  vertical-align: middle;
+  background: #aaa;
+}
+
+.credit-management-progress > i {
+  display: block;
+  height: 100%;
+  background: #1d22ee;
+}
+
+.credit-management-progress.warning > i {
+  background: #f29a1a;
+}
+
+.credit-management-progress.exhausted > i {
+  background: #e60022;
+}
+
+.credit-management-progress.paused > i,
+.credit-management-progress.normal > i {
+  background: #1d22ee;
+}
+
+.credit-management-progress b {
+  position: absolute;
+  bottom: 11px;
+  left: 50%;
+  padding: 4px 8px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: #000;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.credit-management-progress b::after {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-top: 5px solid #000;
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  content: '';
+  transform: translateX(-50%);
+}
+
+.credit-management-progress:hover b {
+  opacity: 1;
+}
+
+.credit-management-table-row em {
+  color: #4d4d4d;
+  font-size: 14px;
+  font-style: normal;
+}
+
+.credit-management-pencil {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.credit-management-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0 10px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.credit-management-status::before {
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.credit-management-status.is-normal { background: #d9f9e4; color: #0b9e3d; }
+.credit-management-status.is-warning { background: #fff3bf; color: #bd8a00; }
+.credit-management-status.is-exhausted { background: #ffe0e3; color: #d70b20; }
+.credit-management-status.is-paused { background: #ededed; color: #777; }
+
+.credit-management-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.credit-management-actions button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #444;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.credit-management-actions button:hover,
+.credit-management-section-heading button:hover {
+  color: #001bff;
+}
+
+.credit-management-actions button:disabled {
+  color: #b6b6b6;
+  cursor: not-allowed;
+}
+
+.credit-management-details-panel {
+  margin-top: 12px;
+}
+
+.credit-management-detail-tabs {
+  display: flex;
+  gap: 28px;
+  border-bottom: 1px solid #ddd;
+}
+
+.credit-management-detail-tabs button {
+  position: relative;
+  padding: 0 0 11px;
+  border: 0;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.credit-management-detail-tabs button.is-active {
+  color: #222;
+  font-weight: 700;
+}
+
+.credit-management-detail-tabs button.is-active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: #000;
+  content: '';
+}
+
+.credit-management-detail-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 30px 0 15px;
+}
+
+.credit-management-detail-summary > strong {
+  color: #333;
+  font-size: 18px;
+}
+
+.credit-management-detail-summary > div {
+  display: flex;
+  gap: 12px;
+}
+
+.credit-management-detail-summary select {
+  min-width: 128px;
+}
+
+.credit-management-detail-table > div {
+  display: grid;
+  grid-template-columns: 1.3fr 1.4fr 1fr;
+  min-height: 52px;
+  align-items: center;
+  border-bottom: 1px solid #ededed;
+  color: #555;
+  font-size: 14px;
+}
+
+.credit-management-detail-table > div.is-header {
+  min-height: 43px;
+  border-bottom-color: #d7d7d7;
+  color: #333;
+  font-weight: 700;
+}
+
+.credit-management-detail-table.is-consumption > div {
+  grid-template-columns: 1.3fr 1fr 1.3fr 1fr;
+}
+
+.credit-management-detail-table strong {
+  font-weight: 600;
+}
+
+.credit-management-modal-backdrop {
+  position: fixed;
+  z-index: 180;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, .18);
+}
+
+.credit-management-modal {
+  width: min(430px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  background: #fff;
+  box-shadow: 0 12px 38px rgba(0, 0, 0, .2);
+}
+
+.credit-management-modal.is-wide {
+  width: min(590px, calc(100vw - 32px));
+}
+
+.credit-management-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 0 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.credit-management-modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.credit-management-modal-header button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #333;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.credit-management-modal-body,
+.credit-management-strategy-body,
+.credit-management-confirm-body {
+  padding: 18px 20px;
+}
+
+.credit-management-modal-body h3,
+.credit-management-confirm-body h3 {
+  margin: 0 0 10px;
+  color: #333;
+  font-size: 14px;
+}
+
+.credit-management-member-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 14px;
+}
+
+.credit-management-member-info > span {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #aaa;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.credit-management-member-info > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.credit-management-member-info strong {
+  font-size: 14px;
+}
+
+.credit-management-member-info small {
+  padding: 3px 8px;
+  background: #f0f0f0;
+  color: #555;
+  font-size: 12px;
+}
+
+.credit-management-form-heading {
+  margin-top: 17px !important;
+}
+
+.credit-management-form-row {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 14px;
+}
+
+.credit-management-form-row label {
+  color: #333;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.credit-management-helper {
+  margin: 0 0 10px;
+  color: #666;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.credit-management-input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 8px 0 14px;
+}
+
+.credit-management-input-with-unit input,
+.credit-management-percent-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #d6d6d6;
+  background: #fff;
+  font-size: 13px;
+}
+
+.credit-management-input-with-unit span {
+  min-width: 45px;
+  color: #333;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.credit-management-checkbox {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.credit-management-percent-input {
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  margin-left: 5px;
+}
+
+.credit-management-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid #eee;
+}
+
+.credit-management-modal-actions button,
+.credit-management-inline-warning button {
+  min-width: 100px;
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid #000;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.credit-management-modal-actions button.is-secondary,
+.credit-management-inline-warning button.is-secondary {
+  border-color: #d1d1d1;
+  background: #fff;
+  color: #333;
+}
+
+.credit-management-strategy-tabs {
+  padding: 18px 20px 0;
+}
+
+.credit-management-strategy-tabs button {
+  height: 30px;
+  padding: 0 28px;
+  border: 0;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.credit-management-role-config {
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.credit-management-role-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.credit-management-role-heading button {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #333;
+  cursor: pointer;
+}
+
+.credit-management-role-form {
+  padding: 10px 0 0 19px;
+}
+
+.credit-management-role-form > label:first-child {
+  display: block;
+  color: #555;
+  font-size: 12px;
+}
+
+.credit-management-role-form .credit-management-checkbox span {
+  color: #777;
+  font-size: 11px;
+}
+
+.credit-management-inline-warning {
+  margin: 0 20px 18px;
+  padding: 14px;
+  background: #fff2f2;
+  color: #555;
+}
+
+.credit-management-inline-warning h3 {
+  margin: 0 0 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.credit-management-inline-warning p {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.credit-management-inline-warning > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.credit-management-confirm-body p {
+  margin: 0;
+  color: #444;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+@media (max-width: 900px) {
+  .credit-management-detail-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .credit-management-detail-summary > div {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 700px) {
+  .credit-management-filters {
+    flex-wrap: wrap;
+  }
+
+  .credit-management-filters input {
+    width: 100%;
+  }
+
+  .credit-management-tabs button {
+    font-size: 15px;
+  }
+}
