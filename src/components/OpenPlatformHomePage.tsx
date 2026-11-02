@@ -5,7 +5,6 @@ import {
   CalendarDays,
   CheckSquare2,
   ChevronRight,
-  CircleUserRound,
   Code2,
   FileImage,
   FileText,
@@ -16,8 +15,9 @@ import {
   Scissors,
   Sparkles,
   TerminalSquare,
-  WandSparkles,
 } from 'lucide-react';
+import { OpenPlatformAiCanvasPage, type OpenPlatformAiSection } from './OpenPlatformAiCanvasPage';
+import type { CreditManagementLanding } from './AgentSkillsHomePage';
 
 type OpenPlatformHomePageProps = {
   onBackToDirectory: () => void;
@@ -83,6 +83,8 @@ const OPEN_PLATFORM_LOGO_URL = 'https://open.chuangkit.com/saasimg/logo.05b647fb
 export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePageProps) {
   const [activeNav, setActiveNav] = useState('首页');
   const [notice, setNotice] = useState('');
+  const [aiSection, setAiSection] = useState<OpenPlatformAiSection>('web');
+  const [managementLanding, setManagementLanding] = useState<CreditManagementLanding>('quota');
 
   const showNotice = (message: string) => {
     setNotice(message);
@@ -91,7 +93,11 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
 
   const handleNav = (item: string) => {
     setActiveNav(item);
-    if (item !== '首页') showNotice(`${item}正在为你准备中`);
+    if (item === 'AI画匠') {
+      setAiSection('web');
+      setManagementLanding('quota');
+    }
+    if (item !== '首页' && item !== 'AI画匠') showNotice(`${item}正在为你准备中`);
   };
 
   return (
@@ -126,7 +132,16 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
         </div>
       </header>
 
-      <main className="open-platform-main">
+      <main className={`open-platform-main ${activeNav === 'AI画匠' ? 'open-platform-main--ai' : ''}`}>
+        {activeNav === 'AI画匠' ? (
+          <OpenPlatformAiCanvasPage
+            section={aiSection}
+            managementLanding={managementLanding}
+            onSectionChange={setAiSection}
+            onManagementLandingChange={setManagementLanding}
+            onNotify={showNotice}
+          />
+        ) : <>
         <h1>欢迎使用</h1>
 
         <div className="open-platform-layout">
@@ -210,6 +225,7 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
         <button type="button" className="open-platform-back-link" onClick={onBackToDirectory}>
           <ChevronRight size={14} /> 返回项目目录
         </button>
+        </>}
       </main>
 
       {notice ? <div className="open-platform-toast" role="status">{notice}</div> : null}

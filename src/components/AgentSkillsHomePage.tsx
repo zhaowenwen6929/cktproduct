@@ -1183,7 +1183,7 @@ const creditTrendDetail = {
   '消耗功能': ['总消耗功能：2，共消耗积分1000', '消耗最多的功能：无限画布，共消耗300积分，占当日比xx%', '消耗最多的成员：张三，共消耗1000积分'],
 } satisfies Record<CreditTrendTab, string[]>;
 
-function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership, onOpenPointsPurchase, onOpenCreditManagementDetails }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void; onOpenCreditManagementDetails: () => void }) {
+export function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership, onOpenPointsPurchase, onOpenCreditManagementDetails }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void; onOpenCreditManagementDetails: () => void }) {
   const [trendTab, setTrendTab] = useState<CreditTrendTab>('消耗积分');
   const [period, setPeriod] = useState('过去7天');
   const [granularity, setGranularity] = useState('按天');
@@ -1273,7 +1273,7 @@ function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMember
   );
 }
 
-type CreditManagementLanding = 'quota' | 'reward' | 'consumption';
+export type CreditManagementLanding = 'quota' | 'reward' | 'consumption';
 type CreditManagementTab = 'quota' | 'details';
 type CreditDetailTab = 'reward' | 'consumption';
 type CreditMemberStatus = 'normal' | 'warning' | 'exhausted' | 'paused';
@@ -1385,7 +1385,7 @@ function CreditManagementConfirmModal({ title, description, confirmLabel, onClos
   return <CreditManagementModalFrame title={title} onClose={onClose}><div className="credit-management-confirm-body"><p>{description}</p></div><footer className="credit-management-modal-actions"><button type="button" className="is-secondary" onClick={onClose}>取消</button><button type="button" onClick={onConfirm}>{confirmLabel}</button></footer></CreditManagementModalFrame>;
 }
 
-function TeamCreditManagementContent({ landing, onNotify, onOpenRequirement }: { landing: CreditManagementLanding; onNotify: (message: string) => void; onOpenRequirement: () => void }) {
+export function TeamCreditManagementContent({ landing, onNotify, onOpenRequirement }: { landing: CreditManagementLanding; onNotify: (message: string) => void; onOpenRequirement: () => void }) {
   const initialTab: CreditManagementTab = landing === 'quota' ? 'quota' : 'details';
   const initialDetailTab: CreditDetailTab = landing === 'consumption' ? 'consumption' : 'reward';
   const [activeTab, setActiveTab] = useState<CreditManagementTab>(initialTab);
