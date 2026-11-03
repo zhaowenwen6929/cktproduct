@@ -383,9 +383,8 @@ function MembershipPointsPayment({ selectedPackage }: { selectedPackage: Members
 }
 
 function MembershipPointsUpgradeGuide({ onOpenMembership }: { onOpenMembership: () => void }) {
-  return <div className="flex min-h-[172px] flex-col items-center justify-center border-t border-[#edf0f4] pt-7 sm:flex-row sm:justify-center sm:gap-8">
-    <div className="relative opacity-50"><PaymentQrCode /><span className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-white/90 px-2 py-1 text-[10px] text-[#8791a1] shadow-sm">开通会员后可用</span></div>
-    <div className="min-w-[210px] text-center sm:text-left"><div className="flex items-center justify-center gap-2 text-[17px] font-semibold text-[#273143] sm:justify-start"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff3d6] text-[18px] text-[#d99b28]">✦</span><span>会员专享套餐</span></div><p className="mt-2 text-[12px] leading-5 text-[#8791a1]">开通会员后可享受会员积分套餐 65 折优惠</p><button type="button" onClick={onOpenMembership} className="mt-4 rounded-full bg-[#6961f4] px-6 py-2.5 text-[12px] font-medium text-white shadow-[0_6px_16px_rgba(105,97,244,.2)] transition hover:bg-[#554cf0]">立即购买会员</button></div>
+  return <div className="flex min-h-[172px] items-center justify-center border-t border-[#edf0f4] pt-7">
+    <div className="text-center"><div className="flex items-center justify-center gap-2 text-[17px] font-semibold text-[#273143]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff3d6] text-[18px] text-[#d99b28]">✦</span><span>会员专享套餐</span></div><p className="mt-2 text-[12px] leading-5 text-[#8791a1]">开通会员后可享受会员积分套餐 65 折优惠</p><button type="button" onClick={onOpenMembership} className="mt-4 rounded-full bg-[#6961f4] px-6 py-2.5 text-[12px] font-medium text-white shadow-[0_6px_16px_rgba(105,97,244,.2)] transition hover:bg-[#554cf0]">立即购买会员</button></div>
   </div>;
 }
 
