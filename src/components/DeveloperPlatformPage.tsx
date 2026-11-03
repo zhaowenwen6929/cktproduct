@@ -21,8 +21,10 @@ import {
   Eye,
   EyeOff,
   FileCode2,
+  FolderOpen,
   Gauge,
   Github,
+  Info,
   KeyRound,
   LayoutDashboard,
   LifeBuoy,
@@ -67,6 +69,7 @@ type DeveloperPageKey =
   | 'logs'
   | 'team'
   | 'docs'
+  | 'sdk'
   | 'settings';
 
 type IntegrationTab = 'rest' | 'cli' | 'mcp';
@@ -98,6 +101,7 @@ const navGroups = [
     title: '接入能力',
     items: [
       { key: 'docs' as DeveloperPageKey, label: 'API 文档', icon: BookOpen },
+      { key: 'sdk' as DeveloperPageKey, label: 'SDK', icon: Code2 },
       { key: 'capabilities' as DeveloperPageKey, label: '开放平台能力', icon: FileCode2 },
       { key: 'integrations' as DeveloperPageKey, label: 'MCP 接入', icon: Network, tab: 'mcp' as IntegrationTab },
       { key: 'integrations' as DeveloperPageKey, label: 'CLI 工具', icon: TerminalSquare, tab: 'cli' as IntegrationTab },
@@ -419,15 +423,294 @@ function DeveloperSidebar({ page, activeIntegration = 'mcp', onNavigate, onBack 
 function DeveloperTopbar({ onNavigate }: { onNavigate: (page: DeveloperPageKey) => void }) {
   return <header className="developer-platform-topbar fixed left-[238px] right-0 top-0 z-20 flex h-[70px] items-center justify-between border-b border-[#e5ecf7] bg-white/92 px-8 shadow-[0_4px_18px_rgba(38,83,170,.05)] backdrop-blur"><div className="flex items-center gap-4"><div className="flex h-9 items-center gap-2 rounded-[8px] border border-[#dbe6f8] bg-[#f5f8ff] px-3 text-[12px] text-[#4b5668]"><span className="h-2 w-2 rounded-full bg-[#47b881]" />创客贴 · 品牌增长组<ChevronDown className="ml-2 h-3.5 w-3.5 text-[#8fa0b8]" /></div><span className="rounded-full bg-[#eef4ff] px-2 py-1 text-[10px] font-medium text-[#3371f4]">生产环境</span></div><div className="flex items-center gap-5 text-[#71809a]"><button type="button" onClick={() => onNavigate('docs')} className="inline-flex items-center gap-1.5 text-[11px] hover:text-[#2f63f4]"><CircleHelp className="h-4 w-4" />帮助中心</button><Bell className="h-4 w-4" /><div className="h-5 w-px bg-[#e5ebf5]" /><div className="flex items-center gap-2 text-[12px] text-[#3f4f67]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eaf0ff] font-semibold text-[#3764d8]">赵</span>赵文文<ChevronDown className="h-3.5 w-3.5 text-[#8fa0b8]" /></div></div></header>;
 }
+type LandingCapabilityStatus = '已开放' | '已有接口' | 'SDK 支持' | '内测中' | '即将开放' | '规划中';
 
-function LandingPage({ onEnter }: { onEnter: () => void }) {
-  return <div className="developer-platform-landing min-h-screen bg-[#f8faff] text-[#1d2a3a]">
-    <header className="mx-auto flex h-[76px] max-w-[1240px] items-center justify-between px-8"><div className="flex items-center gap-3"><img src={CHUANGKIT_LOGO_URL} alt="创客贴开放平台" className="h-10 w-auto" /><span className="ml-1 rounded-full bg-[#eef3ff] px-2 py-1 text-[9px] font-medium text-[#5b75b0]">开发者中心</span></div><nav className="hidden items-center gap-7 text-[12px] text-[#687587] md:flex"><a href="#capabilities">能力</a><a href="#quickstart">快速开始</a><a href="#docs">文档</a><a href="https://github.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1"><Github className="h-3.5 w-3.5" />GitHub</a></nav><div className="flex items-center gap-3"><button type="button" className="hidden text-[12px] text-[#687587] md:inline-flex">中文 <ChevronDown className="ml-1 h-3 w-3" /></button><button type="button" onClick={onEnter} className="inline-flex h-9 items-center rounded-[8px] bg-[#3371f4] px-4 text-[12px] font-medium text-white shadow-[0_7px_16px_rgba(51,113,244,.2)]">进入控制台<ArrowRight className="ml-1.5 h-3.5 w-3.5" /></button></div></header>
+type LandingCapabilityItem = {
+  label: string;
+  status: LandingCapabilityStatus;
+};
+
+type LandingAccessCard = {
+  id: string;
+  icon: typeof Code2;
+  tone: 'blue' | 'purple' | 'green' | 'indigo';
+  eyebrow: string;
+  title: string;
+  description: string;
+  tags: string[];
+  existing: LandingCapabilityItem[];
+  planning: LandingCapabilityItem[];
+  action: string;
+  target: { page: DeveloperPageKey; tab?: IntegrationTab };
+};
+
+const LANDING_STATUS_STYLES: Record<LandingCapabilityStatus, string> = {
+  已开放: 'bg-[#eaf8f1] text-[#198754]',
+  已有接口: 'bg-[#edf4ff] text-[#2f63f4]',
+  'SDK 支持': 'bg-[#f2efff] text-[#6b57c6]',
+  内测中: 'bg-[#fff5e4] text-[#b87913]',
+  即将开放: 'bg-[#fff1e7] text-[#a9692a]',
+  规划中: 'bg-[#f3f2f8] text-[#77718e]',
+};
+
+const LANDING_TONE_STYLES = {
+  blue: 'bg-[#edf4ff] text-[#2f63f4]',
+  purple: 'bg-[#f2efff] text-[#6b57c6]',
+  green: 'bg-[#eaf8f1] text-[#258b61]',
+  indigo: 'bg-[#eef0ff] text-[#5968d8]',
+} as const;
+
+function LandingStatusPill({ status }: { status: LandingCapabilityStatus }) {
+  return <span className={`inline-flex shrink-0 items-center rounded-full px-2 py-1 text-[9px] font-medium ${LANDING_STATUS_STYLES[status]}`}>{status}</span>;
+}
+
+const LANDING_ACCESS_CARDS: LandingAccessCard[] = [
+  {
+    id: 'open-api',
+    icon: Code2,
+    tone: 'blue',
+    eyebrow: '公共能力底座',
+    title: 'Open API',
+    description: '适合后端系统、企业应用和第三方 SaaS，通过 HTTP API 调用创客贴的模板、设计、AI、素材和导出能力。',
+    tags: ['模板与素材', '设计创建', 'AI 任务', '设计导出', 'DAM 资源', '品牌资产', '企业权限'],
+    existing: [
+      { label: '模板设计', status: '已开放' },
+      { label: '图片编辑', status: '已有接口' },
+      { label: 'AI 能力', status: '已有接口' },
+      { label: 'H5', status: '已开放' },
+      { label: '文件解析', status: '已有接口' },
+      { label: '素材与资源管理', status: '已开放' },
+      { label: '设计导出', status: '已开放' },
+      { label: '企业接入', status: '已有接口' },
+    ],
+    planning: [
+      { label: '统一任务 API', status: '规划中' },
+      { label: '统一 Webhook', status: '规划中' },
+      { label: '统一 AI 能力目录', status: '即将开放' },
+      { label: '批量设计 API', status: '规划中' },
+      { label: '结构化设计操作 API', status: '规划中' },
+    ],
+    action: '查看 API 文档',
+    target: { page: 'docs' },
+  },
+  {
+    id: 'product-sdk',
+    icon: Sparkles,
+    tone: 'purple',
+    eyebrow: 'Product SDK 家族',
+    title: 'Product SDK',
+    description: '将创客贴成熟的产品能力集成到自己的应用、网站和业务系统中。Editor SDK 只是其中一个子模块。',
+    tags: ['账号与授权 SDK', '模板与素材 SDK', '设计与导出 SDK', 'AI 能力 SDK', 'DAM 与品牌 SDK', '任务与 Webhook SDK', '组件与嵌入 SDK', 'Editor SDK'],
+    existing: [
+      { label: '现有开放平台 SDK', status: 'SDK 支持' },
+      { label: '模板与设计接入', status: '已开放' },
+      { label: '图片编辑能力', status: 'SDK 支持' },
+      { label: '企业端集成', status: '已有接口' },
+      { label: '设计编辑器接入', status: 'SDK 支持' },
+      { label: '素材和资源能力', status: '已有接口' },
+    ],
+    planning: [
+      { label: '统一 Product SDK', status: '规划中' },
+      { label: 'Server SDK', status: '规划中' },
+      { label: 'JavaScript SDK', status: '即将开放' },
+      { label: 'AI SDK', status: '规划中' },
+      { label: 'DAM SDK', status: '规划中' },
+      { label: '组件 SDK / 移动端 SDK', status: '规划中' },
+      { label: 'Editor SDK 增强能力', status: '规划中' },
+    ],
+    action: '查看 SDK',
+    target: { page: 'sdk' },
+  },
+  {
+    id: 'cli',
+    icon: TerminalSquare,
+    tone: 'green',
+    eyebrow: '本地自动化',
+    title: 'CLI',
+    description: '适合脚本、批量生产、本地自动化、开发调试和 Agent 调用。',
+    tags: ['登录与应用管理', '组织管理', '模板搜索', '素材搜索', '设计创建', 'AI 任务', '任务查询', '设计导出', 'DAM 管理'],
+    existing: [
+      { label: '开放平台已有接口能力', status: '已有接口' },
+      { label: '设计和素材相关能力', status: '已有接口' },
+      { label: 'AI 任务能力', status: '内测中' },
+    ],
+    planning: [
+      { label: '官方 CLI', status: '即将开放' },
+      { label: 'JSON 输出', status: '规划中' },
+      { label: '异步任务恢复', status: '规划中' },
+      { label: '批量设计', status: '规划中' },
+      { label: 'AI 能力动态发现', status: '规划中' },
+      { label: 'DAM 命令 / CLI 与 Skills 联动', status: '规划中' },
+    ],
+    action: '安装 CLI',
+    target: { page: 'integrations', tab: 'cli' },
+  },
+  {
+    id: 'mcp',
+    icon: Network,
+    tone: 'indigo',
+    eyebrow: 'Agent 化工作流',
+    title: 'MCP / Agent Skills',
+    description: '适合 ChatGPT、Claude、Cursor 和企业内部 Agent，通过自然语言调用创客贴能力。',
+    tags: ['搜索模板', '搜索素材', '创建设计', 'AI 生成', '编辑设计', '导出设计', '品牌检查', '资产管理'],
+    existing: [
+      { label: '现有开放平台能力', status: '已有接口' },
+      { label: 'AI 设计能力', status: '内测中' },
+      { label: '模板和素材能力', status: '已有接口' },
+      { label: 'Skill 相关能力', status: 'SDK 支持' },
+    ],
+    planning: [
+      { label: '官方 MCP', status: '即将开放' },
+      { label: '动态 Tool 发现', status: '规划中' },
+      { label: 'OAuth 用户授权', status: '规划中' },
+      { label: 'Agent Skills', status: '规划中' },
+      { label: '设计结构化编辑', status: '规划中' },
+      { label: '品牌和合规检查 / 批量生产工作流', status: '规划中' },
+    ],
+    action: '配置 MCP',
+    target: { page: 'integrations', tab: 'mcp' },
+  },
+];
+
+const LANDING_FOUNDATION_ITEMS = [
+  { label: '模板', icon: BookOpen },
+  { label: '素材', icon: Cloud },
+  { label: '设计', icon: LayoutDashboard },
+  { label: 'AI', icon: WandSparkles },
+  { label: '导出', icon: ExternalLink },
+  { label: '任务', icon: Clock3 },
+  { label: 'DAM', icon: FolderOpen },
+  { label: '品牌', icon: Sparkles },
+  { label: '企业权限', icon: ShieldCheck },
+] as const;
+
+const LANDING_CAPABILITY_GROUPS = [
+  {
+    title: '内容与模板',
+    description: '从模板检索到模板使用，覆盖内容发现和设计起点。',
+    icon: BookOpen,
+    existing: ['模板搜索', '模板详情', '场景分类', '标签筛选', '模板推荐', '模板使用'],
+    planning: ['模板字段 Schema', '模板变量替换', '批量模板生产', '模板智能推荐'],
+  },
+  {
+    title: '素材与资源',
+    description: '统一连接官方素材、企业资源库和 DAM 资产。',
+    icon: Cloud,
+    existing: ['图片素材', '视频素材', '字体素材', '素材上传', '资源库', '文件夹'],
+    planning: ['统一 Asset API', 'DAM SDK', '品牌素材', '资源标签', '资源权限', '资产审计'],
+  },
+  {
+    title: '设计能力',
+    description: '把创建设计、编辑、保存、导出和协作串成完整链路。',
+    icon: LayoutDashboard,
+    existing: ['创建设计', '设计查询', '编辑器接入', '设计保存', '设计导出', '分享'],
+    planning: ['结构化设计操作', '文本替换', '图片替换', '页面操作', '版本管理', '评论与协作'],
+  },
+  {
+    title: 'AI 能力',
+    description: '基于任务模型持续扩展生成、编辑和商品视觉能力。',
+    icon: WandSparkles,
+    existing: ['AI 生图', 'AI 改图', '抠图', '消除', '变清晰', '商品图', '背景处理'],
+    planning: ['统一 AI Capability', 'AI 任务中心', '参数动态发现', '消耗预估', 'Webhook 回调', 'AI 工作流', '批量生成'],
+  },
+  {
+    title: '企业能力',
+    description: '为组织、品牌、审批和合规提供企业级接入边界。',
+    icon: ShieldCheck,
+    existing: ['团队', '企业资源库', '品牌资产', '权限', '审批', '合规'],
+    planning: ['组织级 API', '品牌管理 SDK', '审批 API', '下载审计', '企业服务账号', '组织级 Agent'],
+  },
+] as const;
+
+const LANDING_FLOW_STEPS = [
+  { number: '01', title: '创建应用', description: '建立统一的应用身份和组织边界', icon: Plus },
+  { number: '02', title: '获取凭证', description: '配置 OAuth、Scope 和环境凭证', icon: KeyRound },
+  { number: '03', title: '选择接入方式', description: '按产品场景选择 API、SDK、CLI 或 MCP', icon: Network },
+  { number: '04', title: '调用创客贴能力', description: '执行任务并追踪结果、额度和日志', icon: Play },
+] as const;
+
+function ProductSdkPage({ onNotify }: { onNotify: (message: string) => void }) {
+  const modules = [
+    { title: 'Editor SDK', description: '嵌入编辑器、模板编辑和设计保存能力。', status: 'SDK 支持' as LandingCapabilityStatus, icon: Code2 },
+    { title: 'AI SDK', description: '统一封装生图、改图、抠图和商品图任务。', status: '规划中' as LandingCapabilityStatus, icon: WandSparkles },
+    { title: 'DAM SDK', description: '接入企业资源库、品牌素材、标签和权限。', status: '规划中' as LandingCapabilityStatus, icon: FolderOpen },
+    { title: 'Server SDK', description: '服务端调用任务、导出和异步结果查询。', status: '规划中' as LandingCapabilityStatus, icon: Server },
+    { title: 'JavaScript SDK', description: '在网站和业务系统中组合模板、素材和设计组件。', status: '即将开放' as LandingCapabilityStatus, icon: Code2 },
+    { title: '移动端 SDK', description: '面向移动 Web、小程序和 App 的产品能力模块。', status: '规划中' as LandingCapabilityStatus, icon: Cloud },
+  ];
+
+  return <div>
+    <SectionHeading
+      eyebrow="PRODUCT SDK FAMILY"
+      title="Product SDK"
+      description="Product SDK 是创客贴产品能力的模块化封装集合，不只包含 Editor SDK。"
+      action={<button type="button" onClick={() => onNotify('SDK 安装说明已复制')} className="inline-flex h-9 items-center rounded-[8px] bg-[#3371f4] px-3.5 text-[11px] font-medium text-white"><Clipboard className="mr-1.5 h-3.5 w-3.5" />复制安装说明</button>}
+    />
+    <section className="rounded-[18px] border border-[#dce8ff] bg-[linear-gradient(120deg,#f0f5ff_0%,#ffffff_68%)] p-6 shadow-[0_10px_26px_rgba(38,83,170,.05)]">
+      <div className="grid gap-7 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#e8efff] px-3 py-1.5 text-[10px] font-semibold tracking-[.12em] text-[#5373c8]"><Sparkles className="h-3.5 w-3.5" />SDK FAMILY</span>
+          <h2 className="mt-4 text-[24px] font-semibold tracking-[-.04em] text-[#21314a]">一套产品能力，多个可组合模块</h2>
+          <p className="mt-3 max-w-[620px] text-[12px] leading-6 text-[#71809a]">Editor SDK、AI SDK、DAM SDK、Server SDK、JavaScript SDK 和移动端 SDK 都属于 Product SDK 家族，开发者可以按业务链路组合接入。</p>
+          <div className="mt-5 flex flex-wrap gap-2">{['Editor SDK', 'AI SDK', 'DAM SDK', 'Server SDK', 'JavaScript SDK', '移动端 SDK'].map((item) => <span key={item} className="rounded-full border border-[#dbe6f8] bg-white/80 px-2.5 py-1.5 text-[10px] text-[#53647c]">{item}</span>)}</div>
+        </div>
+        <CodeBlock code={['# 当前：按已开放模块接入', 'npm install @chuangkit/chuangkit-design', '', '# 规划：统一 Product SDK 入口', 'npm install @chuangkit/product-sdk'].join('\n')} dark={false} onCopy={() => onNotify('SDK 安装说明已复制')} />
+      </div>
+    </section>
+    <section className="mt-5 rounded-[18px] border border-[#e5eaf0] bg-white p-5 shadow-[0_8px_24px_rgba(30,48,72,.04)]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><div className="text-[10px] font-semibold tracking-[.14em] text-[#3371f4]">MODULE DIRECTORY</div><h2 className="mt-1 text-[18px] font-semibold text-[#28384e]">Product SDK 模块目录</h2></div><span className="text-[10px] text-[#8997aa]">Editor SDK 是其中一个子模块</span></div>
+      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{modules.map((item) => { const Icon = item.icon; return <article key={item.title} className="rounded-[14px] border border-[#e5eaf0] bg-[#fbfcff] p-4 transition hover:-translate-y-0.5 hover:border-[#c8d9ff]"><div className="flex items-start justify-between gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#edf3ff] text-[#3371f4]"><Icon className="h-4 w-4" /></span><LandingStatusPill status={item.status} /></div><h3 className="mt-4 text-[13px] font-semibold text-[#344257]">{item.title}</h3><p className="mt-1 text-[11px] leading-5 text-[#7a8797]">{item.description}</p></article>; })}</div>
+    </section>
+    <div className="mt-4 flex items-center gap-2 px-1 text-[10px] text-[#8b98aa]"><Info className="h-3.5 w-3.5 text-[#3371f4]" />详细版本、安装方式和示例将按模块沉淀到对应文档页。</div>
+  </div>;
+}
+
+function LandingPage({ onEnter, onNavigate }: { onEnter: () => void; onNavigate: (page: DeveloperPageKey, tab?: IntegrationTab) => void }) {
+  const topNav = [
+    { label: '首页', href: '#top' },
+    { label: 'API 文档', target: { page: 'docs' as DeveloperPageKey } },
+    { label: 'SDK', target: { page: 'sdk' as DeveloperPageKey } },
+    { label: 'CLI', target: { page: 'integrations' as DeveloperPageKey, tab: 'cli' as IntegrationTab } },
+    { label: 'MCP', target: { page: 'integrations' as DeveloperPageKey, tab: 'mcp' as IntegrationTab } },
+    { label: '能力中心', href: '#capabilities' },
+    { label: '示例与教程', href: '#quickstart' },
+  ];
+
+  const goTo = (target: { page: DeveloperPageKey; tab?: IntegrationTab }) => onNavigate(target.page, target.tab);
+
+  return <div id="top" className="developer-platform-landing min-h-screen bg-[#f8faff] text-[#1d2a3a]">
+    <header className="sticky top-0 z-20 border-b border-[#e5ecf7] bg-[#f8faff]/92 backdrop-blur">
+      <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between gap-6 px-8">
+        <div className="flex shrink-0 items-center gap-3"><img src={CHUANGKIT_LOGO_URL} alt="创客贴开放平台" className="h-10 w-auto" /><span className="rounded-full bg-[#eef3ff] px-2 py-1 text-[9px] font-medium text-[#5b75b0]">开发者中心</span></div>
+        <nav className="hidden items-center gap-5 text-[11px] text-[#66758b] xl:flex">{topNav.map((item) => item.target ? <button key={item.label} type="button" onClick={() => goTo(item.target)} className="transition hover:text-[#3371f4]">{item.label}</button> : <a key={item.label} href={item.href} className="transition hover:text-[#3371f4]">{item.label}</a>)}</nav>
+        <div className="flex shrink-0 items-center gap-3"><button type="button" onClick={onEnter} className="hidden text-[11px] text-[#66758b] md:inline-flex hover:text-[#3371f4]">登录 / 注册</button><button type="button" onClick={onEnter} className="inline-flex h-9 items-center rounded-[8px] bg-[#3371f4] px-4 text-[11px] font-medium text-white shadow-[0_7px_16px_rgba(51,113,244,.2)]">进入控制台<ArrowRight className="ml-1.5 h-3.5 w-3.5" /></button></div>
+      </div>
+    </header>
     <main>
-      <section className="mx-auto grid max-w-[1240px] gap-12 px-8 pb-20 pt-16 lg:grid-cols-[1.02fr_.98fr] lg:items-center"><div><div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#efc9c2] bg-[#fff5f2] px-3 py-1.5 text-[10px] font-semibold tracking-[.12em] text-[#da6558]"><Zap className="h-3.5 w-3.5" />DESIGN CAPABILITIES, OPEN TO YOU</div><h1 className="max-w-[640px] text-[54px] font-semibold leading-[1.12] tracking-[-.065em] text-[#1d2a3a]">把创客贴的设计能力，<span className="text-[#eb5b4d]">接入你的产品</span></h1><p className="mt-6 max-w-[560px] text-[16px] leading-8 text-[#687587]">通过 REST API、CLI 和 MCP，把模板、素材、设计与 AI 生成能力融入企业系统和自然语言工作流。</p><div className="mt-8 flex flex-wrap items-center gap-3"><button type="button" onClick={onEnter} className="inline-flex h-12 items-center rounded-[10px] bg-[#eb5b4d] px-6 text-[14px] font-medium text-white shadow-[0_10px_24px_rgba(235,91,77,.24)]">创建第一个应用<ArrowRight className="ml-2 h-4 w-4" /></button><a href="#quickstart" className="inline-flex h-12 items-center rounded-[10px] border border-[#dfe5eb] bg-white px-5 text-[14px] font-medium text-[#46566b]">查看快速开始</a></div><div className="mt-10 flex flex-wrap items-center gap-6 text-[11px] text-[#8c98a8]"><span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#45b781]" />OAuth 安全授权</span><span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#45b781]" />可观测的调用日志</span><span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#45b781]" />组织级权限管理</span></div></div><div className="relative"><div className="absolute -inset-6 rounded-[32px] bg-[radial-gradient(circle_at_50%_35%,rgba(235,91,77,.2),transparent_62%)] blur-2xl" /><div className="relative overflow-hidden rounded-[22px] border border-[#dfe6ee] bg-white shadow-[0_25px_70px_rgba(36,54,76,.12)]"><div className="flex h-11 items-center gap-2 border-b border-[#edf0f3] px-4"><span className="h-2.5 w-2.5 rounded-full bg-[#f1b5a8]" /><span className="h-2.5 w-2.5 rounded-full bg-[#f2d49a]" /><span className="h-2.5 w-2.5 rounded-full bg-[#adddbf]" /><span className="ml-auto rounded bg-[#f6f8fa] px-3 py-1 text-[9px] text-[#98a4b3]">developer.chuangkit.com</span></div><div className="grid grid-cols-[136px_1fr]"><div className="border-r border-[#edf0f3] bg-[#101d2c] px-3 py-4"><div className="mb-6 flex items-center gap-2 text-[10px] font-semibold text-white"><span className="flex h-5 w-5 items-center justify-center rounded bg-[#eb5b4d]"><Sparkles className="h-3 w-3" /></span>开放平台</div>{['总览', '我的应用', 'MCP 接入', '调用日志'].map((item, index) => <div key={item} className={`mb-1 rounded px-2 py-2 text-[9px] ${index === 0 ? 'bg-[#eb5b4d] text-white' : 'text-[#8da1b7]'}`}>{item}</div>)}</div><div className="p-5"><div className="flex items-center justify-between"><div><div className="text-[8px] font-semibold tracking-[.15em] text-[#eb5b4d]">DEVELOPER CONSOLE</div><div className="mt-1 text-[21px] font-semibold tracking-[-.05em] text-[#26364a]">你好，赵文文</div></div><div className="h-8 w-8 rounded-full bg-[#f6e4df] text-center text-[11px] font-semibold leading-8 text-[#c85345]">赵</div></div><div className="mt-5 grid grid-cols-3 gap-2"><div className="rounded-lg bg-[#fff4f1] p-3"><div className="text-[8px] text-[#b27f78]">今日调用</div><div className="mt-1 text-[17px] font-semibold text-[#da6558]">3,428</div></div><div className="rounded-lg bg-[#f1f7ff] p-3"><div className="text-[8px] text-[#7c97b7]">活跃应用</div><div className="mt-1 text-[17px] font-semibold text-[#4c83c6]">3</div></div><div className="rounded-lg bg-[#f1faf5] p-3"><div className="text-[8px] text-[#72a286]">成功率</div><div className="mt-1 text-[17px] font-semibold text-[#3d9a70]">99.4%</div></div></div><div className="mt-5 rounded-lg border border-[#e5eaf0] p-3"><div className="flex items-center justify-between"><span className="text-[9px] font-medium text-[#42536a]">API 调用趋势</span><span className="text-[8px] text-[#a0aab7]">近 7 天</span></div><MiniBars active={7} /></div><div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-lg bg-[#faf6f1] p-3"><div className="text-[8px] text-[#9a8271]">MCP 连接</div><div className="mt-1 flex items-center gap-1 text-[11px] font-medium text-[#586879]"><span className="h-1.5 w-1.5 rounded-full bg-[#44b47e]" />已连接</div></div><div className="rounded-lg bg-[#f6f4ff] p-3"><div className="text-[8px] text-[#8f82bd]">本月额度</div><div className="mt-1 text-[11px] font-medium text-[#6e59bc]">68% 已使用</div></div></div></div></div></div></div></section>
-      <section id="capabilities" className="border-y border-[#eee9e4] bg-white"><div className="mx-auto max-w-[1240px] px-8 py-20"><div className="max-w-[560px]"><div className="text-[10px] font-semibold tracking-[.16em] text-[#eb5b4d]">ONE PLATFORM, THREE WAYS</div><h2 className="mt-2 text-[31px] font-semibold tracking-[-.05em] text-[#1d2a3a]">选择适合你的接入方式</h2><p className="mt-3 text-[14px] leading-7 text-[#7a8797]">同一套应用、凭证、OAuth 和权限模型，覆盖后端集成、脚本自动化与 AI Agent 工作流。</p></div><div className="mt-10 grid gap-4 md:grid-cols-3">{[ { icon: Code2, key: 'REST API', tone: 'blue', desc: '适合后端系统集成，使用 OAuth 2.0 或 Access Key 调用设计与 AI 能力。', link: '查看 API 文档' }, { icon: TerminalSquare, key: 'CLI', tone: 'green', desc: '适合脚本、批处理和本地开发，登录后即可使用 JSON 输出调用任务。', link: '安装 CLI 工具' }, { icon: Network, key: 'MCP', tone: 'purple', desc: '适合 AI Agent 和自然语言工作流，让智能助手发现并调用创客贴工具。', link: '配置 MCP 接入' } ].map((item) => { const Icon = item.icon; return <div key={item.key} className="group rounded-[17px] border border-[#e5eaf0] bg-[#fff] p-5 shadow-[0_8px_22px_rgba(30,48,72,.04)] transition hover:-translate-y-1 hover:border-[#efc7c1] hover:shadow-[0_13px_28px_rgba(30,48,72,.08)]"><div className={`flex h-10 w-10 items-center justify-center rounded-[11px] ${item.tone === 'blue' ? 'bg-[#edf4ff] text-[#4e88d3]' : item.tone === 'green' ? 'bg-[#eaf8f1] text-[#29966a]' : 'bg-[#f2efff] text-[#735bd5]'}`}><Icon className="h-5 w-5" /></div><h3 className="mt-5 text-[16px] font-semibold text-[#26364a]">{item.key}</h3><p className="mt-2 min-h-[58px] text-[12px] leading-6 text-[#7b8797]">{item.desc}</p><a href="#quickstart" className="mt-4 inline-flex items-center text-[11px] font-medium text-[#eb5b4d]">{item.link}<ArrowRight className="ml-1 h-3 w-3 transition group-hover:translate-x-1" /></a></div>; })}</div></div></section>
-      <section id="quickstart" className="mx-auto max-w-[1240px] px-8 py-20"><div className="grid gap-10 lg:grid-cols-[.75fr_1.25fr] lg:items-start"><div><div className="text-[10px] font-semibold tracking-[.16em] text-[#eb5b4d]">QUICKSTART IN 10 MINUTES</div><h2 className="mt-2 text-[31px] font-semibold tracking-[-.05em] text-[#1d2a3a]">从创建应用，到第一次调用</h2><p className="mt-3 text-[14px] leading-7 text-[#7a8797]">所有关键动作都在一个开发者中心完成，凭证、权限、授权和调用结果清晰可追踪。</p><button type="button" onClick={onEnter} className="mt-7 inline-flex h-10 items-center rounded-[8px] bg-[#1d2a3a] px-4 text-[12px] font-medium text-white">开始配置<ArrowRight className="ml-2 h-3.5 w-3.5" /></button></div><div className="grid gap-3 sm:grid-cols-2">{[{ n: '01', title: '创建应用', desc: '填写基本信息，选择 REST API、CLI、MCP 或 SDK。', icon: Plus }, { n: '02', title: '安全授权', desc: '配置 OAuth 回调、Scope 和组织级授权范围。', icon: LockKeyhole }, { n: '03', title: '连接工具', desc: '复制 MCP Server URL 或 CLI 命令，完成客户端连接。', icon: Link2 }, { n: '04', title: '测试调用', desc: '在测试台运行模板搜索，查看 JSON 和请求 ID。', icon: TestTube2 }].map((item) => { const Icon = item.icon; return <div key={item.n} className="flex gap-4 rounded-[14px] border border-[#e5eaf0] bg-white p-4"><span className="text-[11px] font-semibold text-[#eb5b4d]">{item.n}</span><div><Icon className="h-4 w-4 text-[#e86b5d]" /><h3 className="mt-3 text-[14px] font-semibold text-[#2c3b4f]">{item.title}</h3><p className="mt-1 text-[11px] leading-5 text-[#8490a0]">{item.desc}</p></div></div>; })}</div></div></section>
-      <section id="docs" className="border-t border-[#eee9e4] bg-[#f7f3ef]"><div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-8 py-8 text-[11px] text-[#7a8797] sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-5"><span>开放平台文档</span><span>API 状态</span><span>SDK & 示例</span><span>服务条款</span></div><span>© 2026 创客贴 · 为开发者而设计</span></div></section>
+      <section className="mx-auto max-w-[1240px] px-8 pb-14 pt-14">
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#c8d9ff] bg-[#edf3ff] px-3 py-1.5 text-[10px] font-semibold tracking-[.12em] text-[#3371f4]"><Zap className="h-3.5 w-3.5" />DEVELOPER PLATFORM</div>
+            <h1 className="mt-5 max-w-[680px] text-[50px] font-semibold leading-[1.12] tracking-[-.065em] text-[#1c2a3b]">选择适合你的创客贴接入方式</h1>
+            <p className="mt-5 max-w-[620px] text-[16px] leading-8 text-[#69788e]">同一套应用、凭证、OAuth 和权限模型，覆盖服务端集成、产品 SDK、本地自动化与 AI Agent 工作流。</p>
+            <div className="mt-8 flex flex-wrap items-center gap-3"><button type="button" onClick={() => onNavigate('create')} className="inline-flex h-11 items-center rounded-[9px] bg-[#3371f4] px-5 text-[13px] font-medium text-white shadow-[0_10px_22px_rgba(51,113,244,.2)]"><Plus className="mr-2 h-4 w-4" />创建应用</button><a href="#capabilities" className="inline-flex h-11 items-center rounded-[9px] border border-[#cbdcff] bg-white px-5 text-[13px] font-medium text-[#385171]">查看能力清单<ArrowRight className="ml-2 h-3.5 w-3.5" /></a><a href="#quickstart" className="inline-flex h-11 items-center rounded-[9px] border border-transparent px-4 text-[13px] font-medium text-[#3371f4]">快速开始<ArrowRight className="ml-2 h-3.5 w-3.5" /></a></div>
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-7 rounded-[34px] bg-[radial-gradient(circle_at_50%_35%,rgba(51,113,244,.18),transparent_66%)] blur-2xl" />
+            <div className="relative overflow-hidden rounded-[22px] border border-[#dce8ff] bg-white p-5 shadow-[0_24px_70px_rgba(38,83,170,.12)]">
+              <div className="flex items-center justify-between"><div><div className="text-[10px] font-semibold tracking-[.14em] text-[#3371f4]">ONE PLATFORM</div><h2 className="mt-2 text-[22px] font-semibold tracking-[-.04em] text-[#26364a]">一套能力底座，四种接入方式</h2></div><span className="rounded-full bg-[#eaf8f1] px-2.5 py-1 text-[10px] font-medium text-[#258b61]">持续扩展</span></div>
+              <div className="mt-5 grid grid-cols-3 gap-2">{LANDING_FOUNDATION_ITEMS.slice(0, 9).map((item) => { const Icon = item.icon; return <div key={item.label} className="flex items-center gap-2 rounded-[10px] bg-[#f7faff] px-2.5 py-2.5 text-[10px] text-[#52647c]"><Icon className="h-3.5 w-3.5 shrink-0 text-[#3371f4]" />{item.label}</div>; })}</div>
+              <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-[#e7edf7] pt-4 text-[10px] text-[#7b8aa0]"><span className="rounded-full bg-[#edf3ff] px-2.5 py-1 text-[#3371f4]">REST API</span><span>公共能力底座</span><ArrowRight className="h-3.5 w-3.5 text-[#9aabc1]" /><span className="rounded-full bg-[#f2efff] px-2.5 py-1 text-[#6b57c6]">SDK / CLI / MCP</span><span>产品化封装</span></div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-12 rounded-[16px] border border-[#e0e9f7] bg-white/80 p-4"><div className="mb-3 flex items-center justify-between"><div className="text-[11px] font-semibold text-[#31435d]">从创建应用到第一次调用</div><div className="text-[10px] text-[#8a98aa]">建议从 API 文档开始</div></div><div className="grid gap-2 md:grid-cols-4">{LANDING_FLOW_STEPS.map((step, index) => { const Icon = step.icon; return <div key={step.number} className="flex items-center gap-3 rounded-[11px] bg-[#f7faff] px-3 py-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#edf3ff] text-[9px] font-semibold text-[#3371f4]">{step.number}</span><div className="min-w-0"><div className="flex items-center gap-1.5 text-[11px] font-medium text-[#3d4f68]"><Icon className="h-3.5 w-3.5 text-[#3371f4]" />{step.title}</div><div className="mt-1 text-[9px] leading-4 text-[#8795a8]">{step.description}</div></div>{index < LANDING_FLOW_STEPS.length - 1 ? <ArrowRight className="ml-auto hidden h-3.5 w-3.5 shrink-0 text-[#9aabc1] md:block" /> : null}</div>; })}</div></div>
+      </section>
+      <section id="foundation" className="border-y border-[#e3ebf7] bg-white"><div className="mx-auto max-w-[1240px] px-8 py-14"><div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"><div><div className="text-[10px] font-semibold tracking-[.14em] text-[#3371f4]">PUBLIC CAPABILITY FOUNDATION</div><h2 className="mt-2 text-[30px] font-semibold tracking-[-.05em] text-[#1e2d43]">先理解公共能力底座</h2><p className="mt-3 max-w-[650px] text-[13px] leading-6 text-[#7b899d]">REST API 是公共能力底座，Product SDK、CLI 和 MCP / Agent Skills 都是面向不同开发场景的产品化封装。</p></div><span className="rounded-full bg-[#edf3ff] px-3 py-1.5 text-[10px] font-medium text-[#3371f4]">已开放能力持续扩展</span></div><div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-9">{LANDING_FOUNDATION_ITEMS.map((item) => { const Icon = item.icon; return <div key={item.label} className="flex flex-col items-center justify-center gap-2 rounded-[13px] border border-[#e6edf7] bg-[#fbfcff] px-2 py-4 text-center"><Icon className="h-5 w-5 text-[#3371f4]" /><span className="text-[11px] font-medium text-[#52647c]">{item.label}</span><LandingStatusPill status="已有接口" /></div>; })}</div></div></section>
+      <section id="access-modes" className="mx-auto max-w-[1240px] px-8 py-16"><div className="max-w-[720px]"><div className="text-[10px] font-semibold tracking-[.14em] text-[#3371f4]">FOUR WAYS TO CONNECT</div><h2 className="mt-2 text-[32px] font-semibold tracking-[-.05em] text-[#1e2d43]">选择适合你的接入方式</h2><p className="mt-3 text-[13px] leading-7 text-[#7b899d]">同一套应用、凭证、OAuth 和权限模型，覆盖服务端集成、产品 SDK、本地自动化与 AI Agent 工作流。每张卡片只展示能力摘要，详细参数进入对应二级页面。</p></div><div className="mt-8 grid gap-4 xl:grid-cols-2">{LANDING_ACCESS_CARDS.map((card) => { const Icon = card.icon; return <article key={card.id} className="group rounded-[18px] border border-[#e3ebf7] bg-white p-5 shadow-[0_8px_24px_rgba(38,83,170,.045)] transition hover:-translate-y-1 hover:border-[#c8d9ff] hover:shadow-[0_16px_32px_rgba(38,83,170,.1)]"><div className="flex items-start justify-between gap-4"><div className="flex items-start gap-3"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] ${LANDING_TONE_STYLES[card.tone]}`}><Icon className="h-5 w-5" /></span><div><div className="text-[10px] font-semibold tracking-[.12em] text-[#8b98aa]">{card.eyebrow}</div><h3 className="mt-1 text-[19px] font-semibold tracking-[-.03em] text-[#27374e]">{card.title}</h3></div></div><span className="rounded-full bg-[#eaf8f1] px-2 py-1 text-[9px] font-medium text-[#258b61]">能力持续扩展</span></div><p className="mt-4 min-h-[52px] text-[12px] leading-6 text-[#728199]">{card.description}</p><div className="mt-4 flex flex-wrap gap-1.5">{card.tags.map((tag) => <span key={tag} className="rounded-full bg-[#f5f8ff] px-2 py-1 text-[9px] text-[#5d6e86]">{tag}</span>)}</div><div className="mt-5 grid gap-3 md:grid-cols-2"><div className="rounded-[13px] bg-[#f4fbf7] p-3.5"><div className="flex items-center gap-1.5 text-[10px] font-semibold text-[#258b61]"><CheckCircle2 className="h-3.5 w-3.5" />已有能力</div><div className="mt-3 space-y-2">{card.existing.map((item) => <div key={item.label} className="flex items-center justify-between gap-2 text-[10px] text-[#53647c]"><span className="min-w-0">{item.label}</span><LandingStatusPill status={item.status} /></div>)}</div></div><div className="rounded-[13px] bg-[#f8f8fb] p-3.5"><div className="flex items-center gap-1.5 text-[10px] font-semibold text-[#77718e]"><Clock3 className="h-3.5 w-3.5" />规划与扩展</div><div className="mt-3 space-y-2">{card.planning.map((item) => <div key={item.label} className="flex items-center justify-between gap-2 text-[10px] text-[#6c7183]"><span className="min-w-0">{item.label}</span><LandingStatusPill status={item.status} /></div>)}</div></div></div><div className="mt-5 flex items-center justify-between gap-3 border-t border-[#edf1f7] pt-4"><span className="text-[10px] text-[#8b98aa]">详细接口、安装和授权说明进入二级页面</span><button type="button" onClick={() => goTo(card.target)} className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#3371f4]">{card.action}<ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" /></button></div></article>; })}</div></section>
+      <section id="capabilities" className="border-y border-[#e3ebf7] bg-[#f7faff]"><div className="mx-auto max-w-[1240px] px-8 py-16"><div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"><div><div className="text-[10px] font-semibold tracking-[.14em] text-[#3371f4]">CAPABILITY CENTER</div><h2 className="mt-2 text-[32px] font-semibold tracking-[-.05em] text-[#1e2d43]">能力总览</h2><p className="mt-3 max-w-[700px] text-[13px] leading-7 text-[#7b899d]">按产品能力分类查看已经开放的能力与下一阶段规划，状态标签用于区分“现在能用”和“未来会有”。</p></div><div className="flex flex-wrap gap-2"><LandingStatusPill status="已开放" /><LandingStatusPill status="已有接口" /><LandingStatusPill status="SDK 支持" /><LandingStatusPill status="内测中" /><LandingStatusPill status="规划中" /></div></div><div className="mt-8 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">{LANDING_CAPABILITY_GROUPS.map((group) => { const Icon = group.icon; return <article key={group.title} className="rounded-[17px] border border-[#e2eaf5] bg-white p-5 shadow-[0_7px_20px_rgba(38,83,170,.035)]"><div className="flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#edf3ff] text-[#3371f4]"><Icon className="h-5 w-5" /></span><div><h3 className="text-[16px] font-semibold text-[#2e3f56]">{group.title}</h3><p className="mt-1 text-[11px] leading-5 text-[#8491a3]">{group.description}</p></div></div><div className="mt-5 grid gap-4 sm:grid-cols-2"><div><div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold text-[#258b61]"><CheckCircle2 className="h-3.5 w-3.5" />已开放</div><div className="space-y-1.5">{group.existing.map((item) => <div key={item} className="flex items-center justify-between gap-2 rounded-[8px] bg-[#f5fbf7] px-2.5 py-2 text-[10px] text-[#52647c]"><span>{item}</span><LandingStatusPill status="已开放" /></div>)}</div></div><div><div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold text-[#77718e]"><Clock3 className="h-3.5 w-3.5" />规划中</div><div className="space-y-1.5">{group.planning.map((item) => <div key={item} className="flex items-center justify-between gap-2 rounded-[8px] bg-[#f8f8fb] px-2.5 py-2 text-[10px] text-[#707487]"><span>{item}</span><LandingStatusPill status="规划中" /></div>)}</div></div></div></article>; })}</div></div></section>
+      <section id="quickstart" className="mx-auto max-w-[1240px] px-8 py-16"><div className="grid gap-10 lg:grid-cols-[.82fr_1.18fr] lg:items-start"><div><div className="text-[10px] font-semibold tracking-[.14em] text-[#3371f4]">START HERE</div><h2 className="mt-2 text-[32px] font-semibold tracking-[-.05em] text-[#1e2d43]">从这里开始接入</h2><p className="mt-3 max-w-[500px] text-[13px] leading-7 text-[#7b899d]">建议先创建应用，再根据你的产品形态选择 API、Product SDK、CLI 或 MCP。所有方式共用同一套应用、凭证、OAuth 和权限模型。</p><div className="mt-6 flex flex-wrap gap-3"><button type="button" onClick={() => onNavigate('create')} className="inline-flex h-10 items-center rounded-[8px] bg-[#3371f4] px-4 text-[11px] font-medium text-white"><Plus className="mr-1.5 h-3.5 w-3.5" />创建应用</button><button type="button" onClick={() => onNavigate('capabilities')} className="inline-flex h-10 items-center rounded-[8px] border border-[#cbdcff] bg-white px-4 text-[11px] font-medium text-[#3371f4]">查看能力清单</button></div></div><div className="grid gap-3 sm:grid-cols-2">{LANDING_FLOW_STEPS.map((step) => { const Icon = step.icon; return <button type="button" key={step.number} onClick={() => step.number === '01' ? onNavigate('create') : step.number === '02' ? onNavigate('credentials') : step.number === '03' ? onNavigate('integrations') : onNavigate('tester')} className="group flex items-start gap-3 rounded-[14px] border border-[#e3ebf7] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#c8d9ff]"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#edf3ff] text-[9px] font-semibold text-[#3371f4]">{step.number}</span><span className="min-w-0"><span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#33465f]"><Icon className="h-3.5 w-3.5 text-[#3371f4]" />{step.title}</span><span className="mt-1 block text-[10px] leading-5 text-[#8795a8]">{step.description}</span><span className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-[#3371f4]">去配置<ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" /></span></span></button>; })}</div></div></section>
+      <section id="docs" className="border-t border-[#e3ebf7] bg-white"><div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-8 py-8 text-[11px] text-[#7a8797] sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-wrap items-center gap-x-5 gap-y-2"><button type="button" onClick={() => onNavigate('docs')} className="hover:text-[#3371f4]">API 文档</button><button type="button" onClick={() => onNavigate('sdk')} className="hover:text-[#3371f4]">SDK 产品目录</button><button type="button" onClick={() => onNavigate('integrations', 'cli')} className="hover:text-[#3371f4]">CLI 安装</button><button type="button" onClick={() => onNavigate('integrations', 'mcp')} className="hover:text-[#3371f4]">MCP 配置</button><span>服务条款</span></div><span>© 2026 创客贴 · 开放能力持续扩展</span></div></section>
     </main>
   </div>;
 }
@@ -633,10 +916,11 @@ export function DeveloperPlatformPage({ onBackToDirectory }: { onBackToDirectory
     if (page === 'logs') return <LogsPage onNotify={notify} />;
     if (page === 'team') return <TeamPage onNotify={notify} />;
     if (page === 'docs') return <DocsPage onNavigate={navigate} onNotify={notify} />;
+    if (page === 'sdk') return <ProductSdkPage onNotify={notify} />;
     if (page === 'settings') return <CustomerSettingsPage onNotify={notify} />;
     return <OverviewPage onNavigate={navigate} apps={apps} />;
   }, [activeIntegration, apps, createStep, createSuccess, draft, integrationState, page, selectedApp]);
 
-  if (page === 'landing') return <LandingPage onEnter={openConsole} />;
-  return <div className="developer-platform-shell min-h-screen bg-[#f5f7fa] text-[#26364a]"><DeveloperSidebar page={page} onNavigate={navigate} onBack={onBackToDirectory} /><DeveloperTopbar onNavigate={navigate} /><main className="ml-[238px] min-h-screen pt-[70px]"><div className="mx-auto max-w-[1420px] px-8 py-7">{page !== 'overview' && page !== 'create' && page !== 'app-overview' ? <div className="mb-5 flex items-center gap-2 text-[10px] text-[#a0aab7]"><span>开发者中心</span><ChevronRight className="h-3 w-3" /><span className="text-[#8f7b72]">{page === 'apps' ? '我的应用' : page === 'docs' ? 'API 文档' : page === 'capabilities' ? '开放平台能力' : page === 'integrations' ? '集成方式' : page === 'oauth' ? 'OAuth 与回调地址' : page === 'scopes' ? '权限 Scope' : page === 'tester' ? 'API / MCP 测试台' : page === 'usage' ? '调用量与额度' : page === 'logs' ? '调用日志' : page === 'team' ? '团队与权限' : '开发者设置'}</span></div> : null}{content}</div></main>{notice ? <div className="fixed bottom-6 left-1/2 z-[90] flex -translate-x-1/2 items-center gap-2 rounded-[9px] bg-[#423d45] px-4 py-3 text-[11px] text-white shadow-[0_10px_24px_rgba(70,48,43,.18)]"><CheckCircle2 className="h-4 w-4 text-[#8ed5b3]" />{notice}</div> : null}</div>;
+  if (page === 'landing') return <LandingPage onEnter={openConsole} onNavigate={navigate} />;
+  return <div className="developer-platform-shell min-h-screen bg-[#f5f7fa] text-[#26364a]"><DeveloperSidebar page={page} onNavigate={navigate} onBack={onBackToDirectory} /><DeveloperTopbar onNavigate={navigate} /><main className="ml-[238px] min-h-screen pt-[70px]"><div className="mx-auto max-w-[1420px] px-8 py-7">{page !== 'overview' && page !== 'create' && page !== 'app-overview' ? <div className="mb-5 flex items-center gap-2 text-[10px] text-[#a0aab7]"><span>开发者中心</span><ChevronRight className="h-3 w-3" /><span className="text-[#8f7b72]">{page === 'apps' ? '我的应用' : page === 'docs' ? 'API 文档' : page === 'sdk' ? 'Product SDK' : page === 'capabilities' ? '开放平台能力' : page === 'integrations' ? '集成方式' : page === 'oauth' ? 'OAuth 与回调地址' : page === 'scopes' ? '权限 Scope' : page === 'tester' ? 'API / MCP 测试台' : page === 'usage' ? '调用量与额度' : page === 'logs' ? '调用日志' : page === 'team' ? '团队与权限' : '开发者设置'}</span></div> : null}{content}</div></main>{notice ? <div className="fixed bottom-6 left-1/2 z-[90] flex -translate-x-1/2 items-center gap-2 rounded-[9px] bg-[#423d45] px-4 py-3 text-[11px] text-white shadow-[0_10px_24px_rgba(70,48,43,.18)]"><CheckCircle2 className="h-4 w-4 text-[#8ed5b3]" />{notice}</div> : null}</div>;
 }
