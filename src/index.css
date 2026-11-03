@@ -7382,3 +7382,743 @@ button {
     font-size: 15px;
   }
 }
+
+/* 模板编辑器数据统计工作区：还原开放平台截图中的菜单、统计卡片与明细页。 */
+.open-platform-main--template {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.open-platform-template-workspace {
+  display: grid;
+  min-height: calc(100vh - 66px);
+  grid-template-columns: 298px minmax(0, 1fr);
+  background: #f6f8fc;
+}
+
+.open-platform-template-sidebar {
+  position: relative;
+  border-right: 1px solid #e7ebf2;
+  background: #fff;
+}
+
+.open-platform-template-sidebar-menu {
+  display: flex;
+  width: 235px;
+  margin: 42px 0 0 31px;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.open-platform-template-sidebar-heading,
+.open-platform-template-sidebar-subitem,
+.open-platform-template-sidebar-collapse,
+.open-platform-template-hidden-action {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.open-platform-template-sidebar-heading {
+  display: flex;
+  height: 47px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0 22px;
+  border-radius: 4px;
+  color: #26334b;
+  font-size: 14px;
+  text-align: left;
+}
+
+.open-platform-template-sidebar-heading:hover,
+.open-platform-template-sidebar-heading.is-selected {
+  background: #f6f7fb;
+}
+
+.open-platform-template-sidebar-heading svg:last-child {
+  margin-left: auto;
+}
+
+.open-platform-template-sidebar-subitems {
+  display: flex;
+  margin-top: 3px;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.open-platform-template-sidebar-subitem {
+  height: 47px;
+  padding: 0 48px;
+  border-radius: 4px;
+  color: #3c465b;
+  font-size: 14px;
+  text-align: left;
+}
+
+.open-platform-template-sidebar-subitem:hover,
+.open-platform-template-sidebar-subitem.is-active {
+  background: #eef4ff;
+  color: #116cf5;
+  font-weight: 600;
+}
+
+.open-platform-template-sidebar-collapse {
+  position: absolute;
+  top: 50%;
+  right: -15px;
+  z-index: 2;
+  display: grid;
+  width: 31px;
+  height: 64px;
+  place-items: center;
+  border: 1px solid #e3e8f0;
+  border-left: 0;
+  border-radius: 0 13px 13px 0;
+  background: #fff;
+  color: #34445e;
+  font-size: 24px;
+  transform: translateY(-50%);
+}
+
+.open-platform-template-content {
+  min-width: 0;
+  overflow: auto;
+  padding: 34px 40px 70px;
+}
+
+.open-platform-template-content > h1 {
+  margin: 0 0 21px;
+  color: #202b40;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -.04em;
+  line-height: 1.2;
+}
+
+.open-platform-template-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.open-platform-template-white-panel {
+  min-width: 0;
+  border: 1px solid #edf0f5;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.open-platform-template-panel-title {
+  display: flex;
+  min-height: 59px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px;
+}
+
+.open-platform-template-panel-title h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #243047;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.open-platform-template-panel-title h2 > span {
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  background: #146ef4;
+}
+
+.open-platform-template-cutoff,
+.open-platform-template-ranking-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #69758d;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.open-platform-template-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  padding: 0 24px 24px;
+}
+
+.open-platform-template-metric-tile {
+  position: relative;
+  min-height: 114px;
+  box-sizing: border-box;
+  padding: 23px 20px;
+  background: #f7f8fb;
+}
+
+.open-platform-template-metric-tile > span {
+  display: block;
+  color: #273249;
+  padding-right: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.open-platform-template-metric-tile > svg {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  color: #1475f6;
+  stroke-width: 1.8;
+}
+
+.open-platform-template-metric-tile > strong {
+  display: block;
+  margin-top: 15px;
+  color: #086cf2;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.open-platform-template-trend-panel,
+.open-platform-template-distribution-panel,
+.open-platform-template-detail-panel {
+  margin-top: 20px;
+}
+
+.open-platform-template-trend-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.open-platform-template-segmented {
+  display: flex;
+  height: 34px;
+  overflow: hidden;
+  border: 1px solid #dce4f1;
+  border-radius: 4px;
+}
+
+.open-platform-template-segmented button {
+  min-width: 82px;
+  padding: 0 14px;
+  border: 0;
+  background: #fff;
+  color: #526078;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.open-platform-template-segmented button + button {
+  border-left: 1px solid #dce4f1;
+}
+
+.open-platform-template-segmented button.is-active {
+  background: #1475f6;
+  color: #fff;
+}
+
+.open-platform-template-trend-controls select,
+.open-platform-template-detail-toolbar select,
+.open-platform-template-detail-toolbar input {
+  height: 34px;
+  box-sizing: border-box;
+  border: 1px solid #dce4f1;
+  border-radius: 4px;
+  background: #fff;
+  color: #59667d;
+  font: inherit;
+  font-size: 13px;
+}
+
+.open-platform-template-trend-controls select:first-of-type {
+  width: 190px;
+  padding: 0 12px;
+}
+
+.open-platform-template-trend-controls select:last-of-type {
+  width: 244px;
+  padding: 0 12px;
+}
+
+.open-platform-template-chart-wrap {
+  display: flex;
+  height: 504px;
+  padding: 10px 24px 27px;
+  box-sizing: border-box;
+}
+
+.open-platform-template-chart-yaxis {
+  position: relative;
+  width: 36px;
+  color: #58657b;
+  font-size: 12px;
+}
+
+.open-platform-template-chart-yaxis span {
+  position: absolute;
+  bottom: 35px;
+  right: 7px;
+}
+
+.open-platform-template-chart-stage {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+  border-left: 1px solid #646e80;
+}
+
+.open-platform-template-chart-gridline {
+  position: absolute;
+  right: 0;
+  bottom: 35px;
+  left: 0;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.open-platform-template-line-chart {
+  position: absolute;
+  inset: 0 0 35px;
+  width: 100%;
+  height: calc(100% - 35px);
+  overflow: visible;
+}
+
+.open-platform-template-line-chart line {
+  stroke: #edf0f4;
+  stroke-width: .5;
+}
+
+.open-platform-template-line-chart polyline {
+  fill: none;
+  stroke: #1475f6;
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.open-platform-template-chart-dots button {
+  position: absolute;
+  bottom: 30px;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #18a9e8;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.open-platform-template-chart-labels {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  color: #354157;
+  font-size: 11px;
+}
+
+.open-platform-template-chart-tooltip {
+  position: absolute;
+  top: 12px;
+  left: 4%;
+  z-index: 3;
+  display: flex;
+  min-width: 130px;
+  padding: 9px 12px;
+  flex-direction: column;
+  gap: 7px;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(35, 54, 87, .16);
+  color: #536079;
+  font-size: 11px;
+}
+
+.open-platform-template-chart-tooltip strong {
+  color: #26344b;
+  font-weight: 500;
+}
+
+.open-platform-template-chart-tooltip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.open-platform-template-chart-tooltip i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1475f6;
+}
+
+.open-platform-template-chart-tooltip b {
+  color: #26344b;
+  font-weight: 500;
+}
+
+.open-platform-template-distribution-content {
+  display: grid;
+  min-height: 415px;
+  grid-template-columns: 430px minmax(0, 1fr);
+  gap: 40px;
+  padding: 0 48px 36px;
+}
+
+.open-platform-template-usage-table {
+  align-self: start;
+  margin-top: 4px;
+}
+
+.open-platform-template-usage-row {
+  display: grid;
+  min-height: 41px;
+  align-items: center;
+  grid-template-columns: 76px minmax(0, 1fr) 105px 70px;
+  border-bottom: 1px solid #e7eaf0;
+  color: #354158;
+  font-size: 13px;
+}
+
+.open-platform-template-usage-row.is-header {
+  min-height: 38px;
+  border-bottom: 0;
+  background: #fafbfc;
+  color: #67738a;
+}
+
+.open-platform-template-pie-area {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.open-platform-template-pie-chart {
+  position: relative;
+  width: 232px;
+  height: 232px;
+  border-radius: 50%;
+  background: conic-gradient(#5d8ff4 0 39.46%, #c9d8fb 39.46% 53.1%, #62d2aa 53.1% 62.14%, #cdeee2 62.14% 65.5%, #66799a 65.5% 68.05%, #d8dce5 68.05% 70.38%, #f4b31c 70.38% 72.5%, #ffe8b8 72.5% 74.47%, #7469e8 74.47% 76.37%, #d4cef8 76.37% 78.05%, #79c4e9 78.05% 79.35%, #b9e4f4 79.35% 80.65%, #8c5bb1 80.65% 82.15%, #cbb6d9 82.15% 83.45%, #f58b51 83.45% 84.75%, #ffdec5 84.75% 100%);
+}
+
+.open-platform-template-pie-chart::after {
+  position: absolute;
+  inset: 37%;
+  border-radius: 50%;
+  background: #fff;
+  content: '';
+}
+
+.open-platform-template-pie-chart span {
+  position: absolute;
+  z-index: 1;
+  width: 170px;
+  color: #6d7280;
+  font-size: 10px;
+  text-align: center;
+}
+
+.open-platform-template-pie-chart span:nth-child(1) { top: 16px; right: -128px; }
+.open-platform-template-pie-chart span:nth-child(2) { right: -155px; bottom: 27px; }
+.open-platform-template-pie-chart span:nth-child(3) { bottom: -18px; left: -28px; }
+.open-platform-template-pie-chart span:nth-child(4) { top: 7px; left: -158px; }
+
+.open-platform-template-pie-legend {
+  display: flex;
+  max-width: 850px;
+  align-items: center;
+  justify-content: center;
+  gap: 11px 18px;
+  flex-wrap: wrap;
+  color: #69758b;
+  font-size: 10px;
+}
+
+.open-platform-template-pie-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.open-platform-template-pie-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.open-platform-template-hidden-action {
+  display: none;
+}
+
+.open-platform-template-detail-panel {
+  min-height: 760px;
+}
+
+.open-platform-template-detail-tabs {
+  display: flex;
+  gap: 42px;
+  height: 43px;
+  padding: 0 24px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.open-platform-template-detail-tabs button {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8a94a8;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.open-platform-template-detail-tabs button.is-active {
+  color: #27334b;
+  font-weight: 700;
+}
+
+.open-platform-template-detail-tabs button.is-active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  background: #1475f6;
+  content: '';
+}
+
+.open-platform-template-detail-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 20px 24px 18px;
+}
+
+.open-platform-template-detail-toolbar select {
+  width: 238px;
+  padding: 0 12px;
+}
+
+.open-platform-template-detail-toolbar input {
+  width: 294px;
+  padding: 0 12px;
+}
+
+.open-platform-template-detail-toolbar input::placeholder {
+  color: #b6bdc9;
+}
+
+.open-platform-template-search-button,
+.open-platform-template-export-button {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.open-platform-template-search-button {
+  border: 0;
+  background: #1475f6;
+  color: #fff;
+}
+
+.open-platform-template-export-button {
+  border: 0;
+  background: #f3f5f9;
+  color: #53617a;
+}
+
+.open-platform-template-data-table {
+  overflow-x: auto;
+  margin: 0 24px;
+}
+
+.open-platform-template-data-row {
+  display: grid;
+  min-width: 1080px;
+  min-height: 53px;
+  align-items: center;
+  grid-template-columns: 1.1fr repeat(8, 1fr);
+  border-bottom: 1px solid #e5e9f0;
+  color: #3f4b62;
+  font-size: 13px;
+  text-align: center;
+}
+
+.open-platform-template-data-row.is-header {
+  min-height: 42px;
+  background: #fafbfc;
+  color: #647188;
+}
+
+.open-platform-template-data-row span:first-child {
+  text-align: left;
+}
+
+.open-platform-template-paid-table .open-platform-template-data-row {
+  grid-template-columns: 1.3fr 1.1fr 1.1fr 1.2fr 1.2fr 1.1fr 1.3fr;
+}
+
+.open-platform-template-empty {
+  display: flex;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  color: #c4c9d2;
+  font-size: 13px;
+}
+
+.open-platform-template-empty svg {
+  stroke-width: 1.2;
+}
+
+@media (max-width: 1250px) {
+  .open-platform-template-content {
+    padding-inline: 24px;
+  }
+
+  .open-platform-template-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .open-platform-template-trend-controls select:last-of-type {
+    width: 210px;
+  }
+
+  .open-platform-template-distribution-content {
+    grid-template-columns: minmax(350px, .9fr) minmax(0, 1fr);
+    gap: 22px;
+    padding-inline: 24px;
+  }
+}
+
+@media (max-width: 1350px) and (min-width: 901px) {
+  .open-platform-template-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .open-platform-template-workspace {
+    display: block;
+  }
+
+  .open-platform-template-sidebar {
+    min-height: auto;
+    border-right: 0;
+    border-bottom: 1px solid #e7ebf2;
+    padding: 14px 16px;
+  }
+
+  .open-platform-template-sidebar-menu {
+    width: auto;
+    margin: 0;
+  }
+
+  .open-platform-template-sidebar-heading {
+    width: 280px;
+  }
+
+  .open-platform-template-sidebar-collapse {
+    display: none;
+  }
+
+  .open-platform-template-content {
+    padding: 24px 16px 48px;
+  }
+
+  .open-platform-template-trend-panel .open-platform-template-panel-title {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 18px;
+    padding-bottom: 14px;
+  }
+
+  .open-platform-template-trend-controls {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .open-platform-template-distribution-content {
+    grid-template-columns: 1fr;
+  }
+
+  .open-platform-template-pie-area {
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 560px) {
+  .open-platform-template-content > h1 {
+    font-size: 24px;
+  }
+
+  .open-platform-template-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding-inline: 14px;
+  }
+
+  .open-platform-template-panel-title {
+    padding-inline: 14px;
+  }
+
+  .open-platform-template-metric-tile {
+    padding: 16px 13px;
+  }
+
+  .open-platform-template-metric-tile > strong {
+    font-size: 26px;
+  }
+
+  .open-platform-template-chart-wrap {
+    padding-inline: 12px;
+  }
+
+  .open-platform-template-detail-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding-inline: 14px;
+  }
+
+  .open-platform-template-detail-toolbar input,
+  .open-platform-template-detail-toolbar select {
+    width: 100%;
+  }
+
+  .open-platform-template-search-button,
+  .open-platform-template-export-button {
+    width: 100%;
+  }
+
+  .open-platform-template-data-table {
+    margin-inline: 14px;
+  }
+}
