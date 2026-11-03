@@ -2115,7 +2115,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
       ) : null}
 
       {membershipOpen ? <MembershipCenterModal open={membershipOpen} onOpenChange={(open) => { setMembershipOpen(open); if (!open) setMembershipFocusMorePoints(false); }} onClose={() => { setMembershipOpen(false); setMembershipFocusMorePoints(false); }} focusMorePoints={membershipFocusMorePoints} onOpenUpgradePage={(currentMember) => { setMembershipOpen(false); setMembershipFocusMorePoints(false); onOpenMembershipUpgrade(currentMember); }} /> : null}
-      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
+      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} onOpenMembership={() => { setMembershipFocusMorePoints(false); setMembershipOpen(true); }} /> : null}
 
       {profileToast ? <div className="workspace-toast user-profile-toast" role="status">{profileToast}</div> : null}
 

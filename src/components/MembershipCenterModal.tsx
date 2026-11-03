@@ -164,6 +164,8 @@ type MembershipPointsPackage = {
 
 type MembershipPointsPurchaseModalProps = {
   onClose: () => void;
+  isMember?: boolean;
+  onOpenMembership?: () => void;
 };
 
 export type MembershipCoupon = {
@@ -362,10 +364,50 @@ const MEMBERSHIP_POINTS_PACKAGES: MembershipPointsPackage[] = [
   { id: 'points-7500', points: 7500, price: 495, originalPrice: 1100, outputText: '约生750~1875张图' },
 ];
 
-export function MembershipPointsPurchaseModal({ onClose }: MembershipPointsPurchaseModalProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const selectedPackage = MEMBERSHIP_POINTS_PACKAGES[selectedIndex] ?? MEMBERSHIP_POINTS_PACKAGES[0];
+const MEMBERSHIP_MEMBER_POINTS_PACKAGES: MembershipPointsPackage[] = [
+  { id: 'member-points-1500', points: 1500, price: 65, originalPrice: 100, outputText: '约生150~375张图', tag: '65折' },
+  { id: 'member-points-3000', points: 3000, price: 129, originalPrice: 199, outputText: '约生300~750张图', tag: '65折' },
+  { id: 'member-points-900', points: 900, price: 39, originalPrice: 60, outputText: '约生90~225张图', tag: '65折' },
+  { id: 'member-points-7500', points: 7500, price: 322, originalPrice: 495, outputText: '约生750~1875张图', tag: '65折' },
+];
+
+function MembershipPointsPayment({ selectedPackage }: { selectedPackage: MembershipPointsPackage }) {
   const expiryDate = formatExpiryDate(365);
+
+  return <div className="flex flex-col items-center border-t border-[#edf0f4] pt-7 sm:flex-row sm:items-center sm:justify-center sm:gap-8">
+    <PaymentQrCode />
+    <div className="min-w-[210px] text-center sm:text-left"><div className="text-[28px] font-semibold tracking-[-.04em] text-[#ff493d]">¥{selectedPackage.price}</div><div className="mt-2 text-[14px] text-[#8791a1]">购买后有效期至：{expiryDate}</div><div className="mt-5 flex items-center justify-center gap-1.5 text-[13px] text-[#9aa3af] sm:justify-start"><PaymentMethodMark type="alipay" /><span>支付宝</span><span>/</span><PaymentMethodMark type="wechat" /><span>微信</span><span>扫码完成支付</span></div><p className="mt-3 text-[11px] leading-5 text-[#9aa3af]">支付即代表您已同意《创客贴积分购买协议》，支付后可联系客服开具发票。</p></div>
+  </div>;
+}
+
+function MembershipPointsUpgradeGuide({ onOpenMembership }: { onOpenMembership: () => void }) {
+  return <div className="flex min-h-[172px] flex-col items-center justify-center border-t border-[#edf0f4] pt-7 sm:flex-row sm:justify-center sm:gap-8">
+    <div className="relative opacity-50"><PaymentQrCode /><span className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-white/90 px-2 py-1 text-[10px] text-[#8791a1] shadow-sm">开通会员后可用</span></div>
+    <div className="min-w-[210px] text-center sm:text-left"><div className="flex items-center justify-center gap-2 text-[17px] font-semibold text-[#273143] sm:justify-start"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff3d6] text-[18px] text-[#d99b28]">✦</span><span>会员专享套餐</span></div><p className="mt-2 text-[12px] leading-5 text-[#8791a1]">开通会员后可享受会员积分套餐 65 折优惠</p><button type="button" onClick={onOpenMembership} className="mt-4 rounded-full bg-[#6961f4] px-6 py-2.5 text-[12px] font-medium text-white shadow-[0_6px_16px_rgba(105,97,244,.2)] transition hover:bg-[#554cf0]">立即购买会员</button></div>
+  </div>;
+}
+
+export function MembershipPointsPurchaseModal({ onClose, isMember = false, onOpenMembership }: MembershipPointsPurchaseModalProps) {
+  const [activePackageTab, setActivePackageTab] = useState<'normal' | 'member'>('normal');
+  const [selectedPackageId, setSelectedPackageId] = useState(MEMBERSHIP_POINTS_PACKAGES[0].id);
+  const visiblePackages = activePackageTab === 'normal' ? MEMBERSHIP_POINTS_PACKAGES : MEMBERSHIP_MEMBER_POINTS_PACKAGES;
+  const selectedPackage = visiblePackages.find((item) => item.id === selectedPackageId) ?? visiblePackages[0];
+  const selectedPackageIsMemberOnly = selectedPackage.id.startsWith('member-');
+  const switchPackageTab = (tab: 'normal' | 'member') => {
+    setActivePackageTab(tab);
+    setSelectedPackageId((tab === 'normal' ? MEMBERSHIP_POINTS_PACKAGES : MEMBERSHIP_MEMBER_POINTS_PACKAGES)[0].id);
+  };
+  const handleOpenMembership = () => {
+    onClose();
+    onOpenMembership?.();
+  };
+  const renderPackageCard = (item: MembershipPointsPackage) => <button type="button" key={item.id} onClick={() => setSelectedPackageId(item.id)} className={`relative flex min-h-[220px] flex-col overflow-hidden rounded-[14px] border text-left transition ${selectedPackageId === item.id ? 'border-[#6961f4] bg-[#f7f6ff] shadow-[0_8px_20px_rgba(105,97,244,.12)]' : 'border-[#e6eaf2] bg-white hover:border-[#b8b9ef]'}`}>
+    {item.tag ? <span className={`absolute right-0 top-0 rounded-bl-[10px] px-3 py-2 text-[11px] font-medium text-white ${item.id.startsWith('member-') ? 'bg-[#f0a62b]' : 'bg-[#ff5b62]'}`}>{item.tag}</span> : null}
+    <span className="mt-14 px-4 text-center text-[18px] font-semibold text-[#202938]">{item.points.toLocaleString('en-US')}积分/年</span>
+    <span className="mt-5 px-4 text-center text-[28px] font-semibold tracking-[-.04em] text-[#202938]">¥{item.price}</span>
+    <del className="mt-2 px-4 text-center text-[12px] text-[#a1a9b5]">原价 ¥{item.originalPrice}</del>
+    <span className={`mt-auto px-3 py-3 text-center text-[12px] ${selectedPackageId === item.id ? 'bg-[#6961f4] text-white' : 'bg-[#f0f2f7] text-[#5e6879]'}`}>{item.outputText}</span>
+  </button>;
 
   return <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#101827]/65 p-4 backdrop-blur-[3px]" role="dialog" aria-modal="true" aria-label="购买积分">
     <div className="relative flex h-[min(760px,calc(100vh-32px))] w-[min(1080px,calc(100vw-32px))] flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_24px_80px_rgba(15,23,42,.32)]">
@@ -1683,7 +1725,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
       {toastMessage ? <div role="status" className="pointer-events-none fixed bottom-8 left-1/2 z-[220] -translate-x-1/2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]">{toastMessage}</div> : null}
       {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} membershipType={membershipType} onCycleChange={setActiveCycle} onPlanChange={setRetentionPlanIndex} onContinue={() => setRetentionOpen(false)} onClose={handleClose} /> : null}
       {paymentSelection ? <MembershipPaymentModal selection={paymentSelection} coupons={availableCoupons} onClose={() => setPaymentSelection(null)} /> : null}
-      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} /> : null}
+      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} isMember={currentMemberLevel != null} /> : null}
       {couponModalOpen ? <MembershipCouponModal coupons={availableCoupons} onClose={() => setCouponModalOpen(false)} /> : null}
       {enterprisePurchaseContactOpen ? <EnterprisePurchaseContactModal config={pageConfig.commercialLicense.enterprisePurchaseContact} onClose={() => setEnterprisePurchaseContactOpen(false)} /> : null}
       <MembershipRequirementFloatingButton className="absolute right-4 top-16" title="会员支付弹框" subtitle="会员中心身份、套餐、积分、席位、支付和购买限制说明" sections={MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS} meta={MEMBERSHIP_CENTER_REQUIREMENT_META} open={requirementDrawerOpen} onOpenChange={setRequirementDrawerOpen} />
