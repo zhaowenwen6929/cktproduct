@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import {
-  BarChart3,
   ChevronDown,
   ChevronRight,
   ChevronUp,
   CircleHelp,
-  CreditCard,
   FileImage,
   Image as ImageIcon,
   Info,
@@ -16,19 +14,10 @@ import {
   Upload,
   WandSparkles,
 } from 'lucide-react';
-import {
-  TeamCreditManagementContent,
-  TeamCreditStatisticsContent,
-  type CreditManagementLanding,
-} from './AgentSkillsHomePage';
 
-export type OpenPlatformAiSection = 'web' | 'statistics' | 'management';
+export type OpenPlatformAiSection = 'web';
 
 type OpenPlatformAiCanvasPageProps = {
-  section: OpenPlatformAiSection;
-  managementLanding: CreditManagementLanding;
-  onSectionChange: (section: OpenPlatformAiSection) => void;
-  onManagementLandingChange: (landing: CreditManagementLanding) => void;
   onNotify: (message: string) => void;
 };
 
@@ -54,47 +43,16 @@ const styleOptions = [
   { label: '极简漫画', tone: 'minimal' },
 ];
 
-export function OpenPlatformAiCanvasPage({
-  section,
-  managementLanding,
-  onSectionChange,
-  onManagementLandingChange,
-  onNotify,
-}: OpenPlatformAiCanvasPageProps) {
+export function OpenPlatformAiCanvasPage({ onNotify }: OpenPlatformAiCanvasPageProps) {
   return (
     <div className="open-platform-ai-workspace">
-      <AiCanvasSidebar section={section} onSectionChange={onSectionChange} />
-      {section === 'web' ? <AiThemeEditor onNotify={onNotify} /> : (
-        <div className="open-platform-ai-usage-main">
-          <div className="open-platform-ai-usage-breadcrumb">
-            <span>AI画匠</span><ChevronRight size={13} /><span>使用统计</span><ChevronRight size={13} /><strong>{section === 'statistics' ? '积分统计' : '积分管理'}</strong>
-          </div>
-          {section === 'statistics' ? (
-            <TeamCreditStatisticsContent
-              onNotify={onNotify}
-              onOpenRequirement={() => onNotify('积分统计需求说明已打开')}
-              onOpenMembership={() => onNotify('会员升级入口即将打开')}
-              onOpenPointsPurchase={() => onNotify('积分增购入口即将打开')}
-              onOpenCreditManagementDetails={() => {
-                onManagementLandingChange('consumption');
-                onSectionChange('management');
-              }}
-              remainingPointsLabel="剩余积分数"
-            />
-          ) : (
-            <TeamCreditManagementContent
-              landing={managementLanding}
-              onNotify={onNotify}
-              onOpenRequirement={() => onNotify('积分管理需求说明已打开')}
-            />
-          )}
-        </div>
-      )}
+      <AiCanvasSidebar />
+      <AiThemeEditor onNotify={onNotify} />
     </div>
   );
 }
 
-function AiCanvasSidebar({ section, onSectionChange }: { section: OpenPlatformAiSection; onSectionChange: (section: OpenPlatformAiSection) => void }) {
+function AiCanvasSidebar() {
   return (
     <aside className="open-platform-ai-sidebar">
       <div className="open-platform-ai-sidebar-card">
@@ -103,20 +61,7 @@ function AiCanvasSidebar({ section, onSectionChange }: { section: OpenPlatformAi
           <span>主题设置</span>
           <ChevronUp size={14} />
         </button>
-        <button type="button" className={`open-platform-ai-sidebar-item ${section === 'web' ? 'is-active' : ''}`} onClick={() => onSectionChange('web')}>Web端</button>
-        <button type="button" className="open-platform-ai-sidebar-group" aria-expanded="true">
-          <BarChart3 size={16} />
-          <span>使用统计</span>
-          <ChevronDown size={14} />
-        </button>
-        <div className="open-platform-ai-sidebar-subitems">
-          <button type="button" className={`open-platform-ai-sidebar-subitem ${section === 'statistics' ? 'is-active' : ''}`} onClick={() => onSectionChange('statistics')}>
-            <span className="open-platform-ai-sidebar-subdot" />积分统计
-          </button>
-          <button type="button" className={`open-platform-ai-sidebar-subitem ${section === 'management' ? 'is-active' : ''}`} onClick={() => onSectionChange('management')}>
-            <span className="open-platform-ai-sidebar-subdot" />积分管理
-          </button>
-        </div>
+        <button type="button" className="open-platform-ai-sidebar-item is-active">Web端</button>
       </div>
       <button className="open-platform-ai-sidebar-collapse" type="button" aria-label="收起侧边栏"><ChevronRight size={15} /></button>
     </aside>

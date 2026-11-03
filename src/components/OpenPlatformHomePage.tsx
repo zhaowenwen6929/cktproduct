@@ -16,9 +16,9 @@ import {
   Sparkles,
   TerminalSquare,
 } from 'lucide-react';
-import { OpenPlatformAiCanvasPage, type OpenPlatformAiSection } from './OpenPlatformAiCanvasPage';
+import { OpenPlatformAiCanvasPage } from './OpenPlatformAiCanvasPage';
+import { OpenPlatformDataStatisticsPage, type DataStatisticsSection } from './OpenPlatformDataStatisticsPage';
 import { OpenPlatformTemplateEditorPage } from './OpenPlatformTemplateEditorPage';
-import type { CreditManagementLanding } from './AgentSkillsHomePage';
 
 type OpenPlatformHomePageProps = {
   onBackToDirectory: () => void;
@@ -78,14 +78,13 @@ const quickTools: QuickTool[] = [
   { label: '轻应用介绍', icon: BookOpen },
 ];
 
-const navItems = ['首页', '模板编辑器', '模板中心', 'AI画匠', '智能设计'];
+const navItems = ['首页', '模板编辑器', '模板中心', 'AI画匠', '智能设计', '数据统计'];
 const OPEN_PLATFORM_LOGO_URL = 'https://open.chuangkit.com/saasimg/logo.05b647fb.svg';
 
 export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePageProps) {
   const [activeNav, setActiveNav] = useState('首页');
   const [notice, setNotice] = useState('');
-  const [aiSection, setAiSection] = useState<OpenPlatformAiSection>('web');
-  const [managementLanding, setManagementLanding] = useState<CreditManagementLanding>('quota');
+  const [dataStatisticsSection, setDataStatisticsSection] = useState<DataStatisticsSection>('basic');
 
   const showNotice = (message: string) => {
     setNotice(message);
@@ -94,11 +93,8 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
 
   const handleNav = (item: string) => {
     setActiveNav(item);
-    if (item === 'AI画匠') {
-      setAiSection('web');
-      setManagementLanding('quota');
-    }
-    if (item !== '首页' && item !== 'AI画匠' && item !== '模板编辑器') showNotice(`${item}正在为你准备中`);
+    if (item === '数据统计') setDataStatisticsSection('basic');
+    if (item !== '首页' && item !== 'AI画匠' && item !== '模板编辑器' && item !== '数据统计') showNotice(`${item}正在为你准备中`);
   };
 
   return (
@@ -133,16 +129,10 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
         </div>
       </header>
 
-      <main className={`open-platform-main ${activeNav === 'AI画匠' ? 'open-platform-main--ai' : ''} ${activeNav === '模板编辑器' ? 'open-platform-main--template' : ''}`}>
+      <main className={`open-platform-main ${activeNav === 'AI画匠' ? 'open-platform-main--ai' : ''} ${activeNav === '模板编辑器' ? 'open-platform-main--template' : ''} ${activeNav === '数据统计' ? 'open-platform-main--statistics' : ''}`}>
         {activeNav === 'AI画匠' ? (
-          <OpenPlatformAiCanvasPage
-            section={aiSection}
-            managementLanding={managementLanding}
-            onSectionChange={setAiSection}
-            onManagementLandingChange={setManagementLanding}
-            onNotify={showNotice}
-          />
-        ) : activeNav === '模板编辑器' ? <OpenPlatformTemplateEditorPage onNotify={showNotice} /> : <>
+          <OpenPlatformAiCanvasPage onNotify={showNotice} />
+        ) : activeNav === '模板编辑器' ? <OpenPlatformTemplateEditorPage onNotify={showNotice} /> : activeNav === '数据统计' ? <OpenPlatformDataStatisticsPage section={dataStatisticsSection} onSectionChange={setDataStatisticsSection} onNotify={showNotice} /> : <>
         <h1>欢迎使用</h1>
 
         <div className="open-platform-layout">

@@ -8112,3 +8112,79 @@ button {
     margin-inline: 14px;
   }
 }
+
+/* 顶部“数据统计”统一承载模板基础统计与 AI 使用统计。 */
+.open-platform-main--statistics {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.open-platform-data-statistics-workspace {
+  background: #f6f8fc;
+}
+
+.open-platform-data-statistics-main {
+  min-width: 0;
+  overflow: auto;
+  background: #f6f8fc;
+}
+
+.open-platform-data-statistics-main .open-platform-template-content {
+  min-height: calc(100vh - 66px);
+}
+
+.open-platform-data-statistics-usage-main {
+  min-height: calc(100vh - 66px);
+  box-sizing: border-box;
+}
+
+.open-platform-data-statistics-usage-main .team-credit-statistics-page,
+.open-platform-data-statistics-usage-main .team-credit-management-page {
+  max-width: none;
+}
+
+.open-platform-data-statistics-usage-main .team-credit-requirement-float {
+  display: none;
+}
+
+.open-platform-template-editor-placeholder {
+  min-height: 420px;
+}
+
+.open-platform-template-placeholder-body {
+  display: flex;
+  min-height: 300px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: #8793a7;
+}
+
+.open-platform-template-placeholder-body svg {
+  color: #9eb8e8;
+}
+
+.open-platform-template-placeholder-body strong {
+  color: #3f4c63;
+  font-size: 18px;
+}
+
+.open-platform-template-placeholder-body span {
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .open-platform-data-statistics-main {
+    overflow: visible;
+  }
+
+  .open-platform-data-statistics-main .open-platform-template-content {
+    min-height: auto;
+  }
+
+  .open-platform-data-statistics-usage-main {
+    min-height: auto;
+  }
+}
