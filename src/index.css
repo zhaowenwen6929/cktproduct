@@ -6375,7 +6375,8 @@ button {
 }
 
 .credit-overview-chart-legend {
-  margin-top: 5px;
+  /* x 轴日期会向图表底部外移，给日期标签预留空间，避免与图例重叠。 */
+  margin-top: 34px;
   font-size: 11px;
 }
 

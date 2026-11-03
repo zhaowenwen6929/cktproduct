@@ -1183,7 +1183,7 @@ const creditTrendDetail = {
   '消耗功能': ['总消耗功能：2，共消耗积分1000', '消耗最多的功能：无限画布，共消耗300积分，占当日比xx%', '消耗最多的成员：张三，共消耗1000积分'],
 } satisfies Record<CreditTrendTab, string[]>;
 
-export function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership, onOpenPointsPurchase, onOpenCreditManagementDetails }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void; onOpenCreditManagementDetails: () => void }) {
+export function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpenMembership, onOpenPointsPurchase, onOpenCreditManagementDetails, remainingPointsLabel = '剩余团队积分数' }: { onNotify: (message: string) => void; onOpenRequirement: () => void; onOpenMembership: (focusMorePoints: boolean) => void; onOpenPointsPurchase: () => void; onOpenCreditManagementDetails: () => void; remainingPointsLabel?: string }) {
   const [trendTab, setTrendTab] = useState<CreditTrendTab>('消耗积分');
   const [period, setPeriod] = useState('过去7天');
   const [granularity, setGranularity] = useState('按天');
@@ -1217,7 +1217,7 @@ export function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpe
 
       <div className="credit-overview-metrics">
         <section className="credit-overview-metric credit-overview-metric--remaining">
-          <span>剩余团队积分数</span>
+          <span>{remainingPointsLabel}</span>
           <strong>89373737</strong>
           <div className={`credit-overview-metric-actions ${currentTeamLevel >= 302 ? 'is-upgrade-hidden' : ''}`}>{currentTeamLevel < 302 ? <button type="button" onClick={() => onOpenMembership(false)}>升级会员领更多积分</button> : null}<button type="button" className={currentTeamLevel >= 302 ? 'is-large' : ''} onClick={onOpenPointsPurchase}>增购</button></div>
         </section>

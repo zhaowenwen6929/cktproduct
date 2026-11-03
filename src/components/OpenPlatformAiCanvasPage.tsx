@@ -79,6 +79,7 @@ export function OpenPlatformAiCanvasPage({
                 onManagementLandingChange('consumption');
                 onSectionChange('management');
               }}
+              remainingPointsLabel="剩余积分数"
             />
           ) : (
             <TeamCreditManagementContent
