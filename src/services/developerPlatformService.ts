@@ -1,3 +1,5 @@
+import { getDeveloperPlatformAdminStore, type AdminCapability, type AdminChannelId } from './developerPlatformAdminService';
+
 export type DeveloperPlatformStatus = '已开放' | '已有接口' | 'SDK 支持' | '内测中' | '即将开放' | '规划中';
 
 export type DeveloperPlatformAccessModeId = 'open-api' | 'product-sdk' | 'cli' | 'mcp';
@@ -69,8 +71,8 @@ export type DeveloperCapabilitiesResponse = {
   integration: { cliVersion: string; cliInstallCommand: string; apiBaseUrl: string; mcpServerUrl: string };
 };
 
-export const DEVELOPER_PLATFORM_OVERVIEW_ENDPOINT = '/api/developer-platform/overview';
-export const DEVELOPER_PLATFORM_CAPABILITIES_ENDPOINT = '/api/developer-platform/capabilities';
+export const DEVELOPER_PLATFORM_OVERVIEW_ENDPOINT = '/open-platform/developer-platform/overview';
+export const DEVELOPER_PLATFORM_CAPABILITIES_ENDPOINT = '/open-platform/developer-platform/capabilities';
 
 export const OPEN_PLATFORM_SOURCE_URL = 'https://chuangkit.yuque.com/qltowx/openapi3.0/ln9rmy';
 
@@ -272,8 +274,52 @@ async function fetchPublishedData<T>(endpoint: string, fallback: T): Promise<T> 
     if (!response.ok) throw new Error(`Request failed: ${response.status}`);
     return await response.json() as T;
   } catch {
+    const localPublished = getLocalPublishedData(endpoint);
+    if (localPublished) return localPublished as T;
     return fallback;
   }
+}
+
+const localDomainForCategory = (category: string) => {
+  if (['素材', 'DAM', '品牌'].includes(category)) return 'material-brand';
+  if (['AI', '图片编辑', '视频'].includes(category)) return 'ai-creation';
+  if (['企业', '任务', '协作', '评论'].includes(category)) return 'enterprise-automation';
+  return 'template-design';
+};
+
+const localChannelToAccessMode: Record<AdminChannelId, DeveloperPlatformAccessModeId> = {
+  api: 'open-api',
+  sdk: 'product-sdk',
+  cli: 'cli',
+  mcp: 'mcp',
+  'agent-skills': 'mcp',
+};
+
+function getLocalPublishedData(endpoint: string): DeveloperOverviewResponse | DeveloperCapabilitiesResponse | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const store = getDeveloperPlatformAdminStore();
+    const published = store.capabilities.filter((item: AdminCapability) => item.status === '已开放' && item.publicVisible);
+    if (endpoint === DEVELOPER_PLATFORM_OVERVIEW_ENDPOINT) {
+      const domains = developerPlatformOverviewFallback.domains.map((domain) => {
+        const highlights = published.filter((item) => localDomainForCategory(item.category) === domain.id).slice(0, 3).map((item) => item.publicName || item.name);
+        return { ...domain, highlights: highlights.length ? highlights : domain.highlights };
+      });
+      const accessModes = developerPlatformOverviewFallback.accessModes.map((mode) => {
+        const accessModeId = mode.id;
+        const names = published.filter((item) => Object.entries(item.channels).some(([id, config]) => config.enabled && localChannelToAccessMode[id as AdminChannelId] === accessModeId)).slice(0, 3).map((item) => item.publicName || item.name);
+        return { ...mode, representativeCapabilities: names.length ? names : mode.representativeCapabilities };
+      });
+      return { ...developerPlatformOverviewFallback, source: 'api', publishedAt: new Date().toISOString().slice(0, 10), accessModes, domains };
+    }
+    if (endpoint === DEVELOPER_PLATFORM_CAPABILITIES_ENDPOINT) {
+      const domains = developerPlatformCapabilitiesFallback.domains.map((domain) => ({ ...domain, entries: domain.entries.filter((entry) => published.some((item) => (item.publicName || item.name) === entry.title)) }));
+      return { ...developerPlatformCapabilitiesFallback, source: 'api', publishedAt: new Date().toISOString().slice(0, 10), domains };
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
 }
 
 export const fetchDeveloperPlatformOverview = () => fetchPublishedData(DEVELOPER_PLATFORM_OVERVIEW_ENDPOINT, developerPlatformOverviewFallback);

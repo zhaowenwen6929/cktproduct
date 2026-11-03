@@ -26,6 +26,7 @@ import { AgentEvaluationPage } from './components/AgentEvaluationPage';
 import { AgentEvaluationProjectsPage, AgentEvaluationRequirementsPage } from './components/AgentEvaluationDirectoryPage';
 import { getEvalProject, getEvalRequirement, updateEvalRequirement } from './components/agentEvaluationData';
 import { DeveloperPlatformPage } from './components/DeveloperPlatformPage';
+import { DeveloperPlatformAdminPage, type DeveloperPlatformAdminPageKey } from './components/DeveloperPlatformAdminPage';
 import { OpenPlatformHomePage } from './components/OpenPlatformHomePage';
 import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
@@ -33,7 +34,7 @@ import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat,
 
 type AgentEvaluationProjectRoute = `/agent-eval/project/${string}`;
 type AgentEvaluationRequirementRoute = `/agent-eval/project/${string}/requirement/${string}`;
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval' | '/admin-backoffice/developer-platform' | '/admin-backoffice/developer-platform/capabilities' | '/admin-backoffice/developer-platform/apps' | '/admin-backoffice/developer-platform/billing' | '/admin-backoffice/developer-platform/statistics' | '/admin-backoffice/developer-platform/tasks' | '/admin-backoffice/developer-platform/logs';
 
 type AppHistoryState = {
   appRoute?: AppRoute;
@@ -90,6 +91,13 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
   if (pathname === '/developer-platform') return '/developer-platform';
   if (pathname === '/open-platform') return '/open-platform';
+  if (pathname === '/admin-backoffice/developer-platform/capabilities') return '/admin-backoffice/developer-platform/capabilities';
+  if (pathname === '/admin-backoffice/developer-platform/apps') return '/admin-backoffice/developer-platform/apps';
+  if (pathname === '/admin-backoffice/developer-platform/billing') return '/admin-backoffice/developer-platform/billing';
+  if (pathname === '/admin-backoffice/developer-platform/statistics') return '/admin-backoffice/developer-platform/statistics';
+  if (pathname === '/admin-backoffice/developer-platform/tasks') return '/admin-backoffice/developer-platform/tasks';
+  if (pathname === '/admin-backoffice/developer-platform/logs') return '/admin-backoffice/developer-platform/logs';
+  if (pathname === '/admin-backoffice/developer-platform') return '/admin-backoffice/developer-platform';
   if (pathname === '/admin-backoffice/ai-ecommerce') return '/admin-backoffice/ai-ecommerce';
   if (pathname === '/admin-backoffice/requirements') return '/admin-backoffice/requirements';
   if (pathname === '/admin-backoffice/requirements/membership') return '/admin-backoffice/requirements/membership';
@@ -1419,6 +1427,34 @@ export default function App() {
         title: '创客贴管理后台｜需求列表',
         description: '创客贴管理后台需求列表，按新增时间查看主需求和子需求。',
       },
+      '/admin-backoffice/developer-platform': {
+        title: '创客贴管理后台｜开发者平台概览',
+        description: '配置开发者平台公开能力、应用运行数据和任务统计。',
+      },
+      '/admin-backoffice/developer-platform/capabilities': {
+        title: '创客贴管理后台｜开发者平台能力中心',
+        description: '管理能力状态、接入方式、权限、计费和公开发布配置。',
+      },
+      '/admin-backoffice/developer-platform/apps': {
+        title: '创客贴管理后台｜开发者平台应用管理',
+        description: '查看开发者应用、授权用户、调用数据和应用权限。',
+      },
+      '/admin-backoffice/developer-platform/billing': {
+        title: '创客贴管理后台｜开发者平台计费与额度',
+        description: '配置能力计费模式、免费额度、失败退还和企业套餐规则。',
+      },
+      '/admin-backoffice/developer-platform/statistics': {
+        title: '创客贴管理后台｜开发者平台数据统计',
+        description: '查看调用、成功率、延迟、积分、渠道和失败原因统计。',
+      },
+      '/admin-backoffice/developer-platform/tasks': {
+        title: '创客贴管理后台｜开发者平台任务监控',
+        description: '监控 AI、导出、解析、批量和 Webhook 异步任务。',
+      },
+      '/admin-backoffice/developer-platform/logs': {
+        title: '创客贴管理后台｜开发者平台操作日志',
+        description: '审计能力、计费、应用权限和 Secret 操作记录。',
+      },
       '/admin-backoffice/ai-ecommerce': {
         title: '创客贴管理后台｜AI电商配置',
         description: '创客贴管理后台原型，支持 AI 电商配置查询与 JSON 编辑。',
@@ -1828,6 +1864,23 @@ export default function App() {
       onBack={() => navigateBack('/admin-backoffice/requirements')}
       onNavigate={(path) => navigateTo(path as AppRoute)}
     />;
+  }
+
+  if (currentRoute.startsWith('/admin-backoffice/developer-platform')) {
+    const activePage: DeveloperPlatformAdminPageKey = currentRoute === '/admin-backoffice/developer-platform/capabilities'
+      ? 'capabilities'
+      : currentRoute === '/admin-backoffice/developer-platform/apps'
+        ? 'apps'
+        : currentRoute === '/admin-backoffice/developer-platform/billing'
+          ? 'billing'
+          : currentRoute === '/admin-backoffice/developer-platform/statistics'
+            ? 'statistics'
+            : currentRoute === '/admin-backoffice/developer-platform/tasks'
+              ? 'tasks'
+              : currentRoute === '/admin-backoffice/developer-platform/logs'
+                ? 'logs'
+                : 'overview';
+    return <DeveloperPlatformAdminPage activePage={activePage} onBackToDirectory={() => navigateTo('/')} />;
   }
 
   if (currentRoute === '/admin-backoffice/guided-search') {
