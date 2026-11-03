@@ -2,6 +2,8 @@ import { getWebMembershipCycleOptions } from './MembershipPackagePage';
 import { MEMBERSHIP_LEVEL_BY_NAME as MEMBER_LEVEL_BY_NAME, MEMBERSHIP_NAME_BY_LEVEL } from './membershipLevelCatalog';
 import { LIFETIME_MEMBER_DAYS } from './membershipPackageRules';
 
+const EXCLUSIVE_CONSULTANT_QR_URL = 'https://static.chuangkit.com/vip/qrcode/exclusive-consultant.png';
+
 export type PlatformKey = 'web' | 'mobile';
 
 export type MembershipCycleConfig = {
@@ -79,6 +81,8 @@ export type MembershipBenefitSection = {
   title: string;
   badge?: string;
   actionLabel?: string;
+  intro?: string;
+  titleIcon?: string;
   /** 权益分组右侧的二维码展示，可在配置中替换为实际二维码图片。 */
   qrCode?: MembershipBenefitQrCodeConfig;
   items: MembershipBenefitItem[];
@@ -185,6 +189,7 @@ export type MembershipModelConsumptionConfig = {
       cost: string;
       unit: string;
       badge?: string;
+      icon?: string;
       quotas: Array<string | number>;
     }>;
   }>;
@@ -236,6 +241,87 @@ export type MembershipPageContent = {
   modelConsumption: MembershipModelConsumptionConfig;
   commercialLicense: MembershipCommercialLicenseConfig;
   faq: MembershipFaqConfig;
+};
+
+/**
+ * 技术会员弹框实际使用的六份配置。
+ *
+ * 价格、积分档位和套餐上下架仍然来自套餐数据；这里仅配置展示结构、文案和规则。
+ * 页面内部继续使用上面的展示模型，读取配置时通过适配层转换，避免让技术 JSON 反向污染现有购买逻辑。
+ */
+export type MembershipTechnicalStructureTab = {
+  key: string;
+  title: string;
+  badge?: string | { text: string; color?: string };
+  inMore?: boolean;
+  match: { subType?: number[]; monthCount?: number[] };
+  cardOverride?: Record<string, { name?: string; desc?: string }>;
+};
+
+export type MembershipTechnicalStructure = {
+  single: { title: string; levels: number[]; tabs: MembershipTechnicalStructureTab[] };
+  team: { title: string; levels: number[]; tabs: MembershipTechnicalStructureTab[] };
+  cards: Record<string, { name: string; desc: string }>;
+  pointsHelp?: string[];
+};
+
+export type MembershipTechnicalRightsOverviewModule = {
+  title?: string;
+  titleIcon?: string;
+  theme?: 'default' | 'purple' | 'highlight' | string;
+  type?: 'list' | 'models' | 'groups' | 'qrcode' | string;
+  intro?: string;
+  items?: string | Array<string | { icon?: string; name?: string; tag?: string } | { title?: string; items?: string[] }>;
+  image?: string;
+};
+
+export type MembershipTechnicalRightsOverview = Record<string, MembershipTechnicalRightsOverviewModule[]>;
+
+export type MembershipTechnicalCompare = {
+  head?: string;
+  levels: number[];
+  price?: { name: string; text: string };
+  sections: Array<{ title?: string; rows: string[][] }>;
+};
+
+export type MembershipTechnicalRightsCompare = {
+  single: MembershipTechnicalCompare;
+  team: MembershipTechnicalCompare;
+};
+
+export type MembershipTechnicalPointsCost = {
+  title?: string;
+  points: number[];
+  pointsUnit?: string;
+  tables: Array<{
+    caption?: string;
+    title?: string;
+    unit?: string;
+    rows: Array<{ icon?: string; name: string; cost?: number; quotas?: number[] }>;
+  }>;
+};
+
+export type MembershipTechnicalLicenseScope = {
+  title?: string;
+  columns: Array<{
+    title?: string;
+    type?: 'allow' | 'forbid' | string;
+    items: Array<{ title: string; desc?: string }>;
+  }>;
+};
+
+export type MembershipTechnicalFaq = {
+  title?: string;
+  items: Array<{ title: string; open?: boolean; answer: string[] }>;
+};
+
+export type MembershipTechnicalPageConfig = {
+  vippop_structure: MembershipTechnicalStructure;
+  vippop_rights_overview: MembershipTechnicalRightsOverview;
+  vippop_rights_compare: MembershipTechnicalRightsCompare;
+  vippop_points_cost: MembershipTechnicalPointsCost;
+  vippop_license_scope: MembershipTechnicalLicenseScope;
+  vippop_faq: MembershipTechnicalFaq;
 };
 
 export const MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY = 'admin-membership-page-config';
@@ -554,6 +640,7 @@ const enterpriseFlagshipBenefits: MembershipBenefitSection[] = [
   {
     title: '专享权益',
     qrCode: {
+      imageUrl: EXCLUSIVE_CONSULTANT_QR_URL,
       label: '扫码咨询',
       description: '专属顾问',
     },
@@ -1031,6 +1118,781 @@ const parseJson = <T,>(value: unknown, fallback: T): T => {
   }
 };
 
+export const MEMBERSHIP_TECHNICAL_MODULE_KEYS = [
+  'vippop_structure',
+  'vippop_rights_overview',
+  'vippop_rights_compare',
+  'vippop_points_cost',
+  'vippop_license_scope',
+  'vippop_faq',
+] as const;
+
+type MembershipTechnicalModuleKey = typeof MEMBERSHIP_TECHNICAL_MODULE_KEYS[number];
+
+const getDurationDays = (duration: string) => Number.parseInt(duration, 10) || 0;
+
+/** 技术配置使用月数匹配套餐；终身套餐的套餐时长仍为 36135 天，但技术配置按实际约定使用 1204 个月匹配。 */
+const getTechnicalMonthCount = (duration: string) => {
+  const days = getDurationDays(duration);
+  if (days === LIFETIME_MEMBER_DAYS) return 1204;
+  const monthByDays: Record<number, number> = {
+    30: 1,
+    90: 3,
+    180: 6,
+    365: 12,
+    730: 24,
+    1095: 36,
+    1460: 48,
+  };
+  return monthByDays[days] ?? Math.max(1, Math.round(days / 30));
+};
+
+const getTechnicalSubType = (name: string) => name.startsWith('连续包') ? 1 : 0;
+
+const matchesTechnicalTab = (option: MembershipCycleConfig, tab: MembershipTechnicalStructureTab) => {
+  const monthCount = getTechnicalMonthCount(option.duration);
+  const subType = getTechnicalSubType(option.name);
+  const subTypeMatches = !tab.match.subType?.length || tab.match.subType.includes(subType);
+  const monthMatches = !tab.match.monthCount?.length || tab.match.monthCount.some((value) => value === monthCount || (monthCount === 1204 && value === LIFETIME_MEMBER_DAYS));
+  return subTypeMatches && monthMatches;
+};
+
+const getTechnicalBadge = (badge: MembershipTechnicalStructureTab['badge']) => {
+  if (typeof badge === 'string') return { text: badge, color: '#ff4d4f' };
+  return badge?.text ? { text: badge.text, color: badge.color ?? '#ff4d4f' } : undefined;
+};
+
+const createTechnicalStructure = (config: MembershipPageContent): MembershipTechnicalStructure => {
+  const createTabs = (options: MembershipCycleConfig[]): MembershipTechnicalStructureTab[] => options.map((option) => ({
+    key: option.key,
+    title: option.name,
+    ...(option.guideText ? { badge: { text: option.guideText, color: option.guideTextColor } } : {}),
+    ...(option.hiddenInMore ? { inMore: true } : {}),
+    match: {
+      subType: [getTechnicalSubType(option.name)],
+      monthCount: [getTechnicalMonthCount(option.duration)],
+    },
+  }));
+  const cards = [...config.overview.planCards.personal, ...config.overview.planCards.enterprise].reduce<Record<string, { name: string; desc: string }>>((result, plan) => {
+    result[String(plan.memberLevel)] = { name: plan.name, desc: plan.subtitle };
+    return result;
+  }, {});
+  const personal = config.plans.tabs.find((tab) => tab.key === 'personal') ?? config.plans.tabs[0];
+  const enterprise = config.plans.tabs.find((tab) => tab.key === 'enterprise') ?? config.plans.tabs[1] ?? config.plans.tabs[0];
+  return {
+    single: {
+      title: personal?.name ?? '个人使用',
+      levels: (personal?.viplevel ?? []).map((level) => level.level),
+      tabs: createTabs(personal?.options ?? []),
+    },
+    team: {
+      title: enterprise?.name ?? '企业使用',
+      levels: (enterprise?.viplevel ?? []).map((level) => level.level),
+      tabs: createTabs(enterprise?.options ?? []),
+    },
+    cards,
+    pointsHelp: [
+      '图片模型参考：Seedream3.0（每张）',
+      '视频模型参考：Seedance2.0 720P（单视频）',
+    ],
+  };
+};
+
+const createTechnicalRightsOverview = (_config: MembershipPageContent): MembershipTechnicalRightsOverview => {
+  const imageModelIcon = 'https://static.chuangkit.com/vip/model/intelligent-icon.svg';
+  const videoModelIcon = 'https://static.chuangkit.com/vip/model/seedance-icon.svg';
+  const singleModelTitleIcon = 'https://static.chuangkit.com/vip/model/model-title-single.svg';
+  const teamModelTitleIcon = 'https://static.chuangkit.com/vip/model/model-title-team.svg';
+  const singleTemplateRights = [
+    '个人商用授权（仅限个人使用）',
+    '模板无水印高清下载',
+    'PSD导出 3次/天 {hl:限时加赠}',
+    '畅想智能抠图 {hl:限时加赠}',
+    'AI智能工具箱(变清晰/图片转svg/消除等)',
+    'web/app/小程序多终端灵活编辑',
+  ];
+  const singleBasicAiRights = [
+    '每月积分400',
+    'AI作品高清下载',
+    '最高生图8K图片，1080P视频',
+    '支持图文分层/无痕改字/主体提取等',
+    '畅用无限画布所有编辑能力',
+    '生成作品去除水印',
+  ];
+  const singleProfessionalAiRights = [
+    '每月积分2500~8000',
+    '可使用所有图片/视频模型',
+    'AI作品高清下载（2K/4K/8K）',
+    '最高生图8K图片，1080P视频',
+    '支持图文分层/无痕改字/主体提取等',
+    '生成作品去除水印',
+    '畅用所有SKILL技术能力 {hl:持续更新}',
+    '畅用无限画布所有编辑能力',
+  ];
+  const teamBasicTemplateRights = [
+    '商业授权全覆盖*1（企业/个人均支持） {hl:多席位可加购}',
+    '模板无水印高清下载',
+    'PSD导出 3次/席/天 {hl:限时加赠}',
+    '智能抠图不限张',
+    '海量平面/PPT/H5视频/音频VIP模板 {hl:持续更新}',
+    '畅享高级工具功能（批量设计/图片翻译/尺寸延展等）',
+    '支持多终端随时随地开启编辑',
+  ];
+  const teamProfessionalTemplateRights = [
+    ...teamBasicTemplateRights.slice(0, 6),
+    '支持上传PSD源文件作为企业模板',
+    '支持多终端随时随地开启编辑',
+  ];
+  const teamBasicAiRights = [
+    '每月积分800/团队',
+    'AI作品高清下载（2K/4K/8K）',
+    '最高生图8K图片，1080P视频',
+    '可使用所有图片/视频模型',
+    '支持图文分层/无痕改字/主体提取等',
+    '畅用所有SKILL技术能力',
+    '畅用无限画布所有编辑能力',
+  ];
+  const teamProfessionalAiRights = [
+    '每月积分2500~50000/席位',
+    'AI作品高清下载（2K/4K/8K）',
+    '最高生图8K图片，1080P视频',
+    '可使用所有图片/视频模型',
+    '支持图文分层/无痕改字/主体提取等',
+    '畅用所有SKILL技术能力',
+    '畅用无限画布所有编辑能力',
+    '支持 API 灵活配置应用 {hl:专享权益}',
+    '积分加购享优惠 {hl:专享权益}',
+  ];
+  const teamCollaborationRights = [
+    '支持20人以内实时协作/批注/评论 {hl:可定制席位数}',
+    '品牌LOGO/字体等在线管理',
+    '设计数据可视化分析汇总 {hl:限时免费}',
+    '团队空间成员管理',
+    '内容安全管理',
+    '积分共享',
+  ];
+  const exclusiveModels = [
+    { icon: imageModelIcon, name: '智能Image2.5 Pro', tag: '高质通道' },
+    { icon: videoModelIcon, name: 'Seedream5.0 Pro', tag: '限时特惠' },
+    { icon: imageModelIcon, name: '智能Image2.5 Fast', tag: '限时特惠' },
+    { icon: videoModelIcon, name: 'Seedance2.5', tag: '限时特惠' },
+    { icon: videoModelIcon, name: 'Seedance2.0-Mini', tag: '限时特惠' },
+  ];
+  const qrModule = { title: '按需定制/获取优惠，请扫码咨询', type: 'qrcode', image: EXCLUSIVE_CONSULTANT_QR_URL, items: [] };
+
+  return {
+    '240': [
+      { title: '模板创作权益', type: 'list', items: singleTemplateRights },
+      { title: 'AI创作权益', type: 'list', items: singleBasicAiRights },
+      { title: '存储权益', type: 'list', items: ['60G云存储空间'] },
+    ],
+    '241': [
+      { title: '模板创作权益', type: 'list', items: singleTemplateRights },
+      { title: 'AI创作权益', type: 'list', items: singleProfessionalAiRights },
+      { title: '存储权益', type: 'list', items: ['60G云存储空间'] },
+      { title: '专享权益', type: 'models', titleIcon: singleModelTitleIcon, items: exclusiveModels },
+    ],
+    '310': [
+      { title: '模板创作权益', type: 'list', items: teamBasicTemplateRights },
+      { title: 'AI创作权益', type: 'list', items: teamBasicAiRights },
+      { title: '团队协作权益', type: 'list', items: teamCollaborationRights },
+      { title: '通用权益', type: 'list', items: ['100G云存储空间', '团队资产共享与复用'] },
+    ],
+    '311': [
+      { title: '模板创作权益', type: 'list', items: teamProfessionalTemplateRights },
+      { title: 'AI创作权益', type: 'list', items: teamProfessionalAiRights },
+      { title: '团队协作权益', type: 'list', items: teamCollaborationRights },
+      { title: '通用权益', type: 'list', items: ['100G云存储空间', '团队资产共享与复用'] },
+      { title: '专享权益', type: 'models', titleIcon: teamModelTitleIcon, items: exclusiveModels },
+    ],
+    '312': [
+      {
+        title: '更多的企业管理权益（标色突出）',
+        type: 'groups',
+        theme: 'purple',
+        intro: '拥有【专业版】所有权益，额外享受',
+        items: [
+          { title: '品牌设置', items: ['支持多品牌logo、主题色、品牌字体等'] },
+          { title: '内容审批', items: ['保障设计审批，保障合规安全'] },
+          { title: '成员管理', items: ['支持成员角色变更、离职无缝交接'] },
+          { title: '资源库管理', items: ['资源库数量不限'] },
+          { title: '个性化设置', items: ['企业LOGO/banner自定义，登录页面/弹窗自定义配置'] },
+          { title: '源文件导出', items: ['PSD导出 20次/席/天'] },
+          { title: '数据统计', items: ['成员使用数据分析'] },
+        ],
+      },
+      {
+        title: '资产管理权益',
+        type: 'list',
+        items: [
+          '支持多品牌/子公司企业库管理与权限设置',
+          '企业模板可添加分类及标签',
+          '支持入库敏感词检测',
+          '企业库分类管理团队素材',
+          '支持素材源文件下载',
+          '支持批量操作，批量移动、批量删除、批量复制等',
+          '500G云存储空间',
+        ],
+      },
+      {
+        title: '增值服务',
+        type: 'list',
+        items: [
+          '支持积分灵活定制',
+          '支持私有化部署与内容定制',
+          '提供专业培训与定期数据报告',
+          '支持开放平台API接入',
+        ],
+      },
+      qrModule,
+      { title: '专享权益', type: 'models', titleIcon: teamModelTitleIcon, items: exclusiveModels },
+    ],
+  };
+};
+
+const getPlanLevelOrder = (plans: MembershipPlanDisplayConfig[], fallbackLevels: number[]) => {
+  const levels = plans.map((plan) => plan.memberLevel).filter((level, index, all) => all.indexOf(level) === index);
+  return levels.length ? levels : fallbackLevels;
+};
+
+const pickComparisonValues = (values: string[], targetLength: number, sourceColumnCount: number) => {
+  if (values.length === targetLength) return values;
+  if (targetLength === 2 && sourceColumnCount >= 3) return [values[0] ?? '—', values[sourceColumnCount - 1] ?? values[1] ?? '—'];
+  if (targetLength === 3 && sourceColumnCount >= 4) return [values[0] ?? '—', values[2] ?? values[1] ?? '—', values[3] ?? values[2] ?? '—'];
+  return Array.from({ length: targetLength }, (_, index) => values[index] ?? '—');
+};
+
+const createTechnicalComparison = (
+  comparison: MembershipComparisonConfig | undefined,
+  levels: number[],
+  cards: MembershipTechnicalStructure['cards'],
+): MembershipTechnicalCompare => {
+  const sourceColumns = comparison?.columns ?? [];
+  const sections = comparison?.sections ?? [];
+  const technicalSections = sections.filter((section) => section.title !== '基础信息').map((section) => ({
+    ...(section.title ? { title: section.title } : {}),
+    rows: section.rows.map((row) => [row.label, ...pickComparisonValues(row.values, levels.length, sourceColumns.length)]),
+  }));
+  const summaryRows = comparison?.sections.find((section) => section.title === '基础信息')?.rows ?? [];
+  const priceText = summaryRows.find((row) => row.label === '价格')?.values?.[0];
+  return {
+    head: '版本',
+    levels,
+    ...(priceText ? { price: { name: '价格', text: '{minMonthlyPrice} 元/月 起' } } : {}),
+    sections: [
+      ...(summaryRows.length ? [{ title: '基础信息', rows: summaryRows.map((row) => [row.label, ...pickComparisonValues(row.values, levels.length, sourceColumns.length)]) }] : []),
+      ...technicalSections,
+    ],
+  };
+};
+
+/** 最新权益对比表，来源于产品提供的个人/企业权益对比表。 */
+const LATEST_RIGHTS_COMPARE: MembershipTechnicalRightsCompare = {
+  single: {
+    head: '版本',
+    levels: [240, 241],
+    sections: [
+      {
+        rows: [
+          ['可购席位数', '1人', '1人'],
+          ['授权类型', '个人商用授权（仅限个人使用）', '个人商用授权（仅限个人使用）'],
+          ['授权范围', '线上线下用途适用（不含“户外、敏感行业及转授权”）', '线上线下用途适用（不含“户外、敏感行业及转授权”）'],
+        ],
+      },
+      {
+        title: '模板/素材创作权益',
+        rows: [
+          ['100万+精品模板', '✓', '✓'],
+          ['创客贴公益内容', '✓', '✓'],
+          ['正版可商用的精美平面模板', '✓', '✓'],
+          ['正版可商用的丰富演示文稿/PPT模板', '✓', '✓'],
+          ['正版可商用的创意视频模板', '✓', '✓'],
+          ['正版可商用的高级H5模板', '✓', '✓'],
+          ['正版可商用的素材/字体/音乐等', '✓', '✓'],
+          ['模板高清无水印下载', '✓', '✓'],
+          ['建立企业自有内容库', '—', '—'],
+          ['定制/采购企业专属内容（需另付费）', '—', '—'],
+        ],
+      },
+      {
+        title: 'AI创作权益',
+        rows: [
+          ['套餐积分量（可加购）', '400积分/月（除终身版）', '2500~8000积分/月'],
+          ['积分折扣', '加购享折扣', '加购享折扣'],
+          ['可用模型范围', '可使用所有图片&视频模型', '可使用所有图片&视频模型'],
+          ['是否可去除作品品牌水印', '生成作品去除品牌水印', '生成作品去除品牌水印'],
+          ['智能抠图', '不限张智能抠图（限时免费）', '不限张智能抠图（限时免费）'],
+          ['AI作品高清下载', '✓', '✓'],
+          ['积分是否可转赠', '—', '—'],
+        ],
+      },
+      {
+        title: '内容编辑权益',
+        rows: [
+          ['平面编辑器无门槛在线使用', '✓', '✓'],
+          ['专业H5编辑器在线使用', '✓', '✓'],
+          ['强大的视频动效智能编辑器在线使用', '✓', '✓'],
+          ['AI无限画布', '✓', '✓'],
+          ['高清分辨率下载', '可设置倍数下载', '可设置倍数下载'],
+          ['模板内容PSD导出（仅网页端）', '3次/日', '3次/日'],
+          ['导出可供打印的设计或以CMYK格式导出设计', '✓', '✓'],
+          ['内置社交媒体分享和演示文档模式', '✓', '✓'],
+          ['无损改尺寸', '✓', '✓'],
+          ['批量设计', '✓', '✓'],
+          ['尺寸智能调整', '✓', '✓'],
+          ['AI去水印', '✓', '✓'],
+        ],
+      },
+      {
+        title: '内容安全管控',
+        rows: [
+          ['正版内容商用保障，作品永久授权（AI作品除外）', '✓', '✓'],
+          ['品牌管理', '—', '—'],
+          ['LOGO/字体/色号等在线管理应用', '—', '—'],
+          ['内容审批工作流', '—', '—'],
+          ['未经审核作品可设置不可下载', '—', '—'],
+          ['品牌内容应用管制', '—', '—'],
+          ['敏感词检测（广告法等）', '—', '—'],
+          ['内容使用管控，智能风险检测', '—', '—'],
+          ['只允许团队内部访问的链接', '—', '—'],
+        ],
+      },
+      {
+        title: '资产管理服务',
+        rows: [
+          ['存储空间', '送60G', '送60G'],
+          ['空间资产批量操作（仅支持复制/删除）', '✓', '✓'],
+          ['批量编辑：标签/分类/解析/设计/文件夹', '—', '—'],
+          ['内容标签化管理', '—', '—'],
+          ['图像/音频/视频/字体/源文件在线预览', '—', '—'],
+          ['批量编辑：标签、分类、文件夹', '—', '—'],
+          ['移除设计是否可回收', '30天内可回收', '30天内可回收'],
+          ['分享有效期设置', '✓', '✓'],
+        ],
+      },
+    ],
+  },
+  team: {
+    head: '版本',
+    levels: [310, 311, 312],
+    sections: [
+      {
+        rows: [
+          ['可购席位数', '1~20人', '1~20人', '1~20人'],
+          ['授权类型', '商业授权全覆盖*1（企业/个人均支持）', '商业授权全覆盖*1（企业/个人均支持）', '商业授权全覆盖*1（企业/个人均支持）'],
+          ['授权范围', '线上线下用途适用（不含“户外、敏感行业及转授权”）', '线上线下用途适用（不含“户外、敏感行业及转授权”）', '线上线下用途适用（不含“户外、敏感行业及转授权”）'],
+          ['授权主体数量', '1个，2席位起支持加购', '1个，2席位起支持加购', '1个，2席位起支持加购'],
+          ['席位人数>20人是否可加购', '—', '✓', '✓'],
+        ],
+      },
+      {
+        title: '模板/素材创作权益',
+        rows: [
+          ['100万+精品模板', '✓', '✓', '✓'],
+          ['创客贴公益内容', '✓', '✓', '✓'],
+          ['正版可商用的精美平面模板', '✓', '✓', '✓'],
+          ['正版可商用的丰富演示文稿/PPT模板', '✓', '✓', '✓'],
+          ['正版可商用的创意视频模板', '✓', '✓', '✓'],
+          ['正版可商用的高级H5模板', '✓', '✓', '✓'],
+          ['正版可商用的素材/字体/音乐等', '✓', '✓', '✓'],
+          ['基于企业品牌模板创作', '✓', '✓', '✓'],
+          ['模板高清无水印下载', '✓', '✓', '✓'],
+          ['建立企业自有内容库', '3个（2席位起）', '3个（2席位起）', '多个'],
+          ['定制/采购企业专属内容（需另付费）', '—', '—', '✓'],
+        ],
+      },
+      {
+        title: 'AI创作权益',
+        rows: [
+          ['套餐积分量（可加购）', '800积分/团队/月', '2500~50000积分/月', '2500~50000积分/月'],
+          ['积分折扣', '加购享折扣', '加购享折扣', '加购享折扣'],
+          ['可用模型范围', '可使用所有图片&视频模型', '可使用所有图片&视频模型', '可使用所有图片&视频模型'],
+          ['是否可去除作品品牌水印', '生成作品去除品牌水印', '生成作品去除品牌水印', '生成作品去除品牌水印'],
+          ['智能抠图', '不限张智能抠图（限时免费）', '不限张智能抠图（限时免费）', '不限张智能抠图（限时免费）'],
+          ['AI作品高清下载', '✓', '✓', '✓'],
+          ['积分分配成员是否可共享', '✓', '✓', '✓'],
+        ],
+      },
+      {
+        title: '内容编辑权益',
+        rows: [
+          ['平面编辑器无门槛在线使用', '✓', '✓', '✓'],
+          ['专业H5编辑器在线使用', '✓', '✓', '✓'],
+          ['强大的视频动效智能编辑器在线使用', '✓', '✓', '✓'],
+          ['AI无限画布', '✓', '✓', '✓'],
+          ['高清分辨率下载', '可设置倍数下载', '可设置倍数下载', '可设置倍数下载'],
+          ['模板内容PSD导出（仅网页端）', '3次/席位/天', '10次/席位/天', '20次/席位/天'],
+          ['导出可供打印的设计或以CMYK格式导出设计', '✓', '✓', '✓'],
+          ['内置社交媒体分享和演示文档模式', '✓', '✓', '✓'],
+          ['无损改尺寸', '✓', '✓', '✓'],
+          ['批量套版设计', '✓', '✓', '✓'],
+          ['尺寸智能调整', '✓', '✓', '✓'],
+          ['导入psd生成设计', '✓', '✓', '✓'],
+          ['AI去水印', '✓', '✓', '✓'],
+        ],
+      },
+      {
+        title: '品牌工具箱',
+        rows: [
+          ['设置3个品牌Logo、品牌组', '1个', '1个', '多个'],
+          ['设置多个品牌主题色/色板/品牌字体/品牌模板', '1个', '1个', '多个'],
+          ['品牌管制（支持字体/图片下载分享等权限设置）', '—', '—', '✓'],
+        ],
+      },
+      {
+        title: '团队共享协作',
+        rows: [
+          ['多人实时协作编辑（团队内）', '✓', '✓', '✓'],
+          ['多人共享团队素材', '✓', '✓', '✓'],
+          ['多人共享团队模板', '✓', '✓', '✓'],
+          ['团队空间文件夹', '✓', '✓', '✓'],
+          ['多人在线批注/评论', '✓', '✓', '✓'],
+          ['PSD/AI文件转成在线模板复用', '✓', '✓', '✓'],
+        ],
+      },
+      {
+        title: '内容风险管控',
+        rows: [
+          ['正版内容商用保障，作品永久授权（AI作品除外）', '✓', '✓', '✓'],
+          ['品牌管理（LOGO/字体/色号等在线管理应用）', '✓', '✓', '✓'],
+          ['内容审批工作流（未经审核作品可设置不可下载）', '—', '—', '✓'],
+          ['品牌内容应用管制', '—', '—', '✓'],
+          ['敏感词检测（广告法等）', '—', '—', '✓'],
+          ['内容使用管控，智能风险检测', '—', '—', '✓'],
+          ['只允许团队内部访问的链接', '—', '—', '✓'],
+        ],
+      },
+      {
+        title: '内容存储管理',
+        rows: [
+          ['多企业内容库管理与权限控制', '✓', '✓', '✓'],
+          ['内容标签化管理', '—', '—', '✓'],
+          ['图像/音频/视频/字体/源文件在线预览', '—', '—', '✓'],
+          ['批量编辑：标签、分类、文件夹', '—', '—', '✓'],
+          ['团队回收站保存天数30天', '✓', '✓', '✓'],
+          ['分享有效期设置', '✓', '✓', '✓'],
+          ['分享访问权限设置', '✓', '✓', '✓'],
+          ['加密分享', '✓', '✓', '✓'],
+          ['存储空间', '送100G', '送100G', '送500G'],
+        ],
+      },
+      {
+        title: '企业管理',
+        rows: [
+          ['成员管理：可随时增加/更换成员账号', '✓', '✓', '✓'],
+          ['权限管理：成员分配编辑/管理等权限', '✓', '✓', '✓'],
+          ['数据看板：资产与使用数据可视化分析', '—', '—', '✓'],
+          ['自定义企业LOGO/BANNER等', '—', '—', '✓'],
+          ['企业微信、企业自有系统接入可定制', '—', '—', '✓'],
+          ['模板管制：素材管制、颜色管制、字体管制、分享', '—', '—', '✓'],
+          ['个性化域名', '—', '—', '✓'],
+          ['企业邮箱登录', '✓', '✓', '✓'],
+        ],
+      },
+      {
+        title: '增值服务',
+        rows: [
+          ['支持积分灵活定制', '—', '—', '✓'],
+          ['支持私有化部署与内容定制', '—', '—', '✓'],
+          ['提供专业培训与定期数据报告', '—', '—', '✓'],
+          ['支持开放平台API接入', '—', '—', '✓'],
+        ],
+      },
+    ],
+  },
+};
+
+const createTechnicalRightsCompare = (_config: MembershipPageContent, _structure: MembershipTechnicalStructure): MembershipTechnicalRightsCompare => clone(LATEST_RIGHTS_COMPARE);
+
+const createTechnicalPointsCost = (_config: MembershipPageContent): MembershipTechnicalPointsCost => {
+  const imageIcon = 'https://static.chuangkit.com/vip/model/intelligent-icon.svg';
+  const videoIcon = 'https://static.chuangkit.com/vip/model/seedance-icon.svg';
+  const points = [2500, 4000, 8000, 16000, 30000, 50000];
+  return {
+    title: '创客贴AI模型消耗参考',
+    points,
+    pointsUnit: '积分/月',
+    tables: [
+      {
+        caption: '各模型预估生图数量（单位：张）',
+        title: '生图模型',
+        unit: '张',
+        rows: [
+          { icon: imageIcon, name: 'Seedream3.0', quotas: [625, 1000, 2500, 12500, 25000, 12500] },
+          { icon: imageIcon, name: 'Seedream4.0', quotas: [250, 400, 1000, 5000, 10000, 5000] },
+          { icon: imageIcon, name: 'Seedream4.5', quotas: [250, 400, 1000, 5000, 10000, 5000] },
+          { icon: imageIcon, name: 'Seedream5.0 Lite', quotas: [100, 160, 400, 2000, 4000, 2000] },
+          { icon: imageIcon, name: '全能图像pro', quotas: [71, 114, 286, 1429, 2857, 1429] },
+          { icon: imageIcon, name: '全能图像2.0', quotas: [71, 114, 286, 1429, 2857, 1429] },
+          { icon: imageIcon, name: '千问image3.0 Pro', quotas: [42, 67, 167, 833, 1667, 833] },
+          { icon: imageIcon, name: '千问image3.0', quotas: [125, 200, 500, 2500, 5000, 2500] },
+          { icon: imageIcon, name: 'Seedream5.0 Pro', quotas: [33, 53, 133, 667, 1333, 667] },
+          { icon: imageIcon, name: 'Seedream5.0 Flash', quotas: [100, 160, 400, 2000, 4000, 2000] },
+          { icon: imageIcon, name: '智能Image2.5 Pro', quotas: [50, 80, 200, 1000, 2000, 1000] },
+          { icon: imageIcon, name: '智能Image2.5 Fast', quotas: [63, 100, 250, 1250, 2500, 1250] },
+          { icon: imageIcon, name: '智能Image2.0', quotas: [71, 114, 286, 1429, 2857, 1429] },
+          { icon: imageIcon, name: '智能Image2.1', quotas: [71, 114, 286, 1429, 2857, 1429] },
+        ],
+      },
+      {
+        caption: '视频模型预估生成数量说明：按单视频5秒/次估算生视频数量（时长最高支持输入输出各15秒），单位：个',
+        title: '视频模型',
+        unit: '个',
+        rows: [
+          { icon: videoIcon, name: 'Seedance2.5 720P', quotas: [4, 6, 12, 23, 44, 73] },
+          { icon: videoIcon, name: 'Seedance2.5 1080P', quotas: [1, 2, 5, 9, 18, 30] },
+          { icon: videoIcon, name: 'Seedance2.0 720P', quotas: [6, 9, 18, 36, 67, 111] },
+          { icon: videoIcon, name: 'Seedance2.0 1080P', quotas: [2, 4, 8, 16, 30, 50] },
+          { icon: videoIcon, name: 'Seedance2.0-Mini 720P', quotas: [11, 18, 36, 71, 133, 222] },
+          { icon: videoIcon, name: 'Seedance2.0-Mini 1080P', quotas: [5, 9, 17, 34, 64, 106] },
+          { icon: videoIcon, name: 'Wan3.0 Prime 480P', quotas: [14, 23, 46, 91, 171, 286] },
+          { icon: videoIcon, name: 'Wan3.0 Prime 720P', quotas: [7, 11, 23, 45, 85, 141] },
+          { icon: videoIcon, name: 'Wan3.0 Prime 1080P', quotas: [4, 6, 11, 29, 43, 71] },
+          { icon: videoIcon, name: 'Wan3.0 480P', quotas: [25, 40, 80, 160, 300, 500] },
+          { icon: videoIcon, name: 'Wan3.0 720P', quotas: [12, 20, 39, 78, 146, 244] },
+          { icon: videoIcon, name: 'Wan3.0 1080P', quotas: [6, 10, 20, 40, 74, 123] },
+          { icon: videoIcon, name: 'MinMax H3 768P', quotas: [10, 16, 32, 64, 120, 200] },
+          { icon: videoIcon, name: 'MinMax H3 2K', quotas: [6, 10, 20, 40, 75, 125] },
+          { icon: videoIcon, name: 'PixVerse V6 720P 文生视频', quotas: [24, 38, 75, 151, 283, 472] },
+          { icon: videoIcon, name: 'PixVerse V6 1080P 文生视频', quotas: [12, 19, 38, 76, 142, 237] },
+          { icon: videoIcon, name: 'PixVerse V6 720P 图生视频', quotas: [18, 28, 57, 113, 213, 355] },
+          { icon: videoIcon, name: 'PixVerse V6 1080P 图生视频', quotas: [9, 15, 30, 59, 111, 185] },
+          { icon: videoIcon, name: 'Kling V2.6 非首画同步', quotas: [2, 2, 5, 10, 18, 31] },
+          { icon: videoIcon, name: 'Kling V2.6 首画同步', quotas: [1, 1, 2, 5, 9, 15] },
+          { icon: videoIcon, name: 'Kling V2.5-Turbo', quotas: [3, 4, 8, 16, 31, 51] },
+          { icon: videoIcon, name: 'Kling4.0 720P', quotas: [5, 7, 15, 29, 55, 91] },
+          { icon: videoIcon, name: 'Kling4.0 1080P', quotas: [3, 5, 10, 19, 36, 61] },
+          { icon: videoIcon, name: 'Hailuo 2.0 768P', quotas: [19, 31, 62, 123, 231, 385] },
+          { icon: videoIcon, name: 'Hailuo 2.0 1080P', quotas: [13, 21, 42, 84, 158, 263] },
+          { icon: videoIcon, name: 'Hailuo2.3 768P', quotas: [19, 31, 62, 123, 231, 385] },
+          { icon: videoIcon, name: 'Hailuo2.3 1080P', quotas: [13, 21, 42, 84, 158, 263] },
+          { icon: videoIcon, name: 'Hailuo2.3-Fast 768P', quotas: [34, 55, 110, 219, 411, 685] },
+          { icon: videoIcon, name: 'Hailuo2.3-Fast 1080P', quotas: [20, 32, 64, 128, 240, 400] },
+          { icon: videoIcon, name: 'Vidu Q2-Pro 720P', quotas: [20, 32, 63, 127, 238, 396] },
+          { icon: videoIcon, name: 'Vidu Q2-Pro 1080P', quotas: [8, 13, 26, 52, 98, 164] },
+          { icon: videoIcon, name: 'HappyHorse1.1 720P', quotas: [14, 22, 44, 89, 167, 278] },
+          { icon: videoIcon, name: 'HappyHorse1.1 1080P', quotas: [10, 17, 33, 67, 125, 208] },
+          { icon: videoIcon, name: 'HappyHorse 720P', quotas: [28, 44, 89, 178, 333, 556] },
+          { icon: videoIcon, name: 'HappyHorse 1080P', quotas: [16, 25, 50, 100, 188, 313] },
+        ],
+      },
+    ],
+  };
+};
+
+const createTechnicalLicenseScope = (config: MembershipPageContent): MembershipTechnicalLicenseScope => ({
+  title: config.commercialLicense.title,
+  columns: (config.commercialLicense.scopeSections ?? []).map((section) => ({
+    title: section.title,
+    type: section.enabled ? 'allow' : 'forbid',
+    items: section.items.map((item) => ({ title: item.title, desc: item.description })),
+  })),
+});
+
+const createTechnicalFaq = (config: MembershipPageContent): MembershipTechnicalFaq => ({
+  title: config.faq.title,
+  items: config.faq.items.map((item) => ({
+    title: item.question.replace(/^\d{1,3}[.、]\s*/, ''),
+    open: item.openByDefault,
+    answer: item.answer.split(/\n\s*\n/).filter(Boolean),
+  })),
+});
+
+export function getMembershipTechnicalConfigDefaults(platform: PlatformKey = 'web'): MembershipTechnicalPageConfig {
+  const config = getMembershipPageConfigDefaults(platform);
+  const structure = createTechnicalStructure(config);
+  return {
+    vippop_structure: structure,
+    vippop_rights_overview: createTechnicalRightsOverview(config),
+    vippop_rights_compare: createTechnicalRightsCompare(config, structure),
+    vippop_points_cost: createTechnicalPointsCost(config),
+    vippop_license_scope: createTechnicalLicenseScope(config),
+    vippop_faq: createTechnicalFaq(config),
+  };
+}
+
+const technicalItemsToBenefitItems = (module: MembershipTechnicalRightsOverviewModule): MembershipBenefitItem[] => {
+  if (!Array.isArray(module.items)) return [];
+  if (module.type === 'models') {
+    return module.items.filter((item): item is { icon?: string; name?: string; tag?: string } => Boolean(item && typeof item === 'object' && ('name' in item || 'icon' in item))).map((item) => ({
+      label: item.name ?? '',
+      badge: item.tag,
+      icon: /seedance|video/i.test(`${item.name ?? ''} ${item.icon ?? ''}`) ? 'video' as const : 'image' as const,
+      enabled: true,
+    })).filter((item) => item.label);
+  }
+  if (module.type === 'groups') {
+    return module.items.filter((item): item is { title?: string; items?: string[] } => Boolean(item && typeof item === 'object' && ('title' in item || 'items' in item))).flatMap((item) => (item.items ?? []).map((text) => ({ label: item.title ? `${item.title}：${text}` : text, enabled: true })));
+  }
+  return module.items.filter((item): item is string => typeof item === 'string').map((item) => {
+    const badgeMatch = item.match(/\{hl:([^}]+)\}/);
+    return { label: item.replace(/\s*\{hl:[^}]+\}/g, ''), badge: badgeMatch?.[1], enabled: true };
+  });
+};
+
+const adaptTechnicalRightsOverview = (value: unknown, fallback: MembershipPageContent): MembershipPageContent['overview'] => {
+  const raw = value && typeof value === 'object' ? value as MembershipTechnicalRightsOverview : {};
+  const planCards = { personal: clone(fallback.overview.planCards.personal), enterprise: clone(fallback.overview.planCards.enterprise) };
+  (['personal', 'enterprise'] as const).forEach((membershipType) => {
+    const configuredLevels = fallback.plans.tabs.find((tab) => tab.key === membershipType)?.viplevel ?? [];
+    planCards[membershipType] = planCards[membershipType].map((plan) => {
+      const modules = Array.isArray(raw[String(plan.memberLevel)]) ? raw[String(plan.memberLevel)] : [];
+      const configuredLevel = configuredLevels.find((level) => level.level === plan.memberLevel);
+      const benefitSections = modules.map((module) => {
+        const item = module && typeof module === 'object' ? module as MembershipTechnicalRightsOverviewModule : {};
+        const theme = item.theme === 'purple' || item.theme === 'highlight' ? item.theme : undefined;
+        const items = technicalItemsToBenefitItems(item);
+        return {
+          title: typeof item.title === 'string' && item.title ? item.title : '会员权益',
+          intro: typeof item.intro === 'string' ? item.intro : undefined,
+          titleIcon: typeof item.titleIcon === 'string' ? item.titleIcon : undefined,
+          items,
+          qrCode: item.type === 'qrcode' ? { imageUrl: typeof item.image === 'string' ? item.image : undefined, label: '扫码咨询', description: '专属顾问' } : undefined,
+          highlightStyle: theme ? { enabled: true, backgroundColor: theme === 'purple' ? '#fffaf4' : '#f7fbff', borderColor: theme === 'purple' ? '#ffe1c8' : '#d7eaff' } : undefined,
+        };
+      });
+      return {
+        ...plan,
+        name: configuredLevel?.displayName ?? plan.name,
+        memberType: configuredLevel?.memberName ?? plan.memberType,
+        subtitle: configuredLevel?.subtitle ?? plan.subtitle,
+        benefitSections,
+      };
+    });
+  });
+  return { ...fallback.overview, planCards };
+};
+
+const adaptTechnicalStructure = (value: unknown, fallback: MembershipPageContent): MembershipPageContent['plans'] => {
+  const raw = value && typeof value === 'object' ? value as Partial<MembershipTechnicalStructure> : {};
+  const structure = raw as MembershipTechnicalStructure;
+  const optionsByTab = (tabKey: 'personal' | 'enterprise', technicalTab: MembershipTechnicalStructureTab[] | undefined) => {
+    const fallbackOptions = fallback.plans.tabs.find((tab) => tab.key === tabKey)?.options ?? [];
+    return fallbackOptions.map((option) => {
+      const matched = technicalTab?.find((tab) => matchesTechnicalTab(option, tab));
+      const badge = getTechnicalBadge(matched?.badge);
+      return {
+        ...option,
+        key: matched?.key ?? option.key,
+        name: matched?.title ?? option.name,
+        guideText: badge?.text ?? '',
+        guideTextColor: badge?.color ?? option.guideTextColor,
+        hiddenInMore: matched?.inMore ?? option.hiddenInMore,
+        highlighted: option.highlighted,
+      };
+    });
+  };
+  const updateTab = (tabKey: 'personal' | 'enterprise', levelKey: 'single' | 'team') => {
+    const fallbackTab = fallback.plans.tabs.find((tab) => tab.key === tabKey) ?? fallback.plans.tabs[0];
+    const rawMode = structure[levelKey];
+    const levelList = Array.isArray(rawMode?.levels) && rawMode.levels.length ? rawMode.levels : fallbackTab?.viplevel.map((level) => level.level) ?? [];
+    const fallbackPlans = fallback.overview.planCards[tabKey];
+    const plansByLevel = new Map(fallbackPlans.map((plan) => [plan.memberLevel, plan]));
+    const viplevel = levelList.map((level, index) => {
+      const fallbackLevel = fallbackTab?.viplevel.find((item) => item.level === level) ?? fallbackTab?.viplevel[index] ?? fallbackTab?.viplevel[0];
+      const fallbackPlan = plansByLevel.get(level) ?? fallbackPlans[index] ?? fallbackPlans[0];
+      const card = structure.cards?.[String(level)];
+      return {
+        level,
+        memberName: MEMBERSHIP_NAME_BY_LEVEL[level] ?? fallbackLevel?.memberName ?? fallbackPlan?.memberType ?? '',
+        displayName: card?.name ?? fallbackLevel?.displayName ?? fallbackPlan?.name ?? '',
+        subtitle: card?.desc ?? fallbackLevel?.subtitle ?? fallbackPlan?.subtitle ?? '',
+        bannerTxt: fallbackLevel?.bannerTxt ?? createMemberLevelBadge(),
+        tag: fallbackLevel?.tag ?? createMemberLevelBadge(),
+      };
+    });
+    return {
+      key: tabKey,
+      name: rawMode?.title ?? fallbackTab?.name ?? (tabKey === 'personal' ? '个人使用' : '企业使用'),
+      memberLevel: fallbackTab?.memberLevel ?? { level: tabKey },
+      viplevel,
+      options: optionsByTab(tabKey, rawMode?.tabs),
+    };
+  };
+  return { tabs: [updateTab('personal', 'single'), updateTab('enterprise', 'team')] };
+};
+
+const adaptTechnicalCompare = (value: unknown, fallback: MembershipPageContent, structure: MembershipTechnicalStructure): MembershipPageContent['details'] => {
+  const raw = value && typeof value === 'object' ? value as Partial<MembershipTechnicalRightsCompare> : {};
+  const adapt = (candidate: unknown, key: 'personal' | 'enterprise'): MembershipComparisonConfig | undefined => {
+    if (!candidate || typeof candidate !== 'object') return fallback.details[key];
+    const compare = candidate as MembershipTechnicalCompare;
+    const levels = Array.isArray(compare.levels) && compare.levels.length ? compare.levels : key === 'personal' ? structure.single.levels : structure.team.levels;
+    const fallbackPlans = fallback.overview.planCards[key];
+    return {
+      columns: levels.map((level, index) => ({ key: String(level), label: structure.cards[String(level)]?.name ?? fallbackPlans[index]?.name ?? MEMBERSHIP_NAME_BY_LEVEL[level] ?? String(level) })),
+      sections: [
+        ...(compare.price ? [{ title: '基础信息', rows: [{ label: compare.price.name ?? '价格', values: levels.map(() => compare.price?.text ?? '—') }] }] : []),
+        ...(Array.isArray(compare.sections) ? compare.sections.map((section) => ({ title: section.title ?? '', rows: (section.rows ?? []).map((row) => ({ label: row[0] ?? '', values: row.slice(1, levels.length + 1) })) })) : []),
+      ],
+    };
+  };
+  return { title: fallback.details.title, personal: adapt(raw.single, 'personal'), enterprise: adapt(raw.team, 'enterprise') };
+};
+
+const adaptTechnicalPointsCost = (value: unknown, fallback: MembershipPageContent): MembershipModelConsumptionConfig => {
+  if (!value || typeof value !== 'object') return clone(fallback.modelConsumption);
+  const raw = value as MembershipTechnicalPointsCost;
+  const points = Array.isArray(raw.points) ? raw.points.filter((point) => Number.isFinite(point) && point > 0) : [];
+  if (!points.length) return clone(fallback.modelConsumption);
+  const columns = points.map((point) => ({ label: point.toLocaleString('en-US'), subLabel: raw.pointsUnit ?? '积分/月' }));
+  const groups = Array.isArray(raw.tables) ? raw.tables.map((table, tableIndex) => ({
+    key: `technical-${tableIndex}`,
+    title: table.title ?? `模型${tableIndex + 1}`,
+    rows: (table.rows ?? []).filter((row) => row && typeof row.name === 'string' && (Number(row.cost) > 0 || (Array.isArray(row.quotas) && row.quotas.some((quota) => Number(quota) >= 0)))).map((row) => ({
+      name: row.name,
+      cost: Number(row.cost) > 0 ? `${row.cost}积分/次` : '',
+      unit: table.unit ?? '次',
+      icon: row.icon,
+      quotas: Array.isArray(row.quotas) && row.quotas.length >= points.length
+        ? points.map((_, index) => Number(row.quotas?.[index] ?? 0))
+        : points.map((point) => Math.round(point / Number(row.cost))),
+    })),
+  })).filter((group) => group.rows.length) : [];
+  return {
+    title: raw.title ?? fallback.modelConsumption.title,
+    description: (raw.tables ?? []).map((table) => table.caption).filter(Boolean).join('；') || fallback.modelConsumption.description,
+    columns,
+    groups,
+  };
+};
+
+const adaptTechnicalLicenseScope = (value: unknown, fallback: MembershipPageContent): MembershipCommercialLicenseConfig => {
+  const raw: MembershipTechnicalLicenseScope = value && typeof value === 'object' ? value as MembershipTechnicalLicenseScope : { columns: [] };
+  const columns = Array.isArray(raw.columns) ? raw.columns : [];
+  return {
+    title: raw.title ?? fallback.commercialLicense.title,
+    description: fallback.commercialLicense.description,
+    enabled: true,
+    scopes: columns.map((column) => column.title ?? '').filter(Boolean),
+    scopeSections: columns.filter((column) => Array.isArray(column.items) && column.items.length).map((column) => ({
+      title: column.title ?? '',
+      enabled: column.type !== 'forbid',
+      items: column.items.map((item) => ({ title: item.title, description: item.desc ?? '' })),
+    })),
+    testimonials: [],
+    logos: [],
+    serviceCta: undefined,
+    enterprisePurchaseContact: fallback.commercialLicense.enterprisePurchaseContact,
+  };
+};
+
+const adaptTechnicalFaq = (value: unknown, fallback: MembershipPageContent): MembershipFaqConfig => {
+  const raw: MembershipTechnicalFaq = value && typeof value === 'object' ? value as MembershipTechnicalFaq : { items: [] };
+  if (!Array.isArray(raw.items)) return clone(fallback.faq);
+  return {
+    title: raw.title ?? fallback.faq.title,
+    items: raw.items.filter((item) => item && typeof item.title === 'string').map((item, index) => ({
+      question: `${String(index + 1).padStart(2, '0')}.${item.title}`,
+      answer: Array.isArray(item.answer) ? item.answer.join('\n\n') : '',
+      openByDefault: Boolean(item.open),
+      action: /升级|补差价/.test(item.title) ? 'membership-upgrade' : undefined,
+    })),
+  };
+};
+
+const hasTechnicalConfig = (json: Record<string, unknown>) => MEMBERSHIP_TECHNICAL_MODULE_KEYS.some((key) => Object.prototype.hasOwnProperty.call(json, key));
+
 const LEGACY_MODEL_COLUMNS = ['300', '500', '1,000', '2,000', '3,000'];
 
 const isLegacyModelConsumption = (value: Partial<MembershipModelConsumptionConfig>) => {
@@ -1336,6 +2198,25 @@ export function readMembershipPageConfig(platform: PlatformKey = 'web'): Members
   try {
     const stored = JSON.parse(window.localStorage.getItem(MEMBERSHIP_PAGE_CONFIG_STORAGE_KEY) ?? '{}') as { [key in PlatformKey]?: { json?: Record<string, unknown> } };
     const json = stored[platform]?.json ?? {};
+    if (hasTechnicalConfig(json) || Object.keys(json).length === 0) {
+      const technicalDefaults = getMembershipTechnicalConfigDefaults(platform);
+      const technicalStructure = parseJson(json.vippop_structure, technicalDefaults.vippop_structure);
+      const technicalRightsOverview = parseJson(json.vippop_rights_overview, technicalDefaults.vippop_rights_overview);
+      const technicalRightsCompare = parseJson(json.vippop_rights_compare, technicalDefaults.vippop_rights_compare);
+      const technicalPointsCost = parseJson(json.vippop_points_cost, technicalDefaults.vippop_points_cost);
+      const technicalLicenseScope = parseJson(json.vippop_license_scope, technicalDefaults.vippop_license_scope);
+      const technicalFaq = parseJson(json.vippop_faq, technicalDefaults.vippop_faq);
+      const plans = adaptTechnicalStructure(technicalStructure, fallback);
+      const overview = adaptTechnicalRightsOverview(technicalRightsOverview, { ...fallback, plans });
+      return {
+        plans,
+        overview,
+        details: adaptTechnicalCompare(technicalRightsCompare, { ...fallback, plans, overview }, technicalStructure),
+        modelConsumption: adaptTechnicalPointsCost(technicalPointsCost, fallback),
+        commercialLicense: adaptTechnicalLicenseScope(technicalLicenseScope, fallback),
+        faq: adaptTechnicalFaq(technicalFaq, fallback),
+      };
+    }
     return {
       plans: normalizePlans(parseJson(json.plans, fallback.plans), fallback.plans, platform === 'web'),
       overview: normalizeOverview(parseJson(json.overview, fallback.overview), fallback.overview),

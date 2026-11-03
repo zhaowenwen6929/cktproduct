@@ -1,13 +1,10 @@
 import { useState, type ReactNode } from 'react';
 import {
-  BarChart3,
   ChevronDown,
-  ChevronUp,
   CircleDollarSign,
   Download,
   Droplets,
   Grid2X2,
-  Image as ImageIcon,
   Info,
   LayoutTemplate,
   Palette,
@@ -22,8 +19,6 @@ import {
 export type TemplateEditorSection = 'basic' | 'detail' | 'paid';
 
 type OpenPlatformTemplateEditorPageProps = {
-  section: TemplateEditorSection;
-  onSectionChange: (section: TemplateEditorSection) => void;
   onNotify: (message: string) => void;
 };
 
@@ -81,41 +76,36 @@ const navGroups = [
   { label: '配置管理', icon: Settings2, kind: 'single' as const },
   { label: '主题设置', icon: Palette, kind: 'single' as const },
   { label: '水印设置', icon: Droplets, kind: 'single' as const },
-  { label: '数据统计', icon: BarChart3, kind: 'statistics' as const },
   { label: '轻应用', icon: Smartphone, kind: 'single' as const },
   { label: '其他设置', icon: Grid2X2, kind: 'single' as const },
 ];
 
-export function OpenPlatformTemplateEditorPage({ section, onSectionChange, onNotify }: OpenPlatformTemplateEditorPageProps) {
-  const [statisticsExpanded, setStatisticsExpanded] = useState(true);
-
+export function OpenPlatformTemplateEditorPage({ onNotify }: OpenPlatformTemplateEditorPageProps) {
   return (
     <div className="open-platform-template-workspace">
       <aside className="open-platform-template-sidebar">
         <div className="open-platform-template-sidebar-menu">
           {navGroups.map((item) => {
             const Icon = item.icon;
-            if (item.kind === 'statistics') {
-              return <div key={item.label} className="open-platform-template-sidebar-group">
-                <button type="button" className="open-platform-template-sidebar-heading is-selected" aria-expanded={statisticsExpanded} onClick={() => setStatisticsExpanded((current) => !current)}><Icon size={16} /><span>{item.label}</span>{statisticsExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button>
-                {statisticsExpanded ? <div className="open-platform-template-sidebar-subitems">
-                  <button type="button" className={`open-platform-template-sidebar-subitem ${section === 'basic' ? 'is-active' : ''}`} onClick={() => onSectionChange('basic')}>基本数据</button>
-                  <button type="button" className={`open-platform-template-sidebar-subitem ${section !== 'basic' ? 'is-active' : ''}`} onClick={() => onSectionChange('detail')}>详细数据</button>
-                </div> : null}
-              </div>;
-            }
             return <button type="button" key={item.label} className="open-platform-template-sidebar-heading" onClick={() => onNotify(`${item.label}即将打开`)}><Icon size={16} /><span>{item.label}</span><ChevronDown size={14} /></button>;
           })}
         </div>
         <button type="button" className="open-platform-template-sidebar-collapse" aria-label="收起模板编辑器侧边栏" onClick={() => onNotify('侧边栏已收起')}>‹</button>
       </aside>
 
-      <main className="open-platform-template-content">
-        <h1>数据统计</h1>
-        {section === 'basic' ? <TemplateBasicData onNotify={onNotify} /> : <TemplateDetailData section={section} onSectionChange={onSectionChange} onNotify={onNotify} />}
-      </main>
+      <div className="open-platform-template-content">
+        <h1>模板编辑器</h1>
+        <section className="open-platform-template-white-panel open-platform-template-editor-placeholder">
+          <TemplatePanelTitle>配置管理</TemplatePanelTitle>
+          <div className="open-platform-template-placeholder-body"><Settings2 size={30} /><strong>模板编辑器配置</strong><span>请从左侧选择需要配置的功能</span></div>
+        </section>
+      </div>
     </div>
   );
+}
+
+export function OpenPlatformTemplateEditorContent({ section, onSectionChange, onNotify, title = '数据统计' }: { section: TemplateEditorSection; onSectionChange: (section: TemplateEditorSection) => void; onNotify: (message: string) => void; title?: string }) {
+  return <div className="open-platform-template-content"><h1>{title}</h1>{section === 'basic' ? <TemplateBasicData onNotify={onNotify} /> : <TemplateDetailData section={section} onSectionChange={onSectionChange} onNotify={onNotify} />}</div>;
 }
 
 function TemplatePanelTitle({ children, extra }: { children: string; extra?: ReactNode }) {

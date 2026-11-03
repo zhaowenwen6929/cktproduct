@@ -1195,6 +1195,14 @@ export function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpe
   const secondaryPoints = creditTrendBars.map((item, index) => `${(index / (creditTrendBars.length - 1)) * 100},${100 - (item[trendPresentation.lineKeys[1]] / trendPresentation.max) * 78}`).join(' ');
   const selectedTrendDate = creditTrendBars[hoveredTrendIndex]?.label ?? '2月3日';
   const selectedMemberStats = selectedMember ? creditMemberStats[selectedMember] ?? { points: 0, count: 0 } : null;
+  useEffect(() => {
+    if (!selectedMember) return undefined;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedMember(null);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [selectedMember]);
   const periodRanges: Record<string, string> = {
     '过去7天': '2026-02-21~2026-02-27',
     '过去30天': '2026-01-29~2026-02-27',
@@ -1233,19 +1241,21 @@ export function TeamCreditStatisticsContent({ onNotify, onOpenRequirement, onOpe
         </section>
       </div>
 
-      <div className={`credit-overview-main-grid ${selectedMember ? 'has-selected-member' : ''}`}>
-        <section className={`credit-overview-recent ${selectedMember ? 'is-member-popover-open' : ''}`}>
+      <div className="credit-overview-main-grid">
+        <section className="credit-overview-recent">
           <div className="credit-overview-section-heading"><h2>最新消耗</h2><button type="button" onClick={onOpenCreditManagementDetails}>查看全部</button></div>
           <div className="credit-overview-recent-list">
             {creditRecentConsumption.map((record, index) => <div className="credit-overview-recent-row" key={`${record.time}-${record.member}-${index}`}><span>{record.time}</span><button type="button" className={`credit-overview-member-trigger ${selectedMember === record.member ? 'is-selected' : ''}`} onClick={() => setSelectedMember(record.member)}>{record.member}</button><p>{record.detail} <em>消耗 {record.points}</em></p></div>)}
           </div>
         </section>
+      </div>
 
-        {selectedMember && selectedMemberStats ? <aside className="credit-overview-member-card" role="dialog" aria-label={`${selectedMember}成员消耗`}>
+      {selectedMember && selectedMemberStats ? <div className="credit-overview-member-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedMember(null); }}>
+        <aside className="credit-overview-member-card" role="dialog" aria-modal="true" aria-label={`${selectedMember}成员消耗`} onMouseDown={(event) => event.stopPropagation()}>
           <div className="credit-overview-member-card-heading"><h2>成员消耗</h2><button type="button" onClick={() => setSelectedMember(null)} aria-label="关闭成员消耗">×</button></div>
           <div className="credit-overview-member-label"><strong>{selectedMember}</strong><span>成员</span></div><p>最近24小时</p><dl><div><dt>消耗总积分</dt><dd>{selectedMemberStats.points}</dd></div><div><dt>消耗总次数</dt><dd>{selectedMemberStats.count}</dd></div></dl><button type="button" className="credit-overview-member-link" onClick={() => onNotify(`已打开${selectedMember}的消耗明细`)}>查看消耗明细</button><button type="button" className="credit-overview-member-close" onClick={() => setSelectedMember(null)}>我知道了</button>
-        </aside> : null}
-      </div>
+        </aside>
+      </div> : null}
 
       <section className="credit-overview-trend-section">
         <div className="credit-overview-trend-heading"><h2>消耗趋势</h2><div className="credit-overview-periods">{['过去7天', '过去30天', '上周', '上月'].map((item) => <button type="button" key={item} className={period === item ? 'is-active' : ''} onClick={() => selectPeriod(item)}>{item}</button>)}<select aria-label="日期范围" value={dateRange} onChange={(event) => { setDateRange(event.currentTarget.value); setPeriod('自定义'); }}><option>2026-02-21~2026-02-27</option><option>2026-01-29~2026-02-27</option><option>2026-02-14~2026-02-20</option><option>2026-01-01~2026-01-31</option></select><select aria-label="统计粒度" value={granularity} onChange={(event) => setGranularity(event.currentTarget.value)}><option>按天</option><option>按周</option><option>按月</option></select></div></div>

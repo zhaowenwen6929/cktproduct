@@ -6511,26 +6511,23 @@ button {
   }
 }
 
-/* Open member consumption as a non-resident popover without covering the list. */
+/* 成员消耗使用独立弹框，不再挤压最新消耗列表。 */
 .credit-overview-main-grid {
-  position: relative;
   display: block;
 }
 
-.credit-overview-main-grid.has-selected-member .credit-overview-recent {
-  padding-right: 314px;
-}
-
-.credit-overview-main-grid.has-selected-member .credit-overview-recent-row > p {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.credit-overview-member-modal-backdrop {
+  position: fixed;
+  z-index: 180;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 24px clamp(24px, 7vw, 116px);
+  background: rgba(18, 29, 48, .04);
 }
 
 .credit-overview-member-card {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 12;
   width: 286px;
   min-height: 350px;
   margin: 0;
@@ -6571,20 +6568,13 @@ button {
 }
 
 @media (max-width: 980px) {
-  .credit-overview-main-grid {
-    display: block;
-  }
-
-  .credit-overview-main-grid.has-selected-member .credit-overview-recent {
-    padding-right: 0;
+  .credit-overview-member-modal-backdrop {
+    justify-content: center;
+    padding: 16px;
   }
 
   .credit-overview-member-card {
-    position: relative;
-    top: auto;
-    right: auto;
     width: min(360px, 100%);
-    margin-top: 18px;
   }
 }
 

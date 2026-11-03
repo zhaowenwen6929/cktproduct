@@ -158,8 +158,8 @@ function SelectInput({ value, onChange, options }: { value: string; onChange: (v
   return <select value={value} onChange={(event) => onChange(event.target.value)} className="h-8 w-full rounded-[6px] border border-[#dce3eb] bg-white px-2.5 text-[12px] text-[#344054] outline-none focus:border-[#6caaf5]">{options.map((option) => <option key={option} value={option}>{option}</option>)}</select>;
 }
 
-function Drawer({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
-  return <div className="fixed inset-0 z-40"><button type="button" className="absolute inset-0 bg-[#182230]/20" aria-label="关闭详情" onClick={onClose} /><aside className="absolute bottom-0 right-0 top-0 flex w-[520px] flex-col overflow-hidden border-l border-[#e4e9f0] bg-white shadow-[-8px_0_28px_rgba(37,53,80,.12)]"><header className="flex h-[62px] shrink-0 items-center justify-between border-b border-[#edf0f4] px-5"><h2 className="text-[16px] font-semibold text-[#283244]">{title}</h2><button type="button" onClick={onClose} className="rounded p-1 text-[#98a2b2] hover:bg-[#f5f7fa]"><X className="h-4 w-4" /></button></header><div className="flex-1 overflow-y-auto p-5">{children}</div></aside></div>;
+function Drawer({ title, children, onClose, widthClass = 'w-[520px]' }: { title: string; children: ReactNode; onClose: () => void; widthClass?: string }) {
+  return <div className="fixed inset-0 z-40"><button type="button" className="absolute inset-0 bg-[#182230]/20" aria-label="关闭详情" onClick={onClose} /><aside className={`absolute bottom-0 right-0 top-0 flex ${widthClass} flex-col overflow-hidden border-l border-[#e4e9f0] bg-white shadow-[-8px_0_28px_rgba(37,53,80,.12)]`}><header className="flex h-[62px] shrink-0 items-center justify-between border-b border-[#edf0f4] px-5"><h2 className="text-[16px] font-semibold text-[#283244]">{title}</h2><button type="button" onClick={onClose} className="rounded p-1 text-[#98a2b2] hover:bg-[#f5f7fa]"><X className="h-4 w-4" /></button></header><div className="flex-1 overflow-y-auto p-5">{children}</div></aside></div>;
 }
 
 function OverviewPage({ store }: { store: DeveloperPlatformAdminStore }) {
@@ -264,9 +264,110 @@ function CapabilityDrawer({ capability, onClose, onSave, onStatusChange }: { cap
   return <Drawer title="编辑能力配置" onClose={onClose}><div className="space-y-5"><div className="rounded-[7px] bg-[#f7f9fc] p-3"><div className="flex items-center justify-between"><span className="font-mono text-[11px] text-[#667085]">{draft.capabilityCode}</span><StatusBadge status={draft.status} /></div><p className="mt-2 text-[11px] leading-5 text-[#667085]">公开首页只读取已发布摘要；完整配置、计费和权限仅在登录后的控制台中展示。</p></div><div className="grid grid-cols-2 gap-3"><Field label="能力名称"><TextInput value={draft.name} onChange={(value) => update('name', value)} /></Field><Field label="能力 Code"><TextInput value={draft.capabilityCode} onChange={(value) => update('capabilityCode', value)} /></Field><Field label="分类"><SelectInput value={draft.category} onChange={(value) => update('category', value)} options={['模板', '素材', '设计', '图片编辑', 'AI', '视频', 'POD', 'DAM', '品牌', '企业', '导出', '任务', '协作', '评论']} /></Field><Field label="来源"><SelectInput value={sourceLabels[draft.source]} onChange={(value) => update('source', Object.entries(sourceLabels).find(([, label]) => label === value)?.[0] as AdminCapabilitySource)} options={Object.values(sourceLabels)} /></Field><Field label="当前版本"><TextInput value={draft.version} onChange={(value) => update('version', value)} /></Field><Field label="展示顺序"><TextInput value={String(draft.order)} onChange={(value) => update('order', Number(value) || 0)} /></Field></div><Field label="能力说明"><textarea value={draft.description} onChange={(event) => update('description', event.target.value)} rows={3} className="w-full resize-none rounded-[6px] border border-[#dce3eb] p-2.5 text-[12px] outline-none focus:border-[#6caaf5]" /></Field><div className="grid grid-cols-2 gap-3"><Field label="公开名称"><TextInput value={draft.publicName} onChange={(value) => update('publicName', value)} /></Field><Field label="文档地址"><TextInput value={draft.docsUrl} onChange={(value) => update('docsUrl', value)} placeholder="https://..." /></Field></div><Field label="公开描述"><textarea value={draft.publicDescription} onChange={(event) => update('publicDescription', event.target.value)} rows={2} className="w-full resize-none rounded-[6px] border border-[#dce3eb] p-2.5 text-[12px] outline-none focus:border-[#6caaf5]" /></Field><div className="grid grid-cols-2 gap-3"><label className="flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.publicVisible} onChange={(event) => update('publicVisible', event.target.checked)} />同步到公开首页</label><label className="flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.allowAi} onChange={(event) => update('allowAi', event.target.checked)} />允许 AI 调用</label><label className="flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.requireConfirmation} onChange={(event) => update('requireConfirmation', event.target.checked)} />调用前需确认</label></div><div><div className="mb-2 text-[11px] font-medium text-[#667085]">接入方式配置</div><div className="space-y-2">{(Object.keys(channelLabels) as AdminChannelId[]).map((id) => <div key={id} className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-[6px] border border-[#edf0f4] p-2.5"><input type="checkbox" checked={draft.channels[id].enabled} onChange={(event) => setDraft((current) => ({ ...current, channels: { ...current.channels, [id]: { ...current.channels[id], enabled: event.target.checked } } }))} /><span className="text-[11px] text-[#344054]">{channelLabels[id]}</span><span className="text-[10px] text-[#98a2b2]">{draft.channels[id].status}</span></div>)}</div></div><div className="rounded-[7px] border border-[#f0e5cf] bg-[#fffaf0] p-3 text-[11px] leading-5 text-[#8b6b2c]">发布、废弃和下线需要二次确认；已发布能力不支持物理删除，所有变更会记录操作日志。</div><div className="flex items-center justify-between border-t border-[#edf0f4] pt-4"><div className="flex gap-2">{draft.status !== '已开放' ? <Button variant="primary" onClick={() => onStatusChange(draft, '已开放')}>发布</Button> : <Button variant="danger" onClick={() => onStatusChange(draft, '已下线')}>下线</Button>}{draft.status !== '已废弃' ? <Button variant="ghost" onClick={() => onStatusChange(draft, '已废弃')}>废弃</Button> : null}</div><div className="flex gap-2"><Button onClick={onClose}>取消</Button><Button variant="primary" onClick={() => onSave({ ...draft, updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ') })}><Check className="h-3.5 w-3.5" />保存配置</Button></div></div></div></Drawer>;
 }
 
+type CreateCapabilitySection = 'basic' | 'public' | 'access' | 'billing' | 'review';
+
 function CapabilityCreateDrawer({ onClose, onCreate }: { onClose: () => void; onCreate: (capability: AdminCapability) => void }) {
   const [draft, setDraft] = useState(() => capabilityDraft());
-  return <Drawer title="新增能力" onClose={onClose}><div className="space-y-4"><p className="rounded-[7px] bg-[#f7f9fc] p-3 text-[11px] leading-5 text-[#667085]">新增能力默认为草稿状态，保存后需在能力详情中配置接入方式、计费和发布状态。</p><Field label="能力名称"><TextInput value={draft.name} onChange={(value) => setDraft({ ...draft, name: value, publicName: value })} /></Field><Field label="能力 Code"><TextInput value={draft.capabilityCode} onChange={(value) => setDraft({ ...draft, capabilityCode: value })} /></Field><Field label="分类"><SelectInput value={draft.category} onChange={(value) => setDraft({ ...draft, category: value })} options={['模板', '素材', '设计', 'AI', '企业', '导出', '任务']} /></Field><Field label="能力说明"><textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value, publicDescription: event.target.value })} rows={4} className="w-full resize-none rounded-[6px] border border-[#dce3eb] p-2.5 text-[12px] outline-none focus:border-[#6caaf5]" /></Field><div className="flex justify-end gap-2 border-t border-[#edf0f4] pt-4"><Button onClick={onClose}>取消</Button><Button variant="primary" onClick={() => onCreate(draft)}><Check className="h-3.5 w-3.5" />保存草稿</Button></div></div></Drawer>;
+  const [section, setSection] = useState<CreateCapabilitySection>('basic');
+  const [error, setError] = useState('');
+  const sections: { id: CreateCapabilitySection; label: string; description: string }[] = [
+    { id: 'basic', label: '基础信息', description: '定义能力身份与归属' },
+    { id: 'public', label: '公开展示', description: '配置首页和控制台摘要' },
+    { id: 'access', label: '接入方式', description: '配置 API、SDK、CLI 和 MCP' },
+    { id: 'billing', label: '权限与计费', description: '配置调用权限和消耗规则' },
+    { id: 'review', label: '发布检查', description: '确认配置完整后保存草稿' },
+  ];
+  const categories = ['模板', '素材', '设计', '图片编辑', 'AI', '视频', 'POD', 'DAM', '品牌', '企业', '导出', '任务', '协作', '评论'];
+  const channelStatuses: AdminCapabilityStatus[] = ['草稿', '内测中', '已开放', '维护中', '规划中'];
+  const update = <K extends keyof AdminCapability>(key: K, value: AdminCapability[K]) => setDraft((current) => ({ ...current, [key]: value }));
+  const updateChannel = (id: AdminChannelId, values: Partial<AdminCapability['channels'][AdminChannelId]>) => setDraft((current) => ({ ...current, channels: { ...current.channels, [id]: { ...current.channels[id], ...values } } }));
+  const enabledChannels = (Object.keys(channelLabels) as AdminChannelId[]).filter((id) => draft.channels[id].enabled);
+  const isBasicComplete = Boolean(draft.name.trim() && draft.capabilityCode.trim() && draft.description.trim());
+  const isPublicComplete = Boolean(draft.publicName.trim() && draft.publicDescription.trim());
+  const isAccessComplete = enabledChannels.length > 0;
+  const isBillingComplete = Boolean(draft.billing.mode && draft.billing.unit);
+  const canSave = isBasicComplete && isAccessComplete && isBillingComplete;
+  const saveDraft = () => {
+    if (!canSave) {
+      setError('请补充能力名称、Code、能力说明，至少选择一种接入方式，并填写计费单位。');
+      setSection('review');
+      return;
+    }
+    onCreate({
+      ...draft,
+      publicName: draft.publicName || draft.name,
+      publicDescription: draft.publicDescription || draft.description,
+      updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+    });
+  };
+  const goNext = () => {
+    const index = sections.findIndex((item) => item.id === section);
+    if (section === 'basic' && !isBasicComplete) {
+      setError('请先填写能力名称、能力 Code 和能力说明。');
+      return;
+    }
+    if (section === 'access' && !isAccessComplete) {
+      setError('请至少选择一种可用的接入方式。');
+      return;
+    }
+    setError('');
+    if (index < sections.length - 1) setSection(sections[index + 1].id);
+  };
+  const goPrevious = () => {
+    const index = sections.findIndex((item) => item.id === section);
+    setError('');
+    if (index > 0) setSection(sections[index - 1].id);
+  };
+
+  return <Drawer title="新增能力" widthClass="w-[680px]" onClose={onClose}>
+    <div className="space-y-5">
+      <div className="flex items-start justify-between gap-4 rounded-[8px] border border-[#dbeafe] bg-[#f6faff] p-3.5">
+        <div className="flex gap-3"><div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f2ff] text-[#377dff]"><Layers3 className="h-3.5 w-3.5" /></div><div><div className="text-[12px] font-medium text-[#344054]">创建一项可被统一发布的开放能力</div><p className="mt-1 text-[11px] leading-5 text-[#667085]">新增能力会先保存为草稿。配置完成后，可在详情页发布到开发者中心；未发布内容不会进入公开首页。</p></div></div>
+        <span className="shrink-0 rounded-full bg-[#eef0f3] px-2 py-1 text-[10px] text-[#667085]">草稿 · 未发布</span>
+      </div>
+
+      <div className="grid grid-cols-5 gap-1 rounded-[8px] bg-[#f7f9fc] p-1">
+        {sections.map((item, index) => <button key={item.id} type="button" onClick={() => { setError(''); setSection(item.id); }} className={`rounded-[6px] px-2 py-2 text-left transition ${section === item.id ? 'bg-white shadow-[0_1px_4px_rgba(37,53,80,.08)]' : 'hover:bg-white/70'}`}><div className={`text-[11px] font-medium ${section === item.id ? 'text-[#188cf2]' : 'text-[#667085]'}`}>{index + 1}. {item.label}</div><div className="mt-0.5 truncate text-[9px] text-[#98a2b2]">{item.description}</div></button>)}
+      </div>
+
+      {section === 'basic' ? <div className="space-y-4">
+        <div><h3 className="text-[14px] font-semibold text-[#283244]">基础信息</h3><p className="mt-1 text-[11px] text-[#98a2b2]">先建立能力的唯一身份，后续 API、SDK 和 Agent 都通过这个 Code 关联。</p></div>
+        <div className="grid grid-cols-2 gap-3"><Field label="能力名称" hint="必填"><TextInput value={draft.name} onChange={(value) => update('name', value)} placeholder="例如：模板搜索" /></Field><Field label="能力 Code" hint="必填"><TextInput value={draft.capabilityCode} onChange={(value) => update('capabilityCode', value)} placeholder="例如：template.search" /></Field><Field label="能力分类"><SelectInput value={draft.category} onChange={(value) => update('category', value)} options={categories} /></Field><Field label="能力来源"><SelectInput value={sourceLabels[draft.source]} onChange={(value) => update('source', Object.entries(sourceLabels).find(([, label]) => label === value)?.[0] as AdminCapabilitySource)} options={Object.values(sourceLabels)} /></Field><Field label="初始版本"><TextInput value={draft.version} onChange={(value) => update('version', value)} placeholder="v1" /></Field><Field label="展示顺序" hint="数字越小越靠前"><TextInput value={String(draft.order)} onChange={(value) => update('order', Number(value) || 0)} /></Field></div>
+        <Field label="能力说明" hint="必填"><textarea value={draft.description} onChange={(event) => update('description', event.target.value)} rows={4} placeholder="说明这项能力解决什么问题，面向哪些开发者场景。" className="w-full resize-none rounded-[6px] border border-[#dce3eb] p-2.5 text-[12px] leading-5 outline-none focus:border-[#6caaf5]" /></Field>
+        <div className="flex items-center gap-2 rounded-[7px] bg-[#fbfcfd] px-3 py-2.5 text-[10px] text-[#98a2b2]"><Code2 className="h-3.5 w-3.5 text-[#377dff]" />建议使用 domain.action 格式，例如 template.search、design.export、ai.remove。</div>
+      </div> : null}
+
+      {section === 'public' ? <div className="space-y-4">
+        <div><h3 className="text-[14px] font-semibold text-[#283244]">公开展示</h3><p className="mt-1 text-[11px] text-[#98a2b2]">首页仅展示简短摘要；完整字段、权限和计费规则会留在登录后的能力中心。</p></div>
+        <Field label="公开名称"><TextInput value={draft.publicName} onChange={(value) => update('publicName', value)} placeholder={draft.name || '默认使用能力名称'} /></Field>
+        <Field label="公开描述"><textarea value={draft.publicDescription} onChange={(event) => update('publicDescription', event.target.value)} rows={4} placeholder="用于开发者平台首页能力摘要，建议控制在 50 字以内。" className="w-full resize-none rounded-[6px] border border-[#dce3eb] p-2.5 text-[12px] leading-5 outline-none focus:border-[#6caaf5]" /></Field>
+        <div className="grid grid-cols-2 gap-3"><Field label="文档地址"><TextInput value={draft.docsUrl} onChange={(value) => update('docsUrl', value)} placeholder="https://..." /></Field><Field label="示例地址"><TextInput value={draft.exampleUrl} onChange={(value) => update('exampleUrl', value)} placeholder="https://..." /></Field></div>
+        <label className="flex items-start gap-2 rounded-[7px] border border-[#edf0f4] p-3 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.publicVisible} onChange={(event) => update('publicVisible', event.target.checked)} className="mt-0.5" /><span><span className="font-medium text-[#344054]">允许同步到公开首页</span><span className="mt-1 block text-[10px] leading-4 text-[#98a2b2]">仅当能力状态为“已开放”且发布后才会实际展示，勾选本身不会绕过发布审核。</span></span></label>
+        <div className={`rounded-[7px] p-3 text-[11px] leading-5 ${isPublicComplete ? 'bg-[#f0fbf6] text-[#287a5a]' : 'bg-[#fffaf0] text-[#8b6b2c]'}`}>{isPublicComplete ? '公开摘要已填写，发布后可同步到开发者中心。' : '建议补充公开名称和公开描述，方便首页与能力总览使用。'}</div>
+      </div> : null}
+
+      {section === 'access' ? <div className="space-y-4">
+        <div><h3 className="text-[14px] font-semibold text-[#283244]">接入方式</h3><p className="mt-1 text-[11px] text-[#98a2b2]">同一项能力可以被多个入口复用。至少配置一种接入方式，才允许保存。</p></div>
+        <div className="space-y-3">{(Object.keys(channelLabels) as AdminChannelId[]).map((id) => { const channel = draft.channels[id]; return <div key={id} className={`rounded-[8px] border p-3.5 transition ${channel.enabled ? 'border-[#cfe3fb] bg-[#fbfdff]' : 'border-[#edf0f4] bg-white'}`}><div className="flex items-start gap-3"><input type="checkbox" checked={channel.enabled} onChange={(event) => updateChannel(id, { enabled: event.target.checked })} className="mt-1" /><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-3"><span className="text-[12px] font-medium text-[#344054]">{channelLabels[id]}</span><span className={`rounded-full px-2 py-1 text-[10px] ${channel.enabled ? 'bg-[#eaf3ff] text-[#377dff]' : 'bg-[#f2f4f7] text-[#98a2b2]'}`}>{channel.enabled ? '已配置' : '未启用'}</span></div><p className="mt-1 text-[10px] text-[#98a2b2]">{id === 'api' ? '公共 HTTP 能力底座，承载服务端和企业系统接入。' : id === 'sdk' ? 'Product SDK 家族中的产品能力模块。' : id === 'cli' ? '面向脚本、批处理和本地自动化。' : id === 'mcp' ? '面向 Agent 的工具调用和自然语言工作流。' : '面向 Agent Skills 的能力编排与复用。'}</p>{channel.enabled ? <div className="mt-3 grid grid-cols-2 gap-2.5"><Field label="渠道状态"><SelectInput value={channel.status} onChange={(value) => updateChannel(id, { status: value as AdminCapabilityStatus })} options={channelStatuses} /></Field><Field label="版本"><TextInput value={channel.version} onChange={(value) => updateChannel(id, { version: value })} placeholder="v1" /></Field><Field label="渠道文档"><TextInput value={channel.docsUrl} onChange={(value) => updateChannel(id, { docsUrl: value })} placeholder="https://..." /></Field><Field label="补充说明"><TextInput value={channel.note} onChange={(value) => updateChannel(id, { note: value })} placeholder="例如：需申请企业权限" /></Field></div> : null}</div></div></div>; })}</div>
+      </div> : null}
+
+      {section === 'billing' ? <div className="space-y-4">
+        <div><h3 className="text-[14px] font-semibold text-[#283244]">权限与计费</h3><p className="mt-1 text-[11px] text-[#98a2b2]">配置能力是否允许 AI 调用、是否需要二次确认，以及开发者控制台中的计费口径。</p></div>
+        <div className="grid grid-cols-2 gap-3"><Field label="计费模式"><SelectInput value={draft.billing.mode} onChange={(value) => update('billing', { ...draft.billing, mode: value as AdminCapability['billing']['mode'] })} options={['免费', '按调用次数', '按任务计费', '按积分计费', '企业套餐额度', '需申请']} /></Field><Field label="计费单位" hint="必填"><TextInput value={draft.billing.unit} onChange={(value) => update('billing', { ...draft.billing, unit: value })} placeholder="次 / 任务 / 积分" /></Field><Field label="单价"><TextInput value={draft.billing.unitPrice} onChange={(value) => update('billing', { ...draft.billing, unitPrice: value })} placeholder="例如：10 积分 / 次" /></Field><Field label="免费额度"><TextInput value={draft.billing.freeQuota} onChange={(value) => update('billing', { ...draft.billing, freeQuota: value })} placeholder="不限 / 100 次" /></Field><Field label="企业价格"><TextInput value={draft.billing.enterprisePrice} onChange={(value) => update('billing', { ...draft.billing, enterprisePrice: value })} placeholder="按企业合同" /></Field><Field label="生效时间"><TextInput value={draft.billing.effectiveAt} onChange={(value) => update('billing', { ...draft.billing, effectiveAt: value })} placeholder="YYYY-MM-DD HH:mm" /></Field></div>
+        <div className="space-y-2 rounded-[8px] border border-[#edf0f4] p-3.5"><div className="mb-2 text-[11px] font-medium text-[#344054]">调用策略</div><label className="flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.allowAi} onChange={(event) => update('allowAi', event.target.checked)} />允许 AI / Agent 调用</label><label className="mt-2 flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.requireConfirmation} onChange={(event) => update('requireConfirmation', event.target.checked)} />调用前需要用户确认</label><label className="mt-2 flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.billing.priceVisible} onChange={(event) => update('billing', { ...draft.billing, priceVisible: event.target.checked })} />在登录后的能力中心展示价格</label><label className="mt-2 flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.billing.refundOnFailure} onChange={(event) => update('billing', { ...draft.billing, refundOnFailure: event.target.checked })} />任务失败退还消耗</label><label className="mt-2 flex items-center gap-2 text-[11px] text-[#667085]"><input type="checkbox" checked={draft.billing.retryCharge} onChange={(event) => update('billing', { ...draft.billing, retryCharge: event.target.checked })} />重试再次计费</label></div>
+      </div> : null}
+
+      {section === 'review' ? <div className="space-y-4">
+        <div><h3 className="text-[14px] font-semibold text-[#283244]">发布检查</h3><p className="mt-1 text-[11px] text-[#98a2b2]">保存后仍是草稿，不会立即出现在公开首页；发布动作需要在能力详情中二次确认。</p></div>
+        <div className="space-y-2">{[{ label: '基础信息', value: isBasicComplete, detail: isBasicComplete ? `${draft.name} · ${draft.capabilityCode}` : '缺少名称、Code 或能力说明' }, { label: '公开展示', value: isPublicComplete, detail: isPublicComplete ? '已填写公开名称和摘要' : '建议补充公开摘要' }, { label: '接入方式', value: isAccessComplete, detail: isAccessComplete ? enabledChannels.map((id) => channelLabels[id]).join('、') : '至少选择一种接入方式' }, { label: '权限与计费', value: isBillingComplete, detail: isBillingComplete ? `${draft.billing.mode} · ${draft.billing.unit}` : '缺少计费模式或计费单位' }].map((item) => <div key={item.label} className="flex items-center gap-3 rounded-[7px] border border-[#edf0f4] p-3"><span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${item.value ? 'bg-[#e6f7ee] text-[#18875d]' : 'bg-[#fff3dc] text-[#b76a00]'}`}>{item.value ? <Check className="h-3.5 w-3.5" /> : <CircleAlert className="h-3.5 w-3.5" />}</span><div><div className="text-[11px] font-medium text-[#344054]">{item.label}</div><div className="mt-0.5 text-[10px] text-[#98a2b2]">{item.detail}</div></div></div>)}</div>
+        <div className="rounded-[8px] border border-[#dbeafe] bg-[#f6faff] p-3.5"><div className="flex items-center gap-2 text-[11px] font-medium text-[#377dff]"><ShieldCheck className="h-3.5 w-3.5" />保存后的数据流向</div><div className="mt-2 flex items-center gap-2 text-[10px] text-[#667085]"><span className="rounded bg-white px-2 py-1">能力草稿</span><ChevronRight className="h-3 w-3 text-[#98a2b2]" /><span className="rounded bg-white px-2 py-1">能力详情审核</span><ChevronRight className="h-3 w-3 text-[#98a2b2]" /><span className="rounded bg-white px-2 py-1">发布到开发者中心</span></div></div>
+        {error ? <div className="rounded-[7px] bg-[#fff0ee] p-3 text-[11px] leading-5 text-[#d94f45]">{error}</div> : null}
+      </div> : null}
+
+      {error && section !== 'review' ? <div className="rounded-[7px] bg-[#fff0ee] p-3 text-[11px] leading-5 text-[#d94f45]">{error}</div> : null}
+      <div className="flex items-center justify-between border-t border-[#edf0f4] pt-4"><Button onClick={goPrevious} disabled={section === 'basic'}>上一步</Button><div className="flex gap-2"><Button onClick={onClose}>取消</Button>{section !== 'review' ? <Button variant="primary" onClick={goNext}>下一步<ChevronRight className="h-3.5 w-3.5" /></Button> : <Button variant="primary" onClick={saveDraft} disabled={!canSave}><Check className="h-3.5 w-3.5" />保存草稿</Button>}</div></div>
+    </div>
+  </Drawer>;
 }
 
 function AppsPage({ store }: { store: DeveloperPlatformAdminStore }) {

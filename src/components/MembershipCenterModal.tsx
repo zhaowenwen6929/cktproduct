@@ -7,6 +7,8 @@ import { MEMBERSHIP_NAME_BY_LEVEL } from './membershipLevelCatalog';
 import { LIFETIME_MEMBER_DAYS } from './membershipPackageRules';
 import { MEMBERSHIP_CENTER_REQUIREMENT_META, MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_REQUIREMENT_DRAWER_WIDTH, MembershipRequirementFloatingButton } from './MembershipRequirementFloatingButton';
 
+const MEMBERSHIP_EXCLUSIVE_CONSULTANT_QR_URL = 'https://static.chuangkit.com/vip/qrcode/exclusive-consultant.png';
+
 export type MembershipCurrentMember = {
   memberLevel?: number | null;
   memberName?: string;
@@ -424,19 +426,13 @@ export function MembershipPointsPurchaseModal({ onClose, isMember = false, onOpe
         </aside>
         <main className="min-w-0 flex-1">
           <h2 className="text-[22px] font-semibold text-[#202938]">选择积分套餐</h2>
-          <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
-            {MEMBERSHIP_POINTS_PACKAGES.map((item, index) => <button type="button" key={item.id} onClick={() => setSelectedIndex(index)} className={`relative flex min-h-[220px] flex-col overflow-hidden rounded-[14px] border text-left transition ${selectedIndex === index ? 'border-[#6961f4] bg-[#f7f6ff] shadow-[0_8px_20px_rgba(105,97,244,.12)]' : 'border-[#e6eaf2] bg-white hover:border-[#b8b9ef]'}`}>
-              {item.tag ? <span className="absolute right-0 top-0 rounded-bl-[10px] bg-[#ff5b62] px-3 py-2 text-[11px] font-medium text-white">{item.tag}</span> : null}
-              <span className="mt-14 px-4 text-center text-[18px] font-semibold text-[#202938]">{item.points.toLocaleString('en-US')}积分/年</span>
-              <span className="mt-5 px-4 text-center text-[28px] font-semibold tracking-[-.04em] text-[#202938]">¥{item.price}</span>
-              <del className="mt-2 px-4 text-center text-[12px] text-[#a1a9b5]">原价 ¥{item.originalPrice}</del>
-              <span className={`mt-auto px-3 py-3 text-center text-[12px] ${selectedIndex === index ? 'bg-[#6961f4] text-white' : 'bg-[#f0f2f7] text-[#5e6879]'}`}>{item.outputText}</span>
-            </button>)}
+          <div className="mt-6 flex items-center gap-2 border-b border-[#edf0f4]" role="tablist" aria-label="积分套餐分类">
+            <button type="button" role="tab" aria-selected={activePackageTab === 'normal'} onClick={() => switchPackageTab('normal')} className={`relative px-1 pb-3 text-[16px] font-semibold transition ${activePackageTab === 'normal' ? 'text-[#273143]' : 'text-[#9aa3af] hover:text-[#5e6879]'}`}>普通套餐{activePackageTab === 'normal' ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#6961f4]" /> : null}</button>
+            <button type="button" role="tab" aria-selected={activePackageTab === 'member'} onClick={() => switchPackageTab('member')} className={`relative flex items-center gap-2 px-1 pb-3 text-[16px] font-semibold transition ${activePackageTab === 'member' ? 'text-[#273143]' : 'text-[#9aa3af] hover:text-[#5e6879]'}`}>会员专享套餐<span className="rounded-full bg-[#fff1d7] px-2 py-1 text-[10px] font-medium text-[#d88e1e]">65折</span>{activePackageTab === 'member' ? <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#6961f4]" /> : null}</button>
           </div>
-          <div className="mt-8 flex flex-col items-center border-t border-[#edf0f4] pt-7 sm:flex-row sm:items-center sm:justify-center sm:gap-8">
-            <PaymentQrCode />
-            <div className="min-w-[210px] text-center sm:text-left"><div className="text-[28px] font-semibold tracking-[-.04em] text-[#ff493d]">¥{selectedPackage.price}</div><div className="mt-2 text-[14px] text-[#8791a1]">购买后有效期至：{expiryDate}</div><div className="mt-5 flex items-center justify-center gap-1.5 text-[13px] text-[#9aa3af] sm:justify-start"><PaymentMethodMark type="alipay" /><span>支付宝</span><span>/</span><PaymentMethodMark type="wechat" /><span>微信</span><span>扫码完成支付</span></div><p className="mt-3 text-[11px] leading-5 text-[#9aa3af]">支付即代表您已同意《创客贴积分购买协议》，支付后可联系客服开具发票。</p></div>
-          </div>
+          <p className="mt-3 text-[11px] text-[#9aa3af]">{activePackageTab === 'normal' ? '适用于所有用户' : '会员专享优惠，开通会员后可购买'}</p>
+          <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">{visiblePackages.map(renderPackageCard)}</div>
+          <div className="mt-8">{selectedPackageIsMemberOnly && !isMember ? <MembershipPointsUpgradeGuide onOpenMembership={handleOpenMembership} /> : <MembershipPointsPayment selectedPackage={selectedPackage} />}</div>
         </main>
       </div>
     </div>
@@ -1016,7 +1012,7 @@ function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionC
         return <section key={group.key}>
           <div className="flex items-center gap-3 border-t border-[#edf0f4] bg-white px-4 py-3"><span className="h-4 w-1 rounded-full bg-[#202938]" /><h3 className="text-[14px] font-semibold text-[#202938]">{group.title}</h3></div>
           {visibleRows.map((row, rowIndex) => <div key={`${row.name}-${rowIndex}`} className="grid items-center border-t border-[#edf0f4] px-4 py-3.5" style={gridStyle}>
-            <div className="flex min-w-0 items-center gap-3 pl-2"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#dce1e8] text-[11px] text-[#7e8998]">✣</span><div className="min-w-0"><div className="truncate text-[12px] font-medium text-[#273144]">{row.name}</div>{row.cost || row.badge ? <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-[#8994a3]"><span>{row.cost}</span>{row.badge ? <span className="rounded-[3px] bg-[#eaf1ff] px-1 py-0.5 text-[9px] text-[#266dff]">{row.badge} ⓘ</span> : null}</div> : null}</div></div>
+            <div className="flex min-w-0 items-center gap-3 pl-2">{row.icon ? <img src={row.icon} alt="" className="h-5 w-5 shrink-0 object-contain" /> : <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#dce1e8] text-[11px] text-[#7e8998]">✣</span>}<div className="min-w-0"><div className="truncate text-[12px] font-medium text-[#273144]">{row.name}</div>{row.cost || row.badge ? <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-[#8994a3]"><span>{row.cost}</span>{row.badge ? <span className="rounded-[3px] bg-[#eaf1ff] px-1 py-0.5 text-[9px] text-[#266dff]">{row.badge} ⓘ</span> : null}</div> : null}</div></div>
             {columns.map((column, columnIndex) => <div key={`${column.label}-${columnIndex}`} className="text-center text-[13px] font-medium text-[#273144]">{formatQuota(row.quotas[columnIndex] ?? '—')} <span className="text-[11px] font-normal text-[#5e6979]">{row.unit}</span></div>)}
           </div>)}
           {group.rows.length > previewRowCount ? <div className="border-t border-[#edf0f4] px-4 py-3"><button type="button" onClick={() => setExpandedGroups((current) => ({ ...current, [group.key]: !expanded }))} className="flex items-center gap-1 text-[12px] font-medium text-[#7b8797] transition hover:text-[#168ff2]">{expanded ? '收起' : '查看更多'}<ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></div> : null}
@@ -1026,13 +1022,20 @@ function ModelConsumptionTable({ config }: { config: MembershipModelConsumptionC
   </div>;
 }
 
-function DetailsComparisonTable({ config }: { config: MembershipComparisonConfig }) {
+function DetailsComparisonTable({ config, packageDetails }: { config: MembershipComparisonConfig; packageDetails: PackageDetailRow[] }) {
   const columns = config.columns;
   const gridStyle = { gridTemplateColumns: `minmax(250px,1.35fr) repeat(${Math.max(columns.length, 1)}, minmax(150px,1fr))` };
   const [expanded, setExpanded] = useState(false);
   const detailedRowCount = config.sections.filter((section) => section.title !== '基础信息').reduce((total, section) => total + section.rows.length, 0);
   const previewRowCount = Math.max(1, Math.ceil(detailedRowCount / 3));
   let previewRowsUsed = 0;
+  const resolveComparisonValue = (value: string, columnIndex: number) => {
+    if (!value.includes('{minMonthlyPrice}')) return value;
+    const memberLevel = Number(columns[columnIndex]?.key);
+    const lowestPackage = Number.isFinite(memberLevel) ? getLowestPackagePrice(memberLevel, packageDetails) : undefined;
+    const monthlyPrice = lowestPackage ? formatPackageMonthlyPrice(Number(lowestPackage.currentPrice), lowestPackage.duration) : '-';
+    return value.replace(/\{minMonthlyPrice\}/g, monthlyPrice === '-' ? '—' : monthlyPrice);
+  };
 
   const renderValue = (value: string, columnIndex: number) => {
     if (value === '✓') return <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#8993a0] text-white"><Check className="h-3 w-3" strokeWidth={3} /></span>;
@@ -1055,7 +1058,7 @@ function DetailsComparisonTable({ config }: { config: MembershipComparisonConfig
           {!isSummary ? <div className="flex items-center gap-3 border-b border-[#e7ebf0] bg-white px-5 py-4"><span className="h-4 w-1 rounded-full bg-[#202938]" /><h3 className="text-[13px] font-semibold text-[#273143]">{section.title}</h3></div> : null}
           {rows.map((row, rowIndex) => <div key={`${row.label}-${rowIndex}`} className="grid items-center border-b border-[#edf0f4] last:border-b-0" style={gridStyle}>
             <div className="px-5 py-4 text-[11px] leading-5 text-[#414c5c]">{row.label}</div>
-            {columns.map((column, columnIndex) => <div key={`${column.key}-${columnIndex}`} className={`min-h-[52px] px-3 py-4 text-center text-[11px] ${columnIndex === columns.length - 1 ? 'bg-[#fafafa]' : ''}`}>{renderValue(row.values[columnIndex] ?? '—', columnIndex)}</div>)}
+            {columns.map((column, columnIndex) => <div key={`${column.key}-${columnIndex}`} className={`min-h-[52px] px-3 py-4 text-center text-[11px] ${columnIndex === columns.length - 1 ? 'bg-[#fafafa]' : ''}`}>{renderValue(resolveComparisonValue(row.values[columnIndex] ?? '—', columnIndex), columnIndex)}</div>)}
           </div>)}
         </section>;
       })}
@@ -1066,11 +1069,7 @@ function DetailsComparisonTable({ config }: { config: MembershipComparisonConfig
 
 function CommercialLicenseOverview({ config }: { config: MembershipCommercialLicenseConfig }) {
   const scopeSections = config.scopeSections ?? [];
-  const testimonials = config.testimonials ?? [];
-  const logos = config.logos ?? [];
-
-  return <>
-    <MembershipRequirementFrame moduleKey="commercial-license" label="商用授权区" className="mx-auto mt-4 max-w-[1120px]">
+  return <MembershipRequirementFrame moduleKey="commercial-license" label="商用授权区" className="mx-auto mt-4 max-w-[1120px]">
     <section className="rounded-[18px] bg-[#f7f8fa] px-6 py-8">
       <h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{config.title}</h2>
       <p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{config.description}</p>
@@ -1080,27 +1079,13 @@ function CommercialLicenseOverview({ config }: { config: MembershipCommercialLic
           <ul className="mt-5 space-y-5">
             {section.items.map((item, itemIndex) => <li key={`${item.title}-${itemIndex}`}>
               <div className="flex items-start gap-2"><span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${section.enabled ? 'bg-[#168ff2] text-white' : 'bg-[#c8cdd5] text-white'}`}>{section.enabled ? <Check className="h-3 w-3" strokeWidth={3} /> : <X className="h-3 w-3" strokeWidth={3} />}</span><span className="text-[12px] font-medium text-[#344052]">{item.title}</span></div>
-              <p className="ml-6 mt-2 text-[11px] leading-5 text-[#7e8999]">{item.description}</p>
+              {item.description ? <p className="ml-6 mt-2 text-[11px] leading-5 text-[#7e8999]">{item.description}</p> : null}
             </li>)}
           </ul>
         </div>)}
       </div> : <div className="mt-6 flex flex-wrap justify-center gap-2">{config.scopes.map((scope) => <span key={scope} className="rounded-full bg-white px-3 py-1.5 text-[11px] text-[#687588] shadow-sm">{scope}</span>)}</div>}
     </section>
-    </MembershipRequirementFrame>
-    {testimonials.length ? <section className="mx-auto mt-14 max-w-[1120px] px-1">
-      <h2 className="text-center text-[26px] font-semibold tracking-[-.04em] text-[#202a3d]">这些企业和用户都在选择创客贴</h2>
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {testimonials.map((testimonial, index) => <article key={`${testimonial.name}-${index}`} className="rounded-[16px] border border-[#edf0f4] bg-white p-5 shadow-[0_8px_22px_rgba(37,52,77,.04)]">
-          <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#d7e7ff,#f4c9b5)] text-[13px] font-semibold text-white">{testimonial.avatar ?? testimonial.name.slice(0, 1)}</span><div><div className="text-[12px] font-semibold text-[#273143]">{testimonial.name} <span className="font-normal text-[#8994a3]">/ {testimonial.role}</span></div><div className="mt-1 flex flex-wrap gap-1">{testimonial.tags.map((tag) => <span key={tag} className="rounded-[3px] bg-[#edf3ff] px-1.5 py-0.5 text-[9px] text-[#6e7f9d]">{tag}</span>)}</div></div></div>
-          <p className="mt-4 text-[11px] leading-5 text-[#7d899c]">“{testimonial.quote}”</p>
-        </article>)}
-      </div>
-      {logos.length ? <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-        {logos.map((logo) => <div key={logo} className="flex h-12 items-center justify-center rounded-[10px] border border-[#f0f2f5] bg-white px-2 text-center text-[11px] font-semibold text-[#8b95a4] shadow-[0_5px_14px_rgba(37,52,77,.04)]">{logo}</div>)}
-      </div> : null}
-    </section> : null}
-    {config.serviceCta ? <section className="mx-auto mt-14 flex max-w-[1120px] items-center justify-between gap-6 overflow-hidden rounded-[18px] bg-[#202940] px-8 py-7 text-white shadow-[0_16px_36px_rgba(32,41,64,.15)]"><div><h2 className="text-[18px] font-semibold">{config.serviceCta.title}</h2><button type="button" className="mt-5 rounded-[7px] bg-white px-6 py-2.5 text-[12px] font-medium text-[#263247] transition hover:bg-[#eef3fb]">{config.serviceCta.buttonLabel}</button></div><div className="flex items-center gap-3"><div className="flex h-[92px] w-[92px] items-center justify-center rounded-[10px] border-4 border-white bg-[#f5f7fb] text-[42px] text-[#202940]">▦</div><div className="rounded-[8px] bg-[#168ff2] px-4 py-3 text-[12px] font-medium leading-5">{config.serviceCta.qrTitle.split('\n').map((line) => <div key={line}>{line}</div>)}<span className="mt-1 block text-[10px] font-normal text-white/70">{config.serviceCta.qrDescription}</span></div></div></section> : null}
-  </>;
+  </MembershipRequirementFrame>;
 }
 
 function BenefitQrCode({ qrCode, compact = false }: { qrCode: NonNullable<MembershipPlan['benefitSections']>[number]['qrCode']; compact?: boolean }) {
@@ -1203,7 +1188,7 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
   const emphasized = selected || isFeatured;
   const benefitSections = (plan.benefitSections ?? [{ title: '专享权益', items: plan.features.map((feature) => ({ label: feature, enabled: true, badge: '专属通道' })) }]).map((section) => (
     plan.planKey === 'flagship' && section.title === '专享权益' && !section.qrCode
-      ? { ...section, qrCode: { label: '扫码咨询', description: '专属顾问' } }
+      ? { ...section, qrCode: { imageUrl: MEMBERSHIP_EXCLUSIVE_CONSULTANT_QR_URL, label: '扫码咨询', description: '专属顾问' } }
       : section
   ));
   const purchaseInfoStyle = plan.purchaseInfoStyle ?? {};
@@ -1246,6 +1231,7 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
+              {section.titleIcon ? <img src={section.titleIcon} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
               <h4 className="text-[12px] font-semibold text-[#273143]" style={sectionTitleStyle}>{section.title}</h4>
               <div className="flex items-center gap-2">
                 {section.badge ? <span className="rounded-[4px] bg-[#f1f3f6] px-1.5 py-0.5 text-[9px] text-[#929baa]">{section.badge}</span> : null}
@@ -1255,6 +1241,7 @@ function PlanCard({ plan, selected, cycleKey, cycleName, tierIndex = 0, onTierCh
           </div>
           {section.qrCode ? <BenefitQrCode qrCode={section.qrCode} compact /> : null}
         </div>
+        {section.intro ? <p className="mt-2 whitespace-pre-line text-[10px] leading-4 text-[#7e8999]">{section.intro}</p> : null}
         <ul className="mt-3 space-y-2.5">
           {section.items.map((item, itemIndex) => {
             const enabled = item.enabled !== false;
@@ -1708,7 +1695,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
         <MembershipRequirementFrame moduleKey="promotion-banner" label="Banner区"><MembershipPromotionBanner countdown={countdown} /></MembershipRequirementFrame>
         <MembershipRequirementFrame moduleKey="package-switch" label="套餐切换区"><MembershipTypeCycleModule membershipType={membershipType} personalName={personalTab?.name} enterpriseName={enterpriseTab?.name} cycleOptions={cycleOptions} selectedCycle={selectedCycle} couponCycleKeys={couponCycleKeys} onMembershipTypeChange={changeMembershipType} onCycleChange={setActiveCycle} onOpenPointsPurchase={() => setPointsPurchaseOpen(true)} /></MembershipRequirementFrame>
         <div ref={packageSectionRef} className="mt-[68px]"><MembershipPackageModule plans={visiblePlans} membershipType={membershipType} activeCycleKey={activeCycleKey} cycleName={selectedCycleConfig?.name ?? ''} tierSelections={tierSelections} enterpriseMinimumSeats={enterpriseMinimumSeats} availableCoupons={availableCoupons} currentMemberLevel={currentMemberLevel} currentMemberName={currentMemberName} morePointsTarget={morePointsTarget} purchaseButtonRef={purchaseButtonRef} getEnterpriseSeatCount={getEnterpriseSeatCount} onTierChange={(tierKey, value) => setTierSelections((current) => ({ ...current, [tierKey]: value }))} onSeatChange={updateEnterpriseSeats} onContactAdvisor={() => setEnterprisePurchaseContactOpen(true)} onPurchase={(plan, tierIndex, seats) => openPayment(plan, activeCycleKey, selectedCycleConfig?.name ?? getCyclePlanData(plan, activeCycleKey).period, tierIndex, membershipType === 'enterprise', seats)} onOpenUpgradePage={onOpenUpgradePage ? () => onOpenUpgradePage({ memberLevel: currentMemberLevel, memberName: currentMemberName, validUntil: currentMemberValidUntil, remainingPoints: currentMemberRemainingPoints, teamMemberCount: currentTeamMemberCount, purchasedSeats: currentPurchasedSeats, membershipType }) : undefined} onPurchaseBlocked={showToast} /></div>
-        <MembershipRequirementFrame moduleKey="detailed-benefits" label="详细权益区" className="mx-auto mt-12 max-w-[1120px]"><section className="rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} /> : <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section></MembershipRequirementFrame>
+        <MembershipRequirementFrame moduleKey="detailed-benefits" label="详细权益区" className="mx-auto mt-12 max-w-[1120px]"><section className="rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.details.title}</h2>{activeDetails ? <DetailsComparisonTable config={activeDetails} packageDetails={packageDetails} /> : <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">{(pageConfig.details.sections ?? []).map((section, index) => <div key={`${section.title}-${index}`} className="rounded-[12px] bg-white p-4"><h3 className="text-[13px] font-semibold text-[#394355]">{section.title}</h3><ul className="mt-3 space-y-2">{section.items.map((item) => <li key={item} className="flex items-center gap-2 text-[11px] text-[#6e7887]"><Check className="h-3.5 w-3.5 text-[#168ff2]" />{item}</li>)}</ul></div>)}</div>}</section></MembershipRequirementFrame>
         <MembershipRequirementFrame moduleKey="model-consumption" label="AI模型消耗区" className="mx-auto mt-4 max-w-[1120px]"><section className="rounded-[18px] bg-[#f7f8fa] px-6 py-8"><h2 className="text-center text-[24px] font-semibold tracking-[-.03em] text-[#202a3d]">{pageConfig.modelConsumption.title}</h2><p className="mx-auto mt-2 max-w-[720px] text-center text-[12px] leading-5 text-[#8792a3]">{pageConfig.modelConsumption.description}</p><ModelConsumptionTable config={pageConfig.modelConsumption} /></section></MembershipRequirementFrame>
         <CommercialLicenseOverview config={pageConfig.commercialLicense} />
         <MembershipRequirementFrame moduleKey="faq" label="常见问题区" className="mx-auto mt-16 max-w-[1120px]"><section className="rounded-[18px] bg-[#f7f8fa] p-6 sm:p-8"><h2 className="text-center text-[24px] font-semibold tracking-tight text-[#202938]">{pageConfig.faq.title}</h2><div className="mt-7 flex flex-col gap-5 lg:hidden">{pageConfig.faq.items.map((item, index) => <FaqCard key={`${item.question}-${index}`} item={item} index={index} onOpenUpgradePage={openUpgradeFromFaq} />)}</div><div className="mt-7 hidden grid-cols-2 gap-5 lg:grid"><div className="flex min-w-0 flex-col gap-5">{pageConfig.faq.items.filter((_, index) => index % 2 === 0).map((item, index) => <FaqCard key={item.question} item={item} index={index * 2} onOpenUpgradePage={openUpgradeFromFaq} />)}</div><div className="flex min-w-0 flex-col gap-5">{pageConfig.faq.items.filter((_, index) => index % 2 === 1).map((item, index) => <FaqCard key={item.question} item={item} index={index * 2 + 1} onOpenUpgradePage={openUpgradeFromFaq} />)}</div></div></section></MembershipRequirementFrame>

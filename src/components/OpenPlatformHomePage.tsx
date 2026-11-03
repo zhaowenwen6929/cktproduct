@@ -17,7 +17,7 @@ import {
   TerminalSquare,
 } from 'lucide-react';
 import { OpenPlatformAiCanvasPage, type OpenPlatformAiSection } from './OpenPlatformAiCanvasPage';
-import { OpenPlatformTemplateEditorPage, type TemplateEditorSection } from './OpenPlatformTemplateEditorPage';
+import { OpenPlatformTemplateEditorPage } from './OpenPlatformTemplateEditorPage';
 import type { CreditManagementLanding } from './AgentSkillsHomePage';
 
 type OpenPlatformHomePageProps = {
@@ -86,7 +86,6 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
   const [notice, setNotice] = useState('');
   const [aiSection, setAiSection] = useState<OpenPlatformAiSection>('web');
   const [managementLanding, setManagementLanding] = useState<CreditManagementLanding>('quota');
-  const [templateSection, setTemplateSection] = useState<TemplateEditorSection>('basic');
 
   const showNotice = (message: string) => {
     setNotice(message);
@@ -99,7 +98,6 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
       setAiSection('web');
       setManagementLanding('quota');
     }
-    if (item === '模板编辑器') setTemplateSection('basic');
     if (item !== '首页' && item !== 'AI画匠' && item !== '模板编辑器') showNotice(`${item}正在为你准备中`);
   };
 
@@ -144,7 +142,7 @@ export function OpenPlatformHomePage({ onBackToDirectory }: OpenPlatformHomePage
             onManagementLandingChange={setManagementLanding}
             onNotify={showNotice}
           />
-        ) : activeNav === '模板编辑器' ? <OpenPlatformTemplateEditorPage section={templateSection} onSectionChange={setTemplateSection} onNotify={showNotice} /> : <>
+        ) : activeNav === '模板编辑器' ? <OpenPlatformTemplateEditorPage onNotify={showNotice} /> : <>
         <h1>欢迎使用</h1>
 
         <div className="open-platform-layout">
