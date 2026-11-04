@@ -17,7 +17,7 @@ const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
   { key: 'vippop_structure', label: '套餐结构', description: '技术格式：配置个人/企业模式、会员等级、时长 Tab、Tab 提示和卡片文案；价格和积分来自套餐数据' },
   { key: 'vippop_rights_overview', label: '权益概览', description: '技术格式：按会员等级配置 list、models、groups、qrcode 权益模块' },
   { key: 'vippop_rights_compare', label: '权益对比', description: '技术格式：配置个人/企业权益对比表，价格支持按最低月均价占位符展示' },
-  { key: 'vippop_points_cost', label: '模型消耗', description: '技术格式：配置积分档位和模型消耗；支持按 cost 自动计算，也支持用 quotas 固定运营提供的档位结果' },
+  { key: 'vippop_points_cost', label: '模型消耗', description: '技术格式：配置积分档位和单次消耗积分 cost，页面按积分档位 ÷ cost 向下取整计算实际生成量' },
   { key: 'vippop_license_scope', label: '商用授权', description: '技术格式：仅配置商用授权范围列、允许/禁用类型和条目说明' },
   { key: 'vippop_faq', label: '常见问题', description: '技术格式：配置问题标题、答案段落和默认展开状态' },
 ];

@@ -1605,6 +1605,44 @@ const LATEST_RIGHTS_COMPARE: MembershipTechnicalRightsCompare = {
 const createTechnicalRightsCompare = (_config: MembershipPageContent, _structure: MembershipTechnicalStructure): MembershipTechnicalRightsCompare => clone(LATEST_RIGHTS_COMPARE);
 
 const createTechnicalPointsCost = (_config: MembershipPageContent): MembershipTechnicalPointsCost => {
+  const seedanceIcon = 'https://static.chuangkit.com/vip/model/seedance-icon.svg';
+  const intelligentIcon = 'https://static.chuangkit.com/vip/model/intelligent-icon.svg';
+  return {
+    title: 'AI 模型积分消耗明细',
+    points: [1200, 2500, 4000, 10000, 50000, 100000],
+    pointsUnit: '积分/月',
+    tables: [
+      {
+        title: '生图模型',
+        caption: '各模型预估生图数量（单位：张）',
+        unit: '张',
+        rows: [
+          { cost: 4, icon: seedanceIcon, name: 'Seedream3.0' },
+          { cost: 10, icon: seedanceIcon, name: 'Seedream4.0' },
+          { cost: 10, icon: seedanceIcon, name: 'Seedream4.5' },
+          { cost: 25, icon: seedanceIcon, name: 'Seedream5.0 Lite' },
+          { cost: 35, icon: intelligentIcon, name: '全能图像pro' },
+          { cost: 40, icon: intelligentIcon, name: '智能Image2.5 Pro' },
+        ],
+      },
+      {
+        title: '视频模型',
+        caption: '按单视频5秒/次估算生视频数量（时长最高支持输入输出各15秒），单位：个',
+        unit: '个',
+        rows: [
+          { cost: 91, icon: seedanceIcon, name: 'Seedance2.5 720P' },
+          { cost: 226, icon: seedanceIcon, name: 'Seedance2.5 1080P' },
+          { cost: 39, icon: seedanceIcon, name: 'Seedance2.0 720P' },
+          { cost: 87, icon: seedanceIcon, name: 'Seedance2.0 1080P' },
+          { cost: 19, icon: seedanceIcon, name: 'Seedance2.0-Mini 720P' },
+          { cost: 30, icon: seedanceIcon, name: 'Seedance2.5-Mini 720P' },
+        ],
+      },
+    ],
+  };
+};
+
+const createTechnicalPointsCostLegacy = (_config: MembershipPageContent): MembershipTechnicalPointsCost => {
   const imageIcon = 'https://static.chuangkit.com/vip/model/intelligent-icon.svg';
   const videoIcon = 'https://static.chuangkit.com/vip/model/seedance-icon.svg';
   const points = [2500, 4000, 8000, 16000, 30000, 50000];
@@ -1839,15 +1877,19 @@ const adaptTechnicalPointsCost = (value: unknown, fallback: MembershipPageConten
   const groups = Array.isArray(raw.tables) ? raw.tables.map((table, tableIndex) => ({
     key: `technical-${tableIndex}`,
     title: table.title ?? `模型${tableIndex + 1}`,
-    rows: (table.rows ?? []).filter((row) => row && typeof row.name === 'string' && (Number(row.cost) > 0 || (Array.isArray(row.quotas) && row.quotas.some((quota) => Number(quota) >= 0)))).map((row) => ({
-      name: row.name,
-      cost: Number(row.cost) > 0 ? `${row.cost}积分/次` : '',
-      unit: table.unit ?? '次',
-      icon: row.icon,
-      quotas: Array.isArray(row.quotas) && row.quotas.length >= points.length
-        ? points.map((_, index) => Number(row.quotas?.[index] ?? 0))
-        : points.map((point) => Math.round(point / Number(row.cost))),
-    })),
+    rows: (table.rows ?? []).filter((row) => row && typeof row.name === 'string' && (Number(row.cost) > 0 || (Array.isArray(row.quotas) && row.quotas.some((quota) => Number(quota) >= 0)))).map((row) => {
+      const cost = Number(row.cost);
+      const hasCost = Number.isFinite(cost) && cost > 0;
+      return {
+        name: row.name,
+        cost: hasCost ? `${cost}积分/${table.unit ?? '次'}` : '',
+        unit: table.unit ?? '次',
+        icon: row.icon,
+        quotas: hasCost
+          ? points.map((point) => Math.floor(point / cost))
+          : points.map((_, index) => Number(row.quotas?.[index] ?? 0)),
+      };
+    }),
   })).filter((group) => group.rows.length) : [];
   return {
     title: raw.title ?? fallback.modelConsumption.title,
