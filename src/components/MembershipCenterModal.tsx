@@ -662,15 +662,30 @@ function getPlanPointOptions(plan: MembershipPlan, cycleKey: string) {
   return [{ points, tierIndex: 0 }];
 }
 
+function isMorePointsCandidatePurchasable({ plan, cycle, tierIndex, membershipType, enterpriseSeats, currentMemberLevel, currentMemberName, packageDetails }: { plan: MembershipPlan; cycle: MembershipCycleConfig; tierIndex: number; membershipType?: MembershipType; enterpriseSeats?: number; currentMemberLevel?: number | null; currentMemberName?: string; packageDetails?: WebPackageDetail[] }) {
+  const cycleKey = cycle.key;
+  const cycleData = getCyclePlanData(plan, cycleKey);
+  if (packageDetails && !getCyclePackageRows(plan.memberLevel, cycle, packageDetails).length) return false;
+  const tier = cycleData.tierOptions?.[tierIndex] ?? cycleData.tierOptions?.[0];
+  const packageType = tier?.packageType ?? cycleData.packageType;
+  const durationDays = tier?.durationDays ?? cycleData.durationDays;
+  const isContractPlan = (packageType === '订阅套餐' || packageType === '低价试用且订阅套餐') && Boolean(formatExpiryDate(durationDays));
+  if (membershipType === 'enterprise' && isContractPlan && (enterpriseSeats ?? 1) > 1) return false;
+  return getMembershipPurchaseAction(currentMemberLevel, plan.memberLevel, currentMemberName).kind !== 'downgrade';
+}
+
 /**
  * 更多积分定位规则：优先同等级内选择刚好高于当前积分的最小档位；
- * 同等级没有更高积分时，再选择当前使用类型下等级更高的第一个会员档位。
+ * 候选必须是当前身份可购买的套餐；同等级没有更高积分时，再选择当前使用类型下等级更高的第一个可购买会员档位。
  */
-export function resolveMorePointsTarget({ plans, cycleOptions, activeCycleIndex = 0, currentMemberLevel, currentPoints }: { plans: MembershipPlan[]; cycleOptions: MembershipCycleConfig[]; activeCycleIndex?: number; currentMemberLevel?: number | null; currentPoints?: number | string | null }): MembershipMorePointsTarget | null {
+export function resolveMorePointsTarget({ plans, cycleOptions, activeCycleIndex = 0, currentMemberLevel, currentPoints, membershipType, enterpriseSeats, currentMemberName, packageDetails }: { plans: MembershipPlan[]; cycleOptions: MembershipCycleConfig[]; activeCycleIndex?: number; currentMemberLevel?: number | null; currentPoints?: number | string | null; membershipType?: MembershipType; enterpriseSeats?: number; currentMemberName?: string; packageDetails?: WebPackageDetail[] }): MembershipMorePointsTarget | null {
   if (!plans.length || !cycleOptions.length) return null;
   const pointValue = Number(currentPoints);
   const hasCurrentPoints = currentPoints !== null && currentPoints !== undefined && String(currentPoints).trim() !== '' && Number.isFinite(pointValue);
   const orderedCycleIndexes = [activeCycleIndex, ...cycleOptions.map((_, index) => index).filter((index) => index !== activeCycleIndex)];
+
+  const getPurchasableOptions = (plan: MembershipPlan, cycleIndex: number) => getPlanPointOptions(plan, cycleOptions[cycleIndex].key)
+    .filter((option) => isMorePointsCandidatePurchasable({ plan, cycle: cycleOptions[cycleIndex], tierIndex: option.tierIndex, membershipType, enterpriseSeats, currentMemberLevel, currentMemberName, packageDetails }));
 
   if (currentMemberLevel != null && hasCurrentPoints) {
     for (const cycleIndex of orderedCycleIndexes) {
@@ -678,7 +693,7 @@ export function resolveMorePointsTarget({ plans, cycleOptions, activeCycleIndex 
       if (!cycle) continue;
       const sameLevelCandidates = plans
         .filter((plan) => plan.memberLevel === currentMemberLevel)
-        .flatMap((plan) => getPlanPointOptions(plan, cycle.key).map((option) => ({ plan, ...option })))
+        .flatMap((plan) => getPurchasableOptions(plan, cycleIndex).map((option) => ({ plan, ...option })))
         .filter((candidate) => candidate.points > pointValue)
         .sort((left, right) => left.points - right.points);
       const target = sameLevelCandidates[0];
@@ -696,8 +711,9 @@ export function resolveMorePointsTarget({ plans, cycleOptions, activeCycleIndex 
     const cycle = cycleOptions[cycleIndex];
     if (!cycle) continue;
     for (const plan of higherLevelPlans) {
-      if (!getPlanPointOptions(plan, cycle.key).length) continue;
-      return { cycleKey: cycle.key, cycleIndex, planKey: plan.planKey, planLevel: plan.memberLevel, tierIndex: 0, reason: 'higher-level' };
+      const target = getPurchasableOptions(plan, cycleIndex)[0];
+      if (!target) continue;
+      return { cycleKey: cycle.key, cycleIndex, planKey: plan.planKey, planLevel: plan.memberLevel, tierIndex: target.tierIndex, reason: 'higher-level' };
     }
   }
   return null;
@@ -1611,7 +1627,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
       setMorePointsTarget(null);
       return;
     }
-    const target = resolveMorePointsTarget({ plans: visiblePlans, cycleOptions, activeCycleIndex: selectedCycle, currentMemberLevel, currentPoints: currentMemberRemainingPoints });
+    const target = resolveMorePointsTarget({ plans: visiblePlans, cycleOptions, activeCycleIndex: selectedCycle, currentMemberLevel, currentPoints: currentMemberRemainingPoints, membershipType, enterpriseSeats: enterpriseMinimumSeats, currentMemberName, packageDetails });
     if (!target) {
       morePointsFocusRef.current = '';
       setMorePointsTarget(null);
@@ -1631,7 +1647,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
     window.requestAnimationFrame(() => {
       packageSectionRef.current?.querySelector<HTMLElement>(`[data-membership-plan-level="${target.planLevel}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
-  }, [focusMorePoints, visiblePlans, cycleOptions, selectedCycle, activeCycleKey, membershipType, currentMemberLevel, currentMemberRemainingPoints]);
+  }, [focusMorePoints, visiblePlans, cycleOptions, selectedCycle, activeCycleKey, membershipType, enterpriseMinimumSeats, currentMemberLevel, currentMemberName, currentMemberRemainingPoints, packageDetails]);
   const couponCycleKeys = new Set(cycleOptions.filter((cycle) => visiblePlans.some((plan) => {
     const cycleData = getCyclePlanData(plan, cycle.key);
     const activeTier = cycleData.tierOptions?.[0];
