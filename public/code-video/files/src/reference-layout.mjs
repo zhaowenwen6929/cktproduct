@@ -13,11 +13,18 @@ const POSITION_PRESETS = {
     { x: 880, y: 380 },
   ],
   4: [
-    { x: 100, y: 190 },
-    { x: 370, y: 220 },
-    { x: 670, y: 300 },
-    { x: 970, y: 390 },
+    { x: 60, y: 230 },
+    { x: 440, y: 300 },
+    { x: 800, y: 360 },
+    { x: 1120, y: 550 },
   ],
+};
+
+const ICON_DIMENSIONS = {
+  bulb: { halfWidth: 84, halfHeight: 70 },
+  chat: { halfWidth: 48, halfHeight: 58 },
+  book: { halfWidth: 50, halfHeight: 54 },
+  spiral: { halfWidth: 82, halfHeight: 55 },
 };
 
 function clamp(value, min, max) {
@@ -56,15 +63,31 @@ function snakePositions(stepCount) {
   return positions;
 }
 
-function createNoteLayout(position, lines) {
+function iconBounds(position, iconId) {
+  const dimensions = ICON_DIMENSIONS[iconId] || { halfWidth: 58, halfHeight: 58 };
+  return {
+    x: position.x + 24 - dimensions.halfWidth,
+    y: position.y + 85 - dimensions.halfHeight,
+    width: dimensions.halfWidth * 2,
+    height: dimensions.halfHeight * 2,
+  };
+}
+
+function createNoteLayout(position, lines, step) {
   const multiline = lines.length > 1;
   const width = 190;
   const height = multiline ? 88 : 62;
-  const cardX = position.x + (multiline ? 82 : 66);
+  const icon = iconBounds(position, step?.icon);
+  const isRightEdge = position.x > 900;
+  const cardX = isRightEdge
+    ? position.x - width - 60
+    : Math.max(position.x + 66, icon.x + icon.width + 24);
   const cardY = position.y + (multiline ? 112 : 61);
   const safeCardX = clamp(cardX, 22, WIDTH - width - 22);
   const safeCardY = clamp(cardY, 64, HEIGHT - height - 48);
   return {
+    cardX: safeCardX,
+    cardY: safeCardY,
     originX: safeCardX + 6,
     originY: safeCardY + (multiline ? 44 : 29),
     width,
@@ -94,18 +117,20 @@ function connectorAssetForStep(index, positions) {
   const previous = positions[index - 1];
   const current = positions[index];
   const deltaY = current.y - previous.y;
-  return Math.abs(deltaY) > 90 ? "elbow-arrow" : "curve-arrow";
+  return Math.abs(deltaY) > 140 ? "elbow-arrow" : "curve-arrow";
 }
 
 export function createReferenceLayout(params = {}) {
   const steps = Array.isArray(params.steps) ? params.steps : [];
+  if (steps.length > MAX_STEP_COUNT) throw new Error(`步骤数量最多为 ${MAX_STEP_COUNT} 个，请拆分视频`);
   const stepCount = clamp(steps.length || 4, 2, MAX_STEP_COUNT);
   const positions = (POSITION_PRESETS[stepCount] || snakePositions(stepCount)).map((position) => ({ ...position }));
   const isLargeStyle = Number(params.durationSeconds) > 20;
   const labelSize = isLargeStyle ? 32 : 26;
-  const noteLayouts = steps.slice(0, stepCount).map((step, index) => {
+  const layoutSteps = steps.slice(0, stepCount);
+  const noteLayouts = layoutSteps.map((step, index) => {
     const lines = isLargeStyle ? wrapText(step?.note || "") : [step?.note || ""];
-    return createNoteLayout(positions[index], lines);
+    return createNoteLayout(positions[index], lines, step);
   });
 
   return {

@@ -75,6 +75,7 @@ export type AdminApp = {
   createdAt: string;
   integrations: AdminChannelId[];
   scopes: string[];
+  quotas?: { apiRequests: number; aiPoints: number };
 };
 
 export type AdminTask = {
@@ -134,6 +135,27 @@ export type DeveloperPlatformAdminStore = {
   apps: AdminApp[];
   tasks: AdminTask[];
   auditLogs: AdminAuditLog[];
+};
+
+export type DeveloperAppEnvironment = '开发环境' | '生产环境';
+
+export type DeveloperAppConfig = {
+  appId: string;
+  selectedEnvironment: DeveloperAppEnvironment;
+  environments: Record<DeveloperAppEnvironment, {
+    clientId: string;
+    clientSecret: string;
+    accessKey: string;
+    callbackUrls: string[];
+    webhookUrl: string;
+    domainWhitelist: string[];
+    pkce: boolean;
+    organizationAuthorization: boolean;
+    secretRotatedAt: string;
+  }>;
+  integrations: AdminChannelId[];
+  scopes: string[];
+  updatedAt: string;
 };
 
 export const ADMIN_DEVELOPER_PLATFORM_ENDPOINTS = {
@@ -273,10 +295,10 @@ export const developerPlatformAdminSdkModulesFallback: AdminSdkModule[] = [
 ];
 
 export const developerPlatformAdminAppsFallback: AdminApp[] = [
-  { appId: 'app_7N4K2P', name: '营销物料自动化', developer: '赵文文', organization: '创客贴 · 品牌增长组', status: '运行中', authorizedUsers: 18, calls: 28400, successRate: 99.6, points: 3260, lastCall: '2 分钟前', createdAt: '2026-08-12', integrations: ['api', 'sdk'], scopes: ['template.read', 'design.create', 'design.export'] },
-  { appId: 'app_2B8Q4P', name: '内容团队素材助手', developer: '李辰晨', organization: '创客贴 · 内容团队', status: '运行中', authorizedUsers: 9, calls: 8900, successRate: 98.9, points: 1780, lastCall: '1 小时前', createdAt: '2026-09-03', integrations: ['api', 'mcp'], scopes: ['material.read', 'brand.read'] },
-  { appId: 'app_5P1X9C', name: '海外落地页生成器', developer: '王可', organization: '外部开发者', status: '已停用', authorizedUsers: 3, calls: 2100, successRate: 96.8, points: 640, lastCall: '2026-10-11', createdAt: '2026-07-25', integrations: ['api'], scopes: ['template.read', 'design.export'] },
-  { appId: 'app_8M3D1A', name: '品牌合规 Agent', developer: '企业服务组', organization: '创客贴企业服务', status: '待审核', authorizedUsers: 0, calls: 0, successRate: 0, points: 0, lastCall: '—', createdAt: '2026-10-29', integrations: ['mcp', 'agent-skills'], scopes: ['brand.read', 'brand.check'] },
+  { appId: 'app_7N4K2P', name: '营销物料自动化', developer: '赵文文', organization: '创客贴 · 品牌增长组', status: '运行中', authorizedUsers: 18, calls: 28400, successRate: 99.6, points: 3260, lastCall: '2 分钟前', createdAt: '2026-08-12', integrations: ['api', 'sdk'], scopes: ['template.read', 'design.create', 'design.export'], quotas: { apiRequests: 100000, aiPoints: 5000 } },
+  { appId: 'app_2B8Q4P', name: '内容团队素材助手', developer: '李辰晨', organization: '创客贴 · 内容团队', status: '运行中', authorizedUsers: 9, calls: 8900, successRate: 98.9, points: 1780, lastCall: '1 小时前', createdAt: '2026-09-03', integrations: ['api', 'mcp'], scopes: ['material.read', 'brand.read'], quotas: { apiRequests: 60000, aiPoints: 3000 } },
+  { appId: 'app_5P1X9C', name: '海外落地页生成器', developer: '王可', organization: '外部开发者', status: '已停用', authorizedUsers: 3, calls: 2100, successRate: 96.8, points: 640, lastCall: '2026-10-11', createdAt: '2026-07-25', integrations: ['api'], scopes: ['template.read', 'design.export'], quotas: { apiRequests: 20000, aiPoints: 1000 } },
+  { appId: 'app_8M3D1A', name: '品牌合规 Agent', developer: '企业服务组', organization: '创客贴企业服务', status: '待审核', authorizedUsers: 0, calls: 0, successRate: 0, points: 0, lastCall: '—', createdAt: '2026-10-29', integrations: ['mcp', 'agent-skills'], scopes: ['brand.read', 'brand.check'], quotas: { apiRequests: 30000, aiPoints: 2000 } },
 ];
 
 export const developerPlatformAdminTasksFallback: AdminTask[] = [
@@ -295,6 +317,7 @@ export const developerPlatformAdminAuditLogsFallback: AdminAuditLog[] = [
 ];
 
 const STORE_KEY = 'admin-developer-platform-mvp-store';
+const APP_CONFIG_KEY = 'developer-platform-console-app-configs';
 
 const cloneStore = (store: DeveloperPlatformAdminStore): DeveloperPlatformAdminStore => JSON.parse(JSON.stringify(store)) as DeveloperPlatformAdminStore;
 
@@ -331,6 +354,78 @@ export function saveDeveloperPlatformAdminStore(store: DeveloperPlatformAdminSto
   } catch {
     // Keep the admin MVP usable when localStorage is disabled.
   }
+}
+
+const createEnvironmentConfig = (appId: string, environment: DeveloperAppEnvironment): DeveloperAppConfig['environments'][DeveloperAppEnvironment] => {
+  const suffix = appId.replace(/^app_/, '').toLowerCase();
+  const prefix = environment === '生产环境' ? 'prod' : 'dev';
+  return {
+    clientId: `ckt_${prefix}_${appId.replace(/^app_/, '')}`,
+    clientSecret: `ckts_${prefix}_${suffix}4e2c7b8d`,
+    accessKey: `ckak_${prefix}_${suffix}3bb72c9e`,
+    callbackUrls: ['https://example.com/oauth/callback'],
+    webhookUrl: '',
+    domainWhitelist: ['example.com'],
+    pkce: true,
+    organizationAuthorization: true,
+    secretRotatedAt: '2026-11-01 10:20',
+  };
+};
+
+export function getDeveloperAppConfig(app: AdminApp | string): DeveloperAppConfig {
+  const store = getDeveloperPlatformAdminStore();
+  const appRecord = typeof app === 'string' ? store.apps.find((item) => item.appId === app) : app;
+  const appId = appRecord?.appId ?? String(app);
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage.getItem(APP_CONFIG_KEY);
+      const configs = stored ? JSON.parse(stored) as Record<string, DeveloperAppConfig> : {};
+      if (configs[appId]) return configs[appId];
+    } catch {
+      // Fall through to the deterministic prototype configuration.
+    }
+  }
+  const config: DeveloperAppConfig = {
+    appId,
+    selectedEnvironment: '生产环境',
+    environments: {
+      开发环境: createEnvironmentConfig(appId, '开发环境'),
+      生产环境: createEnvironmentConfig(appId, '生产环境'),
+    },
+    integrations: appRecord?.integrations ?? ['api'],
+    scopes: appRecord?.scopes ?? ['template.read'],
+    updatedAt: appRecord?.createdAt ?? '2026-11-01',
+  };
+  return config;
+}
+
+export function saveDeveloperAppConfig(config: DeveloperAppConfig) {
+  if (typeof window === 'undefined') return;
+  try {
+    const stored = window.localStorage.getItem(APP_CONFIG_KEY);
+    const configs = stored ? JSON.parse(stored) as Record<string, DeveloperAppConfig> : {};
+    configs[config.appId] = config;
+    window.localStorage.setItem(APP_CONFIG_KEY, JSON.stringify(configs));
+  } catch {
+    // Keep the prototype usable when localStorage is disabled.
+  }
+}
+
+export function createDeveloperPlatformAdminApp(input: Omit<AdminApp, 'appId' | 'calls' | 'successRate' | 'points' | 'lastCall' | 'createdAt'> & Partial<Pick<AdminApp, 'calls' | 'successRate' | 'points' | 'lastCall' | 'createdAt'>>): AdminApp {
+  const current = getDeveloperPlatformAdminStore();
+  const appId = `app_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const nextApp: AdminApp = {
+    ...input,
+    appId,
+    calls: input.calls ?? 0,
+    successRate: input.successRate ?? 0,
+    points: input.points ?? 0,
+    lastCall: input.lastCall ?? '暂无调用',
+    createdAt: input.createdAt ?? new Date().toISOString().slice(0, 10),
+    quotas: input.quotas ?? { apiRequests: 50000, aiPoints: 2000 },
+  };
+  saveDeveloperPlatformAdminStore({ ...current, apps: [nextApp, ...current.apps], auditLogs: [createAdminAuditLog('应用管理', '创建应用', nextApp.name, '—', `${nextApp.appId} / ${nextApp.status}`), ...current.auditLogs] });
+  return nextApp;
 }
 
 export function getDeveloperPlatformAdminOverview(store: DeveloperPlatformAdminStore): AdminOverview {

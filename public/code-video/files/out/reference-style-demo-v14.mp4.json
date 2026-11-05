@@ -1,7 +1,7 @@
 {
   "schema": "code-video-reference-style-render/1",
   "output": "out/reference-style-demo-v14.mp4",
-  "sha256": "aadd22a4b2299a58949107f22078eee136e642615d1254005db1dd79b7d16ea8",
+  "sha256": "56a7faf47898d2627894eb21b4e6dc23b9e511459ec9d796d816e1453c21d9f4",
   "expected": {
     "width": 1280,
     "height": 720,

@@ -112,11 +112,11 @@ function stepConnectorEndpoints(index, steps = [], labelSize = 26, positions = [
   const labelWidth = Array.from(previousLabel).length * labelSize * 0.98;
   return {
     from: { x: previous.x + 30 + labelWidth + 14, y: previous.y + 1 },
-    to: { x: current.x - 18, y: current.y - 28 }
+    to: { x: current.x - 10, y: current.y - 14 }
   };
 }
 
-function affinePathTransform(from, to, anchors, perpendicularScale = 1) {
+function affinePathTransform(from, to, anchors) {
   const localX = anchors.to.x - anchors.from.x;
   const localY = anchors.to.y - anchors.from.y;
   const worldX = to.x - from.x;
@@ -125,7 +125,7 @@ function affinePathTransform(from, to, anchors, perpendicularScale = 1) {
   const worldLength = Math.hypot(worldX, worldY);
   const rotation = (Math.atan2(worldY, worldX) - Math.atan2(localY, localX)) * 180 / Math.PI;
   const scale = worldLength / localLength;
-  return `translate(${from.x} ${from.y}) rotate(${rotation}) scale(${scale} ${perpendicularScale}) translate(${-anchors.from.x} ${-anchors.from.y})`;
+  return `translate(${from.x} ${from.y}) rotate(${rotation}) scale(${scale}) translate(${-anchors.from.x} ${-anchors.from.y})`;
 }
 
 function affinePathScale(from, to, anchors) {
@@ -365,7 +365,7 @@ function buildHtml(params, titleData, animationPlan = null, assetData = { icons:
       const labelWidth = [...previousLabel].length * labelSize * 0.98;
       return {
         from: { x: previous.x + 30 + labelWidth + 14, y: previous.y + 1 },
-        to: { x: current.x - 18, y: current.y - 28 }
+        to: { x: current.x - 10, y: current.y - 14 }
       };
     }
     const legacyStepStarts = [3.1, 6.6, 10.1, 13.4];
@@ -523,7 +523,7 @@ function buildHtml(params, titleData, animationPlan = null, assetData = { icons:
     }
 
     function drawPaper() {
-      const frameAmount = isV4 ? progress(timeForReveal, isV8 ? planTimes.conclusionStart : 16.1, 1.1) : 0;
+      const frameAmount = isV4 && !isV9 ? progress(timeForReveal, isV8 ? planTimes.conclusionStart : 16.1, 1.1) : 0;
       const left = 24 * frameAmount;
       const top = 18 * frameAmount;
       const right = W - 24 * frameAmount;

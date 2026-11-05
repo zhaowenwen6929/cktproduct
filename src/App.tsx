@@ -29,13 +29,14 @@ import { DeveloperPlatformPage } from './components/DeveloperPlatformPage';
 import { DeveloperPlatformAdminPage, type DeveloperPlatformAdminPageKey } from './components/DeveloperPlatformAdminPage';
 import { OpenPlatformHomePage } from './components/OpenPlatformHomePage';
 import { CodeVideoPage } from './components/CodeVideoPage';
+import { AiVideoEditorPage } from './components/AiVideoEditorPage';
 import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
 type AgentEvaluationProjectRoute = `/agent-eval/project/${string}`;
 type AgentEvaluationRequirementRoute = `/agent-eval/project/${string}/requirement/${string}`;
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/code-video' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval' | '/admin-backoffice/developer-platform' | '/admin-backoffice/developer-platform/capabilities' | '/admin-backoffice/developer-platform/apps' | '/admin-backoffice/developer-platform/billing' | '/admin-backoffice/developer-platform/statistics' | '/admin-backoffice/developer-platform/tasks' | '/admin-backoffice/developer-platform/logs';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/code-video' | '/ai-video-editor' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval' | '/admin-backoffice/developer-platform' | '/admin-backoffice/developer-platform/capabilities' | '/admin-backoffice/developer-platform/apps' | '/admin-backoffice/developer-platform/billing' | '/admin-backoffice/developer-platform/statistics' | '/admin-backoffice/developer-platform/tasks' | '/admin-backoffice/developer-platform/logs';
 
 type AppHistoryState = {
   appRoute?: AppRoute;
@@ -93,6 +94,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/developer-platform') return '/developer-platform';
   if (pathname === '/open-platform') return '/open-platform';
   if (pathname === '/code-video') return '/code-video';
+  if (pathname === '/ai-video-editor') return '/ai-video-editor';
   if (pathname === '/admin-backoffice/developer-platform/capabilities') return '/admin-backoffice/developer-platform/capabilities';
   if (pathname === '/admin-backoffice/developer-platform/apps') return '/admin-backoffice/developer-platform/apps';
   if (pathname === '/admin-backoffice/developer-platform/billing') return '/admin-backoffice/developer-platform/billing';
@@ -1430,6 +1432,10 @@ export default function App() {
         title: '代码视频',
         description: '模板驱动的代码视频生成实验，支持结构化参数、预览和导出。',
       },
+      '/ai-video-editor': {
+        title: 'AI视频编辑器',
+        description: '基于无限画布框架的视频编辑工作台，包含视频预览、分轨时间线和 AI 对话流。',
+      },
       '/admin-backoffice': {
         title: '创客贴管理后台｜需求列表',
         description: '创客贴管理后台需求列表，按新增时间查看主需求和子需求。',
@@ -1603,6 +1609,12 @@ export default function App() {
         href: '/code-video' as AppRoute,
         available: true,
       },
+      {
+        title: 'AI视频编辑器',
+        description: '在无限画布式工作台中完成视频预览、分轨剪辑与 AI 对话式编辑，右侧对话流贯穿创作过程。',
+        href: '/ai-video-editor' as AppRoute,
+        available: true,
+      },
     ];
     const requirementProjectStats = getRequirementProjectStats();
     const requirementOverviewStats = getRequirementOverviewStats();
@@ -1719,7 +1731,7 @@ export default function App() {
                     </p>
                   </div>
                   <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm leading-6 text-stone-200">
-                    当前已接入：`/canvas` · `/agent-eval` · `/developer-platform` · `/code-video`
+                    当前已接入：`/canvas` · `/ai-video-editor` · `/agent-eval` · `/developer-platform` · `/code-video`
                   </div>
                 </div>
               </div>
@@ -1844,6 +1856,10 @@ export default function App() {
 
   if (currentRoute === '/code-video') {
     return <CodeVideoPage onBackToDirectory={() => navigateTo('/')} />;
+  }
+
+  if (currentRoute === '/ai-video-editor') {
+    return <AiVideoEditorPage onBackToDirectory={() => navigateTo('/')} />;
   }
 
   if (currentRoute === '/admin-backoffice/requirements') {

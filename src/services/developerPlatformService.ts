@@ -1,6 +1,6 @@
-import { developerPlatformAdminSdkModulesFallback, getDeveloperPlatformAdminStore, type AdminApp, type AdminCapability, type AdminChannelId, type AdminSdkModule } from './developerPlatformAdminService';
+import { createDeveloperPlatformAdminApp, developerPlatformAdminSdkModulesFallback, getDeveloperAppConfig, getDeveloperPlatformAdminStore, type AdminApp, type AdminCapability, type AdminChannelId, type AdminSdkModule, type AdminTask, type DeveloperAppConfig } from './developerPlatformAdminService';
 
-export type DeveloperPlatformStatus = '已开放' | '已有接口' | 'SDK 支持' | '内测中' | '即将开放' | '规划中';
+export type DeveloperPlatformStatus = '已开放' | '已有接口' | 'SDK 支持' | '内测中' | '即将开放' | '规划中' | '维护中' | '已废弃' | '已下线';
 
 export type DeveloperPlatformAccessModeId = 'open-api' | 'product-sdk' | 'cli' | 'mcp';
 
@@ -45,6 +45,8 @@ export type DeveloperCapabilityEntry = {
   version?: string;
   sourceUrl: string;
   kind: 'api' | 'sdk' | 'event';
+  requiredScopes?: string[];
+  hasAccess?: boolean;
 };
 
 export type DeveloperCapabilityDomain = {
@@ -87,6 +89,37 @@ export type DeveloperConsoleApp = {
   successRate: number;
   createdAt: string;
   lastCall: string;
+  quotas: { apiRequests: number; aiPoints: number };
+  scopes: string[];
+};
+
+export type DeveloperConsoleLog = {
+  time: string;
+  appName: string;
+  user: string;
+  channel: string;
+  tool: string;
+  requestId: string;
+  status: '成功' | '失败' | '处理中';
+  duration: string;
+  points: number;
+};
+
+export type DeveloperConsoleSnapshot = {
+  source: DeveloperPlatformDataSource;
+  lastSyncedAt: string;
+  app: DeveloperConsoleApp;
+  config: DeveloperAppConfig;
+  tasks: AdminTask[];
+  logs: DeveloperConsoleLog[];
+  usage: {
+    totalCalls: number;
+    points: number;
+    successRate: number;
+    averageDuration: string;
+    apiQuota: number;
+    aiQuota: number;
+  };
 };
 
 export const DEVELOPER_CONSOLE_ORGANIZATION = '创客贴 · 品牌增长组';
@@ -115,6 +148,8 @@ const mapAdminAppToConsoleApp = (app: AdminApp): DeveloperConsoleApp => ({
   successRate: app.successRate,
   createdAt: app.createdAt,
   lastCall: app.lastCall,
+  quotas: app.quotas ?? { apiRequests: 100000, aiPoints: 5000 },
+  scopes: app.scopes,
 });
 
 export function getDeveloperPlatformConsoleApps(organization = DEVELOPER_CONSOLE_ORGANIZATION, user = DEVELOPER_CONSOLE_USER): DeveloperConsoleApp[] {
@@ -122,6 +157,55 @@ export function getDeveloperPlatformConsoleApps(organization = DEVELOPER_CONSOLE
   return store.apps
     .filter((app) => app.organization === organization && (app.developer === user || app.organization === organization))
     .map(mapAdminAppToConsoleApp);
+}
+
+export function getDeveloperPlatformConsoleSnapshot(appId: string): DeveloperConsoleSnapshot | undefined {
+  const store = getDeveloperPlatformAdminStore();
+  const app = store.apps.find((item) => item.appId === appId);
+  if (!app) return undefined;
+  const consoleApp = mapAdminAppToConsoleApp(app);
+  const tasks = store.tasks.filter((task) => task.appName === app.name);
+  const logs = tasks.map((task, index) => ({
+    time: task.createdAt,
+    appName: task.appName,
+    user: app.developer,
+    channel: CONSOLE_CHANNEL_LABELS[task.channel],
+    tool: task.capability === '模板搜索' ? 'templates.search' : task.capability === '设计导出' ? 'designs.export' : task.capability === '文件解析' ? 'files.parse' : task.capability === 'AI 创作' ? 'ai.create' : 'assets.search',
+    requestId: `req_${task.taskId.replace(/^task_/, '').toLowerCase()}`,
+    status: task.status === '已失败' ? '失败' as const : task.status === '运行中' || task.status === '排队中' ? '处理中' as const : '成功' as const,
+    duration: task.duration,
+    points: task.points,
+  }));
+  const successfulTasks = tasks.filter((task) => task.status === '已成功').length;
+  const averageSeconds = tasks.filter((task) => /^\d+s$/.test(task.duration)).reduce((sum, task) => sum + Number.parseInt(task.duration, 10), 0) / Math.max(tasks.filter((task) => /^\d+s$/.test(task.duration)).length, 1);
+  return {
+    source: 'api',
+    lastSyncedAt: new Date().toISOString(),
+    app: consoleApp,
+    config: getDeveloperAppConfig(app),
+    tasks,
+    logs: logs.length ? logs : [{ time: app.lastCall, appName: app.name, user: app.developer, channel: 'REST API', tool: 'templates.search', requestId: `req_${app.appId.toLowerCase()}`, status: '成功', duration: '—', points: 0 }],
+    usage: {
+      totalCalls: app.calls,
+      points: app.points,
+      successRate: app.successRate,
+      averageDuration: tasks.length ? `${Math.round(averageSeconds * 1000)}ms` : '—',
+      apiQuota: consoleApp.quotas.apiRequests,
+      aiQuota: consoleApp.quotas.aiPoints,
+    },
+  };
+}
+
+export function createDeveloperConsoleApp(input: { name: string; description: string; type: string; organization?: string; developer?: string; integrations: AdminChannelId[]; scopes: string[] }): DeveloperConsoleApp {
+  return mapAdminAppToConsoleApp(createDeveloperPlatformAdminApp({
+    name: input.name,
+    developer: input.developer ?? DEVELOPER_CONSOLE_USER,
+    organization: input.organization ?? DEVELOPER_CONSOLE_ORGANIZATION,
+    status: '运行中',
+    authorizedUsers: 0,
+    integrations: input.integrations,
+    scopes: input.scopes,
+  }));
 }
 
 export const DEVELOPER_PLATFORM_OVERVIEW_ENDPOINT = '/open-platform/developer-platform/overview';
@@ -354,6 +438,9 @@ const toDeveloperStatus = (status: AdminCapability['status']): DeveloperPlatform
   if (status === '已开放') return '已开放';
   if (status === '内测中') return '内测中';
   if (status === '规划中') return '规划中';
+  if (status === '维护中') return '维护中';
+  if (status === '已废弃') return '已废弃';
+  if (status === '已下线') return '已下线';
   return '即将开放';
 };
 
@@ -362,6 +449,17 @@ const capabilityDomainForCategory = (category: string): string => {
   if (['AI', '图片编辑', '视频'].includes(category)) return 'ai-creation';
   if (['企业', '任务', '协作', '评论'].includes(category)) return 'enterprise-automation';
   return 'template-design';
+};
+
+const capabilityScopes = (item: AdminCapability): string[] => {
+  if (item.capabilityCode.startsWith('template.')) return ['template.read'];
+  if (item.capabilityCode.startsWith('design.')) return [item.capabilityCode === 'design.export' ? 'design.export' : 'design.create'];
+  if (item.capabilityCode.startsWith('image.')) return ['design.write'];
+  if (item.capabilityCode.startsWith('ai.')) return ['ai.image.generate'];
+  if (item.capabilityCode.startsWith('material.')) return ['material.read'];
+  if (item.capabilityCode.startsWith('brand.')) return ['brand.read'];
+  if (item.capabilityCode.startsWith('enterprise.')) return ['organization.read'];
+  return [];
 };
 
 const buildAdminCapabilityEntries = (capabilities: AdminCapability[]): DeveloperCapabilityDomain[] => {
@@ -388,6 +486,8 @@ const buildAdminCapabilityEntries = (capabilities: AdminCapability[]): Developer
         version: item.version,
         sourceUrl: item.docsUrl || OPEN_PLATFORM_SOURCE_URL,
         kind: accessModes.includes('product-sdk') ? 'sdk' : 'api',
+        requiredScopes: capabilityScopes(item),
+        hasAccess: true,
       });
     });
   return developerPlatformOverviewFallback.domains.map((domain) => ({
@@ -396,6 +496,20 @@ const buildAdminCapabilityEntries = (capabilities: AdminCapability[]): Developer
     entries: entriesByDomain.get(domain.id) ?? [],
   }));
 };
+
+export function getDeveloperPlatformCapabilitiesForApp(data: DeveloperCapabilitiesResponse, app: DeveloperConsoleApp): DeveloperCapabilitiesResponse {
+  const scopes = new Set(app.scopes);
+  return {
+    ...data,
+    domains: data.domains.map((domain) => ({
+      ...domain,
+      entries: domain.entries.map((entry) => ({
+        ...entry,
+        hasAccess: !(entry.requiredScopes?.length) || entry.requiredScopes.every((scope) => scopes.has(scope)),
+      })),
+    })),
+  };
+}
 
 const buildAdminBilling = (capabilities: AdminCapability[]) => ({
   summary: '计费、额度和 AI 消耗来自当前组织适用的管理后台发布规则。具体规则可能因组织套餐、应用权限和环境不同而变化。',
