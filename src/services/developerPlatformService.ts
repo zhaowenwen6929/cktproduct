@@ -1,4 +1,4 @@
-import { getDeveloperPlatformAdminStore, type AdminCapability, type AdminChannelId } from './developerPlatformAdminService';
+import { developerPlatformAdminSdkModulesFallback, getDeveloperPlatformAdminStore, type AdminApp, type AdminCapability, type AdminChannelId, type AdminSdkModule } from './developerPlatformAdminService';
 
 export type DeveloperPlatformStatus = '已开放' | '已有接口' | 'SDK 支持' | '内测中' | '即将开放' | '规划中';
 
@@ -62,6 +62,7 @@ export type DeveloperCapabilitiesResponse = {
   interfaces: OpenPlatformInterface[];
   sdks: OpenPlatformSdk[];
   callbacks: readonly (readonly [string, string, string])[];
+  sdkModules?: AdminSdkModule[];
   responseFields: readonly (readonly [string, string])[];
   editorParams: readonly (readonly [string, string])[];
   imageParams: readonly (readonly [string, string])[];
@@ -70,6 +71,58 @@ export type DeveloperCapabilitiesResponse = {
   billing: { summary: string; items: { label: string; description: string; status: DeveloperPlatformStatus }[] };
   integration: { cliVersion: string; cliInstallCommand: string; apiBaseUrl: string; mcpServerUrl: string };
 };
+
+export type DeveloperConsoleApp = {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  owner: string;
+  organization: string;
+  integrations: string[];
+  status: '运行中' | '已停用' | '草稿';
+  calls: string;
+  callsValue: number;
+  points: number;
+  successRate: number;
+  createdAt: string;
+  lastCall: string;
+};
+
+export const DEVELOPER_CONSOLE_ORGANIZATION = '创客贴 · 品牌增长组';
+export const DEVELOPER_CONSOLE_USER = '赵文文';
+
+const CONSOLE_CHANNEL_LABELS: Record<AdminChannelId, string> = {
+  api: 'REST API',
+  sdk: 'Product SDK',
+  cli: 'CLI',
+  mcp: 'MCP',
+  'agent-skills': 'Agent Skills',
+};
+
+const mapAdminAppToConsoleApp = (app: AdminApp): DeveloperConsoleApp => ({
+  id: app.appId,
+  name: app.name,
+  description: `${app.organization}的开放平台应用。`,
+  type: app.organization === DEVELOPER_CONSOLE_ORGANIZATION ? '企业应用' : '组织应用',
+  owner: app.developer,
+  organization: app.organization,
+  integrations: app.integrations.map((channel) => CONSOLE_CHANNEL_LABELS[channel]),
+  status: app.status === '待审核' ? '草稿' : app.status,
+  calls: app.calls >= 1000 ? `${(app.calls / 1000).toFixed(1)}k` : String(app.calls),
+  callsValue: app.calls,
+  points: app.points,
+  successRate: app.successRate,
+  createdAt: app.createdAt,
+  lastCall: app.lastCall,
+});
+
+export function getDeveloperPlatformConsoleApps(organization = DEVELOPER_CONSOLE_ORGANIZATION, user = DEVELOPER_CONSOLE_USER): DeveloperConsoleApp[] {
+  const store = getDeveloperPlatformAdminStore();
+  return store.apps
+    .filter((app) => app.organization === organization && (app.developer === user || app.organization === organization))
+    .map(mapAdminAppToConsoleApp);
+}
 
 export const DEVELOPER_PLATFORM_OVERVIEW_ENDPOINT = '/open-platform/developer-platform/overview';
 export const DEVELOPER_PLATFORM_CAPABILITIES_ENDPOINT = '/open-platform/developer-platform/capabilities';
@@ -262,7 +315,7 @@ const buildCapabilityDomains = (): DeveloperCapabilityDomain[] => {
 
 export const developerPlatformCapabilitiesFallback: DeveloperCapabilitiesResponse = {
   source: 'fallback', version: '2026.11', publishedAt: '2026-11-03', sourceUrl: OPEN_PLATFORM_SOURCE_URL,
-  interfaces: OPEN_PLATFORM_HTTP_INTERFACES, sdks: OPEN_PLATFORM_SDKS, callbacks: OPEN_PLATFORM_CALLBACKS, responseFields: OPEN_PLATFORM_RESPONSE_FIELDS, editorParams: OPEN_PLATFORM_EDITOR_PARAMS, imageParams: OPEN_PLATFORM_IMAGE_PARAMS, spaceParams: OPEN_PLATFORM_SPACE_PARAMS,
+  interfaces: OPEN_PLATFORM_HTTP_INTERFACES, sdks: OPEN_PLATFORM_SDKS, sdkModules: developerPlatformAdminSdkModulesFallback, callbacks: OPEN_PLATFORM_CALLBACKS, responseFields: OPEN_PLATFORM_RESPONSE_FIELDS, editorParams: OPEN_PLATFORM_EDITOR_PARAMS, imageParams: OPEN_PLATFORM_IMAGE_PARAMS, spaceParams: OPEN_PLATFORM_SPACE_PARAMS,
   domains: buildCapabilityDomains(),
   billing: { summary: '计费、额度和 AI 消耗以管理后台发布的组织配置为准，首页不展示具体价格。', items: [{ label: 'API 请求', description: '按接口、组织和应用额度配置展示。', status: '已有接口' }, { label: 'AI 任务', description: '按 AI 能力和组织积分配置展示。', status: '已有接口' }, { label: '导出与批量任务', description: '按任务类型和组织策略展示。', status: '已有接口' }] },
   integration: { cliVersion: 'v0.9.0', cliInstallCommand: 'npm install -g @chuangkit/open-cli@latest', apiBaseUrl: 'https://api.chuangkit.com/v1', mcpServerUrl: 'https://api.chuangkit.com/connect/v1/mcp' },
@@ -295,11 +348,70 @@ const localChannelToAccessMode: Record<AdminChannelId, DeveloperPlatformAccessMo
   'agent-skills': 'mcp',
 };
 
+const CONSOLE_PUBLISHED_STATUSES = new Set<AdminCapability['status']>(['已开放', '内测中', '维护中', '规划中']);
+
+const toDeveloperStatus = (status: AdminCapability['status']): DeveloperPlatformStatus => {
+  if (status === '已开放') return '已开放';
+  if (status === '内测中') return '内测中';
+  if (status === '规划中') return '规划中';
+  return '即将开放';
+};
+
+const capabilityDomainForCategory = (category: string): string => {
+  if (['素材', 'DAM', '品牌'].includes(category)) return 'material-brand';
+  if (['AI', '图片编辑', '视频'].includes(category)) return 'ai-creation';
+  if (['企业', '任务', '协作', '评论'].includes(category)) return 'enterprise-automation';
+  return 'template-design';
+};
+
+const buildAdminCapabilityEntries = (capabilities: AdminCapability[]): DeveloperCapabilityDomain[] => {
+  const entriesByDomain = new Map<string, DeveloperCapabilityEntry[]>();
+  developerPlatformOverviewFallback.domains.forEach((domain) => entriesByDomain.set(domain.id, []));
+  capabilities
+    .filter((item) => CONSOLE_PUBLISHED_STATUSES.has(item.status))
+    .sort((left, right) => left.order - right.order)
+    .forEach((item) => {
+      const accessModes = (Object.keys(item.channels) as AdminChannelId[])
+        .filter((channel) => item.channels[channel].enabled)
+        .map((channel) => localChannelToAccessMode[channel])
+        .filter((value, index, values) => values.indexOf(value) === index);
+      const domainId = capabilityDomainForCategory(item.category);
+      entriesByDomain.get(domainId)?.push({
+        id: item.capabilityCode,
+        title: item.publicName || item.name,
+        summary: item.publicDescription || item.description,
+        status: toDeveloperStatus(item.status),
+        accessModes,
+        permission: item.allowAi ? '按能力 Scope · 允许 AI 调用' : '按能力 Scope',
+        requiresApp: true,
+        consumption: `${item.billing.mode}${item.billing.unitPrice !== '—' ? ` · ${item.billing.unitPrice}` : ''}`,
+        version: item.version,
+        sourceUrl: item.docsUrl || OPEN_PLATFORM_SOURCE_URL,
+        kind: accessModes.includes('product-sdk') ? 'sdk' : 'api',
+      });
+    });
+  return developerPlatformOverviewFallback.domains.map((domain) => ({
+    ...domain,
+    description: domain.summary,
+    entries: entriesByDomain.get(domain.id) ?? [],
+  }));
+};
+
+const buildAdminBilling = (capabilities: AdminCapability[]) => ({
+  summary: '计费、额度和 AI 消耗来自当前组织适用的管理后台发布规则。具体规则可能因组织套餐、应用权限和环境不同而变化。',
+  items: capabilities.filter((item) => CONSOLE_PUBLISHED_STATUSES.has(item.status)).map((item) => ({
+    label: item.publicName || item.name,
+    description: `${item.billing.mode}${item.billing.unitPrice !== '—' ? ` · ${item.billing.unitPrice}` : ''} · 生效于 ${item.billing.effectiveAt}`,
+    status: toDeveloperStatus(item.status),
+  })),
+});
+
 function getLocalPublishedData(endpoint: string): DeveloperOverviewResponse | DeveloperCapabilitiesResponse | undefined {
   if (typeof window === 'undefined') return undefined;
   try {
     const store = getDeveloperPlatformAdminStore();
     const published = store.capabilities.filter((item: AdminCapability) => item.status === '已开放' && item.publicVisible);
+    const consoleCapabilities = store.capabilities.filter((item: AdminCapability) => CONSOLE_PUBLISHED_STATUSES.has(item.status));
     if (endpoint === DEVELOPER_PLATFORM_OVERVIEW_ENDPOINT) {
       const domains = developerPlatformOverviewFallback.domains.map((domain) => {
         const highlights = published.filter((item) => localDomainForCategory(item.category) === domain.id).slice(0, 3).map((item) => item.publicName || item.name);
@@ -313,8 +425,14 @@ function getLocalPublishedData(endpoint: string): DeveloperOverviewResponse | De
       return { ...developerPlatformOverviewFallback, source: 'api', publishedAt: new Date().toISOString().slice(0, 10), accessModes, domains };
     }
     if (endpoint === DEVELOPER_PLATFORM_CAPABILITIES_ENDPOINT) {
-      const domains = developerPlatformCapabilitiesFallback.domains.map((domain) => ({ ...domain, entries: domain.entries.filter((entry) => published.some((item) => (item.publicName || item.name) === entry.title)) }));
-      return { ...developerPlatformCapabilitiesFallback, source: 'api', publishedAt: new Date().toISOString().slice(0, 10), domains };
+      return {
+        ...developerPlatformCapabilitiesFallback,
+        source: 'api',
+        publishedAt: new Date().toISOString().slice(0, 10),
+        sdkModules: store.sdkModules,
+        domains: buildAdminCapabilityEntries(consoleCapabilities),
+        billing: buildAdminBilling(consoleCapabilities),
+      };
     }
   } catch {
     return undefined;

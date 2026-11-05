@@ -1,0 +1,147 @@
+{
+  "schema": "code-video-script/1",
+  "id": "reference-style-demo-v1",
+  "templateId": "knowledge-explainer-sketchnote",
+  "contractVersion": "1.0.0",
+  "title": "费曼学习法",
+  "subtitle": "用“讲给别人听”来学",
+  "durationSeconds": 20,
+  "timingStatus": "planned",
+  "voice": {
+    "mode": "recorded-or-tts",
+    "sourceText": "examples/reference-style-narration-v9.txt",
+    "segments": [
+      {
+        "id": "voice-01",
+        "start": 0,
+        "end": 3.1,
+        "text": "费曼学习法，只有四步。"
+      },
+      {
+        "id": "voice-02",
+        "start": 3.1,
+        "end": 6.6,
+        "text": "第一步，选一个你想弄懂的概念。"
+      },
+      {
+        "id": "voice-03",
+        "start": 6.6,
+        "end": 10.1,
+        "text": "第二步，把它讲给一个完全不懂的人听。"
+      },
+      {
+        "id": "voice-04",
+        "start": 10.1,
+        "end": 13.4,
+        "text": "第三步，哪里讲不下去，就回去重学。"
+      },
+      {
+        "id": "voice-05",
+        "start": 13.4,
+        "end": 17,
+        "text": "第四步，简化语言，多打比方，再讲一遍。"
+      },
+      {
+        "id": "voice-06",
+        "start": 17,
+        "end": 20,
+        "text": "讲得清楚，才是真的懂了。"
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "start": 0,
+      "end": 3.1,
+      "voiceSegmentId": "voice-01",
+      "caption": "费曼学习法，只有四步。",
+      "layoutAnchor": "title",
+      "content": {
+        "title": "费曼学习法",
+        "subtitle": "用“讲给别人听”来学",
+        "emphasis": "讲给别人听"
+      }
+    },
+    {
+      "id": "step-1",
+      "kind": "step",
+      "start": 3.1,
+      "end": 6.6,
+      "voiceSegmentId": "voice-02",
+      "caption": "第一步，选一个你想弄懂的概念。",
+      "layoutAnchor": "step-1",
+      "content": {
+        "number": "1",
+        "label": "选一个概念",
+        "note": "比如：什么是复利？",
+        "iconId": "bulb"
+      }
+    },
+    {
+      "id": "step-2",
+      "kind": "step",
+      "start": 6.6,
+      "end": 10.1,
+      "voiceSegmentId": "voice-03",
+      "caption": "第二步，把它讲给一个完全不懂的人听。",
+      "layoutAnchor": "step-2",
+      "content": {
+        "number": "2",
+        "label": "讲给外行听",
+        "note": "不用术语，像讲给孩子",
+        "iconId": "chat",
+        "connectorAssetId": "curve-arrow",
+        "connectsFrom": "step-1"
+      }
+    },
+    {
+      "id": "step-3",
+      "kind": "step",
+      "start": 10.1,
+      "end": 13.4,
+      "voiceSegmentId": "voice-04",
+      "caption": "第三步，哪里讲不下去，就回去重学。",
+      "layoutAnchor": "step-3",
+      "content": {
+        "number": "3",
+        "label": "卡住就重学",
+        "note": "讲不下去的地方，就是你的盲区",
+        "iconId": "book",
+        "connectorAssetId": "elbow-arrow",
+        "connectsFrom": "step-2"
+      }
+    },
+    {
+      "id": "step-4",
+      "kind": "step",
+      "start": 13.4,
+      "end": 17,
+      "voiceSegmentId": "voice-05",
+      "caption": "第四步，简化语言，多打比方，再讲一遍。",
+      "layoutAnchor": "step-4",
+      "content": {
+        "number": "4",
+        "label": "简化＋打比方",
+        "note": "用比方代替术语",
+        "iconId": "spiral",
+        "connectorAssetId": "double-bend",
+        "connectsFrom": "step-3"
+      }
+    },
+    {
+      "id": "conclusion",
+      "kind": "conclusion",
+      "start": 17,
+      "end": 20,
+      "voiceSegmentId": "voice-06",
+      "caption": "讲得清楚，才是真的懂了。",
+      "layoutAnchor": "overview",
+      "content": {
+        "text": "讲得清楚，才是真的懂了。",
+        "connectorAssetId": "guide-dash"
+      }
+    }
+  ]
+}

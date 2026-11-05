@@ -1,0 +1,44 @@
+{
+  "schema": "code-video-reference-style-preview/1",
+  "width": 1280,
+  "height": 720,
+  "fps": 60,
+  "files": [
+    {
+      "time": 0,
+      "file": "out/preview-reference-style-v8/frame-0000.png"
+    },
+    {
+      "time": 2,
+      "file": "out/preview-reference-style-v8/frame-0001.png"
+    },
+    {
+      "time": 4,
+      "file": "out/preview-reference-style-v8/frame-0002.png"
+    },
+    {
+      "time": 7,
+      "file": "out/preview-reference-style-v8/frame-0003.png"
+    },
+    {
+      "time": 10,
+      "file": "out/preview-reference-style-v8/frame-0004.png"
+    },
+    {
+      "time": 13,
+      "file": "out/preview-reference-style-v8/frame-0005.png"
+    },
+    {
+      "time": 16,
+      "file": "out/preview-reference-style-v8/frame-0006.png"
+    },
+    {
+      "time": 18,
+      "file": "out/preview-reference-style-v8/frame-0007.png"
+    },
+    {
+      "time": 19.9,
+      "file": "out/preview-reference-style-v8/frame-0008.png"
+    }
+  ]
+}

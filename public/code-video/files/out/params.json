@@ -1,0 +1,27 @@
+{
+  "title": "多智能体 Agent 的三个步骤",
+  "items": [
+    {
+      "label": "理解需求",
+      "note": [
+        "明确目标和边界"
+      ]
+    },
+    {
+      "label": "拆分任务",
+      "note": [
+        "分配给合适的子 Agent"
+      ]
+    },
+    {
+      "label": "汇总结果",
+      "note": [
+        "统一检查并输出"
+      ]
+    }
+  ],
+  "conclusion": [
+    "让复杂任务变得可执行"
+  ],
+  "durationSeconds": 12
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "code-video-render/1",
+  "output": "out/demo.mp4",
+  "sha256": "3afcac18c9243dfd87b6d6224cc9905cdca3b93b6e3e1035cf1747cd9843eb22",
+  "expected": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "frames": 360
+  },
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "30/1",
+        "nb_frames": "360"
+      }
+    ],
+    "format": {
+      "duration": "12.000000"
+    }
+  },
+  "timeline": {
+    "intro": 1.2,
+    "itemDuration": 1.2,
+    "conclusionStart": 8,
+    "conclusionEnd": 12,
+    "items": [
+      {
+        "label": "理解需求",
+        "note": [
+          "明确目标和边界"
+        ],
+        "index": 0,
+        "start": 1.2
+      },
+      {
+        "label": "拆分任务",
+        "note": [
+          "分配给合适的子 Agent"
+        ],
+        "index": 1,
+        "start": 3.4000000000000004
+      },
+      {
+        "label": "汇总结果",
+        "note": [
+          "统一检查并输出"
+        ],
+        "index": 2,
+        "start": 5.6000000000000005
+      }
+    ]
+  }
+}

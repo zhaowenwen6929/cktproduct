@@ -1,0 +1,58 @@
+{
+  "schema": "code-video-narration/2",
+  "output": "/Users/zhaowenwen/code/ckt/code-video-demo/out/reference-style-demo-narration-v12.m4a",
+  "script": "/Users/zhaowenwen/code/ckt/code-video-demo/examples/reference-style-script.json",
+  "voice": "Tingting",
+  "rate": 190,
+  "duration": 20,
+  "segments": [
+    {
+      "id": "voice-01",
+      "start": 0,
+      "end": 3.1,
+      "targetDuration": 3.1,
+      "rawDuration": 1.973741,
+      "speed": 1
+    },
+    {
+      "id": "voice-02",
+      "start": 3.1,
+      "end": 6.6,
+      "targetDuration": 3.4999999999999996,
+      "rawDuration": 2.461361,
+      "speed": 1
+    },
+    {
+      "id": "voice-03",
+      "start": 6.6,
+      "end": 10.1,
+      "targetDuration": 3.5,
+      "rawDuration": 3.134739,
+      "speed": 1
+    },
+    {
+      "id": "voice-04",
+      "start": 10.1,
+      "end": 13.4,
+      "targetDuration": 3.3000000000000007,
+      "rawDuration": 3.134739,
+      "speed": 1
+    },
+    {
+      "id": "voice-05",
+      "start": 13.4,
+      "end": 17,
+      "targetDuration": 3.5999999999999996,
+      "rawDuration": 3.668798,
+      "speed": 1.0191105555555555
+    },
+    {
+      "id": "voice-06",
+      "start": 17,
+      "end": 20,
+      "targetDuration": 3,
+      "rawDuration": 1.996961,
+      "speed": 1
+    }
+  ]
+}

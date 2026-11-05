@@ -28,13 +28,14 @@ import { getEvalProject, getEvalRequirement, updateEvalRequirement } from './com
 import { DeveloperPlatformPage } from './components/DeveloperPlatformPage';
 import { DeveloperPlatformAdminPage, type DeveloperPlatformAdminPageKey } from './components/DeveloperPlatformAdminPage';
 import { OpenPlatformHomePage } from './components/OpenPlatformHomePage';
+import { CodeVideoPage } from './components/CodeVideoPage';
 import type { MembershipCurrentMember } from './components/MembershipCenterModal';
 import { AppMode, CanvasObject, CanvasMode, GenerationAttachment, WorkflowLink } from './types';
 import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat, VideoExportFormat } from './components/ExportDialog';
 
 type AgentEvaluationProjectRoute = `/agent-eval/project/${string}`;
 type AgentEvaluationRequirementRoute = `/agent-eval/project/${string}/requirement/${string}`;
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval' | '/admin-backoffice/developer-platform' | '/admin-backoffice/developer-platform/capabilities' | '/admin-backoffice/developer-platform/apps' | '/admin-backoffice/developer-platform/billing' | '/admin-backoffice/developer-platform/statistics' | '/admin-backoffice/developer-platform/tasks' | '/admin-backoffice/developer-platform/logs';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/code-video' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval' | '/admin-backoffice/developer-platform' | '/admin-backoffice/developer-platform/capabilities' | '/admin-backoffice/developer-platform/apps' | '/admin-backoffice/developer-platform/billing' | '/admin-backoffice/developer-platform/statistics' | '/admin-backoffice/developer-platform/tasks' | '/admin-backoffice/developer-platform/logs';
 
 type AppHistoryState = {
   appRoute?: AppRoute;
@@ -91,6 +92,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/design-app/ai-create') return '/design-app/ai-create';
   if (pathname === '/developer-platform') return '/developer-platform';
   if (pathname === '/open-platform') return '/open-platform';
+  if (pathname === '/code-video') return '/code-video';
   if (pathname === '/admin-backoffice/developer-platform/capabilities') return '/admin-backoffice/developer-platform/capabilities';
   if (pathname === '/admin-backoffice/developer-platform/apps') return '/admin-backoffice/developer-platform/apps';
   if (pathname === '/admin-backoffice/developer-platform/billing') return '/admin-backoffice/developer-platform/billing';
@@ -141,6 +143,7 @@ export default function App() {
   const [autoGenerateRequest, setAutoGenerateRequest] = useState<{ requestId: number; prompt: string; attachments: GenerationAttachment[] } | null>(null);
   const [designAppSelectedWork, setDesignAppSelectedWork] = useState<string>();
   const [designAppStartsNew, setDesignAppStartsNew] = useState(false);
+  const [designAppInitialNav, setDesignAppInitialNav] = useState<'首页' | '模板' | '资源' | '我的'>('首页');
   const [membershipUpgradeMember, setMembershipUpgradeMember] = useState<MembershipCurrentMember>();
   const [designAppCustomWorkTitles, setDesignAppCustomWorkTitles] = useState<string[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -1423,6 +1426,10 @@ export default function App() {
         title: '创客贴开放平台',
         description: '创客贴开放平台首页，提供模板编辑器、图片编辑器、抠图编辑器和模板中心等接入服务。',
       },
+      '/code-video': {
+        title: '代码视频',
+        description: '模板驱动的代码视频生成实验，支持结构化参数、预览和导出。',
+      },
       '/admin-backoffice': {
         title: '创客贴管理后台｜需求列表',
         description: '创客贴管理后台需求列表，按新增时间查看主需求和子需求。',
@@ -1590,6 +1597,12 @@ export default function App() {
         href: '/open-platform' as AppRoute,
         available: true,
       },
+      {
+        title: '代码视频',
+        description: '独立的视频模板实验，验证从文案到结构化参数、预览和 MP4 导出的生成链路。',
+        href: '/code-video' as AppRoute,
+        available: true,
+      },
     ];
     const requirementProjectStats = getRequirementProjectStats();
     const requirementOverviewStats = getRequirementOverviewStats();
@@ -1706,7 +1719,7 @@ export default function App() {
                     </p>
                   </div>
                   <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm leading-6 text-stone-200">
-                    当前已接入：`/canvas` · `/agent-eval` · `/developer-platform`
+                    当前已接入：`/canvas` · `/agent-eval` · `/developer-platform` · `/code-video`
                   </div>
                 </div>
               </div>
@@ -1788,9 +1801,11 @@ export default function App() {
   if (currentRoute === '/design-app') {
     return <DesignAppHomePage
       onBackToDirectory={() => navigateTo('/')}
+      initialActiveNav={designAppInitialNav}
       recentInfiniteCanvasWorkTitles={designAppCustomWorkTitles}
       onDeleteInfiniteCanvasWork={(workTitle) => setDesignAppCustomWorkTitles((titles) => titles.filter((title) => title !== workTitle))}
       onOpenAiCreate={(workTitle) => {
+        setDesignAppInitialNav('首页');
         if (workTitle) {
           setDesignAppSelectedWork(workTitle);
           setDesignAppStartsNew(false);
@@ -1808,6 +1823,11 @@ export default function App() {
   if (currentRoute === '/design-app/ai-create') {
     return <DesignAppAiCreatePage
       onBack={() => navigateTo('/design-app')}
+      onOpenResources={() => {
+        setDesignAppInitialNav('资源');
+        navigateTo('/design-app');
+      }}
+      credits={credits}
       initialWorkTitle={designAppSelectedWork}
       initialNewConversation={designAppStartsNew}
       additionalWorkTitles={designAppCustomWorkTitles}
@@ -1820,6 +1840,10 @@ export default function App() {
 
   if (currentRoute === '/open-platform') {
     return <OpenPlatformHomePage onBackToDirectory={() => navigateTo('/')} />;
+  }
+
+  if (currentRoute === '/code-video') {
+    return <CodeVideoPage onBackToDirectory={() => navigateTo('/')} />;
   }
 
   if (currentRoute === '/admin-backoffice/requirements') {

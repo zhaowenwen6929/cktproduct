@@ -4,6 +4,7 @@ import {
   Bookmark,
   Camera,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ClipboardCheck,
   Crop,
@@ -35,6 +36,7 @@ import {
 type DesignAppHomePageProps = {
   onBackToDirectory: () => void;
   onOpenAiCreate: (workTitle?: string) => void;
+  initialActiveNav?: '首页' | '模板' | '资源' | '我的';
   recentInfiniteCanvasWorkTitles?: string[];
   onDeleteInfiniteCanvasWork?: (workTitle: string) => void;
 };
@@ -43,9 +45,11 @@ type QuickTool = {
   label: string;
   icon: typeof Sparkles;
   badge?: 'new' | 'ai';
+  action?: 'ai-create' | 'all-tools';
 };
 
 const quickTools: QuickTool[] = [
+  { label: 'AI创作', icon: PenLine, badge: 'new', action: 'ai-create' },
   { label: '智能设计', icon: WandSparkles, badge: 'new' },
   { label: '智能抠图', icon: Crop },
   { label: '拼图', icon: LayoutGrid },
@@ -56,6 +60,7 @@ const quickTools: QuickTool[] = [
   { label: 'AI商品图', icon: ShoppingBag },
   { label: 'AI图生图', icon: ImageIcon },
   { label: 'AI文案', icon: PenLine },
+  { label: '全部工具', icon: LayoutGrid, action: 'all-tools' },
 ];
 
 const quickKeywords = ['招聘', '喜报', '邀请函', '早安'];
@@ -63,7 +68,7 @@ const quickKeywords = ['招聘', '喜报', '邀请函', '早安'];
 const navItems = [
   { label: '首页', icon: House },
   { label: '模板', icon: PanelsTopLeft },
-  { label: 'AI工具', icon: Sparkles },
+  { label: 'AI创作', icon: Sparkles },
   { label: '资源', icon: FolderOpen },
   { label: '我的', icon: UserRound },
 ];
@@ -296,7 +301,7 @@ function DesignAppTemplatesPage({ notify }: { notify: (message: string) => void 
   );
 }
 
-function DesignAppAiToolsPage({ notify, onOpenAiCreate }: { notify: (message: string) => void; onOpenAiCreate: () => void }) {
+function DesignAppAiToolsPage({ notify, onOpenAiCreate, onBackToHome }: { notify: (message: string) => void; onOpenAiCreate: () => void; onBackToHome: () => void }) {
   const startItems = [
     { label: '创建设计', icon: Plus, action: () => notify('开始创建新设计') },
     { label: 'AI创作', icon: PenLine, action: onOpenAiCreate, badge: '全新 2.0' },
@@ -306,6 +311,10 @@ function DesignAppAiToolsPage({ notify, onOpenAiCreate }: { notify: (message: st
 
   return (
     <section className="design-app-subpage design-app-ai-tools-page">
+      <div className="design-app-subpage-topbar">
+        <button type="button" onClick={onBackToHome} aria-label="返回首页"><ChevronLeft size={25} strokeWidth={2.2} /></button>
+        <h1>全部工具</h1>
+      </div>
       <div className="design-app-ai-tools-heading">你想要设计什么？</div>
       <div className="design-app-ai-tools-input"><input placeholder="说说你想要设计什么？" /><button type="button" onClick={() => notify('请输入你的设计需求')}>生成</button></div>
       <h2>开始创作</h2>
@@ -436,9 +445,9 @@ function PresentationIcon({ size, strokeWidth }: { size?: number; strokeWidth?: 
   return <svg width={size ?? 24} height={size ?? 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth ?? 2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4M7 9h10M7 12h6" /></svg>;
 }
 
-export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInfiniteCanvasWorkTitles = [], onDeleteInfiniteCanvasWork }: DesignAppHomePageProps) {
+export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, initialActiveNav = '首页', recentInfiniteCanvasWorkTitles = [], onDeleteInfiniteCanvasWork }: DesignAppHomePageProps) {
   const [searchValue, setSearchValue] = useState('');
-  const [activeNav, setActiveNav] = useState('首页');
+  const [activeNav, setActiveNav] = useState(initialActiveNav);
   const [toast, setToast] = useState('');
   const [detailDesign, setDetailDesign] = useState<{ title: string; sourceTitle: string; variant: RecentDesignVariant; isInfiniteCanvas: boolean } | null>(null);
   const [detailMoreOpen, setDetailMoreOpen] = useState(false);
@@ -452,8 +461,24 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
   };
 
   const handleNavClick = (label: string) => {
+    if (label === 'AI创作') {
+      onOpenAiCreate();
+      return;
+    }
     setActiveNav(label);
     if (label !== '首页') notify(`${label}页面即将上线`);
+  };
+
+  const handleQuickToolClick = (tool: QuickTool) => {
+    if (tool.action === 'ai-create') {
+      onOpenAiCreate();
+      return;
+    }
+    if (tool.action === 'all-tools') {
+      setActiveNav('全部工具');
+      return;
+    }
+    notify(`${tool.label}功能已选中`);
   };
 
   const closeDetail = () => {
@@ -514,9 +539,6 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
                 <Camera size={22} strokeWidth={2.2} />
               </button>
             </label>
-            <button type="button" className="design-app-vip" onClick={() => notify('VIP权益即将开放')} aria-label="VIP">
-              <span>VIP</span>
-            </button>
           </div>
 
           <div className="design-app-keywords" aria-label="热门搜索">
@@ -544,16 +566,17 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
 
         <section className="design-app-tools-section">
           <div className="design-app-tools-grid">
-            {quickTools.map(({ label, icon: Icon, badge }) => (
-              <button key={label} type="button" className="design-app-tool" onClick={() => notify(`${label}功能已选中`)}>
+            {quickTools.map((tool) => {
+              const { label, icon: Icon, badge } = tool;
+              return <button key={label} type="button" className="design-app-tool" onClick={() => handleQuickToolClick(tool)}>
                 <span className="design-app-tool-icon"><Icon size={28} strokeWidth={1.9} /></span>
                 {badge === 'new' && <span className="design-app-tool-badge design-app-tool-badge--new">NEW</span>}
                 {badge === 'ai' && <span className="design-app-tool-badge design-app-tool-badge--ai">AI玩法</span>}
                 <span>{label}</span>
-              </button>
-            ))}
+              </button>;
+            })}
           </div>
-          <div className="design-app-pagination" aria-label="工具分页"><span className="is-active" /><span /><span /></div>
+          <div className="design-app-pagination" aria-label="工具分页"><span className="is-active" /><span /></div>
         </section>
 
         <section className="design-app-content-section">
@@ -705,22 +728,22 @@ export function DesignAppHomePage({ onBackToDirectory, onOpenAiCreate, recentInf
           </>
         ) : activeNav === '模板' ? (
           <DesignAppTemplatesPage notify={notify} />
-        ) : activeNav === 'AI工具' ? (
-          <DesignAppAiToolsPage notify={notify} onOpenAiCreate={onOpenAiCreate} />
+        ) : activeNav === '全部工具' ? (
+          <DesignAppAiToolsPage notify={notify} onOpenAiCreate={onOpenAiCreate} onBackToHome={() => setActiveNav('首页')} />
         ) : activeNav === '资源' ? (
           <DesignAppResourcesPage notify={notify} recentInfiniteCanvasWorkTitles={recentInfiniteCanvasWorkTitles} />
         ) : (
           <DesignAppProfilePage notify={notify} />
         )}
 
-        <nav className="design-app-bottom-nav" aria-label="主导航">
+        {activeNav !== '全部工具' && <nav className="design-app-bottom-nav" aria-label="主导航">
           {navItems.map(({ label, icon: Icon }) => (
             <button key={label} type="button" className={activeNav === label ? 'is-active' : ''} onClick={() => handleNavClick(label)}>
               <span className="design-app-nav-icon"><Icon size={26} strokeWidth={activeNav === label ? 2.4 : 1.9} /></span>
               <span>{label}</span>
             </button>
           ))}
-        </nav>
+        </nav>}
       </main>
 
       {detailDesign && (

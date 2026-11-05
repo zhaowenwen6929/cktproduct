@@ -1,0 +1,94 @@
+{
+  "schema": "code-video-template-contract/1",
+  "templateId": "knowledge-explainer-sketchnote",
+  "version": "1.0.0",
+  "fixed": {
+    "canvas": {
+      "width": 1280,
+      "height": 720,
+      "fps": 60
+    },
+    "background": {
+      "paper": "#F7F2E7",
+      "grid": "dot"
+    },
+    "palette": {
+      "ink": "#1F2A44",
+      "mint": "#8ED5BB",
+      "yellow": "#F5CF66",
+      "card": "#FFFDF7"
+    },
+    "animationPrimitives": [
+      "handwriteText",
+      "pathDraw",
+      "connectorDraw",
+      "numberStamp",
+      "noteReveal",
+      "cameraPan",
+      "caption",
+      "voiceSegment"
+    ],
+    "layerOrder": [
+      "background",
+      "camera",
+      "connectors",
+      "icons",
+      "handwriting",
+      "notes",
+      "captions",
+      "voice"
+    ],
+    "cameraRules": {
+      "allowedMoves": ["hold", "pan-left-up", "pan-right-down", "overview"],
+      "minimumScale": 0.82,
+      "maximumScale": 1.28,
+      "minimumMoveDuration": 0.35
+    },
+    "timingRules": {
+      "defaultEasing": "easeOutCubic",
+      "cameraEasing": "easeInOutQuad",
+      "voiceIsAuthoritative": true
+    }
+  },
+  "variable": {
+    "content": [
+      "title",
+      "subtitle",
+      "scenes[].narration",
+      "scenes[].caption",
+      "scenes[].label",
+      "scenes[].note",
+      "scenes[].iconId",
+      "scenes[].connectorAssetId"
+    ],
+    "timing": [
+      "scene.start",
+      "scene.end",
+      "voice.segments[].start",
+      "voice.segments[].end"
+    ],
+    "layout": [
+      "scene.layoutAnchor",
+      "scene.emphasis"
+    ],
+    "assets": [
+      "iconId",
+      "connectorAssetId"
+    ]
+  },
+  "constraints": {
+    "durationSeconds": { "minimum": 10, "maximum": 40 },
+    "stepCount": { "minimum": 2, "maximum": 8 },
+    "titleCharacters": { "minimum": 1, "maximum": 14 },
+    "subtitleCharacters": { "minimum": 1, "maximum": 24 },
+    "labelCharacters": { "minimum": 1, "maximum": 12 },
+    "noteCharacters": { "minimum": 1, "maximum": 24 },
+    "sceneMustBeOrdered": true,
+    "sceneMustFitDuration": true
+  },
+  "assetLibraries": {
+    "icons": "assets/icon-paths/icons.json",
+    "connectors": "assets/icon-paths/connectors.json",
+    "hanzi": "assets/hanzi-writer-data"
+  }
+}

@@ -3,6 +3,7 @@ import cktAiEcomLogo from '../assets/ckt-ai-ecom-logo.svg';
 import {
   Bell,
   BarChart3,
+  Bookmark,
   BriefcaseBusiness,
   CalendarDays,
   Camera,
@@ -30,6 +31,7 @@ import {
   Menu,
   MessageCircle,
   Plus,
+  Play,
   Puzzle,
   RefreshCw,
   Ticket,
@@ -48,6 +50,7 @@ import { GenerationAttachment } from '../types';
 import { MembershipCenterModal, MembershipPointsPurchaseModal, type MembershipCurrentMember } from './MembershipCenterModal';
 import { RequirementHint, type RequirementSection } from './MembershipPackagePage';
 import { RequirementDocumentDrawer, type RequirementSpec } from './RequirementDocumentPage';
+import { skillDirectorySections, SkillsCategoryShowcase, SkillsDirectoryPage } from './SkillsDirectoryPage';
 
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_NAME = '首页会员中心入口改版';
 const MEMBERSHIP_CENTER_ENTRY_REQUIREMENT_SECTIONS: RequirementSection[] = [
@@ -271,12 +274,12 @@ const homepageFeatureCards = [
 ];
 
 const agentQuickCards = [
-  { title: '海报设计', desc: '一键生成创意海报', art: 'poster', category: '海报设计' },
-  { title: '电商设计', desc: '全套素材快捷生成', art: 'commerce-set', category: '电商设计' },
-  { title: '视频创作', desc: '一键输出创意大片', art: 'video', category: '视频处理' },
-  { title: '自媒体营销', desc: '速出多平台内容', art: 'recruitment', category: '新媒体运营' },
-  { title: '办公设计', desc: '图文创作随心而会', art: 'ppt', category: '企业办公' },
-  { title: '品牌IP形象', desc: '让创意秒变现实', art: 'cutout', category: '品牌营销' },
+  { title: '海报设计', desc: '一键生成创意海报', art: 'poster', category: '海报设计', directoryCategory: '海报设计' },
+  { title: '电商设计', desc: '全套素材快捷生成', art: 'commerce-set', category: '电商设计', directoryCategory: '电商设计' },
+  { title: '视频创作', desc: '一键输出创意大片', art: 'video', category: '视频处理', directoryCategory: '视频创作' },
+  { title: '自媒体营销', desc: '速出多平台内容', art: 'recruitment', category: '新媒体运营', directoryCategory: '自媒体营销' },
+  { title: '办公设计', desc: '图文创作随心而会', art: 'ppt', category: '企业办公', directoryCategory: '办公设计' },
+  { title: '品牌设计', desc: '让创意秒变现实', art: 'cutout', category: '品牌营销', directoryCategory: '品牌设计' },
 ];
 
 const agentFeaturedCards = [
@@ -288,13 +291,47 @@ const agentFeaturedCards = [
   { title: '知识卡片', desc: '图文表达随时生成', art: 'recruitment', skillId: 'daily-notice' },
 ];
 
-const agentSameStyleCards = [
-  { title: '海报设计', category: '海报设计', tone: 'from-[#f8bc18] via-[#f5a700] to-[#e36d00]', kicker: 'CRISPY FRIES' },
-  { title: '电商设计', category: '电商设计', tone: 'from-[#24120d] via-[#6b2d12] to-[#c08042]', kicker: 'NEW BURGER' },
-  { title: '视频创作', category: '视频处理', tone: 'from-[#e4d4f6] via-[#c7a5e4] to-[#efe1fb]', kicker: '“你”够清爽' },
-  { title: '自媒体营销', category: '新媒体运营', tone: 'from-[#0b8b9e] via-[#35bbbf] to-[#9ce9d4]', kicker: 'TROPIC COOL' },
-  { title: '办公设计', category: '企业办公', tone: 'from-[#fff0e7] via-[#ffd3c9] to-[#f3b5ad]', kicker: '梅好夏日' },
-  { title: '品牌IP形象', category: '品牌营销', tone: 'from-[#d9e9ff] via-[#c5d1f7] to-[#e9e4ff]', kicker: 'BRAND · IP' },
+type SameStyleGalleryCard = {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  kicker: string;
+  tone: string;
+  size: 'tall' | 'wide' | 'square';
+};
+
+const agentSameStyleGallery: SameStyleGalleryCard[] = [
+  { id: 'poster-spring', category: '海报设计', title: '春季新品发布', description: '新品上市活动主视觉', kicker: 'SPRING LAUNCH', tone: 'from-amber-200 via-orange-400 to-rose-500', size: 'tall' },
+  { id: 'poster-market', category: '海报设计', title: '周末市集招募', description: '线下活动宣传海报', kicker: 'WEEKEND MARKET', tone: 'from-lime-200 via-emerald-300 to-teal-500', size: 'square' },
+  { id: 'poster-sale', category: '海报设计', title: '节日限时促销', description: '零售活动营销物料', kicker: 'LIMITED OFFER', tone: 'from-red-500 via-rose-500 to-orange-400', size: 'wide' },
+  { id: 'poster-brand', category: '海报设计', title: '品牌活动主视觉', description: '发布会与展览宣传', kicker: 'BRAND EVENT', tone: 'from-indigo-600 via-violet-500 to-fuchsia-400', size: 'tall' },
+  { id: 'poster-public', category: '海报设计', title: '公益活动宣传', description: '温暖有影响力的传播设计', kicker: 'MAKE A DIFFERENCE', tone: 'from-sky-300 via-blue-500 to-indigo-600', size: 'square' },
+  { id: 'commerce-earbuds', category: '电商设计', title: '蓝牙耳机主图', description: '突出卖点的商品视觉', kicker: 'SMART AUDIO', tone: 'from-slate-800 via-slate-600 to-cyan-400', size: 'square' },
+  { id: 'commerce-skincare', category: '电商设计', title: '春日护肤套图', description: '统一风格的商品套图', kicker: 'SPRING SKIN', tone: 'from-pink-200 via-rose-100 to-amber-200', size: 'tall' },
+  { id: 'commerce-coffee', category: '电商设计', title: '咖啡器具详情页', description: '完整展示产品细节与场景', kicker: 'BREW BETTER', tone: 'from-stone-700 via-amber-700 to-orange-300', size: 'wide' },
+  { id: 'commerce-gift', category: '电商设计', title: '轻食礼盒促销', description: '节日礼赠商品营销图', kicker: 'GIFT BOX', tone: 'from-emerald-300 via-teal-400 to-cyan-500', size: 'tall' },
+  { id: 'commerce-fashion', category: '电商设计', title: '服饰上新主图', description: '多款商品快速生成', kicker: 'NEW ARRIVAL', tone: 'from-violet-300 via-purple-500 to-fuchsia-500', size: 'square' },
+  { id: 'video-unbox', category: '视频创作', title: '15秒新品开箱', description: '短视频脚本与分镜规划', kicker: 'UNBOXING', tone: 'from-sky-500 via-blue-500 to-indigo-700', size: 'tall' },
+  { id: 'video-store', category: '视频创作', title: '门店探店脚本', description: '从选题到成片的一站式创作', kicker: 'CITY WALK', tone: 'from-orange-300 via-rose-400 to-pink-500', size: 'wide' },
+  { id: 'video-fashion', category: '视频创作', title: '服装上身展示', description: '适合短视频平台的商品展示', kicker: 'TRY ON', tone: 'from-stone-300 via-slate-500 to-slate-800', size: 'square' },
+  { id: 'video-festival', category: '视频创作', title: '节日活动预告', description: '快速生成活动预热内容', kicker: 'COMING SOON', tone: 'from-fuchsia-500 via-violet-500 to-indigo-600', size: 'tall' },
+  { id: 'video-story', category: '视频创作', title: '产品故事短片', description: '用叙事方式讲清产品价值', kicker: 'OUR STORY', tone: 'from-amber-200 via-orange-400 to-red-500', size: 'wide' },
+  { id: 'social-redbook', category: '自媒体营销', title: '小红书种草封面', description: '提高点击率的图文封面', kicker: 'LIFESTYLE NOTE', tone: 'from-pink-300 via-rose-400 to-red-500', size: 'tall' },
+  { id: 'social-challenge', category: '自媒体营销', title: '7天打卡笔记', description: '连续内容更新模板', kicker: '7 DAY CHALLENGE', tone: 'from-emerald-200 via-teal-300 to-cyan-500', size: 'square' },
+  { id: 'social-title', category: '自媒体营销', title: '爆款标题合集', description: '多平台标题灵感整理', kicker: 'CONTENT IDEAS', tone: 'from-violet-400 via-fuchsia-400 to-pink-300', size: 'wide' },
+  { id: 'social-live', category: '自媒体营销', title: '直播预告图', description: '直播间活动预热物料', kicker: 'LIVE TONIGHT', tone: 'from-blue-600 via-indigo-600 to-purple-500', size: 'tall' },
+  { id: 'social-review', category: '自媒体营销', title: '商品测评图文', description: '清晰表达体验与结论', kicker: 'REAL REVIEW', tone: 'from-amber-200 via-yellow-300 to-lime-300', size: 'square' },
+  { id: 'office-weekly', category: '办公设计', title: '周会通知', description: '清晰传达时间与议程', kicker: 'WEEKLY MEETING', tone: 'from-blue-100 via-sky-300 to-indigo-500', size: 'wide' },
+  { id: 'office-training', category: '办公设计', title: '培训邀请函', description: '企业培训与活动邀请', kicker: 'JOIN US', tone: 'from-orange-200 via-amber-300 to-rose-400', size: 'tall' },
+  { id: 'office-hiring', category: '办公设计', title: '招聘海报', description: '招募优秀伙伴加入团队', kicker: 'WE ARE HIRING', tone: 'from-lime-200 via-green-300 to-emerald-500', size: 'square' },
+  { id: 'office-review', category: '办公设计', title: '项目复盘长图', description: '项目成果与数据总结', kicker: 'PROJECT REVIEW', tone: 'from-slate-300 via-blue-400 to-cyan-500', size: 'tall' },
+  { id: 'office-culture', category: '办公设计', title: '企业文化日签', description: '每日一句品牌价值观', kicker: 'GOOD MORNING', tone: 'from-rose-200 via-pink-300 to-orange-300', size: 'wide' },
+  { id: 'brand-system', category: '品牌设计', title: '品牌视觉方案', description: 'Logo、配色与应用规范', kicker: 'BRAND SYSTEM', tone: 'from-slate-800 via-indigo-700 to-violet-500', size: 'tall' },
+  { id: 'brand-package', category: '品牌设计', title: '包装设计提案', description: '从概念到效果图的完整方案', kicker: 'PACKAGING', tone: 'from-amber-100 via-orange-300 to-red-400', size: 'square' },
+  { id: 'brand-mascot', category: '品牌设计', title: '品牌IP形象', description: '打造可持续使用的品牌角色', kicker: 'MEET THE MASCOT', tone: 'from-sky-200 via-blue-300 to-violet-400', size: 'wide' },
+  { id: 'brand-logo', category: '品牌设计', title: 'Logo设计提案', description: '多方向探索品牌标识', kicker: 'LOGO STUDY', tone: 'from-emerald-200 via-lime-300 to-yellow-400', size: 'tall' },
+  { id: 'brand-guideline', category: '品牌设计', title: '品牌手册封面', description: '统一对外传播的视觉气质', kicker: 'BRAND GUIDE', tone: 'from-pink-300 via-fuchsia-400 to-purple-500', size: 'square' },
 ];
 
 const aiSkillRows = [
@@ -520,6 +557,7 @@ type HomeMode = (typeof modeOptions)[number]['key'];
 const navItems = [
   { label: '首页', icon: Home, active: true },
   { label: '模板', icon: LayoutTemplate },
+  { label: '技能', icon: Puzzle },
   { label: 'AI工具', icon: Sparkles },
   { label: '创建', icon: Plus },
   { label: '我的', icon: UserRound },
@@ -617,7 +655,88 @@ function WorkspaceAssetArtwork({ asset }: { asset: WorkspaceAsset }) {
   );
 }
 
-function MyWorkspacePage() {
+type WorkspaceInspirationAsset = {
+  id: string;
+  type: 'image' | 'video';
+  source: '淘宝' | '京东' | '小红书';
+  title: string;
+  note: string;
+  tone: 'warm' | 'blue' | 'pink';
+};
+
+const workspaceInspirationDemoAssets: WorkspaceInspirationAsset[] = [
+  { id: 'workspace-inspiration-1', type: 'image', source: '淘宝', title: '奶油风家居陈列', note: '商品主图 · 2小时前', tone: 'warm' },
+  { id: 'workspace-inspiration-2', type: 'video', source: '京东', title: '秋冬上新短视频', note: '商品视频 · 昨天', tone: 'blue' },
+  { id: 'workspace-inspiration-3', type: 'image', source: '小红书', title: '留白感封面排版', note: '灵感配图 · 3天前', tone: 'pink' },
+];
+
+function WorkspaceInspirationArtwork({ asset }: { asset: WorkspaceInspirationAsset }) {
+  return (
+    <div className={`workspace-inspiration-art workspace-inspiration-art--${asset.tone}`} aria-hidden="true">
+      <span className="workspace-inspiration-art__shine" />
+      <span className="workspace-inspiration-art__object workspace-inspiration-art__object--back" />
+      <span className="workspace-inspiration-art__object workspace-inspiration-art__object--front" />
+      {asset.type === 'video' && <span className="workspace-inspiration-art__play"><Play size={15} fill="currentColor" /></span>}
+      <span className="workspace-inspiration-art__source">{asset.source}</span>
+    </div>
+  );
+}
+
+function InspirationCollectionPanel({ notify }: { notify: (message: string) => void }) {
+  const [isPluginInstalled, setIsPluginInstalled] = useState(false);
+  const [assets, setAssets] = useState<WorkspaceInspirationAsset[]>([]);
+
+  const installPlugin = () => {
+    setIsPluginInstalled(true);
+    notify('采集插件安装成功，去淘宝、京东试试吧');
+  };
+
+  const showDemoAssets = () => {
+    setAssets(workspaceInspirationDemoAssets);
+    setIsPluginInstalled(true);
+    notify('已展示 3 条采集示例');
+  };
+
+  return (
+    <div className="workspace-inspiration-page">
+      {assets.length === 0 ? (
+        <section className="workspace-inspiration-empty">
+          <img className="workspace-inspiration-empty__image" src="/inspiration/inspiration-collector-empty-state.png" alt="浏览器采集图片和视频到创客贴灵感库" />
+          <div className="workspace-inspiration-empty__content">
+            <span className="workspace-inspiration-eyebrow"><Puzzle size={15} />浏览器采集插件</span>
+            <h2>开始采集你的第一条灵感</h2>
+            <p>{isPluginInstalled ? '插件已就绪，去淘宝、京东逛逛，把喜欢的图片和视频保存下来吧' : '安装插件后，在淘宝、京东看到喜欢的图片或视频，点击一下就能保存到这里。'}</p>
+            <div className="workspace-inspiration-points"><span>支持图片与视频</span><span>淘宝、京东等站点可用</span><span>回来即可继续创作</span></div>
+            <div className="workspace-inspiration-empty__actions">
+              <button type="button" className="workspace-inspiration-empty__primary" onClick={isPluginInstalled ? showDemoAssets : installPlugin}>{isPluginInstalled ? '开始采集灵感' : '安装采集插件'}<ChevronRight size={16} /></button>
+              <button type="button" className="workspace-inspiration-empty__secondary" onClick={showDemoAssets}>先看看采集后的效果</button>
+            </div>
+            <small>支持 Chrome、Edge 等主流浏览器</small>
+          </div>
+        </section>
+      ) : (
+        <section className="workspace-inspiration-library">
+          <div className="workspace-inspiration-library__toolbar">
+            <div><h2>我的灵感</h2><span>{assets.length} 条内容</span></div>
+            <div className="workspace-inspiration-library__actions"><button type="button" onClick={() => notify('筛选功能即将上线')}>全部<ChevronDown size={14} /></button><button type="button" onClick={() => notify('排序功能即将上线')}>最近采集<ChevronDown size={14} /></button></div>
+          </div>
+          <div className="workspace-inspiration-grid">
+            {assets.map((asset) => (
+              <button type="button" className="workspace-inspiration-card" key={asset.id} onClick={() => notify(`打开${asset.title}`)}>
+                <WorkspaceInspirationArtwork asset={asset} />
+                <span className="workspace-inspiration-card__title">{asset.title}</span>
+                <span className="workspace-inspiration-card__note">{asset.note}</span>
+              </button>
+            ))}
+            <button type="button" className="workspace-inspiration-add" onClick={isPluginInstalled ? showDemoAssets : installPlugin}><Plus size={28} /><strong>继续采集</strong><span>去淘宝、京东发现更多灵感</span></button>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function MyWorkspacePage({ inspirationUnread, onMarkInspirationRead }: { inspirationUnread: boolean; onMarkInspirationRead: () => void }) {
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('我的空间');
   const [activeType, setActiveType] = useState('全部');
   const [searchValue, setSearchValue] = useState('');
@@ -639,8 +758,8 @@ function MyWorkspacePage() {
     <section className="workspace-page" aria-label="我的空间">
       <div className="workspace-top-tabs">
         <div className="workspace-tab-list">
-          {['我的空间', '我的收藏', '与我协作', '包装设计', '回收站'].map((tab) => (
-            <button key={tab} type="button" className={activeWorkspaceTab === tab ? 'is-active' : ''} onClick={() => { setActiveWorkspaceTab(tab); notify(tab === '我的空间' ? '已切换到我的空间' : `${tab}功能即将上线`); }}>{tab}</button>
+          {['我的空间', '我的收藏', '灵感采集', '与我协作', '包装设计', '回收站'].map((tab) => (
+            <button key={tab} type="button" className={`relative ${activeWorkspaceTab === tab ? 'is-active' : ''}`} onClick={() => { setActiveWorkspaceTab(tab); if (tab === '灵感采集') { onMarkInspirationRead(); } else if (tab !== '我的空间') { notify(`${tab}功能即将上线`); } }}>{tab}{tab === '灵感采集' && inspirationUnread && <i className="workspace-inspiration-tab-badge" aria-label="有新的灵感采集入口" />}</button>
           ))}
         </div>
         <div className="workspace-actions">
@@ -654,6 +773,7 @@ function MyWorkspacePage() {
         </div>
       </div>
 
+      {activeWorkspaceTab === '灵感采集' ? <InspirationCollectionPanel notify={notify} /> : <>
       <div className="workspace-folder-heading"><span>文件夹 (2)</span><ChevronDown size={15} /></div>
       <div className="workspace-folders">
         <button type="button" className="workspace-folder-card workspace-folder-card--new" onClick={() => notify('已打开新建文件夹')}><FolderPlus size={25} /><span>新建文件夹</span></button>
@@ -678,6 +798,7 @@ function MyWorkspacePage() {
         ))}
         {visibleAssets.length === 0 && <div className="workspace-empty"><CircleCheck size={22} /><span>没有找到匹配的设计</span></div>}
       </div>
+      </>}
       {toast && <div className="workspace-toast" role="status">{toast}</div>}
     </section>
   );
@@ -1634,13 +1755,31 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
   const [homeAttachments, setHomeAttachments] = useState<GenerationAttachment[]>([]);
   const [skillPickerOpen, setSkillPickerOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('最近使用');
-  const [activeHomeSkillCategory, setActiveHomeSkillCategory] = useState<string | null>(null);
+  const [activeHomeSkillCategory, setActiveHomeSkillCategory] = useState('电商设计');
+  const [activeSameStyleCategory, setActiveSameStyleCategory] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
   const [membershipOpen, setMembershipOpen] = useState(false);
   const [membershipFocusMorePoints, setMembershipFocusMorePoints] = useState(false);
   const [pointsPurchaseOpen, setPointsPurchaseOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileToast, setProfileToast] = useState('');
+  const [showSkillEntryBadge, setShowSkillEntryBadge] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return window.localStorage.getItem('ckt-skills-entry-seen') !== '1';
+    } catch {
+      return true;
+    }
+  });
+  const [showInspirationOnboarding, setShowInspirationOnboarding] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return window.localStorage.getItem('ckt-inspiration-collector-guide-seen') !== '1';
+    } catch {
+      return true;
+    }
+  });
+  const [showInspirationBadge, setShowInspirationBadge] = useState(false);
   const [membershipEntryIntent] = useState(readMembershipEntryIntent);
   const [fieldValues, setFieldValues] = useState<Record<string, Record<string, FieldValue>>>({});
   const skillsRailRef = useRef<HTMLDivElement>(null);
@@ -1658,6 +1797,25 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
 
   const handleNavClick = (label: string) => {
     setActiveNav(label);
+    if (label === '我的') {
+      setShowInspirationOnboarding(false);
+      setShowInspirationBadge(true);
+      try {
+        window.localStorage.setItem('ckt-inspiration-collector-guide-seen', '1');
+      } catch {
+        // Keep the onboarding dismissed for the current session when storage is unavailable.
+      }
+      return;
+    }
+    if (label === '技能') {
+      setShowSkillEntryBadge(false);
+      try {
+        window.localStorage.setItem('ckt-skills-entry-seen', '1');
+      } catch {
+        // Keep the badge hidden for the current session when storage is unavailable.
+      }
+      return;
+    }
     if (label === '模板') {
       onOpenTemplates();
       return;
@@ -1680,31 +1838,9 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
     if (!searchTerm.trim()) return base;
     return base.filter((item) => `${item.title}${item.description}`.includes(searchTerm.trim()));
   }, [activeCategory, searchTerm]);
-  const homepageSkillRows = useMemo(() => {
-    const filteredSkills = activeHomeSkillCategory === null
-      ? agentFeaturedCards.map((card) => skills.find((skill) => skill.id === card.skillId)).filter((skill): skill is SkillDefinition => Boolean(skill))
-      : activeHomeSkillCategory === '全部技能'
-        ? skills
-        : skills.filter((skill) => skill.category === resolveSkillCategory(activeHomeSkillCategory));
-    return Array.from({ length: Math.ceil(filteredSkills.length / 6) }, (_, index) => filteredSkills.slice(index * 6, index * 6 + 6));
-  }, [activeHomeSkillCategory]);
-  const homepageFeaturedCards = useMemo(() => homepageSkillRows.flat().map((skill, index) => {
-    const original = agentFeaturedCards.find((card) => card.skillId === skill.id);
-    return {
-      title: skill.title,
-      desc: original?.desc ?? skill.description,
-      art: original?.art ?? ['poster', 'commerce-set', 'ppt', 'detail', 'recruitment', 'cutout'][index % 6],
-      skillId: skill.id,
-    };
-  }), [homepageSkillRows]);
-  const homepageSkillHeading = activeHomeSkillCategory === null
-    ? '精选技能'
-    : activeHomeSkillCategory === '全部技能'
-      ? '全部技能'
-      : `${getSkillCategoryLabel(activeHomeSkillCategory)}技能`;
-  const visibleSameStyleCards = activeHomeSkillCategory === null
-    ? agentSameStyleCards
-    : agentSameStyleCards.filter((card) => card.category === resolveSkillCategory(activeHomeSkillCategory));
+  const visibleSameStyleCards = activeSameStyleCategory === null
+    ? agentSameStyleGallery
+    : agentSameStyleGallery.filter((card) => card.category === activeSameStyleCategory);
 
   const selectedValues = selectedSkill ? fieldValues[selectedSkill.id] ?? {} : {};
   const promptPreview = selectedSkill ? makePrompt(selectedSkill, selectedValues) : '';
@@ -1882,7 +2018,10 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             const Icon = item.icon;
             return <React.Fragment key={item.label}>
               {item.label === '我的' ? <div className="my-1 h-px w-[52px] bg-[#e1e7f1]" /> : null}
-              <button type="button" onClick={() => handleNavClick(item.label)} className={`flex w-[62px] flex-col items-center gap-1 rounded-[12px] py-2 text-[11px] transition ${activeNav === item.label ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'text-[#596986] hover:bg-white/80'}`}><Icon className="h-[22px] w-[22px]" /><span>{item.label}</span></button>
+              <div className="relative">
+                <button type="button" onClick={() => handleNavClick(item.label)} className={`relative flex w-[62px] flex-col items-center gap-1 rounded-[12px] py-2 text-[11px] transition ${activeNav === item.label ? 'bg-[#d9eaff] font-medium text-[#1f75ed]' : 'text-[#596986] hover:bg-white/80'}`}><Icon className="h-[22px] w-[22px]" /><span>{item.label}</span>{item.label === '技能' && showSkillEntryBadge ? <i className="absolute right-[9px] top-[5px] h-2.5 w-2.5 rounded-full bg-[#ff5b5f] ring-2 ring-[#f4f8ff]" aria-label="有新技能" /> : null}{item.label === '我的' && showInspirationBadge ? <i className="absolute right-[9px] top-[5px] h-2.5 w-2.5 rounded-full bg-[#ff5b5f] ring-2 ring-[#f4f8ff]" aria-label="有新的灵感采集" /> : null}</button>
+                {item.label === '我的' && showInspirationOnboarding ? <div className="inspiration-nav-guide" role="status"><button type="button" className="inspiration-nav-guide__close" onClick={() => setShowInspirationOnboarding(false)} aria-label="关闭引导">×</button><strong>发现灵感采集</strong><p>在淘宝、京东看到喜欢的图片或视频？安装采集插件，一键保存到我的灵感库，回来继续创作。</p><button type="button" className="inspiration-nav-guide__action" onClick={() => handleNavClick('我的')}>去看看</button></div> : null}
+              </div>
             </React.Fragment>;
           })}
         </div>
@@ -1920,7 +2059,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
       </header>
 
       <main className={`ml-[92px] pt-[86px] ${activeNav === '我的' || activeNav === '团队' || activeNav === '管理' ? 'workspace-main' : ''}`}>
-        {activeNav === '我的' ? <MyWorkspacePage /> : activeNav === '团队' ? <TeamWorkspacePage /> : activeNav === '管理' ? <TeamManagementPage onOpenMembership={(focusMorePoints) => { setMembershipFocusMorePoints(focusMorePoints); setMembershipOpen(true); }} onOpenPointsPurchase={() => setPointsPurchaseOpen(true)} /> : <>
+        {activeNav === '技能' ? <SkillsDirectoryPage sections={skillDirectorySections} onSelectSkill={selectSkillFromChip} /> : activeNav === '我的' ? <MyWorkspacePage inspirationUnread={showInspirationBadge} onMarkInspirationRead={() => setShowInspirationBadge(false)} /> : activeNav === '团队' ? <TeamWorkspacePage /> : activeNav === '管理' ? <TeamManagementPage onOpenMembership={(focusMorePoints) => { setMembershipFocusMorePoints(focusMorePoints); setMembershipOpen(true); }} onOpenPointsPurchase={() => setPointsPurchaseOpen(true)} /> : <>
         <section className={`relative ${mode === 'templates' ? 'min-h-[382px]' : 'min-h-[360px]'} overflow-hidden bg-[radial-gradient(ellipse_at_50%_16%,#e9ecff_0%,#f8f9ff_42%,#ffffff_80%)] px-6 pb-8 pt-[42px]`}>
           <div className="pointer-events-none absolute left-[27%] top-0 h-60 w-60 rounded-full bg-white/80 blur-3xl" />
           <div className="pointer-events-none absolute right-[23%] top-6 h-64 w-64 rounded-full bg-[#dce4ff]/55 blur-3xl" />
@@ -1983,33 +2122,21 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
 
         {mode === 'agent' ? (
           <section className="mx-auto max-w-[1920px] space-y-8 px-[42px] pb-16">
-            <section>
-              <div className="mb-4 flex items-center justify-between"><h2 className="text-[24px] font-semibold text-[#28344c]">{homepageSkillHeading}</h2><button type="button" onClick={() => openSkillPicker('全部技能')} className="flex items-center gap-1 text-[13px] text-[#8490a6] transition hover:text-[#4b77d3]">更多<ChevronRight className="h-4 w-4" /></button></div>
-              <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <div className="flex w-max gap-5 pb-1">
-                  {homepageFeaturedCards.map((card) => (
-                    <button key={card.title} type="button" onClick={() => selectSkillFromChip(card.skillId)} className="relative flex h-[118px] w-[310px] shrink-0 items-center justify-between overflow-hidden rounded-[18px] bg-[#f3f6fc] px-5 py-3.5 text-left transition hover:-translate-y-0.5 hover:bg-[#edf3ff]">
-                      <span className="min-w-0 pr-2"><span className="block truncate text-[17px] font-semibold text-[#29364f]">{card.title}</span><span className="mt-2 block truncate text-[13px] text-[#9aa8bf]">{card.desc}</span></span>
-                      <FeatureArt kind={card.art} />
-                    </button>
-                  ))}
-                  {homepageFeaturedCards.length === 0 ? <div className="rounded-[16px] bg-[#f3f6fc] px-5 py-8 text-[13px] text-[#9aa8bf]">当前分类暂无技能</div> : null}
-                </div>
-              </div>
-            </section>
+            <SkillsCategoryShowcase sections={skillDirectorySections} activeCategory={activeHomeSkillCategory} onCategoryChange={setActiveHomeSkillCategory} onSelectSkill={selectSkillFromChip} />
 
             <section>
-              <h2 className="mb-4 text-[24px] font-semibold text-[#28344c]">一键同款</h2>
+              <div className="mb-4 flex items-center justify-between"><div><h2 className="text-[24px] font-semibold text-[#28344c]">一键同款</h2><p className="mt-1 text-[12px] text-[#9aa6bb]">按设计场景浏览相关灵感，选择后可继续使用对应技能</p></div>{activeSameStyleCategory ? <button type="button" onClick={() => setActiveSameStyleCategory(null)} className="text-[12px] text-[#8490a6] hover:text-[#4b77d3]">查看全部</button> : null}</div>
               <div className="mb-5 flex flex-wrap gap-3">
                 {agentQuickCards.map((card, index) => {
-                  const active = activeHomeSkillCategory === card.category || (activeHomeSkillCategory === null && index === 0);
-                  return <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className={`rounded-full px-4 py-2 text-[14px] font-medium ${active ? 'bg-[#eef0ff] text-[#5c64ca]' : 'bg-[#f2f4f9] text-[#69758c]'} transition hover:bg-[#e7edff]`}>{index === 0 ? '🎨' : index === 1 ? '💰' : index === 2 ? '🎬' : index === 3 ? '🔥' : index === 4 ? '📄' : '🟢'}{card.title}</button>;
+                  const active = activeSameStyleCategory === card.directoryCategory;
+                  return <button key={card.title} type="button" onClick={() => setActiveSameStyleCategory(card.directoryCategory)} className={`rounded-full px-4 py-2 text-[14px] font-medium ${active ? 'bg-[#eef0ff] text-[#5c64ca]' : 'bg-[#f2f4f9] text-[#69758c]'} transition hover:bg-[#e7edff]`}>{index === 0 ? '🎨' : index === 1 ? '💰' : index === 2 ? '🎬' : index === 3 ? '🔥' : index === 4 ? '📄' : '🟢'}{card.title}</button>;
                 })}
               </div>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+              <div className="agent-same-style-masonry">
                 {visibleSameStyleCards.map((card) => (
-                  <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className="group relative overflow-hidden rounded-[16px] bg-[#f3f5f9] p-2 text-left transition hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(54,70,107,0.14)]">
-                    <div className={`relative flex aspect-[1.1] items-center justify-center overflow-hidden rounded-[11px] bg-gradient-to-br ${card.tone} p-4 text-center text-white`}><span className="absolute inset-3 rounded border border-white/25" /><span className="relative drop-shadow-lg"><span className="block text-[11px] font-medium tracking-[0.12em]">{card.kicker}</span><span className="mt-4 block text-[24px] font-black leading-tight">{card.title}</span><span className="mt-3 block text-[9px] opacity-85">CREATE · INSPIRE</span></span><span className="absolute -bottom-6 -right-2 h-24 w-24 rounded-full bg-white/20 blur-xl" /></div>
+                  <button key={card.id} type="button" onClick={() => setActiveSameStyleCategory(card.category)} className="agent-same-style-card group">
+                    <div className={`agent-same-style-card__art agent-same-style-card__art--${card.size} bg-gradient-to-br ${card.tone}`}><span className="agent-same-style-card__glow" /><span className="agent-same-style-card__frame" /><span className="agent-same-style-card__copy"><span>{card.kicker}</span><strong>{card.title}</strong><small>{card.description}</small></span></div>
+                    <span className="agent-same-style-card__meta"><strong>{card.title}</strong><span>{card.description}</span></span>
                   </button>
                 ))}
               </div>
@@ -2049,12 +2176,6 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             </div>
           </section>
         )}
-
-        {mode === 'agent' ? (
-          <section className="mx-auto max-w-[1920px] space-y-8 px-6 pb-12">
-            {agentGallerySections.map((section) => <TemplateGallerySection key={section.title} section={section} />)}
-          </section>
-        ) : null}
 
         {mode === 'templates' ? (
           <section className="mx-auto max-w-[1920px] px-[42px] pb-16">

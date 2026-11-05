@@ -1,0 +1,106 @@
+{
+  "schema": "code-video-script/1",
+  "id": "reference-style-layout-6",
+  "templateId": "knowledge-explainer-sketchnote",
+  "contractVersion": "1.0.0",
+  "title": "费曼学习法",
+  "subtitle": "用“讲给别人听”来学",
+  "durationSeconds": 33.2,
+  "timingStatus": "planned",
+  "voice": {
+    "mode": "recorded-or-tts",
+    "sourceText": "examples/reference-style-narration-v14.txt",
+    "segments": [
+      { "id": "voice-01", "start": 0, "end": 4.2, "text": "费曼学习法，可以拆成六个动作。" },
+      { "id": "voice-02", "start": 4.2, "end": 8.6, "text": "第一步，先确定一个要弄懂的主题。" },
+      { "id": "voice-03", "start": 8.6, "end": 13, "text": "第二步，把它讲给一个完全不懂的人听。" },
+      { "id": "voice-04", "start": 13, "end": 17.4, "text": "第三步，把自己讲不清楚的地方记下来。" },
+      { "id": "voice-05", "start": 17.4, "end": 21.8, "text": "第四步，回到原理，针对卡点重新查资料。" },
+      { "id": "voice-06", "start": 21.8, "end": 26.2, "text": "第五步，换一种更生活化的说法。" },
+      { "id": "voice-07", "start": 26.2, "end": 30.2, "text": "第六步，再讲一遍，直到别人真的听懂。" },
+      { "id": "voice-08", "start": 30.2, "end": 33.2, "text": "能讲清楚，才是真的懂了。" }
+    ]
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "start": 0,
+      "end": 4.2,
+      "voiceSegmentId": "voice-01",
+      "caption": "费曼学习法，可以拆成六个动作。",
+      "layoutAnchor": "title",
+      "content": { "title": "费曼学习法", "subtitle": "用“讲给别人听”来学", "emphasis": "讲给别人听" }
+    },
+    {
+      "id": "step-1",
+      "kind": "step",
+      "start": 4.2,
+      "end": 8.6,
+      "voiceSegmentId": "voice-02",
+      "caption": "第一步，先确定一个要弄懂的主题。",
+      "layoutAnchor": "step-1",
+      "content": { "number": "1", "label": "选一个概念", "note": "先确定要弄懂的主题", "iconId": "bulb" }
+    },
+    {
+      "id": "step-2",
+      "kind": "step",
+      "start": 8.6,
+      "end": 13,
+      "voiceSegmentId": "voice-03",
+      "caption": "第二步，把它讲给一个完全不懂的人听。",
+      "layoutAnchor": "step-2",
+      "content": { "number": "2", "label": "讲给外行听", "note": "不用术语，像讲给孩子", "iconId": "chat", "connectorAssetId": "curve-arrow", "connectsFrom": "step-1" }
+    },
+    {
+      "id": "step-3",
+      "kind": "step",
+      "start": 13,
+      "end": 17.4,
+      "voiceSegmentId": "voice-04",
+      "caption": "第三步，把自己讲不清楚的地方记下来。",
+      "layoutAnchor": "step-3",
+      "content": { "number": "3", "label": "记录卡点", "note": "把讲不清楚的地方记下来", "iconId": "book", "connectorAssetId": "curve-arrow", "connectsFrom": "step-2" }
+    },
+    {
+      "id": "step-4",
+      "kind": "step",
+      "start": 17.4,
+      "end": 21.8,
+      "voiceSegmentId": "voice-05",
+      "caption": "第四步，回到原理，针对卡点重新查资料。",
+      "layoutAnchor": "step-4",
+      "content": { "number": "4", "label": "回到原理", "note": "针对卡点重新查资料", "iconId": "spiral", "connectorAssetId": "curve-arrow", "connectsFrom": "step-3" }
+    },
+    {
+      "id": "step-5",
+      "kind": "step",
+      "start": 21.8,
+      "end": 26.2,
+      "voiceSegmentId": "voice-06",
+      "caption": "第五步，换一种更生活化的说法。",
+      "layoutAnchor": "step-5",
+      "content": { "number": "5", "label": "换种说法", "note": "用生活中的例子解释", "iconId": "chat", "connectorAssetId": "curve-arrow", "connectsFrom": "step-4" }
+    },
+    {
+      "id": "step-6",
+      "kind": "step",
+      "start": 26.2,
+      "end": 30.2,
+      "voiceSegmentId": "voice-07",
+      "caption": "第六步，再讲一遍，直到别人真的听懂。",
+      "layoutAnchor": "step-6",
+      "content": { "number": "6", "label": "再讲一遍", "note": "直到别人真的听懂为止", "iconId": "bulb", "connectorAssetId": "curve-arrow", "connectsFrom": "step-5" }
+    },
+    {
+      "id": "conclusion",
+      "kind": "conclusion",
+      "start": 30.2,
+      "end": 33.2,
+      "voiceSegmentId": "voice-08",
+      "caption": "能讲清楚，才是真的懂了。",
+      "layoutAnchor": "overview",
+      "content": { "text": "能讲清楚，才是真的懂了。", "connectorAssetId": "guide-dash" }
+    }
+  ]
+}

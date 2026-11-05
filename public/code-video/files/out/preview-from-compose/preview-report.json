@@ -1,0 +1,52 @@
+{
+  "schema": "code-video-preview/1",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "files": [
+    {
+      "time": 0,
+      "file": "out/preview-from-compose/frame-0000.png"
+    },
+    {
+      "time": 6,
+      "file": "out/preview-from-compose/frame-0001.png"
+    },
+    {
+      "time": 11.9,
+      "file": "out/preview-from-compose/frame-0002.png"
+    }
+  ],
+  "timeline": {
+    "intro": 1.2,
+    "itemDuration": 1.2,
+    "conclusionStart": 8,
+    "conclusionEnd": 12,
+    "items": [
+      {
+        "label": "理解需求",
+        "note": [
+          "明确目标和边界"
+        ],
+        "index": 0,
+        "start": 1.2
+      },
+      {
+        "label": "拆分任务",
+        "note": [
+          "分配给合适的子 Agent"
+        ],
+        "index": 1,
+        "start": 3.4000000000000004
+      },
+      {
+        "label": "汇总结果",
+        "note": [
+          "统一检查并输出"
+        ],
+        "index": 2,
+        "start": 5.6000000000000005
+      }
+    ]
+  }
+}

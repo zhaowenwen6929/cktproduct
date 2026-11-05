@@ -1,0 +1,30 @@
+{
+  "$schema": "https://motiongit.com/schema/motion/0.1.json",
+  "format": "code-video-template",
+  "specVersion": "0.1.0-demo",
+  "template": {
+    "id": "dot-notebook-step-sequence",
+    "version": "0.1.0",
+    "name": "点阵手账步骤讲解",
+    "status": "experimental"
+  },
+  "runtime": {
+    "profile": "html-canvas/1",
+    "entry": "src/render.mjs"
+  },
+  "parameters": {
+    "schema": "template/params.schema.json"
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "durationPolicy": "fixed-or-parameter"
+  },
+  "permissions": {
+    "network": false
+  },
+  "ai": {
+    "guide": "template/guide.md"
+  }
+}

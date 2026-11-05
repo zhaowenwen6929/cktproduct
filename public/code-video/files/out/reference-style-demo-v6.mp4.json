@@ -1,0 +1,27 @@
+{
+  "schema": "code-video-reference-style-render/1",
+  "output": "out/reference-style-demo-v6.mp4",
+  "sha256": "1fc91dc774ab7205ec575c56de3d054ee0bf8c6dc45fac5745741e701ea973c0",
+  "expected": {
+    "width": 1280,
+    "height": 720,
+    "fps": 60,
+    "frames": 1200
+  },
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "60/1",
+        "nb_frames": "1200"
+      }
+    ],
+    "format": {
+      "duration": "20.000000"
+    }
+  }
+}

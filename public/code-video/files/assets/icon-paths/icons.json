@@ -1,0 +1,201 @@
+{
+  "schema": "code-video-icon-paths/1",
+  "defaultStyle": {
+    "stroke": "#243553",
+    "strokeWidth": 2.7,
+    "lineCap": "round",
+    "lineJoin": "round",
+    "fill": "none",
+    "handDrawn": {
+      "displacement": 0.75
+    }
+  },
+  "icons": [
+    {
+      "id": "bulb",
+      "name": "灯泡",
+      "viewBox": "0 0 100 100",
+      "source": {
+        "name": "Lucide",
+        "version": "0.546.0",
+        "license": "ISC",
+        "url": "https://lucide.dev/icons/lightbulb"
+      },
+      "display": {
+        "scale": 2.2,
+        "centerY": 47
+      },
+      "render": {
+        "scale": 1.65,
+        "centerY": 47
+      },
+      "paths": [
+        {
+          "id": "outline",
+          "order": 1,
+          "kind": "stroke",
+          "strokeWidth": 2.9,
+          "durationWeight": 2.4,
+          "d": "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5",
+          "transform": "translate(32 23) scale(2)"
+        },
+        {
+          "id": "base-top",
+          "order": 2,
+          "kind": "stroke",
+          "strokeWidth": 2.6,
+          "durationWeight": 0.8,
+          "d": "M9 18h6",
+          "transform": "translate(32 23) scale(2)"
+        },
+        {
+          "id": "base-bottom",
+          "order": 3,
+          "kind": "stroke",
+          "strokeWidth": 2.6,
+          "durationWeight": 0.55,
+          "d": "M10 22h4",
+          "transform": "translate(32 23) scale(2)"
+        },
+        {
+          "id": "ray-top",
+          "order": 4,
+          "kind": "stroke",
+          "durationWeight": 0.45,
+          "d": "M12 1v2",
+          "transform": "translate(26 19) scale(2)"
+        },
+        {
+          "id": "ray-left",
+          "order": 5,
+          "kind": "stroke",
+          "durationWeight": 0.45,
+          "d": "m4.22 4.22 1.42 1.42",
+          "transform": "translate(26 23) scale(2)"
+        },
+        {
+          "id": "ray-right",
+          "order": 6,
+          "kind": "stroke",
+          "durationWeight": 0.45,
+          "d": "m19.78 4.22-1.42 1.42",
+          "transform": "translate(30 23) scale(2)"
+        }
+      ]
+    },
+    {
+      "id": "chat",
+      "name": "聊天框",
+      "viewBox": "0 0 100 100",
+      "source": {
+        "name": "Lucide",
+        "version": "0.546.0",
+        "license": "ISC",
+        "url": "https://lucide.dev/icons/message-square"
+      },
+      "display": {
+        "scale": 1.25,
+        "centerY": 52
+      },
+      "render": {
+        "scale": 0.9,
+        "centerY": 52
+      },
+      "paths": [
+        {
+          "id": "bubble",
+          "order": 1,
+          "kind": "stroke",
+          "strokeWidth": 2.8,
+          "durationWeight": 2.8,
+          "d": "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",
+          "transform": "translate(5 8) scale(3.8)"
+        },
+        {
+          "id": "line-top",
+          "order": 2,
+          "kind": "stroke",
+          "durationWeight": 0.7,
+          "d": "M7 10h10",
+          "transform": "translate(5 8) scale(3.8)"
+        },
+        {
+          "id": "line-bottom",
+          "order": 3,
+          "kind": "stroke",
+          "durationWeight": 0.6,
+          "d": "M7 14h7",
+          "transform": "translate(5 8) scale(3.8)"
+        }
+      ]
+    },
+    {
+      "id": "book",
+      "name": "书本",
+      "viewBox": "0 0 100 100",
+      "source": {
+        "name": "Lucide",
+        "version": "0.546.0",
+        "license": "ISC",
+        "url": "https://lucide.dev/icons/book-open"
+      },
+      "display": {
+        "scale": 1.28,
+        "centerY": 52
+      },
+      "render": {
+        "scale": 0.92,
+        "centerY": 52
+      },
+      "paths": [
+        {
+          "id": "book-outline",
+          "order": 1,
+          "kind": "stroke",
+          "strokeWidth": 2.9,
+          "durationWeight": 2.8,
+          "d": "M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z",
+          "transform": "translate(8 8) scale(3.7)"
+        },
+        {
+          "id": "book-spine",
+          "order": 2,
+          "kind": "stroke",
+          "strokeWidth": 2.7,
+          "durationWeight": 0.75,
+          "d": "M12 7v14",
+          "transform": "translate(8 8) scale(3.7)"
+        }
+      ]
+    },
+    {
+      "id": "spiral",
+      "name": "旋涡",
+      "viewBox": "0 0 100 100",
+      "source": {
+        "name": "Chuangkit whiteboard redraw",
+        "version": "0.1.0",
+        "license": "Internal"
+      },
+      "display": {
+        "scale": 2.45,
+        "centerY": 48
+      },
+      "render": {
+        "scale": 1.55,
+        "centerY": 48
+      },
+      "paths": [
+        {
+          "id": "spiral-line",
+          "order": 1,
+          "kind": "stroke",
+          "strokeWidth": 2.45,
+          "durationWeight": 1,
+          "d": "M52.00 50.00 L52.29 50.39 L52.49 50.87 L52.60 51.42 L52.57 52.03 L52.42 52.67 L52.11 53.30 L51.66 53.90 L51.06 54.44 L50.33 54.87 L49.48 55.17 L48.55 55.33 L47.55 55.30 L46.52 55.08 L45.50 54.66 L44.53 54.04 L43.65 53.22 L42.90 52.21 L42.31 51.05 L41.92 49.74 L41.77 48.34 L41.86 46.88 L42.21 45.41 L42.84 43.97 L43.74 42.62 L44.89 41.41 L46.27 40.38 L47.86 39.58 L49.61 39.05 L51.48 38.82 L53.41 38.91 L55.35 39.35 L57.23 40.13 L59.00 41.24 L60.60 42.68 L61.96 44.41 L63.03 46.39 L63.77 48.57 L64.13 50.90 L64.10 53.31 L63.65 55.73 L62.77 58.09 L61.49 60.32 L59.81 62.33 L57.78 64.07 L55.44 65.47 L52.85 66.48 L50.07 67.04 L47.18 67.13 L44.27 66.73 L41.42 65.82 L38.71 64.43 L36.23 62.56 L34.06 60.27 L32.28 57.61 L30.96 54.63 L30.13 51.42 L29.85 48.07 L30.14 44.67 L31.02 41.31 L32.46 38.09 L34.45 35.12 L36.95 32.49 L39.90 30.28 L43.22 28.57 L46.84 27.42 L50.64 26.89 L54.54 27.00 L58.41 27.78 L62.15 29.21 L65.64 31.27 L68.78 33.93 L71.47 37.11 L73.61 40.74 L75.13 44.73 L75.98 48.97 L76.11 53.34 L75.49 57.73 L74.14 62.00 L72.07 66.03",
+          "transform": "translate(12 12) scale(0.76)"
+        }
+      ]
+    }
+  ]
+}

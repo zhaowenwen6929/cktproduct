@@ -1,0 +1,41 @@
+{
+  "schema": "code-video-narration-sfx-mix/1",
+  "output": "out/reference-style-demo-v4-voice.mp4",
+  "sourceVideo": "out/reference-style-demo-v4.mp4",
+  "sourceNarration": "out/reference-style-demo-narration-v4.m4a",
+  "effects": [
+    2800,
+    6300,
+    9800,
+    13100,
+    15400
+  ],
+  "sha256": "1251a4408c3b50b4924e8d425857cce5cafed63e8c4170ddc70e306eecd903c3",
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "60/1",
+        "nb_frames": "1200"
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "nb_frames": "939"
+      }
+    ],
+    "format": {
+      "duration": "20.000000"
+    }
+  }
+}
