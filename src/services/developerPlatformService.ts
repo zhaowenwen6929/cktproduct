@@ -1,4 +1,4 @@
-import { createDeveloperPlatformAdminApp, developerPlatformAdminSdkModulesFallback, getDeveloperAppConfig, getDeveloperPlatformAdminStore, type AdminApp, type AdminCapability, type AdminChannelId, type AdminSdkModule, type AdminTask, type DeveloperAppConfig } from './developerPlatformAdminService';
+import { createAdminAuditLog, createDeveloperPlatformAdminApp, developerPlatformAdminSdkModulesFallback, getDeveloperAppConfig, getDeveloperPlatformAdminStore, saveDeveloperPlatformAdminStore, type AdminApp, type AdminCapability, type AdminChannelId, type AdminSdkModule, type AdminTask, type DeveloperAppConfig } from './developerPlatformAdminService';
 
 export type DeveloperPlatformStatus = '已开放' | '已有接口' | 'SDK 支持' | '内测中' | '即将开放' | '规划中' | '维护中' | '已废弃' | '已下线';
 
@@ -81,6 +81,7 @@ export type DeveloperConsoleApp = {
   type: string;
   owner: string;
   organization: string;
+  authorizedUsers: number;
   integrations: string[];
   status: '运行中' | '已停用' | '草稿';
   calls: string;
@@ -140,6 +141,7 @@ const mapAdminAppToConsoleApp = (app: AdminApp): DeveloperConsoleApp => ({
   type: app.organization === DEVELOPER_CONSOLE_ORGANIZATION ? '企业应用' : '组织应用',
   owner: app.developer,
   organization: app.organization,
+  authorizedUsers: app.authorizedUsers,
   integrations: app.integrations.map((channel) => CONSOLE_CHANNEL_LABELS[channel]),
   status: app.status === '待审核' ? '草稿' : app.status,
   calls: app.calls >= 1000 ? `${(app.calls / 1000).toFixed(1)}k` : String(app.calls),
@@ -151,6 +153,21 @@ const mapAdminAppToConsoleApp = (app: AdminApp): DeveloperConsoleApp => ({
   quotas: app.quotas ?? { apiRequests: 100000, aiPoints: 5000 },
   scopes: app.scopes,
 });
+
+export function updateDeveloperConsoleAppScopes(appId: string, scopes: string[]): DeveloperConsoleApp | undefined {
+  const store = getDeveloperPlatformAdminStore();
+  const appIndex = store.apps.findIndex((item) => item.appId === appId);
+  if (appIndex < 0) return undefined;
+  const current = store.apps[appIndex];
+  const nextApp = { ...current, scopes, lastCall: current.lastCall };
+  const nextStore = {
+    ...store,
+    apps: store.apps.map((item, index) => index === appIndex ? nextApp : item),
+    auditLogs: [createAdminAuditLog('应用管理', '调整 Scope', current.name, current.scopes.join(', ') || '—', scopes.join(', ') || '—'), ...store.auditLogs],
+  };
+  saveDeveloperPlatformAdminStore(nextStore);
+  return mapAdminAppToConsoleApp(nextApp);
+}
 
 export function getDeveloperPlatformConsoleApps(organization = DEVELOPER_CONSOLE_ORGANIZATION, user = DEVELOPER_CONSOLE_USER): DeveloperConsoleApp[] {
   const store = getDeveloperPlatformAdminStore();
@@ -499,7 +516,7 @@ const buildAdminCapabilityEntries = (capabilities: AdminCapability[]): Developer
   }));
 };
 
-export function getDeveloperPlatformCapabilitiesForApp(data: DeveloperCapabilitiesResponse, app: DeveloperConsoleApp): DeveloperCapabilitiesResponse {
+export function getDeveloperPlatformCapabilitiesForApp(data: DeveloperCapabilitiesResponse, app: Pick<DeveloperConsoleApp, 'scopes'>): DeveloperCapabilitiesResponse {
   const scopes = new Set(app.scopes);
   return {
     ...data,

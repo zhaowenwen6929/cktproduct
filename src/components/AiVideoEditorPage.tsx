@@ -105,7 +105,7 @@ const formatLongTime = (seconds: number) => {
   return `${minutes}:${remainder}:00`;
 };
 
-const timelineTicks = ['00:00', '00:03', '00:06', '00:09', '00:12', '00:15', '00:18', '00:21', '00:24', '00:27'];
+const timelineTicks = ['00:00', '00:08', '00:16', '00:24', '00:32', '00:40', '00:48', '00:56', '01:04', '01:12'];
 
 const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
   { id: 'media', label: '素材', icon: Film },
@@ -155,7 +155,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [videoName, setVideoName] = useState('灵感短片 · 版本 01');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(27.4);
+  const [duration, setDuration] = useState(72.2);
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isThinking, setIsThinking] = useState(false);
@@ -347,7 +347,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const handleVideoMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
-    if (Number.isFinite(video.duration) && video.duration > 0) setDuration(video.duration);
+    if (videoSource !== DEFAULT_VIDEO && Number.isFinite(video.duration) && video.duration > 0) setDuration(video.duration);
   };
 
   const renderWorkflowContent = () => {
@@ -451,6 +451,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const card = workflowStage === 'script' ? renderScriptCard() : workflowStage === 'voice' ? renderVoiceCard() : workflowStage === 'storyboard' ? renderStoryboardCard() : workflowStage === 'mg' ? renderMgCard() : renderFinalCard();
     return <div className="ai-video-editor-chat-content"><div className="ai-video-editor-chat-scroll">{renderMessages()}{card}{isThinking && <div className="ai-video-editor-message ai-video-editor-message--assistant"><div className="ai-video-editor-message-avatar"><Sparkles size={12} /></div><div className="ai-video-editor-message-bubble ai-video-editor-thinking"><i /><i /><i /></div></div>}<div ref={chatEndRef} /></div><div className="ai-video-editor-suggestion-title">{workflowStage === 'script' ? '你也可以告诉我' : workflowStage === 'storyboard' ? '需要调整分镜？' : '继续告诉 AI 你想怎么改'}</div><div className="ai-video-editor-suggestions">{workflowStage === 'script' ? <><button type="button" onClick={() => handleSend('让旁白更口语化一些')}><AlignLeft size={14} /> 让旁白更口语化 <ChevronRight size={13} /></button><button type="button" onClick={() => setIsScriptEditorOpen(true)}><Table2 size={14} /> 打开全屏表格编辑 <ChevronRight size={13} /></button></> : workflowStage === 'storyboard' ? <><button type="button" onClick={() => setIsStoryboardEditorOpen(true)}><Table2 size={14} /> 全屏编辑分镜表格 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('把第 1 镜改成更有冲击力的开场')}><WandSparkles size={14} /> 调整镜头节奏 <ChevronRight size={13} /></button></> : <><button type="button" onClick={() => handleSend('让画面节奏更紧凑一些')}><Scissors size={14} /> 调整节奏 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('配一首更有纪录片质感的音乐')}><Music2 size={14} /> 调整配乐 <ChevronRight size={13} /></button></>}</div><div className="ai-video-editor-composer"><textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder={workflowStage === 'script' ? '输入你对脚本的修改意见…' : '告诉 AI 你想怎么改…'} rows={2} /><div className="ai-video-editor-composer-footer"><button type="button" onClick={() => notify('附件上传面板已打开')}><Plus size={15} /></button><span>Enter 发送</span><button type="button" className="ai-video-editor-send" onClick={() => handleSend()} disabled={!chatInput.trim() || isThinking}><Send size={14} /></button></div></div></div>;
   };
+
+  const isFinalTimelineReady = finalStatus === 'done';
 
   return (
     <div className="ai-video-editor-shell">
@@ -575,7 +577,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
               </div>
             </section>
 
-            <section className="ai-video-editor-timeline-panel">
+            <section className={`ai-video-editor-timeline-panel${isFinalTimelineReady ? ' is-complete' : ''}`}>
               <div className="ai-video-editor-timeline-head">
                 <div className="ai-video-editor-timeline-actions">
                   <button type="button" onClick={() => notify('已撤销剪辑操作')}><Undo2 size={15} /></button>
@@ -610,27 +612,62 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     </div>
                   </div>
                 </div>
-                <div className="ai-video-editor-track-row">
-                  <div className="ai-video-editor-track-label"><Sparkles size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
-                  <div className="ai-video-editor-track-content">
-                    {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Sparkles size={13} /> 6 个 MG 镜头与文字层 <span>33s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
+                {isFinalTimelineReady ? <>
+                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                    <div className="ai-video-editor-track-label"><Subtitles size={14} /><span>字幕</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
+                      {scriptDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--subtitle" key={row.id} onClick={() => notify(`已定位到旁白片段 ${row.id}`)} style={{ width: `${11 + (row.id % 3) * 2}%` }}><span>{row.narration.slice(0, 9)}…</span></button>)}
+                    </div>
                   </div>
-                </div>
-                <div className="ai-video-editor-track-row">
-                  <div className="ai-video-editor-track-label"><Subtitles size={14} /><span>字幕</span><MoreHorizontal size={14} /></div>
-                  <div className="ai-video-editor-track-content">
-                    {hasCaptions || hasMgLayers ? <div className="ai-video-editor-caption-clip"><Subtitles size={13} /> {hasMgLayers ? '文字层 / 字幕' : '自动字幕'} <span>27.4s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频加上自动字幕')}><Plus size={13} /> 点击让 AI 生成字幕</button>}
+                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                    <div className="ai-video-editor-track-label"><Sparkles size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
+                      {storyboardDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--mg" key={row.id} onClick={() => notify(`已定位到第 ${row.id} 镜`)} style={{ width: `${13 + (row.id % 2) * 3}%` }}><img src={poster || DEFAULT_POSTER} alt="" /><span>{row.title.replace(/片段 \d+ · /, '')}</span></button>)}
+                    </div>
                   </div>
-                </div>
-                <div className="ai-video-editor-track-row">
-                  <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>音频</span><MoreHorizontal size={14} /></div>
-                  <div className="ai-video-editor-track-content">
-                    {hasVoiceover || hasMusic ? <div className="ai-video-editor-audio-clip"><div className="ai-video-editor-waveform">{Array.from({ length: 54 }, (_, index) => <i key={index} style={{ height: `${14 + ((index * 17) % 28)}%` }} />)}</div><span><FileAudio size={12} /> {hasVoiceover ? `${selectedVoice} · 旁白音频` : 'Morning Lights · AI 推荐'}</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频配一首轻快的音乐')}><Plus size={13} /> 添加背景音乐</button>}
+                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                    <div className="ai-video-editor-track-label"><TextCursorInput size={14} /><span>文字层</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
+                      {storyboardDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--text" key={row.id} onClick={() => notify(`已定位到文字层：${row.text}`)} style={{ width: `${13 + (row.id % 2) * 3}%` }}><span>{row.text}</span></button>)}
+                    </div>
                   </div>
-                </div>
+                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                    <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>口播声音</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
+                      {scriptDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--voice" key={row.id} onClick={() => notify(`已定位到口播片段 ${row.id}`)} style={{ width: `${11 + (row.id % 3) * 2}%` }}><div className="ai-video-editor-mini-wave">{Array.from({ length: 12 }, (_, index) => <i key={index} style={{ height: `${22 + ((index * row.id * 13) % 62)}%` }} />)}</div><span>{selectedVoice} · {row.id.toString().padStart(2, '0')}</span></button>)}
+                    </div>
+                  </div>
+                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                    <div className="ai-video-editor-track-label"><Music2 size={14} /><span>配乐</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content"><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--music" onClick={() => notify('已定位到配乐轨道')}><div className="ai-video-editor-wide-wave">{Array.from({ length: 88 }, (_, index) => <i key={index} style={{ height: `${18 + ((index * 19) % 47)}%` }} />)}</div><span>低沉神秘的纪录片配乐 · 72 BPM</span></button></div>
+                  </div>
+                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                    <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>音效</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content"><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx" onClick={() => notify('已定位到音效轨道')}><span>纸张翻页</span></button><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx" onClick={() => notify('已定位到音效轨道')}><span>轻微沙沙声</span></button><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx" onClick={() => notify('已定位到音效轨道')}><span>收束音</span></button></div>
+                  </div>
+                </> : <>
+                  <div className="ai-video-editor-track-row">
+                    <div className="ai-video-editor-track-label"><Sparkles size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content">
+                      {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Sparkles size={13} /> 6 个 MG 镜头与文字层 <span>33s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
+                    </div>
+                  </div>
+                  <div className="ai-video-editor-track-row">
+                    <div className="ai-video-editor-track-label"><Subtitles size={14} /><span>字幕</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content">
+                      {hasCaptions || hasMgLayers ? <div className="ai-video-editor-caption-clip"><Subtitles size={13} /> {hasMgLayers ? '文字层 / 字幕' : '自动字幕'} <span>72.2s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频加上自动字幕')}><Plus size={13} /> 点击让 AI 生成字幕</button>}
+                    </div>
+                  </div>
+                  <div className="ai-video-editor-track-row">
+                    <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>{hasVoiceover ? '声音' : '音频'}</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-content">
+                      {hasVoiceover || hasMusic ? <div className="ai-video-editor-audio-clip"><div className="ai-video-editor-waveform">{Array.from({ length: 54 }, (_, index) => <i key={index} style={{ height: `${14 + ((index * 17) % 28)}%` }} />)}</div><span><FileAudio size={12} /> {hasVoiceover ? `${selectedVoice} · 旁白音频` : 'Morning Lights · AI 推荐'}</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频配一首轻快的音乐')}><Plus size={13} /> 添加背景音乐</button>}
+                    </div>
+                  </div>
+                </>}
               </div>
               <div className="ai-video-editor-timeline-footer">
-                <span><Layers3 size={13} /> 3 个轨道</span>
+                <span><Layers3 size={13} /> {isFinalTimelineReady ? '7 个轨道 · 全部生成完成' : '4 个轨道'}</span>
                 <span><Clock3 size={13} /> 总时长 {formatLongTime(duration)}</span>
                 <button type="button" onClick={() => notify('时间线帮助已打开')}><CircleHelp size={14} /></button>
               </div>
@@ -666,6 +703,22 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           )}
         </aside>
       </div>
+      {isScriptEditorOpen && <div className="ai-video-editor-modal-backdrop" role="dialog" aria-modal="true" aria-label="编辑脚本">
+        <div className="ai-video-editor-fullscreen-modal ai-video-editor-fullscreen-modal--script">
+          <div className="ai-video-editor-fullscreen-modal__head"><div><strong>编辑脚本</strong><span>修改旁白后，保存并回到确认脚本卡片</span></div><button type="button" onClick={() => setIsScriptEditorOpen(false)}><X size={18} /></button></div>
+          <div className="ai-video-editor-fullscreen-modal__meta"><span>共 {scriptDraft.length} 个段落 · 预计 72 秒</span><span>旁白会同时作为字幕内容</span></div>
+          <div className="ai-video-editor-fullscreen-table ai-video-editor-fullscreen-table--script"><div className="ai-video-editor-fullscreen-table__head"><span>段落</span><span>旁白（字幕）</span></div>{scriptDraft.map((row) => <div className="ai-video-editor-fullscreen-table__row" key={row.id}><div><b>片段 {row.id}</b><input value={row.section} onChange={(event) => updateScriptRow(row.id, 'section', event.target.value)} /></div><textarea value={row.narration} onChange={(event) => updateScriptRow(row.id, 'narration', event.target.value)} rows={2} /></div>)}</div>
+          <div className="ai-video-editor-fullscreen-modal__foot"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setIsScriptEditorOpen(false)}>收回卡片</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsScriptEditorOpen(false); notify('脚本修改已保存'); }}>保存修改</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsScriptEditorOpen(false); confirmScript(); }}>确认脚本</button></div>
+        </div>
+      </div>}
+      {isStoryboardEditorOpen && <div className="ai-video-editor-modal-backdrop" role="dialog" aria-modal="true" aria-label="编辑分镜">
+        <div className="ai-video-editor-fullscreen-modal ai-video-editor-fullscreen-modal--storyboard">
+          <div className="ai-video-editor-fullscreen-modal__head"><div><strong>编排 · 分镜表</strong><span>调整镜头时长、画面描述、文字层和音效</span></div><button type="button" onClick={() => setIsStoryboardEditorOpen(false)}><X size={18} /></button></div>
+          <div className="ai-video-editor-fullscreen-modal__meta"><span>本方案预计消耗 <b>73–121 积分</b></span><span>画布比例 16:9 · 口播 {selectedVoice}</span></div>
+          <div className="ai-video-editor-fullscreen-table ai-video-editor-fullscreen-table--storyboard"><div className="ai-video-editor-fullscreen-table__head"><span>镜头 / 时间</span><span>名称</span><span>视频与动画</span><span>文字层</span><span>时长</span></div>{storyboardDraft.map((row) => <div className="ai-video-editor-fullscreen-table__row" key={row.id}><div><b>第 {row.id} 镜</b><span>{row.time}</span></div><input value={row.title} onChange={(event) => updateStoryboardRow(row.id, 'title', event.target.value)} /><textarea value={row.visual} onChange={(event) => updateStoryboardRow(row.id, 'visual', event.target.value)} rows={3} /><textarea value={row.text} onChange={(event) => updateStoryboardRow(row.id, 'text', event.target.value)} rows={3} /><input value={row.duration} onChange={(event) => updateStoryboardRow(row.id, 'duration', event.target.value)} /></div>)}</div>
+          <div className="ai-video-editor-fullscreen-modal__foot"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setIsStoryboardEditorOpen(false)}>收回卡片</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsStoryboardEditorOpen(false); notify('分镜修改已保存'); }}>保存修改</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsStoryboardEditorOpen(false); confirmStoryboard(); }}>确认分镜方案</button></div>
+        </div>
+      </div>}
       {showToast && <div className="ai-video-editor-toast"><Check size={14} /> {showToast}</div>}
     </div>
   );

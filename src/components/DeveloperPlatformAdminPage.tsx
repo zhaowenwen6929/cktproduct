@@ -94,6 +94,19 @@ const sourceLabels: Record<AdminCapabilitySource, string> = {
   internal: '内部能力',
 };
 
+function downloadCsv(filename: string, rows: string[][]) {
+  const csv = rows.map((row) => row.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(',')).join('\n');
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function StatusBadge({ status }: { status: AdminCapabilityStatus }) {
   return <span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium ${statusStyles[status]}`}>{status}</span>;
 }
@@ -397,7 +410,17 @@ function BillingPage({ store, onChange }: { store: DeveloperPlatformAdminStore; 
 function StatisticsPage({ store }: { store: DeveloperPlatformAdminStore }) {
   const overview = useMemo(() => getDeveloperPlatformAdminOverview(store), [store]);
   const [range, setRange] = useState('近 7 天');
-  return <><PageTitle eyebrow="OBSERVABILITY" title="数据统计" description="按时间、应用、组织、能力、接入方式和任务结果查看调用、延迟、失败和积分数据。" actions={<div className="flex items-center gap-2"><SelectInput value={range} onChange={setRange} options={['今天', '近 7 天', '近 30 天']} /><Button><RefreshCcw className="h-3.5 w-3.5" />导出数据</Button></div>} /><div className="grid grid-cols-5 gap-3"><StatCard icon={<Activity className="h-4 w-4" />} label="调用总量" value={overview.stats.totalCalls.toLocaleString()} /><StatCard icon={<Check className="h-4 w-4" />} label="成功率" value="99.4%" tone="green" /><StatCard icon={<Activity className="h-4 w-4" />} label="平均延迟" value="420ms" tone="purple" /><StatCard icon={<BarChart3 className="h-4 w-4" />} label="P95 延迟" value="1.2s" tone="orange" /><StatCard icon={<CircleAlert className="h-4 w-4" />} label="超时 / 限流" value="18" tone="orange" /></div><div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-3"><Panel><PanelHeader title="调用趋势" description={`${range} · 支持按应用、能力和渠道筛选`} /><TrendChart data={overview.callTrend} /></Panel><Panel><PanelHeader title="渠道占比" /><div className="p-5"><LegendRows items={overview.channelDistribution} /></div></Panel></div><div className="mt-3 grid grid-cols-2 gap-3"><Panel><PanelHeader title="能力排行" /><RankTable rows={overview.capabilityRanks.map((item) => ({ name: item.name, secondary: item.category, primary: `${item.calls.toLocaleString()} 次`, trailing: `${item.successRate.toFixed(1)}%` }))} /></Panel><Panel><PanelHeader title="失败原因" /><div className="space-y-3 p-5">{[['素材下载超时', 8, '#f5a623'], ['权限不足', 5, '#ef7c50'], ['参数校验失败', 3, '#8b6cf6'], ['应用已停用', 2, '#98a2b2']].map(([label, value, color]) => <div key={String(label)}><div className="mb-1 flex justify-between text-[11px]"><span className="text-[#667085]">{label}</span><span className="text-[#344054]">{value}</span></div><div className="h-1.5 rounded-full bg-[#edf0f4]"><div className="h-1.5 rounded-full" style={{ width: `${Number(value) * 10}%`, background: String(color) }} /></div></div>)}</div></Panel></div></>;
+  const exportData = () => downloadCsv(`developer-platform-statistics-${range}.csv`, [
+    ['时间范围', range],
+    ['指标', '数值'],
+    ['调用总量', overview.stats.totalCalls.toLocaleString()],
+    ['今日调用', overview.stats.todayCalls.toLocaleString()],
+    ['积分消耗', overview.stats.totalPoints.toLocaleString()],
+    ['今日积分', overview.stats.todayPoints.toLocaleString()],
+    ['失败任务', String(overview.stats.failedTasks)],
+    ...overview.callTrend.map((item) => [item.date, String(item.value)]),
+  ]);
+  return <><PageTitle eyebrow="OBSERVABILITY" title="数据统计" description="按时间、应用、组织、能力、接入方式和任务结果查看调用、延迟、失败和积分数据。" actions={<div className="flex items-center gap-2"><SelectInput value={range} onChange={setRange} options={['今天', '近 7 天', '近 30 天']} /><Button onClick={exportData}><RefreshCcw className="h-3.5 w-3.5" />导出数据</Button></div>} /><div className="grid grid-cols-5 gap-3"><StatCard icon={<Activity className="h-4 w-4" />} label="调用总量" value={overview.stats.totalCalls.toLocaleString()} /><StatCard icon={<Check className="h-4 w-4" />} label="成功率" value="99.4%" tone="green" /><StatCard icon={<Activity className="h-4 w-4" />} label="平均延迟" value="420ms" tone="purple" /><StatCard icon={<BarChart3 className="h-4 w-4" />} label="P95 延迟" value="1.2s" tone="orange" /><StatCard icon={<CircleAlert className="h-4 w-4" />} label="超时 / 限流" value="18" tone="orange" /></div><div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-3"><Panel><PanelHeader title="调用趋势" description={`${range} · 支持按应用、能力和渠道筛选`} /><TrendChart data={overview.callTrend} /></Panel><Panel><PanelHeader title="渠道占比" /><div className="p-5"><LegendRows items={overview.channelDistribution} /></div></Panel></div><div className="mt-3 grid grid-cols-2 gap-3"><Panel><PanelHeader title="能力排行" /><RankTable rows={overview.capabilityRanks.map((item) => ({ name: item.name, secondary: item.category, primary: `${item.calls.toLocaleString()} 次`, trailing: `${item.successRate.toFixed(1)}%` }))} /></Panel><Panel><PanelHeader title="失败原因" /><div className="space-y-3 p-5">{[['素材下载超时', 8, '#f5a623'], ['权限不足', 5, '#ef7c50'], ['参数校验失败', 3, '#8b6cf6'], ['应用已停用', 2, '#98a2b2']].map(([label, value, color]) => <div key={String(label)}><div className="mb-1 flex justify-between text-[11px]"><span className="text-[#667085]">{label}</span><span className="text-[#344054]">{value}</span></div><div className="h-1.5 rounded-full bg-[#edf0f4]"><div className="h-1.5 rounded-full" style={{ width: `${Number(value) * 10}%`, background: String(color) }} /></div></div>)}</div></Panel></div></>;
 }
 
 function TasksPage({ store }: { store: DeveloperPlatformAdminStore }) {

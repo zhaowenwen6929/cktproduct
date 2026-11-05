@@ -2108,16 +2108,7 @@ export function AgentSkillsHomePage({ onBackToDirectory, onOpenCanvas, onOpenTem
             <div className="relative z-10 mx-auto mt-4 flex max-w-[1160px] flex-wrap items-center justify-center gap-3">
               {['🍁秋日特辑', '🚩喜报', '🌕日签', '无限画布', 'AI电商', '✨展架·次日达', '🗓️2027台历模板'].map((tag) => <button key={tag} type="button" onClick={() => openSkillPicker()} className="rounded-[7px] bg-[#f4f6fb] px-2.5 py-1 text-[10px] font-medium text-[#687187] hover:bg-[#eaf0ff] hover:text-[#4d63bd]">{tag}</button>)}
             </div>
-          ) : (
-            <div className="relative z-10 mx-auto mt-3 grid max-w-[1600px] grid-cols-2 gap-2.5 xl:grid-cols-6">
-              {agentQuickCards.map((card) => (
-                <button key={card.title} type="button" onClick={() => openSkillPicker(card.category)} className="flex h-[72px] min-w-0 items-center justify-between rounded-[14px] border border-[#e7ebf4] bg-white px-3.5 text-left shadow-[0_2px_8px_rgba(70,88,130,0.035)] transition hover:-translate-y-0.5 hover:border-[#c7d5ff] hover:shadow-[0_8px_18px_rgba(70,88,130,0.1)]">
-                  <span className="min-w-0 pr-2"><span className="block truncate text-[13px] font-semibold text-[#29364f]">{card.title}</span><span className="mt-0.5 block truncate text-[11px] text-[#a0aec2]">{card.desc}</span></span>
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] ${card.art === 'poster' ? 'bg-[#dfeaff] text-[#458dff]' : card.art === 'commerce-set' ? 'bg-[#fff0e4] text-[#ff9359]' : card.art === 'video' ? 'bg-[#e9e6ff] text-[#756cf4]' : card.art === 'recruitment' ? 'bg-[#ffe5e8] text-[#f15b6a]' : card.art === 'ppt' ? 'bg-[#e7e9ff] text-[#706cf5]' : 'bg-[#e0f7e8] text-[#5bc47c]'}`}>{card.art === 'poster' ? <ImageIcon className="h-4 w-4" /> : card.art === 'commerce-set' ? <Shirt className="h-4 w-4" /> : card.art === 'video' ? <Video className="h-4 w-4" /> : card.art === 'recruitment' ? <UserRound className="h-4 w-4" /> : card.art === 'ppt' ? <FileImage className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          ) : null}
         </section>
 
         {mode === 'agent' ? (
