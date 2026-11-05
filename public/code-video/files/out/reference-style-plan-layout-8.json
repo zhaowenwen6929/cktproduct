@@ -1,0 +1,2054 @@
+{
+  "schema": "code-video-animation-plan/1",
+  "project": {
+    "id": "reference-style-layout-8",
+    "templateId": "knowledge-explainer-sketchnote",
+    "contractVersion": "1.0.0",
+    "renderer": "reference-style-v1"
+  },
+  "timing": {
+    "durationSeconds": 36.2,
+    "fps": 60,
+    "status": "planned",
+    "voiceIsAuthoritative": true
+  },
+  "resources": {
+    "icons": [
+      "bulb",
+      "chat",
+      "book",
+      "spiral",
+      "chat",
+      "bulb",
+      "book",
+      "spiral"
+    ],
+    "connectors": [
+      "curve-arrow",
+      "curve-arrow",
+      "curve-arrow",
+      "curve-arrow",
+      "curve-arrow",
+      "curve-arrow",
+      "curve-arrow",
+      "guide-dash"
+    ]
+  },
+  "tracks": [
+    {
+      "id": "background",
+      "kind": "visual",
+      "clips": []
+    },
+    {
+      "id": "camera",
+      "kind": "camera",
+      "clips": [
+        {
+          "id": "camera-intro",
+          "type": "cameraHold",
+          "start": 0,
+          "duration": 3.6,
+          "anchor": "title",
+          "sceneId": "intro"
+        },
+        {
+          "id": "step-1-camera-pan",
+          "type": "cameraPan",
+          "start": 3.6,
+          "duration": 0.65,
+          "targetAnchor": "step-1",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-1"
+        },
+        {
+          "id": "step-2-camera-pan",
+          "type": "cameraPan",
+          "start": 7.4,
+          "duration": 0.65,
+          "targetAnchor": "step-2",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-3-camera-pan",
+          "type": "cameraPan",
+          "start": 11.2,
+          "duration": 0.65,
+          "targetAnchor": "step-3",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-4-camera-pan",
+          "type": "cameraPan",
+          "start": 15,
+          "duration": 0.65,
+          "targetAnchor": "step-4",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-5-camera-pan",
+          "type": "cameraPan",
+          "start": 18.8,
+          "duration": 0.65,
+          "targetAnchor": "step-5",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-6-camera-pan",
+          "type": "cameraPan",
+          "start": 22.6,
+          "duration": 0.65,
+          "targetAnchor": "step-6",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-7-camera-pan",
+          "type": "cameraPan",
+          "start": 26.4,
+          "duration": 0.65,
+          "targetAnchor": "step-7",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-8-camera-pan",
+          "type": "cameraPan",
+          "start": 30.2,
+          "duration": 0.65,
+          "targetAnchor": "step-8",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-8"
+        },
+        {
+          "id": "camera-overview",
+          "type": "cameraPan",
+          "start": 33.4,
+          "duration": 0.9,
+          "targetAnchor": "overview",
+          "easing": "easeInOutQuad",
+          "sceneId": "conclusion"
+        }
+      ]
+    },
+    {
+      "id": "connectors",
+      "kind": "visual",
+      "clips": [
+        {
+          "id": "step-2-connector",
+          "type": "connectorDraw",
+          "start": 7.48,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-1",
+          "toSceneId": "step-2",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-3-connector",
+          "type": "connectorDraw",
+          "start": 11.28,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-2",
+          "toSceneId": "step-3",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-4-connector",
+          "type": "connectorDraw",
+          "start": 15.08,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-3",
+          "toSceneId": "step-4",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-5-connector",
+          "type": "connectorDraw",
+          "start": 18.88,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-4",
+          "toSceneId": "step-5",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-6-connector",
+          "type": "connectorDraw",
+          "start": 22.68,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-5",
+          "toSceneId": "step-6",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-7-connector",
+          "type": "connectorDraw",
+          "start": 26.48,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-6",
+          "toSceneId": "step-7",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-8-connector",
+          "type": "connectorDraw",
+          "start": 30.28,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-7",
+          "toSceneId": "step-8",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "id": "conclusion-guide",
+          "type": "connectorDraw",
+          "start": 33.28,
+          "duration": 2.05,
+          "assetId": "guide-dash",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "conclusion"
+        }
+      ]
+    },
+    {
+      "id": "icons",
+      "kind": "visual",
+      "clips": [
+        {
+          "id": "step-1-icon",
+          "type": "pathDraw",
+          "start": 6.05,
+          "duration": 0.95,
+          "assetId": "bulb",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "id": "step-2-icon",
+          "type": "pathDraw",
+          "start": 9.85,
+          "duration": 0.95,
+          "assetId": "chat",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-3-icon",
+          "type": "pathDraw",
+          "start": 13.53,
+          "duration": 0.95,
+          "assetId": "book",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-4-icon",
+          "type": "pathDraw",
+          "start": 17.33,
+          "duration": 0.95,
+          "assetId": "spiral",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-5-icon",
+          "type": "pathDraw",
+          "start": 21.13,
+          "duration": 0.95,
+          "assetId": "chat",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-6-icon",
+          "type": "pathDraw",
+          "start": 24.93,
+          "duration": 0.95,
+          "assetId": "bulb",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-7-icon",
+          "type": "pathDraw",
+          "start": 28.73,
+          "duration": 0.95,
+          "assetId": "book",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-8-icon",
+          "type": "pathDraw",
+          "start": 32.53,
+          "duration": 0.95,
+          "assetId": "spiral",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        }
+      ]
+    },
+    {
+      "id": "handwriting",
+      "kind": "visual",
+      "clips": [
+        {
+          "id": "title-handwrite",
+          "type": "handwriteText",
+          "start": 0.12,
+          "duration": 1.58,
+          "textBinding": "title",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.38,
+            "interval": 0.28,
+            "pen": "pencil"
+          },
+          "sceneId": "intro"
+        },
+        {
+          "id": "title-underline",
+          "type": "pathDraw",
+          "start": 1.62,
+          "duration": 0.92,
+          "assetId": "builtin:hand-underline",
+          "animation": {
+            "mode": "path-length",
+            "easing": "easeOutCubic",
+            "pen": "pencil"
+          },
+          "sceneId": "intro"
+        },
+        {
+          "id": "subtitle-handwrite",
+          "type": "handwriteText",
+          "start": 1.68,
+          "duration": 0.75,
+          "textBinding": "subtitle",
+          "emphasis": "讲给别人听",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.2,
+            "interval": 0.05,
+            "pen": "pencil"
+          },
+          "sceneId": "intro"
+        },
+        {
+          "id": "step-1-number",
+          "type": "numberStamp",
+          "start": 4.35,
+          "duration": 0.52,
+          "text": "1",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "id": "step-1-label",
+          "type": "handwriteText",
+          "start": 4.96,
+          "duration": 0.91,
+          "textBinding": "scenes.step-1.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "id": "step-2-number",
+          "type": "numberStamp",
+          "start": 8.15,
+          "duration": 0.52,
+          "text": "2",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-2-label",
+          "type": "handwriteText",
+          "start": 8.76,
+          "duration": 0.91,
+          "textBinding": "scenes.step-2.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-3-number",
+          "type": "numberStamp",
+          "start": 11.95,
+          "duration": 0.52,
+          "text": "3",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-3-label",
+          "type": "handwriteText",
+          "start": 12.56,
+          "duration": 0.79,
+          "textBinding": "scenes.step-3.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-4-number",
+          "type": "numberStamp",
+          "start": 15.75,
+          "duration": 0.52,
+          "text": "4",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-4-label",
+          "type": "handwriteText",
+          "start": 16.36,
+          "duration": 0.79,
+          "textBinding": "scenes.step-4.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-5-number",
+          "type": "numberStamp",
+          "start": 19.55,
+          "duration": 0.52,
+          "text": "5",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-5-label",
+          "type": "handwriteText",
+          "start": 20.16,
+          "duration": 0.79,
+          "textBinding": "scenes.step-5.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-6-number",
+          "type": "numberStamp",
+          "start": 23.35,
+          "duration": 0.52,
+          "text": "6",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-6-label",
+          "type": "handwriteText",
+          "start": 23.96,
+          "duration": 0.79,
+          "textBinding": "scenes.step-6.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-7-number",
+          "type": "numberStamp",
+          "start": 27.15,
+          "duration": 0.52,
+          "text": "7",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-7-label",
+          "type": "handwriteText",
+          "start": 27.76,
+          "duration": 0.79,
+          "textBinding": "scenes.step-7.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-8-number",
+          "type": "numberStamp",
+          "start": 30.95,
+          "duration": 0.52,
+          "text": "8",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "id": "step-8-label",
+          "type": "handwriteText",
+          "start": 31.56,
+          "duration": 0.79,
+          "textBinding": "scenes.step-8.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        }
+      ]
+    },
+    {
+      "id": "notes",
+      "kind": "visual",
+      "clips": [
+        {
+          "id": "step-1-note",
+          "type": "noteReveal",
+          "start": 7.15,
+          "duration": 0.76,
+          "textBinding": "scenes.step-1.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "id": "step-2-note",
+          "type": "noteReveal",
+          "start": 10.95,
+          "duration": 0.815,
+          "textBinding": "scenes.step-2.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-3-note",
+          "type": "noteReveal",
+          "start": 14.63,
+          "duration": 0.87,
+          "textBinding": "scenes.step-3.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-4-note",
+          "type": "noteReveal",
+          "start": 18.43,
+          "duration": 0.76,
+          "textBinding": "scenes.step-4.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-5-note",
+          "type": "noteReveal",
+          "start": 22.23,
+          "duration": 0.76,
+          "textBinding": "scenes.step-5.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-6-note",
+          "type": "noteReveal",
+          "start": 26.03,
+          "duration": 0.815,
+          "textBinding": "scenes.step-6.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-7-note",
+          "type": "noteReveal",
+          "start": 29.83,
+          "duration": 0.925,
+          "textBinding": "scenes.step-7.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-8-note",
+          "type": "noteReveal",
+          "start": 33.63,
+          "duration": 0.815,
+          "textBinding": "scenes.step-8.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "id": "conclusion-note",
+          "type": "noteReveal",
+          "start": 34.4,
+          "duration": 0.925,
+          "textBinding": "conclusion",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "conclusion"
+        }
+      ]
+    },
+    {
+      "id": "captions",
+      "kind": "text",
+      "clips": [
+        {
+          "id": "intro-caption",
+          "type": "caption",
+          "start": 0,
+          "duration": 3.6,
+          "text": "费曼学习法，可以拆成八个动作。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "intro"
+        },
+        {
+          "id": "step-1-caption",
+          "type": "caption",
+          "start": 3.6,
+          "duration": 3.8,
+          "text": "第一步，先确定一个要弄懂的主题。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "id": "step-2-caption",
+          "type": "caption",
+          "start": 7.4,
+          "duration": 3.8,
+          "text": "第二步，把它讲给一个完全不懂的人听。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-3-caption",
+          "type": "caption",
+          "start": 11.2,
+          "duration": 3.8,
+          "text": "第三步，把自己讲不清楚的地方记下来。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-4-caption",
+          "type": "caption",
+          "start": 15,
+          "duration": 3.8,
+          "text": "第四步，回到原理，针对卡点重新查资料。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-5-caption",
+          "type": "caption",
+          "start": 18.8,
+          "duration": 3.8,
+          "text": "第五步，换一种更生活化的说法。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-6-caption",
+          "type": "caption",
+          "start": 22.6,
+          "duration": 3.8,
+          "text": "第六步，再讲一遍，直到别人真的听懂。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-7-caption",
+          "type": "caption",
+          "start": 26.4,
+          "duration": 3.8,
+          "text": "第七步，请别人指出还没有讲清楚的地方。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-8-caption",
+          "type": "caption",
+          "start": 30.2,
+          "duration": 3,
+          "text": "第八步，把这套方法变成自己的习惯。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "id": "conclusion-caption",
+          "type": "caption",
+          "start": 33.2,
+          "duration": 3,
+          "text": "能讲清楚，才是真的懂了。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "conclusion"
+        }
+      ]
+    },
+    {
+      "id": "voice",
+      "kind": "audio",
+      "clips": [
+        {
+          "id": "intro-voice",
+          "type": "voiceSegment",
+          "start": 0,
+          "duration": 3.6,
+          "segmentId": "voice-01",
+          "timingSource": "script",
+          "sceneId": "intro"
+        },
+        {
+          "id": "step-1-voice",
+          "type": "voiceSegment",
+          "start": 3.6,
+          "duration": 3.8,
+          "segmentId": "voice-02",
+          "timingSource": "script",
+          "sceneId": "step-1"
+        },
+        {
+          "id": "step-2-voice",
+          "type": "voiceSegment",
+          "start": 7.4,
+          "duration": 3.8,
+          "segmentId": "voice-03",
+          "timingSource": "script",
+          "sceneId": "step-2"
+        },
+        {
+          "id": "step-3-voice",
+          "type": "voiceSegment",
+          "start": 11.2,
+          "duration": 3.8,
+          "segmentId": "voice-04",
+          "timingSource": "script",
+          "sceneId": "step-3"
+        },
+        {
+          "id": "step-4-voice",
+          "type": "voiceSegment",
+          "start": 15,
+          "duration": 3.8,
+          "segmentId": "voice-05",
+          "timingSource": "script",
+          "sceneId": "step-4"
+        },
+        {
+          "id": "step-5-voice",
+          "type": "voiceSegment",
+          "start": 18.8,
+          "duration": 3.8,
+          "segmentId": "voice-06",
+          "timingSource": "script",
+          "sceneId": "step-5"
+        },
+        {
+          "id": "step-6-voice",
+          "type": "voiceSegment",
+          "start": 22.6,
+          "duration": 3.8,
+          "segmentId": "voice-07",
+          "timingSource": "script",
+          "sceneId": "step-6"
+        },
+        {
+          "id": "step-7-voice",
+          "type": "voiceSegment",
+          "start": 26.4,
+          "duration": 3.8,
+          "segmentId": "voice-08",
+          "timingSource": "script",
+          "sceneId": "step-7"
+        },
+        {
+          "id": "step-8-voice",
+          "type": "voiceSegment",
+          "start": 30.2,
+          "duration": 3,
+          "segmentId": "voice-09",
+          "timingSource": "script",
+          "sceneId": "step-8"
+        },
+        {
+          "id": "conclusion-voice",
+          "type": "voiceSegment",
+          "start": 33.2,
+          "duration": 3,
+          "segmentId": "voice-10",
+          "timingSource": "script",
+          "sceneId": "conclusion"
+        }
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "start": 0,
+      "end": 3.6,
+      "voiceSegmentId": "voice-01",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "intro-voice",
+          "type": "voiceSegment",
+          "start": 0,
+          "duration": 3.6,
+          "segmentId": "voice-01",
+          "timingSource": "script",
+          "sceneId": "intro"
+        },
+        {
+          "trackId": "captions",
+          "id": "intro-caption",
+          "type": "caption",
+          "start": 0,
+          "duration": 3.6,
+          "text": "费曼学习法，可以拆成八个动作。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "intro"
+        },
+        {
+          "trackId": "camera",
+          "id": "camera-intro",
+          "type": "cameraHold",
+          "start": 0,
+          "duration": 3.6,
+          "anchor": "title",
+          "sceneId": "intro"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "title-handwrite",
+          "type": "handwriteText",
+          "start": 0.12,
+          "duration": 1.58,
+          "textBinding": "title",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.38,
+            "interval": 0.28,
+            "pen": "pencil"
+          },
+          "sceneId": "intro"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "title-underline",
+          "type": "pathDraw",
+          "start": 1.62,
+          "duration": 0.92,
+          "assetId": "builtin:hand-underline",
+          "animation": {
+            "mode": "path-length",
+            "easing": "easeOutCubic",
+            "pen": "pencil"
+          },
+          "sceneId": "intro"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "subtitle-handwrite",
+          "type": "handwriteText",
+          "start": 1.68,
+          "duration": 0.75,
+          "textBinding": "subtitle",
+          "emphasis": "讲给别人听",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.2,
+            "interval": 0.05,
+            "pen": "pencil"
+          },
+          "sceneId": "intro"
+        }
+      ]
+    },
+    {
+      "id": "step-1",
+      "kind": "step",
+      "start": 3.6,
+      "end": 7.4,
+      "voiceSegmentId": "voice-02",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-1-voice",
+          "type": "voiceSegment",
+          "start": 3.6,
+          "duration": 3.8000000000000003,
+          "segmentId": "voice-02",
+          "timingSource": "script",
+          "sceneId": "step-1"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-1-caption",
+          "type": "caption",
+          "start": 3.6,
+          "duration": 3.8000000000000003,
+          "text": "第一步，先确定一个要弄懂的主题。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-1-camera-pan",
+          "type": "cameraPan",
+          "start": 3.6,
+          "duration": 0.65,
+          "targetAnchor": "step-1",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-1"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-1-number",
+          "type": "numberStamp",
+          "start": 4.35,
+          "duration": 0.52,
+          "text": "1",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-1-label",
+          "type": "handwriteText",
+          "start": 4.96,
+          "duration": 0.91,
+          "textBinding": "scenes.step-1.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-1-icon",
+          "type": "pathDraw",
+          "start": 6.05,
+          "duration": 0.95,
+          "assetId": "bulb",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-1"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-1-note",
+          "type": "noteReveal",
+          "start": 7.15,
+          "duration": 0.76,
+          "textBinding": "scenes.step-1.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-1"
+        }
+      ]
+    },
+    {
+      "id": "step-2",
+      "kind": "step",
+      "start": 7.4,
+      "end": 11.2,
+      "voiceSegmentId": "voice-03",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-2-voice",
+          "type": "voiceSegment",
+          "start": 7.4,
+          "duration": 3.799999999999999,
+          "segmentId": "voice-03",
+          "timingSource": "script",
+          "sceneId": "step-2"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-2-caption",
+          "type": "caption",
+          "start": 7.4,
+          "duration": 3.799999999999999,
+          "text": "第二步，把它讲给一个完全不懂的人听。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-2-camera-pan",
+          "type": "cameraPan",
+          "start": 7.4,
+          "duration": 0.65,
+          "targetAnchor": "step-2",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-2"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-2-number",
+          "type": "numberStamp",
+          "start": 8.15,
+          "duration": 0.52,
+          "text": "2",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-2-label",
+          "type": "handwriteText",
+          "start": 8.76,
+          "duration": 0.91,
+          "textBinding": "scenes.step-2.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "trackId": "connectors",
+          "id": "step-2-connector",
+          "type": "connectorDraw",
+          "start": 7.48,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-1",
+          "toSceneId": "step-2",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-2-icon",
+          "type": "pathDraw",
+          "start": 9.85,
+          "duration": 0.95,
+          "assetId": "chat",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-2-note",
+          "type": "noteReveal",
+          "start": 10.95,
+          "duration": 0.815,
+          "textBinding": "scenes.step-2.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-2"
+        }
+      ]
+    },
+    {
+      "id": "step-3",
+      "kind": "step",
+      "start": 11.2,
+      "end": 15,
+      "voiceSegmentId": "voice-04",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-3-voice",
+          "type": "voiceSegment",
+          "start": 11.2,
+          "duration": 3.8000000000000007,
+          "segmentId": "voice-04",
+          "timingSource": "script",
+          "sceneId": "step-3"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-3-caption",
+          "type": "caption",
+          "start": 11.2,
+          "duration": 3.8000000000000007,
+          "text": "第三步，把自己讲不清楚的地方记下来。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-3-camera-pan",
+          "type": "cameraPan",
+          "start": 11.2,
+          "duration": 0.65,
+          "targetAnchor": "step-3",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-3"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-3-number",
+          "type": "numberStamp",
+          "start": 11.95,
+          "duration": 0.52,
+          "text": "3",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-3-label",
+          "type": "handwriteText",
+          "start": 12.559999999999999,
+          "duration": 0.79,
+          "textBinding": "scenes.step-3.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "trackId": "connectors",
+          "id": "step-3-connector",
+          "type": "connectorDraw",
+          "start": 11.28,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-2",
+          "toSceneId": "step-3",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-3-icon",
+          "type": "pathDraw",
+          "start": 13.529999999999998,
+          "duration": 0.95,
+          "assetId": "book",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-3-note",
+          "type": "noteReveal",
+          "start": 14.629999999999997,
+          "duration": 0.87,
+          "textBinding": "scenes.step-3.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-3"
+        }
+      ]
+    },
+    {
+      "id": "step-4",
+      "kind": "step",
+      "start": 15,
+      "end": 18.8,
+      "voiceSegmentId": "voice-05",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-4-voice",
+          "type": "voiceSegment",
+          "start": 15,
+          "duration": 3.8000000000000007,
+          "segmentId": "voice-05",
+          "timingSource": "script",
+          "sceneId": "step-4"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-4-caption",
+          "type": "caption",
+          "start": 15,
+          "duration": 3.8000000000000007,
+          "text": "第四步，回到原理，针对卡点重新查资料。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-4-camera-pan",
+          "type": "cameraPan",
+          "start": 15,
+          "duration": 0.65,
+          "targetAnchor": "step-4",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-4"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-4-number",
+          "type": "numberStamp",
+          "start": 15.75,
+          "duration": 0.52,
+          "text": "4",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-4-label",
+          "type": "handwriteText",
+          "start": 16.36,
+          "duration": 0.79,
+          "textBinding": "scenes.step-4.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "trackId": "connectors",
+          "id": "step-4-connector",
+          "type": "connectorDraw",
+          "start": 15.08,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-3",
+          "toSceneId": "step-4",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-4-icon",
+          "type": "pathDraw",
+          "start": 17.33,
+          "duration": 0.95,
+          "assetId": "spiral",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-4-note",
+          "type": "noteReveal",
+          "start": 18.429999999999996,
+          "duration": 0.76,
+          "textBinding": "scenes.step-4.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-4"
+        }
+      ]
+    },
+    {
+      "id": "step-5",
+      "kind": "step",
+      "start": 18.8,
+      "end": 22.6,
+      "voiceSegmentId": "voice-06",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-5-voice",
+          "type": "voiceSegment",
+          "start": 18.8,
+          "duration": 3.8000000000000007,
+          "segmentId": "voice-06",
+          "timingSource": "script",
+          "sceneId": "step-5"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-5-caption",
+          "type": "caption",
+          "start": 18.8,
+          "duration": 3.8000000000000007,
+          "text": "第五步，换一种更生活化的说法。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-5-camera-pan",
+          "type": "cameraPan",
+          "start": 18.8,
+          "duration": 0.65,
+          "targetAnchor": "step-5",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-5"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-5-number",
+          "type": "numberStamp",
+          "start": 19.55,
+          "duration": 0.52,
+          "text": "5",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-5-label",
+          "type": "handwriteText",
+          "start": 20.16,
+          "duration": 0.79,
+          "textBinding": "scenes.step-5.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "trackId": "connectors",
+          "id": "step-5-connector",
+          "type": "connectorDraw",
+          "start": 18.88,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-4",
+          "toSceneId": "step-5",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-5-icon",
+          "type": "pathDraw",
+          "start": 21.13,
+          "duration": 0.95,
+          "assetId": "chat",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-5-note",
+          "type": "noteReveal",
+          "start": 22.229999999999997,
+          "duration": 0.76,
+          "textBinding": "scenes.step-5.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-5"
+        }
+      ]
+    },
+    {
+      "id": "step-6",
+      "kind": "step",
+      "start": 22.6,
+      "end": 26.4,
+      "voiceSegmentId": "voice-07",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-6-voice",
+          "type": "voiceSegment",
+          "start": 22.6,
+          "duration": 3.799999999999997,
+          "segmentId": "voice-07",
+          "timingSource": "script",
+          "sceneId": "step-6"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-6-caption",
+          "type": "caption",
+          "start": 22.6,
+          "duration": 3.799999999999997,
+          "text": "第六步，再讲一遍，直到别人真的听懂。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-6-camera-pan",
+          "type": "cameraPan",
+          "start": 22.6,
+          "duration": 0.65,
+          "targetAnchor": "step-6",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-6"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-6-number",
+          "type": "numberStamp",
+          "start": 23.35,
+          "duration": 0.52,
+          "text": "6",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-6-label",
+          "type": "handwriteText",
+          "start": 23.96,
+          "duration": 0.79,
+          "textBinding": "scenes.step-6.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "trackId": "connectors",
+          "id": "step-6-connector",
+          "type": "connectorDraw",
+          "start": 22.68,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-5",
+          "toSceneId": "step-6",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-6-icon",
+          "type": "pathDraw",
+          "start": 24.93,
+          "duration": 0.95,
+          "assetId": "bulb",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-6-note",
+          "type": "noteReveal",
+          "start": 26.029999999999998,
+          "duration": 0.815,
+          "textBinding": "scenes.step-6.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-6"
+        }
+      ]
+    },
+    {
+      "id": "step-7",
+      "kind": "step",
+      "start": 26.4,
+      "end": 30.2,
+      "voiceSegmentId": "voice-08",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-7-voice",
+          "type": "voiceSegment",
+          "start": 26.4,
+          "duration": 3.8000000000000007,
+          "segmentId": "voice-08",
+          "timingSource": "script",
+          "sceneId": "step-7"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-7-caption",
+          "type": "caption",
+          "start": 26.4,
+          "duration": 3.8000000000000007,
+          "text": "第七步，请别人指出还没有讲清楚的地方。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-7-camera-pan",
+          "type": "cameraPan",
+          "start": 26.4,
+          "duration": 0.65,
+          "targetAnchor": "step-7",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-7"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-7-number",
+          "type": "numberStamp",
+          "start": 27.15,
+          "duration": 0.52,
+          "text": "7",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-7-label",
+          "type": "handwriteText",
+          "start": 27.759999999999998,
+          "duration": 0.79,
+          "textBinding": "scenes.step-7.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "trackId": "connectors",
+          "id": "step-7-connector",
+          "type": "connectorDraw",
+          "start": 26.479999999999997,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-6",
+          "toSceneId": "step-7",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-7-icon",
+          "type": "pathDraw",
+          "start": 28.729999999999997,
+          "duration": 0.95,
+          "assetId": "book",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-7-note",
+          "type": "noteReveal",
+          "start": 29.829999999999995,
+          "duration": 0.925,
+          "textBinding": "scenes.step-7.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-7"
+        }
+      ]
+    },
+    {
+      "id": "step-8",
+      "kind": "step",
+      "start": 30.2,
+      "end": 33.2,
+      "voiceSegmentId": "voice-09",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "step-8-voice",
+          "type": "voiceSegment",
+          "start": 30.2,
+          "duration": 3.0000000000000036,
+          "segmentId": "voice-09",
+          "timingSource": "script",
+          "sceneId": "step-8"
+        },
+        {
+          "trackId": "captions",
+          "id": "step-8-caption",
+          "type": "caption",
+          "start": 30.2,
+          "duration": 3.0000000000000036,
+          "text": "第八步，把这套方法变成自己的习惯。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "trackId": "camera",
+          "id": "step-8-camera-pan",
+          "type": "cameraPan",
+          "start": 30.2,
+          "duration": 0.65,
+          "targetAnchor": "step-8",
+          "easing": "easeInOutQuad",
+          "sceneId": "step-8"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-8-number",
+          "type": "numberStamp",
+          "start": 30.95,
+          "duration": 0.52,
+          "text": "8",
+          "style": {
+            "alternatingFill": [
+              "mint",
+              "yellow"
+            ]
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "trackId": "handwriting",
+          "id": "step-8-label",
+          "type": "handwriteText",
+          "start": 31.56,
+          "duration": 0.79,
+          "textBinding": "scenes.step-8.content.label",
+          "animation": {
+            "mode": "stroke-characters",
+            "perCharacter": 0.27,
+            "interval": 0.12,
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "trackId": "connectors",
+          "id": "step-8-connector",
+          "type": "connectorDraw",
+          "start": 30.279999999999998,
+          "duration": 0.58,
+          "assetId": "curve-arrow",
+          "fromSceneId": "step-7",
+          "toSceneId": "step-8",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "trackId": "icons",
+          "id": "step-8-icon",
+          "type": "pathDraw",
+          "start": 32.53,
+          "duration": 0.95,
+          "assetId": "spiral",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        },
+        {
+          "trackId": "notes",
+          "id": "step-8-note",
+          "type": "noteReveal",
+          "start": 33.63,
+          "duration": 0.815,
+          "textBinding": "scenes.step-8.content.note",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "step-8"
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "kind": "conclusion",
+      "start": 33.2,
+      "end": 36.2,
+      "voiceSegmentId": "voice-10",
+      "clips": [
+        {
+          "trackId": "voice",
+          "id": "conclusion-voice",
+          "type": "voiceSegment",
+          "start": 33.2,
+          "duration": 3,
+          "segmentId": "voice-10",
+          "timingSource": "script",
+          "sceneId": "conclusion"
+        },
+        {
+          "trackId": "captions",
+          "id": "conclusion-caption",
+          "type": "caption",
+          "start": 33.2,
+          "duration": 3,
+          "text": "能讲清楚，才是真的懂了。",
+          "animation": {
+            "enter": "fade-up",
+            "exit": "fade-down"
+          },
+          "sceneId": "conclusion"
+        },
+        {
+          "trackId": "camera",
+          "id": "camera-overview",
+          "type": "cameraPan",
+          "start": 33.400000000000006,
+          "duration": 0.9,
+          "targetAnchor": "overview",
+          "easing": "easeInOutQuad",
+          "sceneId": "conclusion"
+        },
+        {
+          "trackId": "connectors",
+          "id": "conclusion-guide",
+          "type": "connectorDraw",
+          "start": 33.28,
+          "duration": 2.05,
+          "assetId": "guide-dash",
+          "animation": {
+            "mode": "ordered-paths",
+            "pen": "pencil"
+          },
+          "sceneId": "conclusion"
+        },
+        {
+          "trackId": "notes",
+          "id": "conclusion-note",
+          "type": "noteReveal",
+          "start": 34.400000000000006,
+          "duration": 0.925,
+          "textBinding": "conclusion",
+          "animation": {
+            "mode": "clip-and-handwrite",
+            "perCharacter": 0.18,
+            "interval": 0.055,
+            "pen": "pencil"
+          },
+          "sceneId": "conclusion"
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "status": "ok",
+    "errors": [],
+    "warnings": [
+      "当前时间轴是脚本规划时间，拿到最终语音后需要重新校准片段时长",
+      "语音文本较长，建议生成语音后检查实际语速"
+    ]
+  }
+}

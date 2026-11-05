@@ -283,6 +283,7 @@ const codeVideoFileGroups: Array<{ directory: string; files: CodeVideoFile[] }> 
       { path: 'out/reference-style-demo-narration-v14.m4a.json', name: 'reference-style-demo-narration-v14.m4a.json', kind: 'text', size: '1.2 KB', url: '/code-video/files/out/reference-style-demo-narration-v14.m4a.json' },
       { path: 'out/reference-style-plan-v14.json', name: 'reference-style-plan-v14.json', kind: 'text', size: '30 KB', url: '/code-video/files/out/reference-style-plan-v14.json' },
       { path: 'out/reference-style-plan-layout-6.json', name: 'reference-style-plan-layout-6.json', kind: 'text', size: '44 KB', url: '/code-video/files/out/reference-style-plan-layout-6.json' },
+      { path: 'out/reference-style-plan-layout-8.json', name: 'reference-style-plan-layout-8.json', kind: 'text', size: '56 KB', url: '/code-video/files/out/reference-style-plan-layout-8.json' },
       { path: 'examples/reference-style-script-v14.json', name: 'reference-style-script-v14.json', kind: 'text', size: '5.3 KB', url: '/code-video/files/examples/reference-style-script-v14.json' },
       { path: 'examples/reference-style-v14.json', name: 'reference-style-v14.json', kind: 'text', size: '1.1 KB', url: '/code-video/files/examples/reference-style-v14.json' },
       { path: 'examples/reference-style-layout-6.json', name: 'reference-style-layout-6.json', kind: 'text', size: '1.3 KB', url: '/code-video/files/examples/reference-style-layout-6.json' },
