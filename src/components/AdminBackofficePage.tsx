@@ -268,6 +268,7 @@ const NAV_GROUPS: NavGroup[] = [
       '团队销售线索',
       'IOS丢失订单找回处理',
       '会员套餐管理',
+      '积分套餐配置',
       '会员页面配置',
     ],
   },
@@ -337,6 +338,7 @@ const MEMBERSHIP_REQUIREMENT_DESCRIPTION_ITEMS = [
   '②会员积分支持按套餐配置和发放。',
   '③会员购买弹框升级为全屏大弹框，增加权益展示及 AI 模型消耗。',
   '④各端支持新会员等级的显示及权益响应。',
+  '⑤积分购买弹框支持套餐组、标准积分量、自定义积分量和会员可购买范围配置。',
 ];
 const MEMBERSHIP_REQUIREMENT_DESCRIPTION = MEMBERSHIP_REQUIREMENT_DESCRIPTION_ITEMS.join('\n');
 const MEMBERSHIP_REQUIREMENT_BACKGROUND = '会员后台、会员购买弹框和补差价升级页需要共同承载新版个人/企业会员等级，但原有入口无法完整表达套餐积分、企业席位、权益和 AI 模型消耗，导致后台配置与前台展示口径容易分散。';
@@ -369,15 +371,19 @@ const REQUIREMENT_NAV_ITEMS: RequirementNavItem[] = ([
   { id: 'developer-platform-admin-logs', title: '开发者平台操作日志', navLabels: ['操作日志'], projectName: '创客贴开放平台·开发者中心', level: 'sub', requirementKey: 'DP-2610', parentId: 'developer-platform', requirement: '记录开发者平台配置和权限操作的前后值，满足审计追溯。', summary: '覆盖能力编辑、渠道变更、发布、废弃、下线、计费、应用权限和 Secret 操作。', details: ['日志展示操作人、模块、动作、对象、变更前、变更后、时间、IP 和 Request ID。', '日志不可删除，支持关键词和时间筛选；敏感凭证只记录操作结果，不记录 Secret 明文。'], addedAt: '2026-11-03', status: '待开发', path: '/admin-backoffice/developer-platform/logs' },
   { id: 'agent-evaluation-platform', title: 'Agent / Skill 自动化评测平台', projectName: '自动化验证平台', level: 'main', requirementKey: 'AE-2610', requirement: '建立面向页面、功能、Agent、Skill、API 和工作流的通用自动化验证平台，按测试项目、测试需求和测试用例分层管理接口请求、浏览器操作、Mock/真实运行、完整轨迹和结果验收。', summary: '通过测试项目隔离业务域，在项目内创建测试需求，再按需求维护用例、执行配置和结果。', details: ['测试平台按“测试项目 → 测试需求 → 测试用例 → 执行结果”组织验证资产，支持产品需求回归，也支持直接针对开发完成的页面、功能或接口验收。', '测试需求以一次回归目标或验收范围为单位，支持独立维护目标、路径、版本/批次、范围、环境、前置条件、测试数据和用例集。', '提供 ckt-eval/v1 标准 JSON 输出规范；开发完成后可以直接提交 requirement + cases，测试人员也可以先建测试需求再导入。', '支持 Mock Runner 和本地真实 Runner，真实浏览器执行通过域名白名单限制范围，失败样本可查看完整轨迹和页面截图。'], addedAt: '2026-10-28', status: '待开发', path: '/admin-backoffice/requirements/agent-eval' },
   { id: 'agent-evaluation-workbench', title: '测试项目与测试需求目录、评测工作台', projectName: '自动化验证平台', level: 'sub', requirementKey: 'AE-2610', parentId: 'agent-evaluation-platform', requirement: '实现测试项目列表、项目内测试需求列表和具体测试需求工作台，并接入本地 HTTP + Browser Runner。', summary: '先区分测试项目，再创建测试需求；进入具体需求后管理用例、接口配置、浏览器登录态、执行结果和日志。', details: ['测试项目列表展示项目编号、业务说明、测试需求数量和用例数量，支持新建、进入和删除项目；删除项目必须二次确认，并级联清理所属测试需求和本地用例数据。', '项目详情展示测试需求列表，支持按需求名称、目标和状态区分不同回归范围，并支持新建、进入和删除测试需求；删除测试需求必须二次确认，并清理对应本地用例数据。', '测试需求工作台支持维护页面/功能路径、版本/批次、前置条件和测试数据，并支持导入 ckt-eval/v1 标准 JSON 包、JSON/JSONL/CSV。', '测试用例支持 Page、Feature、Agent、Skill、API 和 Workflow 类型；接口用例直接请求 HTTP，浏览器用例通过 Playwright 执行打开、点击、输入、文本/URL 断言和截图。', '接口配置区分接口认证和浏览器认证：接口支持 Bearer Token/API Key；浏览器支持 Moni 登录态配置名和本地 storageState 文件路径，并支持打开可见浏览器完成手动登录后保存 Cookie/LocalStorage；登录态文件由本地 Runner 加载，密钥不写入用例。', '执行前校验 Runner、接口地址和浏览器登录态配置；登录态失效或跳转登录页时明确返回执行失败，不让批量执行一直等待。', '执行结果支持通过率、平均耗时、失败数量和单条用例详情；详情展示期望结果、实际结果、执行轨迹和浏览器截图。'], addedAt: '2026-10-28', status: '待开发', path: '/agent-eval' },
+  { id: 'web-skills-display', title: 'Web端技能单页与展示优化', projectName: '创客贴网站', level: 'main', requirementKey: 'SK-2611', requirement: '统一 AI 创作下技能展示区域与独立技能入口的页面样式，优化分类导航、技能卡片、页面层级和入口状态的视觉表达；本需求仅涉及样式与展示组织，不新增业务能力或改变既有交互规则。', summary: '聚焦 AI 创作技能区域、独立技能单页和左侧技能入口的视觉层级与展示样式优化。', details: ['AI 创作下技能区域采用顶部分类切换与当前分类技能大卡片布局，统一卡片比例、图片区域、标题描述、热门角标、间距和响应式排列；不改变技能选择、参数填写和生成流程。', '独立技能单页统一标题、分类导航、搜索区域、技能卡片和分组内容的视觉层级，卡片按现有分类展示，优化页面留白、内容密度、瀑布流/网格排列和底部创作输入区域。', '左侧技能入口沿用首页导航结构，统一入口图标、选中态、首次访问红点、导航间距和侧栏层级；不改变既有入口路径、红点记录和页面跳转规则。', '数据来源：使用已有的技能分类及技能配置数据，按照新的设计样式进行展示配置；不新增技能分类、技能字段或独立数据接口。'], addedAt: '2026-11-06', status: '开发中', path: '/agent-skills-home' },
+  { id: 'web-skills-ai-creation-style', title: 'AI创作下技能样式优化', projectName: '创客贴网站', level: 'sub', requirementKey: 'SK-2611', parentId: 'web-skills-display', requirement: '优化 AI 创作模式下技能展示区域的视觉样式，仅调整分类切换、技能大卡片和展示间距，不改变已有技能选择与生成逻辑。', summary: '将 AI 创作下技能区域调整为分类切换加大卡片展示，提升技能识别和浏览效率。', details: ['技能区域顶部展示推荐及已有技能分类切换，当前分类只展示该分类已有技能，分类切换使用统一的文字、下划线和选中态样式。', '技能卡片沿用技能单页的大卡片样式，统一图片比例、圆角、标题、描述、热门标签和卡片间距；卡片数量变化时保持网格自适应。', '样式调整仅作用于展示层，不新增技能、不修改技能配置字段、不改变卡片点击后的既有技能选择和生成流程。', '数据来源：读取已有技能分类及技能配置数据，按新的技能大卡片样式进行映射展示。'], addedAt: '2026-11-06', status: '开发中', path: '/agent-skills-home' },
+  { id: 'web-skills-sidebar-entry', title: '左侧技能入口样式优化', projectName: '创客贴网站', level: 'sub', requirementKey: 'SK-2611', parentId: 'web-skills-display', requirement: '优化首页左侧技能入口的视觉样式与状态展示，使其与首页导航保持一致，并承接独立技能单页的入口识别。', summary: '统一左侧技能入口的图标、选中态、红点提示和侧栏间距，保持现有导航行为不变。', details: ['技能入口与首页左侧导航使用一致的侧栏宽度、图标尺寸、文字层级、上下间距和选中背景样式。', '首次访问红点使用与首页导航一致的提示样式，红点位置不遮挡图标和文字；已访问后的隐藏规则沿用现有记录逻辑。', '进入技能页面后保持首页顶部导航和侧栏结构不变，仅切换内容区域的技能单页展示样式。', '数据来源：沿用已有技能入口、技能分类和技能配置数据，不新增侧栏数据接口或入口权限规则。'], addedAt: '2026-11-06', status: '开发中', path: '/agent-skills-home' },
   { id: 'membership-redesign', title: '2026年10月会员改版', level: 'main', requirementKey: 'V2610', requirement: MEMBERSHIP_REQUIREMENT_DESCRIPTION, summary: '新增 5 个会员等级，统一套餐积分、全屏购买弹框、权益/AI 模型消耗及各端会员等级响应。', details: [...MEMBERSHIP_REQUIREMENT_DESCRIPTION_ITEMS, '统一会员总排序、同等级续费叠加、低等级升级、高等级禁止降级、企业席位上下限和不可购买提示；具体字段来源、固定字典、计算规则和验收标准以 V2610 主需求说明为准。'], addedAt: '2026-10-24', status: '开发中', path: '/admin-backoffice/requirements/membership' },
   { id: 'membership-packages', title: '【V2后台】会员套餐管理新增会员等级及积分量', navLabels: ['会员套餐管理'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员套餐管理支持新增会员等级、level 和积分发放配置。', summary: '新增会员等级、level、积分量、发放单位和发放周期，并支持历史套餐按等级回显且不可修改。', details: ['会员类型列表新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312，并显示对应 level。', '新增套餐积分量为必填项，填写非负整数，默认每人、按月，可切换团队和一次性。', '历史会员等级积分量非必填，按等级积分量自动回显且不可修改；终身套餐按36135天识别并一次性发放。', '购买套餐时按购买套餐对应的积分量立即发放，上一笔对应的未使用积分量失效；未配置时回退到会员等级积分量和规则。'], addedAt: '2026-10-24', status: '开发中', path: '/admin-backoffice/membership-packages' },
+  { id: 'membership-points-packages', title: '【V2后台】积分套餐配置与可购买会员等级', navLabels: ['积分套餐配置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '在会员中心新增积分套餐配置目录，按套餐组管理积分购买套餐，并配置套餐可购买的用户范围。', summary: '新增积分套餐组和积分套餐两级配置，支持标准积分量、自定义积分量及四类会员购买范围。', details: ['会员中心新增“积分套餐配置”目录，先创建套餐组，再在套餐组下新增、编辑、显示/隐藏积分套餐。', '积分套餐支持标准积分量和自定义积分量两种类型；自定义积分量配置单个积分价格，前台允许用户输入任意积分量并按单价计算应付金额。', '套餐卡片字段覆盖前台显示名称、积分量/单积分价格、售价/原价、有效期、生成说明、角标、展示分区、排序和状态。', '每个积分套餐的可购买范围支持所有用户、仅免费用户、全部会员和指定会员等级；指定会员等级必须至少选择一个会员等级。'], addedAt: '2026-11-05', status: '开发中', path: '/admin-backoffice/membership-points-packages' },
   { id: 'membership-open', title: '【V2后台】开通会员新增新会员等级', navLabels: ['开通会员'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '开通会员页支持会员类型、新增等级 level，以及成员人数下的积分量、发放单位和发放周期。', summary: '新增会员类型和 level，并在成员人数下配置积分量、发放单位和发放周期。', details: ['会员类型列表包含完整会员类型，并展示对应 level。', '新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。', '会员类型显示名称在前，level 数字在后。', '成员人数下新增积分量，支持非负整数、发放单位、发放周期和对应发放规则。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-open' },
   { id: 'user-segments-member-level', title: '【V2后台】用户分群新增新会员等级', navLabels: ['用户分群'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户分群中的会员等级筛选支持新增会员等级及 level。', summary: 'CSV 导入分群、规则分群和定制分群条件支持新增会员等级及 level 筛选。', details: ['会员等级筛选新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。', '新增等级在会员类型选项中以名称在前、level 数字在后的格式展示。', '是会员、是会员按等级、不是会员和不是会员按等级均支持新会员等级筛选。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-segments' },
   { id: 'authorization-scope-member-level', title: '【V2后台】授权范围设置新增新会员等级', navLabels: ['授权范围设置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '授权范围设置的会员类型筛选支持新增会员等级及 level，并为每个新增会员配置完整授权范围。', summary: '新增会员等级及 level，并为每个新增会员配置完整授权范围。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。', '每个新增会员均配置线上推广用途、线下印刷用途和禁用三类授权范围；每条范围支持启用/停用及是否在会员协议显示。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/authorization-scope' },
   { id: 'user-authorization-member-level', title: '【V2后台】用户授权信息管理新增新会员等级', navLabels: ['授权信息管理与查询'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '用户授权信息管理的权益等级/类型筛选支持新增会员等级及 level。', summary: '权益等级/类型筛选支持新增会员等级及 level。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/user-authorization-management' },
   { id: 'membership-activation-member-level', title: '【V2后台】会员激活码新增新会员等级', navLabels: ['活动列表'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员激活码活动的激活码类型支持新增会员等级及 level。', summary: '活动列表中的激活码类型支持新增会员等级及 level。', details: ['新增基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312。'], addedAt: '2026-10-25', status: '待开发', path: '/admin-backoffice/membership-activation' },
-  { id: 'membership-page-config', title: '【V2后台】会员页面配置套餐与权益', navLabels: ['会员页面配置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '配置网页版和移动端会员页面的套餐、权益和说明内容。', summary: '会员页配置拆分个人使用和企业使用，并支持各模块 JSON 配置。', details: ['支持网页版和移动端两个端配置，默认进入网页版。', '支持套餐、权益概览、权益明细、模型消耗、商用授权和常见问题模块。', '会员套餐价格和积分沿用真实套餐数据。'], addedAt: '2026-10-24', status: '待开发', path: '/admin-backoffice/membership-page-config' },
-  { id: 'membership-web-payment', title: '【Web】会员支付弹框/挽留弹框/补差价升级页新增会员', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员支付弹框、挽留弹框和补差价升级页新增并响应 V2610 会员等级，分别明确延期升级、直接扫码支付和补差价支付边界。', summary: '聚焦会员支付弹框、挽留弹框和补差价升级页的新增会员展示、套餐匹配、支付和购买限制。', details: ['会员支付弹框展示基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312，并按历史等级映射处理套餐和权益。', '会员支付弹框按全屏模块展示套餐、权益、AI 模型消耗、积分、席位和支付信息；切换会员类型、时长、积分档位或席位后同步更新金额和二维码。', '挽留弹框按补差价升级中的会员默认规则选择会员和套餐，确认购买后直接展示二维码，不再显示“立即开通”按钮。', '补差价升级页使用 /membership-upgrade，套餐显示区域响应新增会员，下面已有支付区域继续负责补差价支付。'], addedAt: '2026-10-28', status: '开发中', path: '/agent-skills-home' },
+  { id: 'membership-page-config', title: '【V2后台】会员页面配置套餐与权益', navLabels: ['会员页面配置'], level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '配置网页版和移动端会员页面的套餐、权益、说明内容及 2026 年 10 月积分购买弹框组织形式。', summary: '会员页配置拆分个人使用和企业使用，并新增积分弹框的标题、分区、切换和关联套餐组配置。', details: ['支持网页版和移动端两个端配置，默认进入网页版。', '支持套餐、权益概览、权益明细、模型消耗、商用授权、常见问题和“2026年10月积分弹框”模块。', '积分弹框配置支持顶部 Tab、普通/会员分区、分区风格、关联积分套餐组、关联套餐 ID、支付标题和支付协议文案；价格和积分数据仍从积分套餐配置读取。', '会员套餐价格和积分沿用真实套餐数据。'], addedAt: '2026-10-24', status: '开发中', path: '/admin-backoffice/membership-page-config' },
+  { id: 'membership-web-payment', title: '【Web】会员支付弹框/积分购买弹框/挽留弹框/补差价升级页新增会员', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '会员支付弹框、积分购买弹框、挽留弹框和补差价升级页新增并响应 V2610 会员等级，分别明确会员购买、积分购买和补差价支付边界。', summary: '会员支付弹框和积分购买弹框按后台页面/套餐配置展示组织、价格、积分和购买限制。', details: ['会员支付弹框展示基础版（个人）240、专业版（个人）241、基础版（企业）310、专业版（企业）311、旗舰版（企业）312，并按历史等级映射处理套餐和权益。', '积分购买弹框读取会员页面配置中的 2026 年 10 月积分弹框组织形式，读取积分套餐配置中的套餐组、卡片价格、有效期、标准/自定义积分量和会员可购买范围。', '积分购买弹框的自定义积分量套餐允许输入任意积分量，按套餐配置的单个积分价格计算应付金额；不满足会员范围时展示对应购买限制。', '会员支付弹框按全屏模块展示套餐、权益、AI 模型消耗、积分、席位和支付信息；切换会员类型、时长、积分档位或席位后同步更新金额和二维码。', '挽留弹框按补差价升级中的会员默认规则选择会员和套餐，确认购买后直接展示二维码，不再显示“立即开通”按钮。', '补差价升级页使用 /membership-upgrade，套餐显示区域响应新增会员，下面已有支付区域继续负责补差价支付。'], addedAt: '2026-10-28', status: '开发中', path: '/agent-skills-home' },
   { id: 'membership-web-entry-pages', title: '【Web】设计页外各会员入口处理新增会员', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '处理设计页外顶部导航、会员购买和补差价升级等会员入口与新增会员的关系，统一复用目标页面的会员服务能力。', summary: '设计页外各会员入口统一触发会员支付弹框或补差价升级页，不重复维护新会员套餐和支付规则。', details: ['首页顶部导航“会员中心”入口展示 V2610 标识，点击后打开统一会员支付弹框，入口文案、位置和打开行为保持一致。', '设计页外会员购买入口复用统一会员支付弹框，入口只传递当前会员身份和打开场景，不重复拼装套餐、积分和席位规则。', '常见问题中的补差价升级入口进入 /membership-upgrade，独立页面承接补差价支付，入口不直接创建订单。', '入口触发后使用新会员名称和 level，标识和说明不遮挡顶部导航、用户信息、会员中心按钮或跳转控件。'], addedAt: '2026-10-28', status: '待开发', path: '/agent-skills-home' },
   { id: 'membership-web-canvas-entries', title: '【Web】设计页/无限画布内各会员入口处理新会员', projectName: '创客贴前台', level: 'sub', requirementKey: 'V2610', parentId: 'membership-redesign', requirement: '处理设计页和无限画布内各会员入口对新会员等级的展示、会员支付弹框调起和权益响应。', summary: '设计页与无限画布内的会员入口统一响应新会员等级、权益和购买状态。', details: ['设计页内会员模板、会员权益和升级提示等入口展示新会员名称、level 和对应权益，不再出现旧等级名称或旧购买路径。', '点击设计页内的会员开通、升级或权益入口时统一调起会员支付弹框，入口只传递当前会员身份和场景，不重复拼装套餐与支付内容。', '无限画布内会员入口使用同一套新会员等级和会员状态判断；需要补差价升级时进入 /membership-upgrade。', '设计页和无限画布入口的 V2610 标识不遮挡编辑、生成、模板和会员操作控件，编辑与生成流程本身不在本子需求中改造。'], addedAt: '2026-10-28', status: '待开发', path: '/design-app' },
   { id: 'guided-search', title: '搜索引导管理', level: 'main', requirementKey: 'SG-2610', requirement: '维护引导词节点、节点关系，并查询实际映射配置。', summary: '支持引导词、关系和映射结果的查询与维护。', details: ['支持节点、关系和映射三个管理视图。', '可按关键词、层级、关系类型和状态筛选数据。', '支持导入、编辑、启停和删除操作。'], addedAt: '2026-10-22', status: '开发中', path: '/admin-backoffice/guided-search' },
@@ -428,6 +434,10 @@ export function getRequirementOverviewStats(): RequirementOverviewStats {
 }
 
 const REQUIREMENT_CHILD_ORDER: Record<string, string[]> = {
+  'web-skills-display': [
+    'web-skills-ai-creation-style',
+    'web-skills-sidebar-entry',
+  ],
   'developer-platform': [
     'developer-platform-home',
     'developer-platform-console',
@@ -456,6 +466,7 @@ const REQUIREMENT_CHILD_ORDER: Record<string, string[]> = {
   'membership-redesign': [
     'membership-web-payment',
     'membership-packages',
+    'membership-points-packages',
     'membership-open',
     'membership-page-config',
     'membership-web-entry-pages',
@@ -509,6 +520,9 @@ function getRequirementDisplayPath(item: RequirementNavItem): string {
   if (item.id === 'guided-search') return `${projectName} > 内容运营管理 > 搜索管理 > 搜索引导管理`;
   if (item.id === 'ai-ecommerce') return `${projectName} > 灵感社区 > 玩法管理 > AI电商配置`;
   if (item.id === 'membership-redesign') return `${projectName} > 会员中心 > 会员改版`;
+  if (item.id === 'web-skills-display') return `${projectName} > 首页 > AI创作 > 技能单页与展示`;
+  if (item.id === 'web-skills-ai-creation-style') return `${projectName} > 首页 > AI创作 > 技能展示区域`;
+  if (item.id === 'web-skills-sidebar-entry') return `${projectName} > 首页 > 左侧导航 > 技能入口`;
   if (item.id === 'membership-web-payment') return `${projectName} > 会员中心 > 会员支付弹框/挽留弹框/补差价升级页`;
   if (item.id === 'membership-web-entry-pages') return `${projectName} > 设计页外 > 会员入口`;
   if (item.id === 'membership-web-canvas-entries') return `${projectName} > 设计页/无限画布 > 会员入口`;
@@ -644,6 +658,10 @@ export function AdminSidebar({ onBackToDirectory, activeItem: activeItemProp = '
             }
             if (label === '活动列表' && typeof window !== 'undefined') {
               window.history.pushState({}, '', '/admin-backoffice/membership-activation');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+            if (label === '积分套餐配置' && typeof window !== 'undefined') {
+              window.history.pushState({}, '', '/admin-backoffice/membership-points-packages');
               window.dispatchEvent(new PopStateEvent('popstate'));
             }
             const developerPlatformRoutes: Record<string, string> = {

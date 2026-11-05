@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
 import { ArrowDown, ArrowUp, Check, ChevronDown, Image as ImageIcon, QrCode, Sparkles, Ticket, Video, X } from 'lucide-react';
 import { REAL_MEMBERSHIP_PLAN_DATA, type MembershipPlanData } from './membershipPlanData';
-import { readMembershipPageConfig, type MembershipBenefitItem, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig } from './membershipPageConfig';
+import { readMembershipPageConfig, type MembershipBenefitItem, type MembershipCommercialLicenseConfig, type MembershipComparisonConfig, type MembershipCycleConfig, type MembershipModelConsumptionConfig, type MembershipPageContent, type MembershipPlanDisplayConfig, type MembershipPointsPurchaseSection } from './membershipPageConfig';
 import { getEnterpriseSeatUnitPrice, readWebMembershipPackageDetails, type PackageDetailRow } from './MembershipPackagePage';
 import { MEMBERSHIP_NAME_BY_LEVEL } from './membershipLevelCatalog';
 import { LIFETIME_MEMBER_DAYS } from './membershipPackageRules';
 import { MEMBERSHIP_CENTER_REQUIREMENT_META, MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS, MEMBERSHIP_REQUIREMENT_DRAWER_WIDTH, MembershipRequirementFloatingButton } from './MembershipRequirementFloatingButton';
+import { canPurchaseMembershipPointsPackage, getMembershipPointsPackages, getPointsPackagePrice, readMembershipPointsPackageConfig, type MembershipPointsPackageItem } from './membershipPointsPackageConfig';
 
 const MEMBERSHIP_EXCLUSIVE_CONSULTANT_QR_URL = 'https://static.chuangkit.com/vip/qrcode/exclusive-consultant.png';
 
@@ -155,18 +156,16 @@ type MembershipPaymentModalProps = {
   onClose: () => void;
 };
 
-type MembershipPointsPackage = {
-  id: string;
+type ResolvedMembershipPointsPackage = MembershipPointsPackageItem & {
   points: number;
   price: number;
   originalPrice: number;
-  outputText: string;
-  tag?: string;
 };
 
 type MembershipPointsPurchaseModalProps = {
   onClose: () => void;
   isMember?: boolean;
+  currentMemberLevel?: number | null;
   onOpenMembership?: () => void;
 };
 
@@ -359,92 +358,107 @@ function MembershipPaymentModal({ selection, coupons, onClose }: MembershipPayme
   </div>;
 }
 
-const MEMBERSHIP_POINTS_PACKAGES: MembershipPointsPackage[] = [
-  { id: 'points-1500', points: 1500, price: 100, originalPrice: 200, outputText: '约生150~375张图' },
-  { id: 'points-3000', points: 3000, price: 199, originalPrice: 420, outputText: '约生300~750张图', tag: '限时特惠' },
-  { id: 'points-900', points: 900, price: 60, originalPrice: 100, outputText: '约生90~225张图', tag: '入门首选' },
-  { id: 'points-7500', points: 7500, price: 495, originalPrice: 1100, outputText: '约生750~1875张图' },
-];
+function resolveMembershipPointsPackage(item: MembershipPointsPackageItem, customPoints: number): ResolvedMembershipPointsPackage {
+  const points = item.packageType === 'custom' ? customPoints : item.points ?? 0;
+  const price = getPointsPackagePrice(item, points);
+  return { ...item, points, price, originalPrice: item.originalPrice ?? item.price ?? price };
+}
 
-const MEMBERSHIP_MEMBER_POINTS_PACKAGES: MembershipPointsPackage[] = [
-  { id: 'member-points-1500', points: 1500, price: 65, originalPrice: 100, outputText: '约生150~375张图', tag: '65折' },
-  { id: 'member-points-3000', points: 3000, price: 129, originalPrice: 199, outputText: '约生300~750张图', tag: '65折' },
-  { id: 'member-points-900', points: 900, price: 39, originalPrice: 60, outputText: '约生90~225张图', tag: '65折' },
-  { id: 'member-points-7500', points: 7500, price: 322, originalPrice: 495, outputText: '约生750~1875张图', tag: '65折' },
-];
-
-function MembershipPointsPayment({ selectedPackage }: { selectedPackage: MembershipPointsPackage }) {
-  const expiryDate = formatExpiryDate(365);
+function MembershipPointsPayment({ selectedPackage, agreement }: { selectedPackage: ResolvedMembershipPointsPackage; agreement: string }) {
+  const expiryDate = formatExpiryDate(selectedPackage.validityDays);
 
   return <div className="flex flex-col items-center border-t border-[#edf0f4] pt-7 sm:flex-row sm:items-center sm:justify-center sm:gap-8">
     <PaymentQrCode />
-    <div className="min-w-[210px] text-center sm:text-left"><div className="text-[28px] font-semibold tracking-[-.04em] text-[#ff493d]">¥{selectedPackage.price}</div><div className="mt-2 text-[14px] text-[#8791a1]">购买后有效期至：{expiryDate}</div><div className="mt-5 flex items-center justify-center gap-1.5 text-[13px] text-[#9aa3af] sm:justify-start"><PaymentMethodMark type="alipay" /><span>支付宝</span><span>/</span><PaymentMethodMark type="wechat" /><span>微信</span><span>扫码完成支付</span></div><p className="mt-3 text-[11px] leading-5 text-[#9aa3af]">支付即代表您已同意《创客贴积分购买协议》，支付后可联系客服开具发票。</p></div>
+    <div className="min-w-[210px] text-center sm:text-left"><div className="text-[28px] font-semibold tracking-[-.04em] text-[#ff493d]">¥{selectedPackage.price.toFixed(2)}</div><div className="mt-2 text-[14px] text-[#8791a1]">购买后有效期至：{expiryDate}</div><div className="mt-5 flex items-center justify-center gap-1.5 text-[13px] text-[#9aa3af] sm:justify-start"><PaymentMethodMark type="alipay" /><span>支付宝</span><span>/</span><PaymentMethodMark type="wechat" /><span>微信</span><span>扫码完成支付</span></div><p className="mt-3 text-[11px] leading-5 text-[#9aa3af]">{agreement}</p></div>
   </div>;
 }
 
-function MembershipPointsUpgradeGuide({ onOpenMembership }: { onOpenMembership: () => void }) {
+function MembershipPointsUpgradeGuide({ onOpenMembership, title = '会员专享套餐', description = '开通会员后可享受会员积分套餐优惠' }: { onOpenMembership: () => void; title?: string; description?: string }) {
   return <div className="flex min-h-[172px] items-center justify-center border-t border-[#edf0f4] pt-7">
-    <div className="text-center"><div className="flex items-center justify-center gap-2 text-[17px] font-semibold text-[#273143]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff3d6] text-[18px] text-[#d99b28]">✦</span><span>会员专享套餐</span></div><p className="mt-2 text-[12px] leading-5 text-[#8791a1]">开通会员后可享受会员积分套餐 65 折优惠</p><button type="button" onClick={onOpenMembership} className="mt-4 rounded-full bg-[#6961f4] px-6 py-2.5 text-[12px] font-medium text-white shadow-[0_6px_16px_rgba(105,97,244,.2)] transition hover:bg-[#554cf0]">立即购买会员</button></div>
+    <div className="text-center"><div className="flex items-center justify-center gap-2 text-[17px] font-semibold text-[#273143]"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff3d6] text-[18px] text-[#d99b28]">✦</span><span>{title}</span></div><p className="mt-2 text-[12px] leading-5 text-[#8791a1]">{description}</p><button type="button" onClick={onOpenMembership} className="mt-4 rounded-full bg-[#6961f4] px-6 py-2.5 text-[12px] font-medium text-white shadow-[0_6px_16px_rgba(105,97,244,.2)] transition hover:bg-[#554cf0]">立即购买会员</button></div>
   </div>;
 }
 
-export function MembershipPointsPurchaseModal({ onClose, isMember = false, onOpenMembership }: MembershipPointsPurchaseModalProps) {
-  const [activePackageTab, setActivePackageTab] = useState<'normal' | 'member'>('normal');
-  const [selectedPackageId, setSelectedPackageId] = useState(MEMBERSHIP_POINTS_PACKAGES[0].id);
-  const normalPackagesRef = useRef<HTMLElement>(null);
-  const memberPackagesRef = useRef<HTMLElement>(null);
-  const visiblePackages = activePackageTab === 'normal' ? MEMBERSHIP_POINTS_PACKAGES : MEMBERSHIP_MEMBER_POINTS_PACKAGES;
-  const selectedPackage = visiblePackages.find((item) => item.id === selectedPackageId) ?? visiblePackages[0];
-  const selectedPackageIsMemberOnly = selectedPackage.id.startsWith('member-');
-  const switchPackageTab = (tab: 'normal' | 'member') => {
-    setActivePackageTab(tab);
-    setSelectedPackageId((tab === 'normal' ? MEMBERSHIP_POINTS_PACKAGES : MEMBERSHIP_MEMBER_POINTS_PACKAGES)[0].id);
-    window.requestAnimationFrame(() => {
-      (tab === 'normal' ? normalPackagesRef.current : memberPackagesRef.current)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+export function MembershipPointsPurchaseModal({ onClose, isMember = false, currentMemberLevel, onOpenMembership }: MembershipPointsPurchaseModalProps) {
+  const [pageConfig, setPageConfig] = useState<MembershipPageContent>(() => readMembershipPageConfig('web'));
+  const [packageConfig, setPackageConfig] = useState(() => readMembershipPointsPackageConfig());
+  const [activePackageTab, setActivePackageTab] = useState(() => pageConfig.pointsPurchase.tabs[0]?.sectionKey ?? pageConfig.pointsPurchase.sections[0]?.key ?? 'normal');
+  const [selectedPackageId, setSelectedPackageId] = useState('');
+  const [customPoints, setCustomPoints] = useState(1000);
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  useEffect(() => {
+    const reload = () => {
+      setPageConfig(readMembershipPageConfig('web'));
+      setPackageConfig(readMembershipPointsPackageConfig());
+    };
+    window.addEventListener('storage', reload);
+    window.addEventListener('membership-page-config-updated', reload);
+    window.addEventListener('membership-points-package-config-updated', reload);
+    return () => {
+      window.removeEventListener('storage', reload);
+      window.removeEventListener('membership-page-config-updated', reload);
+      window.removeEventListener('membership-points-package-config-updated', reload);
+    };
+  }, []);
+
+  const visibleSections = pageConfig.pointsPurchase.sections.filter((section) => section.visible);
+  const getSectionPackages = (section: MembershipPointsPurchaseSection) => {
+    const configuredIds = new Set(section.packageIds);
+    return getMembershipPointsPackages(section.groupId, packageConfig).filter((item) => configuredIds.size === 0 || configuredIds.has(item.id));
+  };
+  const allItems = visibleSections.flatMap((section) => getSectionPackages(section));
+  const selectedItem = allItems.find((item) => item.id === selectedPackageId) ?? allItems[0];
+  const selectedPackage = selectedItem ? resolveMembershipPointsPackage(selectedItem, customPoints) : null;
+  const selectedPackageCanBuy = selectedItem ? canPurchaseMembershipPointsPackage(selectedItem, currentMemberLevel ?? (isMember ? 0 : null)) : false;
+  const switchPackageTab = (sectionKey: string) => {
+    setActivePackageTab(sectionKey);
+    const firstItem = visibleSections.find((section) => section.key === sectionKey);
+    const firstPackage = firstItem ? getSectionPackages(firstItem)[0] : undefined;
+    if (firstPackage) setSelectedPackageId(firstPackage.id);
+    window.requestAnimationFrame(() => sectionRefs.current[sectionKey]?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   };
   const handleOpenMembership = () => {
     onClose();
     onOpenMembership?.();
   };
-  const renderPackageCard = (item: MembershipPointsPackage, featured = false) => {
+  const selectPackage = (item: MembershipPointsPackageItem) => {
+    setActivePackageTab(item.displayArea);
+    setSelectedPackageId(item.id);
+  };
+  const renderPackageCard = (item: MembershipPointsPackageItem, featured = false) => {
     const isSelected = selectedPackageId === item.id;
-    const unitPrice = (item.price / item.points).toFixed(2);
-    const isMemberPackage = item.id.startsWith('member-');
-    return <button type="button" key={item.id} onClick={() => { setActivePackageTab(isMemberPackage ? 'member' : 'normal'); setSelectedPackageId(item.id); }} aria-pressed={isSelected} className={`group relative flex min-h-[220px] flex-col overflow-hidden rounded-[16px] border text-left transition duration-200 ${featured ? 'border-white/20 bg-[#102d4a]/90 text-white hover:-translate-y-0.5 hover:border-[#75e8ff]/70' : 'border-[#e4e8ef] bg-white text-[#202938] hover:-translate-y-0.5 hover:border-[#65dff4] hover:shadow-[0_10px_26px_rgba(42,75,118,.1)]'} ${isSelected ? (featured ? 'border-[#75e8ff] bg-[#173f61] shadow-[0_0_0_2px_rgba(117,232,255,.3),0_12px_28px_rgba(4,20,45,.22)]' : 'border-[#3bd3ec] bg-[#f4fdff] shadow-[0_0_0_2px_rgba(59,211,236,.12),0_12px_28px_rgba(42,75,118,.1)]') : ''}`}>
-      {item.tag ? <span className={`absolute right-0 top-0 rounded-bl-[10px] px-3 py-2 text-[11px] font-medium ${featured ? 'bg-[#43d8ec] text-[#08314f]' : isMemberPackage ? 'bg-[#fff0cf] text-[#bf7a13]' : 'bg-[#e7fbff] text-[#129fba]'}`}>{item.tag}</span> : null}
-      <span className={`mt-5 flex items-center gap-2 px-5 text-[13px] font-semibold ${featured ? 'text-[#bde9f3]' : 'text-[#566172]'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] ${featured ? 'bg-white/15 text-white' : 'bg-[#eafcff] text-[#1cbad2]'}`}>✦</span>{isMemberPackage ? '会员专享' : 'AI创作积分包'}</span>
-      <span className={`mt-3 px-5 text-[25px] font-semibold tracking-[-.04em] ${featured ? 'text-white' : 'text-[#202938]'}`}>{item.points.toLocaleString('en-US')}<span className={`ml-1 text-[13px] font-normal ${featured ? 'text-[#b9cddd]' : 'text-[#7f8a9a]'}`}>积分</span></span>
-      <span className={`mt-1 px-5 text-[11px] ${featured ? 'text-[#b9cddd]' : 'text-[#8993a2]'}`}>{item.outputText} · 有效期 1 年</span>
-      <div className="mt-auto flex items-end justify-between gap-3 px-5 pb-4 pt-5"><div><span className={`text-[22px] font-semibold tracking-[-.04em] ${featured ? 'text-white' : 'text-[#202938]'}`}>¥{item.price}</span><del className={`ml-2 text-[11px] ${featured ? 'text-[#9eb5c6]' : 'text-[#a8b0bc]'}`}>¥{item.originalPrice}</del></div><span className={`text-[10px] ${featured ? 'text-[#b9cddd]' : 'text-[#8b95a4]'}`}>1积分=¥{unitPrice}</span></div>
-      <span className={`mx-4 mb-4 rounded-[8px] py-2.5 text-center text-[12px] font-medium transition ${isSelected ? (featured ? 'bg-white text-[#103451]' : 'bg-[#45d6ec] text-[#07334b]') : featured ? 'bg-white/10 text-white group-hover:bg-white/20' : 'bg-[#f0f3f7] text-[#5e6879] group-hover:bg-[#e8fbff]'}`}>{isSelected ? '已选择 · 立即支付' : isMemberPackage ? '选择会员价' : '选择套餐'}</span>
-    </button>;
+    const resolved = resolveMembershipPointsPackage(item, item.packageType === 'custom' && isSelected ? customPoints : item.points ?? 0);
+    const unitPrice = item.packageType === 'custom' ? (item.unitPrice ?? 0).toFixed(3) : item.points ? (item.price ?? 0) / item.points : '0.00';
+    const canBuy = canPurchaseMembershipPointsPackage(item, currentMemberLevel ?? (isMember ? 0 : null));
+    const cardClass = `group relative flex min-h-[220px] cursor-pointer flex-col overflow-hidden rounded-[16px] border text-left transition duration-200 ${featured ? 'border-white/20 bg-[#102d4a]/90 text-white hover:-translate-y-0.5 hover:border-[#75e8ff]/70' : 'border-[#e4e8ef] bg-white text-[#202938] hover:-translate-y-0.5 hover:border-[#65dff4] hover:shadow-[0_10px_26px_rgba(42,75,118,.1)]'} ${isSelected ? (featured ? 'border-[#75e8ff] bg-[#173f61] shadow-[0_0_0_2px_rgba(117,232,255,.3),0_12px_28px_rgba(4,20,45,.22)]' : 'border-[#3bd3ec] bg-[#f4fdff] shadow-[0_0_0_2px_rgba(59,211,236,.12),0_12px_28px_rgba(42,75,118,.1)]') : ''}`;
+    return <div key={item.id} role="button" tabIndex={0} aria-pressed={isSelected} onClick={() => selectPackage(item)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') selectPackage(item); }} className={cardClass}>
+      {item.tag ? <span className={`absolute right-0 top-0 rounded-bl-[10px] px-3 py-2 text-[11px] font-medium ${featured ? 'bg-[#43d8ec] text-[#08314f]' : item.displayArea === 'member' ? 'bg-[#fff0cf] text-[#bf7a13]' : 'bg-[#e7fbff] text-[#129fba]'}`}>{item.tag}</span> : null}
+      <span className={`mt-5 flex items-center gap-2 px-5 text-[13px] font-semibold ${featured ? 'text-[#bde9f3]' : 'text-[#566172]'}`}><span className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] ${featured ? 'bg-white/15 text-white' : 'bg-[#eafcff] text-[#1cbad2]'}`}>✦</span>{item.displayArea === 'member' ? '会员专享' : 'AI创作积分包'}</span>
+      {item.packageType === 'custom' ? <div className="mt-3 px-5"><div className={`text-[20px] font-semibold ${featured ? 'text-white' : 'text-[#202938]'}`}>{item.displayName || '自定义充值'}</div><label className={`mt-2 flex items-center gap-2 rounded-[7px] border px-3 py-2 text-[12px] ${featured ? 'border-white/20 bg-white/10 text-[#c8e4ef]' : 'border-[#dfe5ec] bg-white text-[#7d8999]'}`} onClick={(event) => event.stopPropagation()}><input type="number" min="1" step="1" value={isSelected ? customPoints : 1000} onChange={(event) => { setCustomPoints(Math.max(1, Number(event.currentTarget.value) || 1)); setSelectedPackageId(item.id); }} className={`min-w-0 flex-1 bg-transparent text-[18px] font-semibold outline-none ${featured ? 'text-white' : 'text-[#202938]'}`} /><span>积分</span></label></div> : <span className={`mt-3 px-5 text-[25px] font-semibold tracking-[-.04em] ${featured ? 'text-white' : 'text-[#202938]'}`}>{item.points?.toLocaleString('en-US')}<span className={`ml-1 text-[13px] font-normal ${featured ? 'text-[#b9cddd]' : 'text-[#7f8a9a]'}`}>积分</span></span>}
+      <span className={`mt-1 px-5 text-[11px] ${featured ? 'text-[#b9cddd]' : 'text-[#8993a2]'}`}>{item.outputText || '按配置说明展示'} · 有效期 {item.validityDays} 天</span>
+      <div className="mt-auto flex items-end justify-between gap-3 px-5 pb-4 pt-5"><div><span className={`text-[22px] font-semibold tracking-[-.04em] ${featured ? 'text-white' : 'text-[#202938]'}`}>¥{item.packageType === 'custom' ? resolved.price.toFixed(2) : item.price}</span>{item.originalPrice ? <del className={`ml-2 text-[11px] ${featured ? 'text-[#9eb5c6]' : 'text-[#a8b0bc]'}`}>¥{item.originalPrice}</del> : null}</div><span className={`text-[10px] ${featured ? 'text-[#b9cddd]' : 'text-[#8b95a4]'}`}>1积分=¥{unitPrice}</span></div>
+      <span className={`mx-4 mb-4 rounded-[8px] py-2.5 text-center text-[12px] font-medium transition ${!canBuy ? 'bg-[#f4f5f7] text-[#9aa3af]' : isSelected ? (featured ? 'bg-white text-[#103451]' : 'bg-[#45d6ec] text-[#07334b]') : featured ? 'bg-white/10 text-white group-hover:bg-white/20' : 'bg-[#f0f3f7] text-[#5e6879] group-hover:bg-[#e8fbff]'}`}>{!canBuy ? '当前身份不可购买' : isSelected ? '已选择 · 立即支付' : item.displayArea === 'member' ? '选择会员价' : '选择套餐'}</span>
+    </div>;
   };
 
-  return <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#162238]/60 p-3 backdrop-blur-[4px] sm:p-6" role="dialog" aria-modal="true" aria-label="购买积分">
+  return <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#162238]/60 p-3 backdrop-blur-[4px] sm:p-6" role="dialog" aria-modal="true" aria-label={pageConfig.pointsPurchase.title}>
     <div className="relative flex h-[min(900px,calc(100vh-24px))] w-full max-w-[1280px] flex-col overflow-hidden rounded-[24px] bg-[#f5f7fa] shadow-[0_28px_90px_rgba(15,23,42,.34)] sm:h-[min(900px,calc(100vh-48px))]">
       <header className="relative flex shrink-0 items-center justify-center border-b border-[#e9edf2] bg-white px-5 py-4 sm:px-10 sm:py-5">
-        <div className="absolute left-5 flex items-center gap-3 sm:left-10"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,#4fdceb,#6885ff)] text-[16px] text-white shadow-[0_5px_14px_rgba(74,183,232,.24)]">✦</span><div><h2 className="text-[20px] font-semibold tracking-[-.03em] text-[#202938]">购买积分</h2><p className="mt-0.5 hidden text-[11px] text-[#8791a1] sm:block">适用于所有生成式 AI 功能</p></div></div>
+        <div className="absolute left-5 flex items-center gap-3 sm:left-10"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,#4fdceb,#6885ff)] text-[16px] text-white shadow-[0_5px_14px_rgba(74,183,232,.24)]">✦</span><div><h2 className="text-[20px] font-semibold tracking-[-.03em] text-[#202938]">{pageConfig.pointsPurchase.title}</h2><p className="mt-0.5 hidden text-[11px] text-[#8791a1] sm:block">{pageConfig.pointsPurchase.subtitle}</p></div></div>
         <div className="flex rounded-full bg-[#eef1f4] p-1" role="tablist" aria-label="积分套餐分类">
-          <button type="button" role="tab" aria-selected={activePackageTab === 'normal'} onClick={() => switchPackageTab('normal')} className={`rounded-full px-6 py-2 text-[13px] transition sm:px-10 ${activePackageTab === 'normal' ? 'bg-white font-semibold text-[#202938] shadow-[0_2px_10px_rgba(31,45,65,.1)] ring-2 ring-[#b5f1fa]' : 'text-[#657084] hover:text-[#202938]'}`}>普通套餐</button>
-          <button type="button" role="tab" aria-selected={activePackageTab === 'member'} onClick={() => switchPackageTab('member')} className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition sm:px-8 ${activePackageTab === 'member' ? 'bg-white font-semibold text-[#202938] shadow-[0_2px_10px_rgba(31,45,65,.1)] ring-2 ring-[#b5f1fa]' : 'text-[#657084] hover:text-[#202938]'}`}>会员专享套餐<span className="rounded-full bg-[#dffaff] px-1.5 py-0.5 text-[10px] font-medium text-[#0aa7c3]">65折</span></button>
+          {pageConfig.pointsPurchase.tabs.map((tab) => <button type="button" key={tab.key} role="tab" aria-selected={activePackageTab === tab.sectionKey} onClick={() => switchPackageTab(tab.sectionKey)} className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition sm:px-8 ${activePackageTab === tab.sectionKey ? 'bg-white font-semibold text-[#202938] shadow-[0_2px_10px_rgba(31,45,65,.1)] ring-2 ring-[#b5f1fa]' : 'text-[#657084] hover:text-[#202938]'}`}>{tab.label}{tab.badge ? <span className="rounded-full bg-[#dffaff] px-1.5 py-0.5 text-[10px] font-medium text-[#0aa7c3]">{tab.badge}</span> : null}</button>)}
         </div>
         <button type="button" onClick={onClose} aria-label="关闭积分购买弹框" className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[12px] bg-[#f7f8fa] text-[#6d7890] transition hover:bg-[#edf1f5] hover:text-[#202938] sm:right-8"><X className="h-5 w-5" /></button>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto scroll-smooth px-4 py-5 sm:px-8 sm:py-7 lg:px-12">
-        <section ref={normalPackagesRef} className="scroll-mt-5 overflow-hidden rounded-[22px] bg-[radial-gradient(circle_at_50%_5%,rgba(126,200,239,.42),transparent_28%),radial-gradient(circle_at_88%_70%,rgba(76,146,222,.35),transparent_32%),linear-gradient(135deg,#173654_0%,#0b2745_55%,#192f58_100%)] px-4 pb-5 pt-7 shadow-[0_14px_34px_rgba(20,50,85,.15)] sm:px-7 sm:pb-7 sm:pt-8">
-          <div className="text-center text-white"><h3 className="text-[26px] font-semibold tracking-[-.06em] sm:text-[30px]">普通积分套餐</h3><p className="mt-1 text-[12px] text-[#c6d9e8]">适用于所有用户 · 购买后 1 年有效</p></div>
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{MEMBERSHIP_POINTS_PACKAGES.map((item) => renderPackageCard(item, true))}</div>
-        </section>
-
-        <section ref={memberPackagesRef} className="mt-7 scroll-mt-5 rounded-[22px] border border-[#e5e9ef] bg-white px-4 pb-6 pt-7 sm:px-7 sm:pb-8 sm:pt-8">
-          <div className="text-center"><div className="flex items-center justify-center gap-2"><h3 className="text-[26px] font-semibold tracking-[-.06em] text-[#202938] sm:text-[30px]">会员专享套餐</h3><span className="rounded-[5px] bg-[#dffaff] px-2 py-1 text-[11px] font-semibold text-[#0aa7c3]">65折</span></div><p className="mt-1 text-[12px] text-[#8993a2]">开通会员后可享受会员积分套餐优惠</p></div>
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{MEMBERSHIP_MEMBER_POINTS_PACKAGES.map((item) => renderPackageCard(item))}</div>
-        </section>
+        {visibleSections.map((section) => <section key={section.key} ref={(element) => { sectionRefs.current[section.key] = element; }} className={`scroll-mt-5 overflow-hidden rounded-[22px] px-4 pb-5 pt-7 shadow-[0_14px_34px_rgba(20,50,85,.1)] sm:px-7 sm:pb-7 sm:pt-8 ${section.tone === 'featured' ? 'bg-[radial-gradient(circle_at_50%_5%,rgba(126,200,239,.42),transparent_28%),radial-gradient(circle_at_88%_70%,rgba(76,146,222,.35),transparent_32%),linear-gradient(135deg,#173654_0%,#0b2745_55%,#192f58_100%)]' : 'border border-[#e5e9ef] bg-white'} ${section.key === visibleSections[visibleSections.length - 1]?.key ? '' : 'mb-7'}`}>
+          <div className={`text-center ${section.tone === 'featured' ? 'text-white' : 'text-[#202938]'}`}><div className="flex items-center justify-center gap-2"><h3 className="text-[26px] font-semibold tracking-[-.06em] sm:text-[30px]">{section.title}</h3>{section.badge ? <span className="rounded-[5px] bg-[#dffaff] px-2 py-1 text-[11px] font-semibold text-[#0aa7c3]">{section.badge}</span> : null}</div><p className={`mt-1 text-[12px] ${section.tone === 'featured' ? 'text-[#c6d9e8]' : 'text-[#8993a2]'}`}>{section.subtitle}</p></div>
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{getSectionPackages(section).map((item) => renderPackageCard(item, section.tone === 'featured'))}</div>
+        </section>)}
 
         <section className="mx-auto mt-7 max-w-[980px] rounded-[18px] border border-[#e7ebf0] bg-white px-4 py-5 shadow-[0_8px_24px_rgba(31,47,73,.05)] sm:px-7 sm:py-7">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row"><div><h3 className="text-[17px] font-semibold text-[#202938]">{selectedPackageIsMemberOnly && !isMember ? '会员专享购买提示' : '确认购买'}</h3><p className="mt-1 text-[12px] text-[#8993a2]">已选择 {selectedPackage.points.toLocaleString('en-US')} 积分 · {selectedPackage.outputText}</p></div><div className="flex items-center gap-3"><span className="text-[12px] text-[#8993a2]">应付金额</span><strong className="text-[25px] tracking-[-.04em] text-[#ff493d]">¥{selectedPackage.price}</strong></div></div>
-          <div className="mt-5">{selectedPackageIsMemberOnly && !isMember ? <MembershipPointsUpgradeGuide onOpenMembership={handleOpenMembership} /> : <MembershipPointsPayment selectedPackage={selectedPackage} />}</div>
+          {selectedPackage ? <><div className="flex flex-col items-center justify-between gap-4 sm:flex-row"><div><h3 className="text-[17px] font-semibold text-[#202938]">{selectedPackageCanBuy ? pageConfig.pointsPurchase.paymentTitle : '当前身份暂不可购买'}</h3><p className="mt-1 text-[12px] text-[#8993a2]">已选择 {selectedPackage.points.toLocaleString('en-US')} 积分 · {selectedPackage.outputText}</p></div><div className="flex items-center gap-3"><span className="text-[12px] text-[#8993a2]">应付金额</span><strong className="text-[25px] tracking-[-.04em] text-[#ff493d]">¥{selectedPackage.price.toFixed(2)}</strong></div></div><div className="mt-5">{selectedPackageCanBuy ? <MembershipPointsPayment selectedPackage={selectedPackage} agreement={pageConfig.pointsPurchase.paymentAgreement} /> : <MembershipPointsUpgradeGuide onOpenMembership={handleOpenMembership} title="会员专享套餐" description={isMember ? '当前会员等级不在该套餐的可购买范围内' : '开通会员后可享受会员积分套餐优惠'} />}</div></> : <div className="py-12 text-center text-[13px] text-[#9aa5b5]">当前没有可展示的积分套餐</div>}
         </section>
       </div>
     </div>
@@ -1740,7 +1754,7 @@ export function MembershipCenterModal({ open = true, onClose, onOpenChange, onOp
       {toastMessage ? <div role="status" className="pointer-events-none fixed bottom-8 left-1/2 z-[220] -translate-x-1/2 rounded-[8px] bg-[#263449] px-4 py-3 text-[12px] text-white shadow-[0_12px_30px_rgba(22,34,54,.22)]">{toastMessage}</div> : null}
       {retentionOpen ? <RetentionPurchaseModal cycleOptions={cycleOptions} selectedCycle={selectedCycle} activeCycleKey={activeCycleKey} plans={visiblePlans} selectedPlanIndex={retentionPlanIndex} membershipType={membershipType} onCycleChange={setActiveCycle} onPlanChange={setRetentionPlanIndex} onContinue={() => setRetentionOpen(false)} onClose={handleClose} /> : null}
       {paymentSelection ? <MembershipPaymentModal selection={paymentSelection} coupons={availableCoupons} onClose={() => setPaymentSelection(null)} /> : null}
-      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} isMember={currentMemberLevel != null} /> : null}
+      {pointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setPointsPurchaseOpen(false)} isMember={currentMemberLevel != null} currentMemberLevel={currentMemberLevel} /> : null}
       {couponModalOpen ? <MembershipCouponModal coupons={availableCoupons} onClose={() => setCouponModalOpen(false)} /> : null}
       {enterprisePurchaseContactOpen ? <EnterprisePurchaseContactModal config={pageConfig.commercialLicense.enterprisePurchaseContact} onClose={() => setEnterprisePurchaseContactOpen(false)} /> : null}
       <MembershipRequirementFloatingButton className="absolute right-4 top-16" title="会员支付弹框" subtitle="会员中心身份、套餐、积分、席位、支付和购买限制说明" sections={MEMBERSHIP_CENTER_REQUIREMENT_SECTIONS} meta={MEMBERSHIP_CENTER_REQUIREMENT_META} open={requirementDrawerOpen} onOpenChange={setRequirementDrawerOpen} />

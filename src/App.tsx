@@ -13,6 +13,7 @@ import { DesignAppAiCreatePage } from './components/DesignAppAiCreatePage';
 import { AdminBackofficePage, getRequirementOverviewStats, getRequirementProjectStats, RequirementListBoard, RequirementListPage } from './components/AdminBackofficePage';
 import { GuidedSearchConfigPage } from './components/GuidedSearchConfigPage';
 import { MembershipPackagePage } from './components/MembershipPackagePage';
+import { MembershipPointsPackagePage } from './components/MembershipPointsPackagePage';
 import { MembershipPageConfigPage } from './components/MembershipPageConfigPage';
 import { MembershipOpenPage } from './components/MembershipOpenPage';
 import { UserSegmentPage } from './components/UserSegmentPage';
@@ -36,7 +37,7 @@ import { ExportDialog, ExportFormat, ExportItem, ExportScale, ImageExportFormat,
 
 type AgentEvaluationProjectRoute = `/agent-eval/project/${string}`;
 type AgentEvaluationRequirementRoute = `/agent-eval/project/${string}/requirement/${string}`;
-type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/code-video' | '/ai-video-editor' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval' | '/admin-backoffice/developer-platform' | '/admin-backoffice/developer-platform/capabilities' | '/admin-backoffice/developer-platform/apps' | '/admin-backoffice/developer-platform/billing' | '/admin-backoffice/developer-platform/statistics' | '/admin-backoffice/developer-platform/tasks' | '/admin-backoffice/developer-platform/logs';
+type AppRoute = '/' | '/canvas' | '/plugin-prototype' | '/connector-auth' | '/agent-eval' | AgentEvaluationProjectRoute | AgentEvaluationRequirementRoute | '/agent-skills-home' | '/agent-skills-home/templates' | '/membership-upgrade' | '/design-app' | '/design-app/ai-create' | '/developer-platform' | '/open-platform' | '/code-video' | '/ai-video-editor' | '/admin-backoffice' | '/admin-backoffice/ai-ecommerce' | '/admin-backoffice/guided-search' | '/admin-backoffice/membership-open' | '/admin-backoffice/membership-packages' | '/admin-backoffice/membership-points-packages' | '/admin-backoffice/membership-page-config' | '/admin-backoffice/user-segments' | '/admin-backoffice/user-segments/new-rule' | '/admin-backoffice/user-segments/custom-rule' | '/admin-backoffice/authorization-scope' | '/admin-backoffice/user-authorization' | '/admin-backoffice/user-authorization-management' | '/admin-backoffice/membership-activation' | '/admin-backoffice/requirements' | '/admin-backoffice/requirements/membership' | '/admin-backoffice/requirements/ai-ecommerce' | '/admin-backoffice/requirements/search-guide' | '/admin-backoffice/requirements/agent-eval' | '/admin-backoffice/developer-platform' | '/admin-backoffice/developer-platform/capabilities' | '/admin-backoffice/developer-platform/apps' | '/admin-backoffice/developer-platform/billing' | '/admin-backoffice/developer-platform/statistics' | '/admin-backoffice/developer-platform/tasks' | '/admin-backoffice/developer-platform/logs';
 
 type AppHistoryState = {
   appRoute?: AppRoute;
@@ -111,6 +112,7 @@ const normalizeRoute = (pathname: string): AppRoute => {
   if (pathname === '/admin-backoffice/guided-search') return '/admin-backoffice/guided-search';
   if (pathname === '/admin-backoffice/membership-open') return '/admin-backoffice/membership-open';
   if (pathname === '/admin-backoffice/membership-packages') return '/admin-backoffice/membership-packages';
+  if (pathname === '/admin-backoffice/membership-points-packages') return '/admin-backoffice/membership-points-packages';
   if (pathname === '/admin-backoffice/membership-page-config') return '/admin-backoffice/membership-page-config';
   if (pathname === '/admin-backoffice/user-segments/new-rule') return '/admin-backoffice/user-segments/new-rule';
   if (pathname === '/admin-backoffice/user-segments/custom-rule') return '/admin-backoffice/user-segments/custom-rule';
@@ -1480,6 +1482,10 @@ export default function App() {
         title: '创客贴管理后台｜会员套餐管理',
         description: '会员中心下的会员套餐组管理页面。',
       },
+      '/admin-backoffice/membership-points-packages': {
+        title: '创客贴管理后台｜积分套餐配置',
+        description: '会员中心下的积分套餐组和积分套餐配置页面。',
+      },
       '/admin-backoffice/membership-open': {
         title: '创客贴管理后台｜开通会员',
         description: '会员中心下的企业会员开通页面。',
@@ -1934,6 +1940,16 @@ export default function App() {
 
   if (currentRoute === '/admin-backoffice/membership-packages') {
     return <MembershipPackagePage
+      onBackToDirectory={() => navigateTo('/')}
+      onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
+      onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
+      onNavigateToMembershipPageConfig={() => navigateTo('/admin-backoffice/membership-page-config')}
+      onNavigateToRequirement={(path) => navigateTo(path as AppRoute)}
+    />;
+  }
+
+  if (currentRoute === '/admin-backoffice/membership-points-packages') {
+    return <MembershipPointsPackagePage
       onBackToDirectory={() => navigateTo('/')}
       onNavigateToSkillConfig={() => navigateTo('/admin-backoffice/ai-ecommerce')}
       onNavigateToGuidedSearch={() => navigateTo('/admin-backoffice/guided-search')}
