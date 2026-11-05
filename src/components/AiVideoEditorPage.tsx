@@ -4,12 +4,15 @@ import {
   ArrowLeft,
   AudioLines,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
   CircleHelp,
   Clock3,
   Cloud,
   Download,
+  Edit3,
+  FileAudio,
   Film,
   FolderOpen,
   Gauge,
@@ -22,6 +25,7 @@ import {
   Music2,
   Pause,
   Play,
+  PlayCircle,
   Plus,
   Redo2,
   Scissors,
@@ -30,6 +34,7 @@ import {
   Sparkles,
   SquareMousePointer,
   Subtitles,
+  Table2,
   TextCursorInput,
   Undo2,
   Upload,
@@ -52,6 +57,22 @@ type ChatMessage = {
 };
 
 type ToolId = 'media' | 'edit' | 'text' | 'audio' | 'effects';
+type WorkflowStage = 'script' | 'voice' | 'storyboard' | 'mg' | 'final';
+
+type ScriptRow = {
+  id: number;
+  section: string;
+  narration: string;
+};
+
+type StoryboardRow = {
+  id: number;
+  time: string;
+  title: string;
+  visual: string;
+  text: string;
+  duration: string;
+};
 
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
 const DEFAULT_POSTER = '/code-video/reference-style-demo-v14-poster.png';
@@ -60,13 +81,13 @@ const initialMessages: ChatMessage[] = [
   {
     id: 1,
     role: 'assistant',
-    text: '视频已经导入，我先帮你梳理了一遍内容。当前素材约 27 秒，共识别到 4 个画面段落。',
+    text: '我已经根据你的主题生成了一版旁白脚本，共 7 个段落。开场只保留标题与印象，旁白会从片段 1 进入，全文约 72 秒。',
     time: '刚刚',
   },
   {
     id: 2,
     role: 'assistant',
-    text: '你可以直接告诉我想怎么改，比如“把开头压缩到 3 秒”“给视频加上自动字幕”或“换一首更有节奏感的音乐”。',
+    text: '请先确认脚本。你可以直接在表格中修改旁白，也可以告诉我想调整的内容；确认后我会进入口播声音选择。',
   },
 ];
 
@@ -94,6 +115,35 @@ const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
   { id: 'effects', label: '特效', icon: WandSparkles },
 ];
 
+const scriptRows: ScriptRow[] = [
+  { id: 1, section: '片段 1 · 约化年前', narration: '约化年前，野生桑树诞生在雅鲁藏布江流域，桑基起源于中国。' },
+  { id: 2, section: '片段 2 · 新石器时期', narration: '新石器时期，先民们在野生桑林中发现了桑叶与蚕，开始了对二者的驯化之旅。' },
+  { id: 3, section: '片段 3 · 商朝', narration: '商朝时，甲骨文中已经出现了蚕、桑、丝等象形字，其中“桑”的象形字多达六种。' },
+  { id: 4, section: '片段 4 · 西汉', narration: '结出的白桑被视为祥瑞，并成为贡品，用于祭祀天地、赏赐功臣。' },
+  { id: 5, section: '片段 5 · 东汉末年', narration: '东汉末年，白桑被用作药引，帮助百姓治疗疾病。' },
+  { id: 6, section: '片段 6 · 新石器时期', narration: '二十世纪五十年代，半坡遗址发现的碳化桑蔓籽粒，把人们食用桑叶的历史推回到新石器时期。' },
+  { id: 7, section: '片段 7 · 1959 年', narration: '1959年，阿斯塔那古墓群出土的唐代桑基，仍保留着完整形态。' },
+];
+
+const storyboardRows: StoryboardRow[] = [
+  { id: 1, time: '00:00', title: '开场 · 一颗桑果', visual: '米色宣纸背景，桑果从远处缓缓推近，保留纸张纹理。', text: '一颗桑果，见证千年文明', duration: '5s' },
+  { id: 2, time: '00:05', title: '片段 1 · 雅鲁藏布', visual: '以河谷远景作开篇，镜头缓慢推进至桑树枝叶。', text: '桑树起源于中国', duration: '6.4s' },
+  { id: 3, time: '00:11', title: '片段 2 · 桑叶驯化', visual: '桑叶与蚕的 MG 插画逐层出现，连接线轻柔入场。', text: '从野生桑林到人工栽培', duration: '7.1s' },
+  { id: 4, time: '00:18', title: '片段 3 · 甲骨文', visual: '甲骨文字形浮现，笔尖沿着文字轮廓完成书写。', text: '“桑”的象形字多达六种', duration: '8.1s' },
+  { id: 5, time: '00:26', title: '片段 4 · 祥瑞贡品', visual: '白桑树与古籍纸页叠化，画面从右向左展开。', text: '结出的白桑被视为祥瑞', duration: '5s' },
+  { id: 6, time: '00:31', title: '片段 5 · 药引', visual: '药材与桑叶的线稿图标依次出现，留出字幕安全区。', text: '桑叶也成为药引', duration: '4.4s' },
+];
+
+const voiceOptions = [
+  { id: 'Quentin', name: 'Quentin', detail: '温暖男声，儒雅（推荐）' },
+  { id: 'Felix', name: 'Felix', detail: '清晰男声，纯中文' },
+  { id: 'Kian', name: 'Kian', detail: '通用男声，清晰' },
+  { id: 'Cedric', name: 'Cedric', detail: '通用男声，清晰' },
+  { id: 'Magnus', name: 'Magnus', detail: '通用男声，清晰' },
+  { id: 'Pearl', name: 'Pearl', detail: '流畅女声，清晰' },
+  { id: 'Vienna', name: 'Vienna', detail: '清晰女声，中英混合' },
+];
+
 export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,11 +160,25 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isThinking, setIsThinking] = useState(false);
   const [hasCaptions, setHasCaptions] = useState(false);
-  const [hasMusic, setHasMusic] = useState(true);
+  const [hasMusic, setHasMusic] = useState(false);
+  const [workflowStage, setWorkflowStage] = useState<WorkflowStage>('script');
+  const [scriptDraft, setScriptDraft] = useState<ScriptRow[]>(scriptRows);
+  const [storyboardDraft, setStoryboardDraft] = useState<StoryboardRow[]>(storyboardRows);
+  const [selectedVoice, setSelectedVoice] = useState('Pearl');
+  const [voiceStatus, setVoiceStatus] = useState<'idle' | 'generating' | 'ready'>('idle');
+  const [mgStatus, setMgStatus] = useState<'idle' | 'generating' | 'ready'>('idle');
+  const [expandedScene, setExpandedScene] = useState<number | null>(null);
+  const [isScriptEditorOpen, setIsScriptEditorOpen] = useState(false);
+  const [isStoryboardEditorOpen, setIsStoryboardEditorOpen] = useState(false);
+  const [hasVoiceover, setHasVoiceover] = useState(false);
+  const [hasStoryboard, setHasStoryboard] = useState(false);
+  const [hasMgLayers, setHasMgLayers] = useState(false);
+  const [finalStatus, setFinalStatus] = useState<'idle' | 'generating' | 'done'>('idle');
   const [isMuted, setIsMuted] = useState(false);
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [zoom, setZoom] = useState(72);
   const [showToast, setShowToast] = useState('');
+  const notify = (message: string) => setShowToast(message);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -126,9 +190,26 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     return () => window.clearTimeout(timer);
   }, [showToast]);
 
-  const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  useEffect(() => {
+    if (workflowStage !== 'mg') return;
+    setMgStatus('generating');
+    const timer = window.setTimeout(() => {
+      setMgStatus('ready');
+      setHasMgLayers(true);
+    }, 1300);
+    return () => window.clearTimeout(timer);
+  }, [workflowStage]);
 
-  const notify = (message: string) => setShowToast(message);
+  useEffect(() => {
+    if (workflowStage !== 'final' || finalStatus !== 'generating') return;
+    const timer = window.setTimeout(() => {
+      setFinalStatus('done');
+      notify('视频已生成，可以预览或导出');
+    }, 1800);
+    return () => window.clearTimeout(timer);
+  }, [workflowStage, finalStatus]);
+
+  const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
   const seekTo = (nextTime: number) => {
     const safeTime = Math.max(0, Math.min(duration, nextTime));
@@ -163,6 +244,71 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setMessages((items) => [...items, { id: Date.now(), role: 'assistant', text }]);
   };
 
+  const confirmScript = () => {
+    setWorkflowStage('voice');
+    setMessages((items) => [
+      ...items,
+      { id: Date.now(), role: 'user', text: '确认脚本\n确认，按此方案继续' },
+      { id: Date.now() + 1, role: 'assistant', text: '旁白脚本已确认。我为你推荐了温暖男声 Quentin，也准备了几种清晰男声和女声供选择。请选择一种口播声音，确认后我会先生成声音并放入声音线。' },
+    ]);
+    notify('脚本已确认');
+  };
+
+  const startVoiceGeneration = () => {
+    if (voiceStatus !== 'idle') return;
+    setVoiceStatus('generating');
+    setIsThinking(true);
+    window.setTimeout(() => {
+      setVoiceStatus('ready');
+      setHasVoiceover(true);
+      setIsThinking(false);
+      setWorkflowStage('storyboard');
+      setMessages((items) => [
+        ...items,
+        { id: Date.now(), role: 'user', text: `选择口播声音\n${selectedVoice}` },
+        { id: Date.now() + 1, role: 'assistant', text: `口播音频已生成，使用 ${selectedVoice} 声音，真实时长约 72.2 秒，已经放入声音线。接下来我根据旁白内容整理了分镜方案，请确认或展开表格编辑。` },
+      ]);
+      notify('口播音频已生成并放入声音线');
+    }, 1500);
+  };
+
+  const confirmStoryboard = () => {
+    setHasStoryboard(true);
+    setWorkflowStage('mg');
+    setMessages((items) => [
+      ...items,
+      { id: Date.now(), role: 'user', text: '确认分镜方案\n确认，按此方案继续' },
+      { id: Date.now() + 1, role: 'assistant', text: '分镜已确认。我现在开始生成 MG 画面与文字层，配乐和音效会同步进入生成队列。你可以展开每个镜头调整画面描述或文字。' },
+    ]);
+    notify('分镜方案已确认');
+  };
+
+  const confirmMg = () => {
+    setWorkflowStage('final');
+    setMessages((items) => [
+      ...items,
+      { id: Date.now(), role: 'user', text: '确认生成 · 6 个视频 · 共 33s · 16:9' },
+      { id: Date.now() + 1, role: 'assistant', text: 'MG 画面、文字层、配乐和音效都已准备完成。最后确认一次，确认后我会开始生成完整视频。' },
+    ]);
+    notify('MG 画面与文字已确认');
+  };
+
+  const startFinalGeneration = () => {
+    if (finalStatus !== 'idle') return;
+    setFinalStatus('generating');
+    setIsThinking(true);
+    window.setTimeout(() => setIsThinking(false), 1800);
+    notify('视频正在生成中');
+  };
+
+  const updateScriptRow = (id: number, field: keyof ScriptRow, value: string) => {
+    setScriptDraft((rows) => rows.map((row) => row.id === id ? { ...row, [field]: value } : row));
+  };
+
+  const updateStoryboardRow = (id: number, field: keyof StoryboardRow, value: string) => {
+    setStoryboardDraft((rows) => rows.map((row) => row.id === id ? { ...row, [field]: value } : row));
+  };
+
   const handleSend = (preset?: string) => {
     const text = (preset ?? chatInput).trim();
     if (!text || isThinking) return;
@@ -181,6 +327,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       } else if (/开头|压缩|剪掉|剪辑/.test(normalized)) {
         seekTo(Math.min(3, duration));
         addAssistantMessage('已将播放位置定位到开头剪辑点。建议保留 00:03 之后的内容，节奏会更紧凑。');
+      } else if (workflowStage === 'script') {
+        addAssistantMessage('收到，我会按你的想法修改旁白脚本。你也可以直接打开全屏表格，对每个段落逐条编辑。');
+      } else if (workflowStage === 'storyboard') {
+        addAssistantMessage('收到，我会按你的要求调整分镜。可以打开全屏表格，修改镜头名称、画面描述、文字和时长。');
       } else {
         addAssistantMessage('收到，我会按这个方向调整视频。你也可以继续补充具体的节奏、字幕或配乐偏好。');
       }
@@ -198,6 +348,108 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const video = videoRef.current;
     if (!video) return;
     if (Number.isFinite(video.duration) && video.duration > 0) setDuration(video.duration);
+  };
+
+  const renderWorkflowContent = () => {
+    const renderMessages = () => (
+      <>
+        <div className="ai-video-editor-chat-date">今天 10:28</div>
+        {messages.map((message) => (
+          <div key={message.id} className={`ai-video-editor-message ai-video-editor-message--${message.role}`}>
+            {message.role === 'assistant' && <div className="ai-video-editor-message-avatar"><Sparkles size={12} /></div>}
+            <div className="ai-video-editor-message-bubble">
+              <p>{message.text}</p>
+              {message.time && <span>{message.time}</span>}
+            </div>
+          </div>
+        ))}
+      </>
+    );
+
+    const renderScriptCard = () => (
+      <div className="ai-video-editor-workflow-agent">
+        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-card">
+          <div className="ai-video-editor-workflow-heading"><div><strong>确认脚本</strong><span>共 7 个段落 · 约 72 秒</span></div><span className="ai-video-editor-cost">本方案预计消耗 12 积分</span></div>
+          <p className="ai-video-editor-workflow-note">旁白已按历史脉络整理完成。确认后我会先生成声音，再依据真实时长重新排布分镜。</p>
+          <div className="ai-video-editor-script-table">
+            <div className="ai-video-editor-script-table__head"><span>段落</span><span>旁白（字幕）</span></div>
+            {scriptDraft.map((row) => <div className="ai-video-editor-script-table__row" key={row.id}><span>{row.section}</span><span>{row.narration}</span></div>)}
+          </div>
+          <div className="ai-video-editor-workflow-hint">确认后会先生成旁白并校准真实时长，再开始编排画面。</div>
+          <div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setIsScriptEditorOpen(true)}><Table2 size={14} /> 展开表格编辑</button><button type="button" className="ai-video-editor-primary-action" onClick={confirmScript}><Check size={14} /> 确认脚本</button></div>
+        </div>
+      </div>
+    );
+
+    const renderVoiceCard = () => (
+      <div className="ai-video-editor-workflow-agent">
+        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-card ai-video-editor-voice-card">
+          <div className="ai-video-editor-workflow-heading"><div><strong>选择口播声音</strong><span>脚本已确认 · 约 72 秒</span></div></div>
+          <p className="ai-video-editor-workflow-note">推荐使用 Quentin 温暖男声。你可以点击右侧播放按钮试听，确认后开始生成声音。</p>
+          <div className="ai-video-editor-voice-list">
+            {voiceOptions.map((voice, index) => (
+              <button type="button" key={voice.id} className={`ai-video-editor-voice-option${selectedVoice === voice.id ? ' is-selected' : ''}`} onClick={() => setSelectedVoice(voice.id)}>
+                <span className="ai-video-editor-voice-index">{selectedVoice === voice.id ? <Check size={12} /> : index + 1}</span>
+                <span className="ai-video-editor-voice-copy"><strong>{voice.name}</strong><em>— {voice.detail}</em></span>
+                <span className="ai-video-editor-voice-play" onClick={(event) => { event.stopPropagation(); notify(`正在试听 ${voice.name}`); }}><PlayCircle size={17} /></span>
+              </button>
+            ))}
+          </div>
+          <button type="button" className="ai-video-editor-upload-voice" onClick={() => notify('上传自定义声音入口已打开')}><Plus size={14} /> 上传音频克隆我的声音</button>
+          <div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => notify('可以继续补充声音偏好')}><Edit3 size={14} /> 补充声音偏好</button><button type="button" className="ai-video-editor-primary-action" onClick={startVoiceGeneration} disabled={voiceStatus === 'generating'}>{voiceStatus === 'generating' ? <><span className="ai-video-editor-spinner" /> 正在生成声音</> : <><Mic2 size={14} /> 生成声音</>}</button></div>
+        </div>
+      </div>
+    );
+
+    const renderStoryboardCard = () => (
+      <div className="ai-video-editor-workflow-agent">
+        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-card">
+          <div className="ai-video-editor-workflow-heading"><div><strong>确认分镜方案</strong><span>共 6 个镜头 · 约 33 秒 · 16:9</span></div><span className="ai-video-editor-cost">预计消耗 73–121 积分</span></div>
+          <p className="ai-video-editor-workflow-note">口播真实时长已写入声音线。我按旁白节奏拆出了镜头、画面、文字和时长，你可以展开表格后逐项修改。</p>
+          <div className="ai-video-editor-storyboard-table">
+            <div className="ai-video-editor-storyboard-table__head"><span>镜头</span><span>时间 / 名称</span><span>画面与文字</span><span>时长</span></div>
+            {storyboardDraft.map((row) => <div className="ai-video-editor-storyboard-table__row" key={row.id}><span>第 {row.id} 镜</span><span>{row.time}<br />{row.title}</span><span>{row.visual}<br /><b>{row.text}</b></span><span>{row.duration}</span></div>)}
+          </div>
+          <div className="ai-video-editor-storyboard-footer"><span><Music2 size={13} /> 低沉神秘的纪录片配乐，72 秒，约 70 BPM</span><button type="button" onClick={() => setIsStoryboardEditorOpen(true)}><Maximize2 size={13} /> 展开编辑</button></div>
+          <div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setIsStoryboardEditorOpen(true)}><Edit3 size={14} /> 修改分镜</button><button type="button" className="ai-video-editor-primary-action" onClick={confirmStoryboard}><Check size={14} /> 确认分镜方案</button></div>
+        </div>
+      </div>
+    );
+
+    const renderMgCard = () => (
+      <div className="ai-video-editor-workflow-agent">
+        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-card ai-video-editor-mg-card">
+          <div className="ai-video-editor-workflow-heading"><div><strong>{mgStatus === 'generating' ? '正在生成 MG 画面与文字' : 'MG 画面与文字已生成'}</strong><span>6 个镜头 · 配乐与音效同步准备</span></div><span className="ai-video-editor-cost">预计消耗约 330 积分</span></div>
+          {mgStatus === 'generating' ? <div className="ai-video-editor-mg-loading"><div className="ai-video-editor-mg-loading__icon"><Sparkles size={21} /></div><strong>正在生成 6 个 MG 镜头</strong><span>配乐、音效和文字层会同步合成，请稍候…</span><div className="ai-video-editor-progress"><span /></div></div> : <>
+            <p className="ai-video-editor-workflow-note">分镜已执行完成。请展开镜头卡片检查画面描述与文字层，确认后开始生成完整视频。</p>
+            <div className="ai-video-editor-scene-list">
+              {storyboardDraft.slice(0, 5).map((row) => <div className={`ai-video-editor-scene-card${expandedScene === row.id ? ' is-expanded' : ''}`} key={row.id}>
+                <button type="button" className="ai-video-editor-scene-summary" onClick={() => setExpandedScene((value) => value === row.id ? null : row.id)}><span className="ai-video-editor-scene-number">{row.id}</span><span><strong>视频 {row.id}</strong><em>[{row.time}–{row.duration}] {row.title}</em></span><ChevronDown size={14} /></button>
+                {expandedScene === row.id && <div className="ai-video-editor-scene-editor"><label>画面描述<textarea value={row.visual} onChange={(event) => updateStoryboardRow(row.id, 'visual', event.target.value)} rows={2} /></label><label>文字层<input value={row.text} onChange={(event) => updateStoryboardRow(row.id, 'text', event.target.value)} /></label></div>}
+              </div>)}
+            </div>
+            <div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setIsStoryboardEditorOpen(true)}><Table2 size={14} /> 全屏编辑分镜</button><button type="button" className="ai-video-editor-primary-action" onClick={confirmMg}><Check size={14} /> 确认生成</button></div>
+          </>}
+        </div>
+      </div>
+    );
+
+    const renderFinalCard = () => (
+      <div className="ai-video-editor-workflow-agent">
+        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-card ai-video-editor-final-card">
+          <div className="ai-video-editor-workflow-heading"><div><strong>{finalStatus === 'done' ? '视频生成完成' : '确认生成视频'}</strong><span>6 个视频 · 共 33 秒 · 16:9</span></div></div>
+          {finalStatus === 'generating' ? <div className="ai-video-editor-final-loading"><div className="ai-video-editor-final-spinner"><span /></div><strong>正在合成最终视频</strong><span>MG 画面、文字层、口播和配乐正在合成…</span></div> : finalStatus === 'done' ? <div className="ai-video-editor-final-done"><CheckCircle2 size={22} /><strong>完整视频已经生成</strong><span>你可以回到时间线预览，也可以直接导出视频。</span><button type="button" className="ai-video-editor-primary-action" onClick={() => notify('预览窗口已准备好')}><Play size={14} /> 预览视频</button></div> : <><p className="ai-video-editor-workflow-note">所有内容都已确认，确认后将开始生成完整视频，预计需要 2–3 分钟。</p><div className="ai-video-editor-final-summary"><span><FileAudio size={14} /> {selectedVoice} 口播</span><span><Sparkles size={14} /> 6 个 MG 镜头</span><span><Clock3 size={14} /> 33 秒</span></div><div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setWorkflowStage('mg')}><Edit3 size={14} /> 返回调整</button><button type="button" className="ai-video-editor-primary-action" onClick={startFinalGeneration}><Play size={14} /> 开始生成</button></div></>}
+        </div>
+      </div>
+    );
+
+    const card = workflowStage === 'script' ? renderScriptCard() : workflowStage === 'voice' ? renderVoiceCard() : workflowStage === 'storyboard' ? renderStoryboardCard() : workflowStage === 'mg' ? renderMgCard() : renderFinalCard();
+    return <div className="ai-video-editor-chat-content"><div className="ai-video-editor-chat-scroll">{renderMessages()}{card}{isThinking && <div className="ai-video-editor-message ai-video-editor-message--assistant"><div className="ai-video-editor-message-avatar"><Sparkles size={12} /></div><div className="ai-video-editor-message-bubble ai-video-editor-thinking"><i /><i /><i /></div></div>}<div ref={chatEndRef} /></div><div className="ai-video-editor-suggestion-title">{workflowStage === 'script' ? '你也可以告诉我' : workflowStage === 'storyboard' ? '需要调整分镜？' : '继续告诉 AI 你想怎么改'}</div><div className="ai-video-editor-suggestions">{workflowStage === 'script' ? <><button type="button" onClick={() => handleSend('让旁白更口语化一些')}><AlignLeft size={14} /> 让旁白更口语化 <ChevronRight size={13} /></button><button type="button" onClick={() => setIsScriptEditorOpen(true)}><Table2 size={14} /> 打开全屏表格编辑 <ChevronRight size={13} /></button></> : workflowStage === 'storyboard' ? <><button type="button" onClick={() => setIsStoryboardEditorOpen(true)}><Table2 size={14} /> 全屏编辑分镜表格 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('把第 1 镜改成更有冲击力的开场')}><WandSparkles size={14} /> 调整镜头节奏 <ChevronRight size={13} /></button></> : <><button type="button" onClick={() => handleSend('让画面节奏更紧凑一些')}><Scissors size={14} /> 调整节奏 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('配一首更有纪录片质感的音乐')}><Music2 size={14} /> 调整配乐 <ChevronRight size={13} /></button></>}</div><div className="ai-video-editor-composer"><textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder={workflowStage === 'script' ? '输入你对脚本的修改意见…' : '告诉 AI 你想怎么改…'} rows={2} /><div className="ai-video-editor-composer-footer"><button type="button" onClick={() => notify('附件上传面板已打开')}><Plus size={15} /></button><span>Enter 发送</span><button type="button" className="ai-video-editor-send" onClick={() => handleSend()} disabled={!chatInput.trim() || isThinking}><Send size={14} /></button></div></div></div>;
   };
 
   return (
@@ -359,15 +611,21 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   </div>
                 </div>
                 <div className="ai-video-editor-track-row">
+                  <div className="ai-video-editor-track-label"><Sparkles size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
+                  <div className="ai-video-editor-track-content">
+                    {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Sparkles size={13} /> 6 个 MG 镜头与文字层 <span>33s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
+                  </div>
+                </div>
+                <div className="ai-video-editor-track-row">
                   <div className="ai-video-editor-track-label"><Subtitles size={14} /><span>字幕</span><MoreHorizontal size={14} /></div>
                   <div className="ai-video-editor-track-content">
-                    {hasCaptions ? <div className="ai-video-editor-caption-clip"><Subtitles size={13} /> 自动字幕 <span>27.4s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频加上自动字幕')}><Plus size={13} /> 点击让 AI 生成字幕</button>}
+                    {hasCaptions || hasMgLayers ? <div className="ai-video-editor-caption-clip"><Subtitles size={13} /> {hasMgLayers ? '文字层 / 字幕' : '自动字幕'} <span>27.4s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频加上自动字幕')}><Plus size={13} /> 点击让 AI 生成字幕</button>}
                   </div>
                 </div>
                 <div className="ai-video-editor-track-row">
                   <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>音频</span><MoreHorizontal size={14} /></div>
                   <div className="ai-video-editor-track-content">
-                    {hasMusic ? <div className="ai-video-editor-audio-clip"><div className="ai-video-editor-waveform">{Array.from({ length: 54 }, (_, index) => <i key={index} style={{ height: `${14 + ((index * 17) % 28)}%` }} />)}</div><span><Music2 size={12} /> Morning Lights · AI 推荐</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频配一首轻快的音乐')}><Plus size={13} /> 添加背景音乐</button>}
+                    {hasVoiceover || hasMusic ? <div className="ai-video-editor-audio-clip"><div className="ai-video-editor-waveform">{Array.from({ length: 54 }, (_, index) => <i key={index} style={{ height: `${14 + ((index * 17) % 28)}%` }} />)}</div><span><FileAudio size={12} /> {hasVoiceover ? `${selectedVoice} · 旁白音频` : 'Morning Lights · AI 推荐'}</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频配一首轻快的音乐')}><Plus size={13} /> 添加背景音乐</button>}
                   </div>
                 </div>
               </div>
@@ -387,37 +645,14 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
 
           {activeRightTab === 'chat' ? (
-            <div className="ai-video-editor-chat-content">
+            <>
               <div className="ai-video-editor-chat-intro">
                 <div className="ai-video-editor-agent-icon"><Sparkles size={15} /></div>
-                <div><strong>创客贴 AI</strong><span>视频剪辑 Agent · 在线</span></div>
+                <div><strong>创客贴 AI</strong><span>视频剪辑 Agent · 阶段 {workflowStage === 'script' ? '1/5' : workflowStage === 'voice' ? '2/5' : workflowStage === 'storyboard' ? '3/5' : workflowStage === 'mg' ? '4/5' : '5/5'}</span></div>
                 <button type="button" onClick={() => notify('已新建一轮对话')}><MessageCircle size={15} /></button>
               </div>
-              <div className="ai-video-editor-chat-scroll">
-                <div className="ai-video-editor-chat-date">今天 10:28</div>
-                {messages.map((message) => (
-                  <div key={message.id} className={`ai-video-editor-message ai-video-editor-message--${message.role}`}>
-                    {message.role === 'assistant' && <div className="ai-video-editor-message-avatar"><Sparkles size={12} /></div>}
-                    <div className="ai-video-editor-message-bubble">
-                      <p>{message.text}</p>
-                      {message.time && <span>{message.time}</span>}
-                    </div>
-                  </div>
-                ))}
-                {isThinking && <div className="ai-video-editor-message ai-video-editor-message--assistant"><div className="ai-video-editor-message-avatar"><Sparkles size={12} /></div><div className="ai-video-editor-message-bubble ai-video-editor-thinking"><i /><i /><i /></div></div>}
-                <div ref={chatEndRef} />
-              </div>
-              <div className="ai-video-editor-suggestion-title">试试这样说</div>
-              <div className="ai-video-editor-suggestions">
-                <button type="button" onClick={() => handleSend('把开头压缩到 3 秒，让节奏更紧凑')}><Scissors size={14} /> 压缩开头节奏 <ChevronRight size={13} /></button>
-                <button type="button" onClick={() => handleSend('给视频加上自动字幕')}><Subtitles size={14} /> 生成自动字幕 <ChevronRight size={13} /></button>
-                <button type="button" onClick={() => handleSend('给视频配一首轻快的音乐')}><Music2 size={14} /> 匹配背景音乐 <ChevronRight size={13} /></button>
-              </div>
-              <div className="ai-video-editor-composer">
-                <textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder="告诉 AI 你想怎么改..." rows={2} />
-                <div className="ai-video-editor-composer-footer"><button type="button" onClick={() => notify('附件上传面板已打开')}><Plus size={15} /></button><span>Enter 发送</span><button type="button" className="ai-video-editor-send" onClick={() => handleSend()} disabled={!chatInput.trim() || isThinking}><Send size={14} /></button></div>
-              </div>
-            </div>
+              {renderWorkflowContent()}
+            </>
           ) : (
             <div className="ai-video-editor-settings-panel">
               <div className="ai-video-editor-settings-heading"><div><strong>视频参数</strong><span>调整当前项目的画布与输出</span></div><Settings2 size={17} /></div>

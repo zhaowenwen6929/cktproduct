@@ -436,6 +436,8 @@ const CONSOLE_PUBLISHED_STATUSES = new Set<AdminCapability['status']>(['已开�
 
 const toDeveloperStatus = (status: AdminCapability['status']): DeveloperPlatformStatus => {
   if (status === '已开放') return '已开放';
+  if (status === '已有接口') return '已有接口';
+  if (status === 'SDK 支持') return 'SDK 支持';
   if (status === '内测中') return '内测中';
   if (status === '规划中') return '规划中';
   if (status === '维护中') return '维护中';

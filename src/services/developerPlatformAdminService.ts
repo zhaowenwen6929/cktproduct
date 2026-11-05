@@ -1,6 +1,6 @@
 export const OPEN_PLATFORM_SOURCE_URL = 'https://chuangkit.yuque.com/qltowx/openapi3.0/ln9rmy';
 
-export type AdminCapabilityStatus = '草稿' | '内测中' | '已开放' | '维护中' | '已废弃' | '已下线' | '规划中';
+export type AdminCapabilityStatus = '草稿' | '内测中' | '已开放' | '已有接口' | 'SDK 支持' | '维护中' | '已废弃' | '已下线' | '规划中';
 export type AdminCapabilitySource = 'existing_open_platform' | 'product_planning' | 'internal';
 export type AdminChannelId = 'api' | 'sdk' | 'cli' | 'mcp' | 'agent-skills';
 export type AdminBillingMode = '免费' | '按调用次数' | '按任务计费' | '按积分计费' | '企业套餐额度' | '需申请';
