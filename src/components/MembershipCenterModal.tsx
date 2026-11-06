@@ -392,7 +392,7 @@ function MembershipPointsPaymentModal({ selectedPackage, agreement, onClose }: {
 export function MembershipPointsPurchaseModal({ onClose, isMember = false, currentMemberLevel, onOpenMembership }: MembershipPointsPurchaseModalProps) {
   const [pageConfig, setPageConfig] = useState<MembershipPageContent>(() => readMembershipPageConfig('web'));
   const [packageConfig, setPackageConfig] = useState(() => readMembershipPointsPackageConfig());
-  const [activePackageTab, setActivePackageTab] = useState(() => pageConfig.pointsPurchase.tabs[0]?.sectionKey ?? pageConfig.pointsPurchase.sections[0]?.key ?? 'normal');
+  const [activePackageTab, setActivePackageTab] = useState(() => pageConfig.pointsPurchaseDisplay.tabs[0]?.sectionKey ?? pageConfig.pointsPurchaseDisplay.sections[0]?.key ?? 'normal');
   const [selectedPackageId, setSelectedPackageId] = useState('');
   const [customPoints, setCustomPoints] = useState(1000);
   const [paymentPackage, setPaymentPackage] = useState<ResolvedMembershipPointsPackage | null>(null);
@@ -413,7 +413,7 @@ export function MembershipPointsPurchaseModal({ onClose, isMember = false, curre
     };
   }, []);
 
-  const visibleSections = pageConfig.pointsPurchase.sections.filter((section) => section.visible);
+  const visibleSections = pageConfig.pointsPurchaseDisplay.sections.filter((section) => section.visible);
   const getSectionPackages = (section: MembershipPointsPurchaseSection) => {
     const configuredIds = new Set(section.packageIds);
     return getMembershipPointsPackages(section.groupId, packageConfig).filter((item) => configuredIds.size === 0 || configuredIds.has(item.id));
@@ -462,7 +462,7 @@ export function MembershipPointsPurchaseModal({ onClose, isMember = false, curre
       <header className="relative flex shrink-0 items-center justify-center border-b border-[#e9edf2] bg-white px-5 py-4 sm:px-10 sm:py-5">
         <div className="absolute left-5 flex items-center gap-3 sm:left-10"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,#4fdceb,#6885ff)] text-[16px] text-white shadow-[0_5px_14px_rgba(74,183,232,.24)]">✦</span><div><h2 className="text-[20px] font-semibold tracking-[-.03em] text-[#202938]">{pageConfig.pointsPurchase.title}</h2><p className="mt-0.5 hidden text-[11px] text-[#8791a1] sm:block">{pageConfig.pointsPurchase.subtitle}</p></div></div>
         <div className="flex rounded-full bg-[#eef1f4] p-1" role="tablist" aria-label="积分套餐分类">
-          {pageConfig.pointsPurchase.tabs.map((tab) => <button type="button" key={tab.key} role="tab" aria-selected={activePackageTab === tab.sectionKey} onClick={() => switchPackageTab(tab.sectionKey)} className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition sm:px-8 ${activePackageTab === tab.sectionKey ? 'bg-white font-semibold text-[#202938] shadow-[0_2px_10px_rgba(31,45,65,.1)] ring-2 ring-[#b5f1fa]' : 'text-[#657084] hover:text-[#202938]'}`}>{tab.label}{tab.badge ? <span className="rounded-full bg-[#dffaff] px-1.5 py-0.5 text-[10px] font-medium text-[#0aa7c3]">{tab.badge}</span> : null}</button>)}
+          {pageConfig.pointsPurchaseDisplay.tabs.map((tab) => <button type="button" key={tab.key} role="tab" aria-selected={activePackageTab === tab.sectionKey} onClick={() => switchPackageTab(tab.sectionKey)} className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition sm:px-8 ${activePackageTab === tab.sectionKey ? 'bg-white font-semibold text-[#202938] shadow-[0_2px_10px_rgba(31,45,65,.1)] ring-2 ring-[#b5f1fa]' : 'text-[#657084] hover:text-[#202938]'}`}>{tab.label}{tab.badge ? <span className="rounded-full bg-[#dffaff] px-1.5 py-0.5 text-[10px] font-medium text-[#0aa7c3]">{tab.badge}</span> : null}</button>)}
         </div>
         <button type="button" onClick={onClose} aria-label="关闭积分购买弹框" className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[12px] bg-[#f7f8fa] text-[#6d7890] transition hover:bg-[#edf1f5] hover:text-[#202938] sm:right-8"><X className="h-5 w-5" /></button>
       </header>

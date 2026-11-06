@@ -256,6 +256,11 @@ export type MembershipPointsPurchaseConfig = {
   paymentAgreement: string;
 };
 
+export type MembershipPointsPurchaseDisplayConfig = {
+  tabs: Array<{ key: string; label: string; sectionKey: string; badge?: string }>;
+  sections: MembershipPointsPurchaseSection[];
+};
+
 export type MembershipPageContent = {
   plans: MembershipPlansConfig;
   overview: MembershipOverviewConfig;
@@ -264,10 +269,11 @@ export type MembershipPageContent = {
   commercialLicense: MembershipCommercialLicenseConfig;
   faq: MembershipFaqConfig;
   pointsPurchase: MembershipPointsPurchaseConfig;
+  pointsPurchaseDisplay: MembershipPointsPurchaseDisplayConfig;
 };
 
 /**
- * 技术会员弹框实际使用的六份配置。
+ * 技术会员弹框实际使用的模块化配置。
  *
  * 价格、积分档位和套餐上下架仍然来自套餐数据；这里仅配置展示结构、文案和规则。
  * 页面内部继续使用上面的展示模型，读取配置时通过适配层转换，避免让技术 JSON 反向污染现有购买逻辑。
@@ -344,6 +350,7 @@ export type MembershipTechnicalPageConfig = {
   vippop_rights_compare: MembershipTechnicalRightsCompare;
   vippop_points_cost: MembershipTechnicalPointsCost;
   vippop_points_purchase: MembershipPointsPurchaseConfig;
+  vippop_points_purchase_page: MembershipPointsPurchaseDisplayConfig;
   vippop_license_scope: MembershipTechnicalLicenseScope;
   vippop_faq: MembershipTechnicalFaq;
 };
@@ -783,9 +790,7 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
 const DEFAULT_NORMAL_POINTS_PACKAGE_IDS = ['points-1500', 'points-3000', 'points-900', 'points-7500', 'points-custom-normal', 'points-free-welcome'];
 const DEFAULT_MEMBER_POINTS_PACKAGE_IDS = ['member-points-1500', 'member-points-3000', 'member-points-900', 'member-points-7500', 'member-points-custom', 'points-specified-example'];
 
-const DEFAULT_POINTS_PURCHASE_CONFIG: MembershipPointsPurchaseConfig = {
-  title: '购买积分',
-  subtitle: '适用于所有生成式 AI 功能',
+const DEFAULT_POINTS_PURCHASE_DISPLAY_CONFIG: MembershipPointsPurchaseDisplayConfig = {
   tabs: [
     { key: 'normal', label: '普通套餐', sectionKey: 'normal' },
     { key: 'member', label: '会员专享套餐', sectionKey: 'member', badge: '65折' },
@@ -794,6 +799,12 @@ const DEFAULT_POINTS_PURCHASE_CONFIG: MembershipPointsPurchaseConfig = {
     { key: 'normal', title: '普通积分套餐', subtitle: '适用于所有用户 · 购买后 1 年有效', tone: 'featured', displayArea: 'normal', groupId: DEFAULT_POINTS_PACKAGE_GROUP_ID, packageIds: DEFAULT_NORMAL_POINTS_PACKAGE_IDS, visible: true },
     { key: 'member', title: '会员专享套餐', subtitle: '开通会员后可享受会员积分套餐优惠', badge: '65折', tone: 'plain', displayArea: 'member', groupId: DEFAULT_POINTS_PACKAGE_GROUP_ID, packageIds: DEFAULT_MEMBER_POINTS_PACKAGE_IDS, visible: true },
   ],
+};
+
+const DEFAULT_POINTS_PURCHASE_CONFIG: MembershipPointsPurchaseConfig = {
+  ...DEFAULT_POINTS_PURCHASE_DISPLAY_CONFIG,
+  title: '购买积分',
+  subtitle: '适用于所有生成式 AI 功能',
   paymentTitle: '确认购买',
   paymentAgreement: '支付即代表您已同意《创客贴积分购买协议》，支付后可联系客服开具发票。',
 };
@@ -1105,6 +1116,7 @@ export const DEFAULT_MEMBERSHIP_PAGE_CONFIG: MembershipPageContent = {
     },
   },
   pointsPurchase: DEFAULT_POINTS_PURCHASE_CONFIG,
+  pointsPurchaseDisplay: DEFAULT_POINTS_PURCHASE_DISPLAY_CONFIG,
   faq: {
     title: '常见问题',
     items: [
@@ -1167,6 +1179,7 @@ export const MEMBERSHIP_TECHNICAL_MODULE_KEYS = [
   'vippop_rights_compare',
   'vippop_points_cost',
   'vippop_points_purchase',
+  'vippop_points_purchase_page',
   'vippop_license_scope',
   'vippop_faq',
 ] as const;
@@ -1789,6 +1802,7 @@ export function getMembershipTechnicalConfigDefaults(platform: PlatformKey = 'we
     vippop_rights_compare: createTechnicalRightsCompare(config, structure),
     vippop_points_cost: createTechnicalPointsCost(config),
     vippop_points_purchase: clone(config.pointsPurchase),
+    vippop_points_purchase_page: clone(config.pointsPurchaseDisplay),
     vippop_license_scope: createTechnicalLicenseScope(config),
     vippop_faq: createTechnicalFaq(config),
   };
@@ -1968,6 +1982,20 @@ const normalizePointsPurchase = (value: unknown, fallback: MembershipPointsPurch
     sections: sections.length ? sections : fallback.sections,
     paymentTitle: typeof raw.paymentTitle === 'string' ? raw.paymentTitle : fallback.paymentTitle,
     paymentAgreement: typeof raw.paymentAgreement === 'string' ? raw.paymentAgreement : fallback.paymentAgreement,
+  };
+};
+
+const normalizePointsPurchaseDisplay = (value: unknown, fallback: MembershipPointsPurchaseDisplayConfig): MembershipPointsPurchaseDisplayConfig => {
+  const normalized = normalizePointsPurchase(value, {
+    ...fallback,
+    title: '',
+    subtitle: '',
+    paymentTitle: '',
+    paymentAgreement: '',
+  });
+  return {
+    tabs: normalized.tabs,
+    sections: normalized.sections,
   };
 };
 
@@ -2319,26 +2347,34 @@ export function readMembershipPageConfig(platform: PlatformKey = 'web'): Members
       const technicalRightsCompare = parseJson(json.vippop_rights_compare, technicalDefaults.vippop_rights_compare);
       const technicalPointsCost = parseJson(json.vippop_points_cost, technicalDefaults.vippop_points_cost);
       const technicalPointsPurchase = parseJson(json.vippop_points_purchase, technicalDefaults.vippop_points_purchase);
+      const technicalPointsPurchaseDisplay = parseJson(json.vippop_points_purchase_page, technicalDefaults.vippop_points_purchase_page);
       const technicalLicenseScope = parseJson(json.vippop_license_scope, technicalDefaults.vippop_license_scope);
       const technicalFaq = parseJson(json.vippop_faq, technicalDefaults.vippop_faq);
       const plans = adaptTechnicalStructure(technicalStructure, fallback);
       const overview = adaptTechnicalRightsOverview(technicalRightsOverview, { ...fallback, plans });
+      const normalizedPointsPurchase = normalizePointsPurchase(technicalPointsPurchase, fallback.pointsPurchase);
+      const pointsPurchaseDisplay = Object.prototype.hasOwnProperty.call(json, 'vippop_points_purchase_page')
+        ? normalizePointsPurchaseDisplay(technicalPointsPurchaseDisplay, fallback.pointsPurchaseDisplay)
+        : { tabs: normalizedPointsPurchase.tabs, sections: normalizedPointsPurchase.sections };
       return {
         plans,
         overview,
         details: adaptTechnicalCompare(technicalRightsCompare, { ...fallback, plans, overview }, technicalStructure),
         modelConsumption: adaptTechnicalPointsCost(technicalPointsCost, fallback),
-        pointsPurchase: normalizePointsPurchase(technicalPointsPurchase, fallback.pointsPurchase),
+        pointsPurchase: normalizedPointsPurchase,
+        pointsPurchaseDisplay,
         commercialLicense: adaptTechnicalLicenseScope(technicalLicenseScope, fallback),
         faq: adaptTechnicalFaq(technicalFaq, fallback),
       };
     }
+    const normalizedPointsPurchase = normalizePointsPurchase(parseJson(json['points-purchase'], fallback.pointsPurchase), fallback.pointsPurchase);
     return {
       plans: normalizePlans(parseJson(json.plans, fallback.plans), fallback.plans, platform === 'web'),
       overview: normalizeOverview(parseJson(json.overview, fallback.overview), fallback.overview),
       details: normalizeDetails(parseJson(json.details, fallback.details), fallback.details),
       modelConsumption: normalizeModelConsumption(parseJson(json['model-consumption'], fallback.modelConsumption), fallback.modelConsumption),
-      pointsPurchase: normalizePointsPurchase(parseJson(json['points-purchase'], fallback.pointsPurchase), fallback.pointsPurchase),
+      pointsPurchase: normalizedPointsPurchase,
+      pointsPurchaseDisplay: { tabs: normalizedPointsPurchase.tabs, sections: normalizedPointsPurchase.sections },
       commercialLicense: normalizeCommercialLicense(parseJson(json['commercial-license'], fallback.commercialLicense), fallback.commercialLicense),
       faq: normalizeFaq(parseJson(json.faq, fallback.faq), fallback.faq),
     };

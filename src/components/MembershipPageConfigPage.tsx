@@ -18,7 +18,7 @@ const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
   { key: 'vippop_rights_overview', label: '权益概览', description: '技术格式：按会员等级配置 list、models、groups、qrcode 权益模块' },
   { key: 'vippop_rights_compare', label: '权益对比', description: '技术格式：配置个人/企业权益对比表，价格支持按最低月均价占位符展示' },
   { key: 'vippop_points_cost', label: '模型消耗', description: '技术格式：配置积分档位和单次消耗积分 cost，页面按积分档位 ÷ cost 向下取整计算实际生成量' },
-  { key: 'vippop_points_purchase', label: '2026年10月积分弹框', description: '技术格式：配置积分购买弹框标题、顶部切换、展示分区、关联积分套餐组/套餐 ID 和支付说明；积分价格来自积分套餐配置' },
+  { key: 'vippop_points_purchase_page', label: '2026年10月积分购买页配置', description: '仅配置积分购买页的 Tab、套餐显示分区、分区展示归属、关联套餐组和套餐 ID；价格、积分和购买权限来自积分套餐配置' },
   { key: 'vippop_license_scope', label: '商用授权', description: '技术格式：仅配置商用授权范围列、允许/禁用类型和条目说明' },
   { key: 'vippop_faq', label: '常见问题', description: '技术格式：配置问题标题、答案段落和默认展开状态' },
 ];
@@ -31,7 +31,7 @@ const createDefaultConfig = (platform: PlatformKey): PlatformConfig => {
       vippop_rights_overview: JSON.stringify(defaultConfig.vippop_rights_overview, null, 2),
       vippop_rights_compare: JSON.stringify(defaultConfig.vippop_rights_compare, null, 2),
       vippop_points_cost: JSON.stringify(defaultConfig.vippop_points_cost, null, 2),
-      vippop_points_purchase: JSON.stringify(defaultConfig.vippop_points_purchase, null, 2),
+      vippop_points_purchase_page: JSON.stringify(defaultConfig.vippop_points_purchase_page, null, 2),
       vippop_license_scope: JSON.stringify(defaultConfig.vippop_license_scope, null, 2),
       vippop_faq: JSON.stringify(defaultConfig.vippop_faq, null, 2),
     },
@@ -304,6 +304,20 @@ const migrateFaqJson = (value: unknown, fallback: string) => {
   }
 };
 
+const migratePointsPurchaseDisplayJson = (value: unknown, fallback: string, legacyValue?: unknown) => {
+  const source = typeof value === 'string' ? value : typeof legacyValue === 'string' ? legacyValue : fallback;
+  try {
+    const parsed = JSON.parse(source) as Record<string, unknown>;
+    const fallbackConfig = JSON.parse(fallback) as Record<string, unknown>;
+    return JSON.stringify({
+      tabs: Array.isArray(parsed.tabs) ? parsed.tabs : fallbackConfig.tabs,
+      sections: Array.isArray(parsed.sections) ? parsed.sections : fallbackConfig.sections,
+    }, null, 2);
+  } catch {
+    return fallback;
+  }
+};
+
 const readStoredState = (): ConfigState => {
   if (typeof window === 'undefined') return createDefaultState();
   try {
@@ -312,7 +326,7 @@ const readStoredState = (): ConfigState => {
     const parsed = JSON.parse(stored) as Partial<ConfigState>;
     const defaults = createDefaultState();
     const mergePlatform = (storedConfig: PlatformConfig | undefined, defaultConfig: PlatformConfig, platform: PlatformKey) => storedConfig
-      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans, platform === 'web'), overview: migrateOverviewJson(storedConfig.json?.overview, defaultConfig.json.overview, storedConfig.json?.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']), 'commercial-license': migrateCommercialLicenseJson(storedConfig.json?.['commercial-license'], defaultConfig.json['commercial-license']), faq: migrateFaqJson(storedConfig.json?.faq, defaultConfig.json.faq), vippop_points_purchase: storedConfig.json?.vippop_points_purchase ?? defaultConfig.json.vippop_points_purchase } }
+      ? { ...defaultConfig, ...storedConfig, json: { ...defaultConfig.json, ...storedConfig.json, plans: migratePlansJson(storedConfig.json?.plans, defaultConfig.json.plans, platform === 'web'), overview: migrateOverviewJson(storedConfig.json?.overview, defaultConfig.json.overview, storedConfig.json?.plans), details: migrateDetailsJson(storedConfig.json?.details, defaultConfig.json.details), 'model-consumption': migrateModelConsumptionJson(storedConfig.json?.['model-consumption'], defaultConfig.json['model-consumption']), 'commercial-license': migrateCommercialLicenseJson(storedConfig.json?.['commercial-license'], defaultConfig.json['commercial-license']), faq: migrateFaqJson(storedConfig.json?.faq, defaultConfig.json.faq), vippop_points_purchase: storedConfig.json?.vippop_points_purchase ?? defaultConfig.json.vippop_points_purchase, vippop_points_purchase_page: migratePointsPurchaseDisplayJson(storedConfig.json?.vippop_points_purchase_page, defaultConfig.json.vippop_points_purchase_page, storedConfig.json?.vippop_points_purchase) } }
       : defaultConfig;
     return {
       web: mergePlatform(parsed.web, defaults.web, 'web'),
