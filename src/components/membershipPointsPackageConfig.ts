@@ -17,7 +17,6 @@ export type MembershipPointsPackageItem = {
   outputText: string;
   validityDays: number;
   tag?: string;
-  displayArea: 'normal' | 'member';
   eligibility: PointsPackageEligibility;
   memberLevels: number[];
   sort: number;
@@ -49,7 +48,7 @@ const levels = (names: string[]) => names
 const defaultGroup: MembershipPointsPackageGroup = {
   id: DEFAULT_POINTS_PACKAGE_GROUP_ID,
   name: '2026年10月积分套餐',
-  description: '会员支付弹框积分购买套餐，支持普通套餐、会员专享套餐和自定义积分量。',
+  description: '会员支付弹框积分套餐数据，展示分组由会员页面配置维护。',
   packageCode: 'points-2026-10',
   creator: '赵文文',
   createdAt: '2026-10-30 10:00:00',
@@ -62,18 +61,18 @@ const createPackage = (item: Omit<MembershipPointsPackageItem, 'groupId'>): Memb
 });
 
 const defaultPackages: MembershipPointsPackageItem[] = [
-  createPackage({ id: 'points-1500', name: '1500积分普通套餐', displayName: '1500积分', packageType: 'standard', points: 1500, price: 100, originalPrice: 200, outputText: '约生150~375张图', validityDays: 365, displayArea: 'normal', eligibility: 'all', memberLevels: [], sort: 1, status: '显示' }),
-  createPackage({ id: 'points-3000', name: '3000积分普通套餐', displayName: '3000积分', packageType: 'standard', points: 3000, price: 199, originalPrice: 420, outputText: '约生300~750张图', validityDays: 365, tag: '限时特惠', displayArea: 'normal', eligibility: 'all', memberLevels: [], sort: 2, status: '显示' }),
-  createPackage({ id: 'points-900', name: '900积分普通套餐', displayName: '900积分', packageType: 'standard', points: 900, price: 60, originalPrice: 100, outputText: '约生90~225张图', validityDays: 365, tag: '入门首选', displayArea: 'normal', eligibility: 'all', memberLevels: [], sort: 3, status: '显示' }),
-  createPackage({ id: 'points-7500', name: '7500积分普通套餐', displayName: '7500积分', packageType: 'standard', points: 7500, price: 495, originalPrice: 1100, outputText: '约生750~1875张图', validityDays: 365, displayArea: 'normal', eligibility: 'all', memberLevels: [], sort: 4, status: '显示' }),
-  createPackage({ id: 'points-custom-normal', name: '自定义积分量普通套餐', displayName: '自定义充值', packageType: 'custom', unitPrice: 0.066, outputText: '按单个积分价格计算', validityDays: 365, displayArea: 'normal', eligibility: 'all', memberLevels: [], sort: 5, status: '显示' }),
-  createPackage({ id: 'member-points-1500', name: '1500积分会员套餐', displayName: '1500积分', packageType: 'standard', points: 1500, price: 65, originalPrice: 100, outputText: '约生150~375张图', validityDays: 365, tag: '65折', displayArea: 'member', eligibility: 'members', memberLevels: [], sort: 1, status: '显示' }),
-  createPackage({ id: 'member-points-3000', name: '3000积分会员套餐', displayName: '3000积分', packageType: 'standard', points: 3000, price: 129, originalPrice: 199, outputText: '约生300~750张图', validityDays: 365, tag: '65折', displayArea: 'member', eligibility: 'members', memberLevels: [], sort: 2, status: '显示' }),
-  createPackage({ id: 'member-points-900', name: '900积分会员套餐', displayName: '900积分', packageType: 'standard', points: 900, price: 39, originalPrice: 60, outputText: '约生90~225张图', validityDays: 365, tag: '65折', displayArea: 'member', eligibility: 'members', memberLevels: [], sort: 3, status: '显示' }),
-  createPackage({ id: 'member-points-7500', name: '7500积分会员套餐', displayName: '7500积分', packageType: 'standard', points: 7500, price: 322, originalPrice: 495, outputText: '约生750~1875张图', validityDays: 365, tag: '65折', displayArea: 'member', eligibility: 'members', memberLevels: [], sort: 4, status: '显示' }),
-  createPackage({ id: 'member-points-custom', name: '自定义积分量会员套餐', displayName: '自定义充值', packageType: 'custom', unitPrice: 0.043, outputText: '会员按单个积分价格计算', validityDays: 365, displayArea: 'member', eligibility: 'members', memberLevels: [], sort: 5, status: '显示' }),
-  createPackage({ id: 'points-free-welcome', name: '免费用户专享积分包', displayName: '免费用户积分包', packageType: 'standard', points: 300, price: 30, originalPrice: 60, outputText: '约生30~75张图', validityDays: 30, tag: '免费用户专享', displayArea: 'normal', eligibility: 'free', memberLevels: [], sort: 6, status: '隐藏' }),
-  createPackage({ id: 'points-specified-example', name: '指定会员等级积分包', displayName: '专业版专享', packageType: 'standard', points: 5000, price: 199, originalPrice: 399, outputText: '约生500~1250张图', validityDays: 365, tag: '指定等级', displayArea: 'member', eligibility: 'specified', memberLevels: levels(['专业版（个人）', '专业版（企业）']), sort: 7, status: '隐藏' }),
+  createPackage({ id: 'points-1500', name: '1500积分普通套餐', displayName: '1500积分', packageType: 'standard', points: 1500, price: 100, originalPrice: 200, outputText: '约生150~375张图', validityDays: 365, eligibility: 'all', memberLevels: [], sort: 1, status: '显示' }),
+  createPackage({ id: 'points-3000', name: '3000积分普通套餐', displayName: '3000积分', packageType: 'standard', points: 3000, price: 199, originalPrice: 420, outputText: '约生300~750张图', validityDays: 365, tag: '限时特惠', eligibility: 'all', memberLevels: [], sort: 2, status: '显示' }),
+  createPackage({ id: 'points-900', name: '900积分普通套餐', displayName: '900积分', packageType: 'standard', points: 900, price: 60, originalPrice: 100, outputText: '约生90~225张图', validityDays: 365, tag: '入门首选', eligibility: 'all', memberLevels: [], sort: 3, status: '显示' }),
+  createPackage({ id: 'points-7500', name: '7500积分普通套餐', displayName: '7500积分', packageType: 'standard', points: 7500, price: 495, originalPrice: 1100, outputText: '约生750~1875张图', validityDays: 365, eligibility: 'all', memberLevels: [], sort: 4, status: '显示' }),
+  createPackage({ id: 'points-custom-normal', name: '自定义积分量普通套餐', displayName: '自定义充值', packageType: 'custom', unitPrice: 0.066, outputText: '按单个积分价格计算', validityDays: 365, eligibility: 'all', memberLevels: [], sort: 5, status: '显示' }),
+  createPackage({ id: 'member-points-1500', name: '1500积分会员套餐', displayName: '1500积分', packageType: 'standard', points: 1500, price: 65, originalPrice: 100, outputText: '约生150~375张图', validityDays: 365, tag: '65折', eligibility: 'members', memberLevels: [], sort: 1, status: '显示' }),
+  createPackage({ id: 'member-points-3000', name: '3000积分会员套餐', displayName: '3000积分', packageType: 'standard', points: 3000, price: 129, originalPrice: 199, outputText: '约生300~750张图', validityDays: 365, tag: '65折', eligibility: 'members', memberLevels: [], sort: 2, status: '显示' }),
+  createPackage({ id: 'member-points-900', name: '900积分会员套餐', displayName: '900积分', packageType: 'standard', points: 900, price: 39, originalPrice: 60, outputText: '约生90~225张图', validityDays: 365, tag: '65折', eligibility: 'members', memberLevels: [], sort: 3, status: '显示' }),
+  createPackage({ id: 'member-points-7500', name: '7500积分会员套餐', displayName: '7500积分', packageType: 'standard', points: 7500, price: 322, originalPrice: 495, outputText: '约生750~1875张图', validityDays: 365, tag: '65折', eligibility: 'members', memberLevels: [], sort: 4, status: '显示' }),
+  createPackage({ id: 'member-points-custom', name: '自定义积分量会员套餐', displayName: '自定义充值', packageType: 'custom', unitPrice: 0.043, outputText: '会员按单个积分价格计算', validityDays: 365, eligibility: 'members', memberLevels: [], sort: 5, status: '显示' }),
+  createPackage({ id: 'points-free-welcome', name: '免费用户专享积分包', displayName: '免费用户积分包', packageType: 'standard', points: 300, price: 30, originalPrice: 60, outputText: '约生30~75张图', validityDays: 30, tag: '免费用户专享', eligibility: 'free', memberLevels: [], sort: 6, status: '隐藏' }),
+  createPackage({ id: 'points-specified-example', name: '指定会员等级积分包', displayName: '专业版专享', packageType: 'standard', points: 5000, price: 199, originalPrice: 399, outputText: '约生500~1250张图', validityDays: 365, tag: '指定等级', eligibility: 'specified', memberLevels: levels(['专业版（个人）', '专业版（企业）']), sort: 7, status: '隐藏' }),
 ];
 
 export const DEFAULT_MEMBERSHIP_POINTS_PACKAGE_CONFIG: MembershipPointsPackageConfig = {
@@ -102,7 +101,6 @@ const normalizePackage = (item: unknown, groupId: string, index: number): Member
     outputText: typeof raw.outputText === 'string' ? raw.outputText : '',
     validityDays: Number.isFinite(Number(raw.validityDays)) && Number(raw.validityDays) > 0 ? Number(raw.validityDays) : 365,
     tag: typeof raw.tag === 'string' ? raw.tag : undefined,
-    displayArea: raw.displayArea === 'member' ? 'member' : 'normal',
     eligibility,
     memberLevels: Array.isArray(raw.memberLevels) ? raw.memberLevels.map(Number).filter(Number.isFinite) : [],
     sort: Number.isFinite(Number(raw.sort)) ? Number(raw.sort) : index + 1,

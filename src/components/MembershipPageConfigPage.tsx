@@ -18,7 +18,7 @@ const MODULES: Array<{ key: ModuleKey; label: string; description: string }> = [
   { key: 'vippop_rights_overview', label: '权益概览', description: '技术格式：按会员等级配置 list、models、groups、qrcode 权益模块' },
   { key: 'vippop_rights_compare', label: '权益对比', description: '技术格式：配置个人/企业权益对比表，价格支持按最低月均价占位符展示' },
   { key: 'vippop_points_cost', label: '模型消耗', description: '技术格式：配置积分档位和单次消耗积分 cost，页面按积分档位 ÷ cost 向下取整计算实际生成量' },
-  { key: 'vippop_points_purchase', label: '2026年10月积分弹框', description: '技术格式：配置积分购买弹框标题、顶部切换、普通/会员分区、关联积分套餐组和支付说明；积分价格来自积分套餐配置' },
+  { key: 'vippop_points_purchase', label: '2026年10月积分弹框', description: '技术格式：配置积分购买弹框标题、顶部切换、展示分区、关联积分套餐组/套餐 ID 和支付说明；积分价格来自积分套餐配置' },
   { key: 'vippop_license_scope', label: '商用授权', description: '技术格式：仅配置商用授权范围列、允许/禁用类型和条目说明' },
   { key: 'vippop_faq', label: '常见问题', description: '技术格式：配置问题标题、答案段落和默认展开状态' },
 ];

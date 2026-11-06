@@ -241,6 +241,7 @@ export type MembershipPointsPurchaseSection = {
   subtitle: string;
   badge?: string;
   tone: 'featured' | 'plain';
+  displayArea: 'normal' | 'member';
   groupId: string;
   packageIds: string[];
   visible: boolean;
@@ -779,8 +780,8 @@ const DEFAULT_ENTERPRISE_VIP_LEVELS: MembershipVipLevelConfig[] = [
   },
 ];
 
-const DEFAULT_NORMAL_POINTS_PACKAGE_IDS = DEFAULT_MEMBERSHIP_POINTS_PACKAGE_CONFIG.packages.filter((item) => item.displayArea === 'normal').map((item) => item.id);
-const DEFAULT_MEMBER_POINTS_PACKAGE_IDS = DEFAULT_MEMBERSHIP_POINTS_PACKAGE_CONFIG.packages.filter((item) => item.displayArea === 'member').map((item) => item.id);
+const DEFAULT_NORMAL_POINTS_PACKAGE_IDS = ['points-1500', 'points-3000', 'points-900', 'points-7500', 'points-custom-normal', 'points-free-welcome'];
+const DEFAULT_MEMBER_POINTS_PACKAGE_IDS = ['member-points-1500', 'member-points-3000', 'member-points-900', 'member-points-7500', 'member-points-custom', 'points-specified-example'];
 
 const DEFAULT_POINTS_PURCHASE_CONFIG: MembershipPointsPurchaseConfig = {
   title: '购买积分',
@@ -790,8 +791,8 @@ const DEFAULT_POINTS_PURCHASE_CONFIG: MembershipPointsPurchaseConfig = {
     { key: 'member', label: '会员专享套餐', sectionKey: 'member', badge: '65折' },
   ],
   sections: [
-    { key: 'normal', title: '普通积分套餐', subtitle: '适用于所有用户 · 购买后 1 年有效', tone: 'featured', groupId: DEFAULT_POINTS_PACKAGE_GROUP_ID, packageIds: DEFAULT_NORMAL_POINTS_PACKAGE_IDS, visible: true },
-    { key: 'member', title: '会员专享套餐', subtitle: '开通会员后可享受会员积分套餐优惠', badge: '65折', tone: 'plain', groupId: DEFAULT_POINTS_PACKAGE_GROUP_ID, packageIds: DEFAULT_MEMBER_POINTS_PACKAGE_IDS, visible: true },
+    { key: 'normal', title: '普通积分套餐', subtitle: '适用于所有用户 · 购买后 1 年有效', tone: 'featured', displayArea: 'normal', groupId: DEFAULT_POINTS_PACKAGE_GROUP_ID, packageIds: DEFAULT_NORMAL_POINTS_PACKAGE_IDS, visible: true },
+    { key: 'member', title: '会员专享套餐', subtitle: '开通会员后可享受会员积分套餐优惠', badge: '65折', tone: 'plain', displayArea: 'member', groupId: DEFAULT_POINTS_PACKAGE_GROUP_ID, packageIds: DEFAULT_MEMBER_POINTS_PACKAGE_IDS, visible: true },
   ],
   paymentTitle: '确认购买',
   paymentAgreement: '支付即代表您已同意《创客贴积分购买协议》，支付后可联系客服开具发票。',
@@ -1954,6 +1955,7 @@ const normalizePointsPurchase = (value: unknown, fallback: MembershipPointsPurch
       ...section,
       subtitle: typeof section.subtitle === 'string' ? section.subtitle : '',
       tone: (section.tone === 'plain' ? 'plain' : 'featured') as MembershipPointsPurchaseSection['tone'],
+      displayArea: section.displayArea === 'member' || (section.displayArea == null && section.key === 'member') ? 'member' : 'normal',
       packageIds: Array.isArray(section.packageIds) ? section.packageIds.filter((id): id is string => typeof id === 'string') : [],
       visible: section.visible !== false,
     }))
