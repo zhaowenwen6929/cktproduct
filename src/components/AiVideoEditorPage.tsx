@@ -653,7 +653,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         </div>
       </header>
 
-      <div className="ai-video-editor-body">
+      <div className={`ai-video-editor-body${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}`}>
         <aside className="ai-video-editor-left-rail">
           <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')}>
             <Plus size={18} />
@@ -738,8 +738,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 </div>
               </div>
             </section>
+          </div>
+        </main>
 
-            <section className={`ai-video-editor-timeline-panel${isFinalTimelineReady ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
+        <section className={`ai-video-editor-timeline-panel${isFinalTimelineReady ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
               <div className="ai-video-editor-timeline-head">
                 <div className="ai-video-editor-timeline-actions">
                   <button type="button" onClick={() => notify('已撤销剪辑操作')}><Undo2 size={15} /></button>
@@ -828,9 +830,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   </div>
                 </>}
               </div>
-            </section>
-          </div>
-        </main>
+        </section>
 
         <aside className="ai-video-editor-chat-panel">
           <div className="ai-video-editor-chat-tabs">
