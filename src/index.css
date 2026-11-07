@@ -10692,3 +10692,27 @@ button {
   .ai-video-editor-track-row { grid-template-columns: 118px minmax(0, 1fr); }
   .ai-video-editor-track-control { width: 16px; flex-basis: 16px; }
 }
+
+/* The AI conversation can step aside or take up to one third of the viewport. */
+.ai-video-editor-body { position: relative; }
+.ai-video-editor-body.is-chat-expanded { grid-template-columns: 80px minmax(0, 1fr) min(33.333vw, 680px); }
+.ai-video-editor-body.is-chat-collapsed { grid-template-columns: 80px minmax(0, 1fr) 0; column-gap: 0; }
+.ai-video-editor-body.is-chat-collapsed .ai-video-editor-chat-panel { width: 0; min-width: 0; overflow: hidden; border: 0; opacity: 0; pointer-events: none; }
+.ai-video-editor-chat-panel { min-width: 0; transition: opacity .18s ease, width .18s ease; }
+.ai-video-editor-chat-panel-actions { display: flex; align-items: center; gap: 3px; margin-left: auto; }
+.ai-video-editor-chat-panel-actions button { display: grid !important; width: 26px; height: 26px !important; place-items: center; padding: 0 !important; border-radius: 7px; color: #9197aa !important; }
+.ai-video-editor-chat-panel-actions button:hover { background: #f1f0ff !important; color: #5a55e8 !important; }
+.ai-video-editor-chat-edge-toggle { position: absolute; z-index: 12; top: 50%; right: calc(clamp(360px, 26vw, 540px) - 1px); display: grid; width: 24px; height: 46px; place-items: center; padding: 0; border: 1px solid #d9d8ec; border-right: 0; border-radius: 10px 0 0 10px; transform: translateY(-50%); background: #fff; color: #777c91; box-shadow: 0 5px 16px rgba(76, 78, 130, .12); }
+.ai-video-editor-chat-edge-toggle:hover { border-color: #b9b5f5; background: #f5f3ff; color: #5a55e8; }
+.ai-video-editor-body.is-chat-expanded .ai-video-editor-chat-edge-toggle { right: calc(min(33.333vw, 680px) - 1px); }
+.ai-video-editor-body.is-chat-collapsed .ai-video-editor-chat-edge-toggle { right: 0; }
+
+@media (max-width: 1120px) {
+  .ai-video-editor-body.is-chat-expanded { grid-template-columns: 72px minmax(0, 1fr) min(33.333vw, 680px); }
+  .ai-video-editor-chat-edge-toggle { right: calc(360px - 1px); }
+}
+
+@media (max-width: 820px) {
+  .ai-video-editor-body.is-chat-expanded { grid-template-columns: 72px minmax(0, 1fr) min(33.333vw, 680px); }
+  .ai-video-editor-chat-edge-toggle { right: calc(320px - 1px); }
+}

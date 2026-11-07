@@ -7,6 +7,7 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   Clock3,
@@ -385,6 +386,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [isMuted, setIsMuted] = useState(false);
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
+  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('版本 01');
   const [zoom, setZoom] = useState(72);
@@ -926,7 +929,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         </div>
       </header>
 
-      <div className={`ai-video-editor-body${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}`}>
+      <div className={`ai-video-editor-body${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
         <aside className="ai-video-editor-left-rail">
           <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')}>
             <Plus size={18} />
@@ -1109,6 +1112,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           <div className="ai-video-editor-chat-tabs">
             <button type="button" className={activeRightTab === 'chat' ? 'is-active' : ''} onClick={() => setActiveRightTab('chat')}><MessageCircle size={15} /> AI 对话</button>
             <button type="button" className={activeRightTab === 'settings' ? 'is-active' : ''} onClick={() => setActiveRightTab('settings')}><Settings2 size={15} /> 参数</button>
+            <div className="ai-video-editor-chat-panel-actions">
+              <button type="button" onClick={() => { setIsChatCollapsed(false); setIsChatExpanded((value) => !value); }} aria-label={isChatExpanded ? '恢复对话宽度' : '展开对话面板'} title={isChatExpanded ? '恢复对话宽度' : '展开对话面板'}>{isChatExpanded ? <ZoomOut size={14} /> : <Maximize2 size={14} />}</button>
+              <button type="button" onClick={() => setIsChatCollapsed(true)} aria-label="收起对话面板" title="收起对话面板"><ChevronRight size={15} /></button>
+            </div>
           </div>
 
           {activeRightTab === 'chat' ? (
@@ -1127,6 +1134,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
             </div>
           )}
         </aside>
+        {isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle is-collapsed" onClick={() => setIsChatCollapsed(false)} aria-label="展开对话面板" title="展开对话面板"><ChevronLeft size={15} /></button>}
+        {!isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle" onClick={() => setIsChatCollapsed(true)} aria-label="收起对话面板" title="收起对话面板"><ChevronRight size={15} /></button>}
       </div>
       {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className={`ai-video-editor-template-panel ai-video-editor-tool-panel${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isFinalTimelineReady ? ' is-timeline-complete' : ''}`} aria-label={`${activeToolTitle}面板`}>
         <div className="ai-video-editor-template-panel__head">
