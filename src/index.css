@@ -10685,6 +10685,8 @@ button {
 .ai-video-editor-track-control:hover { background: #f1f0ff; color: #5a55e8; }
 .ai-video-editor-track-control svg { margin: 0 !important; }
 .ai-video-editor-timeline-actions button:disabled { cursor: not-allowed; opacity: .35; }
+.ai-video-editor-timeline { overflow: auto; scrollbar-width: thin; scrollbar-color: #d7d8e8 transparent; }
+.ai-video-editor-timeline-canvas { min-width: 0; }
 .ai-video-editor-timeline-actions button:disabled:hover { background: transparent; color: inherit; }
 
 @media (max-width: 1120px) {

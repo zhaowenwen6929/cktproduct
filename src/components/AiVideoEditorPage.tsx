@@ -418,7 +418,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('版本 01');
-  const [zoom, setZoom] = useState(72);
+  const [zoom, setZoom] = useState(100);
   const [timelineTracks, setTimelineTracks] = useState<TimelineTrackState[]>(initialTimelineTracks);
   const [timelineClips, setTimelineClips] = useState<TimelineClip[]>(initialTimelineClips);
   const [selectedTimelineClipId, setSelectedTimelineClipId] = useState<string | null>('video-main');
@@ -1272,12 +1272,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 <div className="ai-video-editor-timeline-zoom">
                   <button type="button" className={`ai-video-editor-timeline-mode${isSnapEnabled ? ' is-on' : ''}`} onClick={() => setIsSnapEnabled((value) => !value)} title="吸附到片段边缘和标记">吸附</button>
                   <button type="button" className={`ai-video-editor-timeline-mode${isRippleEnabled ? ' is-on' : ''}`} onClick={() => setIsRippleEnabled((value) => !value)} title="删除时同步移动后续片段">波纹</button>
-                  <button type="button" onClick={() => setZoom((value) => Math.max(48, value - 8))}><ZoomOut size={14} /></button>
-                  <div className="ai-video-editor-zoom-track"><span style={{ width: `${zoom}%` }} /></div>
-                  <button type="button" onClick={() => setZoom((value) => Math.min(100, value + 8))}><ZoomIn size={14} /></button>
+                  <button type="button" onClick={() => setZoom((value) => Math.max(50, value - 10))} aria-label="缩小时间线" title="缩小时间线"><ZoomOut size={14} /></button>
+                  <div className="ai-video-editor-zoom-track"><span style={{ width: `${((zoom - 50) / 150) * 100}%` }} /></div>
+                  <button type="button" onClick={() => setZoom((value) => Math.min(200, value + 10))} aria-label="放大时间线" title="放大时间线"><ZoomIn size={14} /></button>
                 </div>
               </div>
               <div className="ai-video-editor-timeline">
+                <div className="ai-video-editor-timeline-canvas" style={{ width: `${zoom}%` }}>
                 <div className="ai-video-editor-timeline-ruler">
                   <div className="ai-video-editor-track-spacer" />
                   <div className="ai-video-editor-ruler-scale" onPointerDown={startTimelineScrub}>
@@ -1352,6 +1353,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     </div>
                   </div>
                 </>}
+                </div>
               </div>
         </section>
 
