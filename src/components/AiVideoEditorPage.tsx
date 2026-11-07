@@ -175,6 +175,7 @@ type VideoTemplateParameters = {
 
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
 const DEFAULT_POSTER = '/code-video/reference-style-demo-v14-poster.png';
+const CODE_VIDEO_FILES_PATH = '/code-video/files';
 const COFFEE_VIDEO = '/video-projects/coffee-seed-to-cup-20261107/preview.mp4';
 const COFFEE_POSTER = '/video-projects/coffee-seed-to-cup-20261107/cover.jpg';
 const COFFEE_PROJECT_PATH = '/video-projects/coffee-seed-to-cup-20261107';
@@ -360,11 +361,15 @@ const mediaAssets: Array<{ id: string; title: string; category: Exclude<MediaCat
 
 const libraryCategories = ['全部', '视频', '图片', '音频', '文档', 'MG动画'] as const;
 type LibraryCategory = (typeof libraryCategories)[number];
-
-const libraryAssets: Array<{ id: string; title: string; category: Exclude<LibraryCategory, '全部'>; detail: string; poster: string; templateId: string }> = [
-  { id: 'library-code-video', title: '费曼学习法 · Demo v1.4', category: '视频', detail: '视频 · 00:27', poster: DEFAULT_POSTER, templateId: 'code-video-demo-v14' },
-  { id: 'library-coffee-video', title: '咖啡从种子到一杯咖啡', category: '视频', detail: '视频 · 01:00', poster: COFFEE_POSTER, templateId: 'coffee-seed-to-cup' },
-];
+type LibraryAsset = {
+  id: string;
+  title: string;
+  category: Exclude<LibraryCategory, '全部'>;
+  detail: string;
+  poster: string;
+  source?: string;
+  templateId?: string;
+};
 
 const textCategories = ['标题', '正文', '字幕', '标签'] as const;
 type TextCategory = (typeof textCategories)[number];
@@ -600,6 +605,60 @@ const coffeeTimelineClips: TimelineClip[] = [
 const coffeeTimelineTracks: TimelineTrackState[] = [
   ...initialTimelineTracks,
   { id: coffeeRealVideoTrackId, kind: 'video', label: '实拍过程', hidden: false, locked: false, muted: false },
+];
+
+const libraryAssets: LibraryAsset[] = [
+  { id: 'library-code-video', title: '费曼学习法 · Demo v1.4', category: '视频', detail: '完整视频 · 00:27', poster: DEFAULT_POSTER, source: DEFAULT_VIDEO, templateId: 'code-video-demo-v14' },
+  { id: 'library-coffee-video', title: '咖啡从种子到一杯咖啡', category: '视频', detail: '完整视频 · 01:00', poster: COFFEE_POSTER, source: COFFEE_VIDEO, templateId: 'coffee-seed-to-cup' },
+  ...coffeeRealVideoClips.map((clip) => ({
+    id: `library-${clip.id}`,
+    title: clip.label,
+    category: '视频' as const,
+    detail: `实拍片段 · ${clip.duration}s`,
+    poster: clip.poster ?? COFFEE_POSTER,
+    source: clip.source,
+  })),
+  { id: 'library-code-cover', title: '费曼学习法 · 封面画面', category: '图片', detail: 'PNG 图片 · 费曼学习法项目', poster: DEFAULT_POSTER, source: DEFAULT_POSTER },
+  { id: 'library-coffee-cover', title: '咖啡项目 · 封面画面', category: '图片', detail: 'JPG 图片 · 咖啡项目', poster: COFFEE_POSTER, source: COFFEE_POSTER },
+  ...coffeeScenes.map((scene) => ({
+    id: `library-${scene.id}-image`,
+    title: `${scene.title} · MG 画面`,
+    category: '图片' as const,
+    detail: 'PNG 图片 · 咖啡项目',
+    poster: `${COFFEE_PROJECT_PATH}/mg/${scene.id}.png`,
+    source: `${COFFEE_PROJECT_PATH}/mg/${scene.id}.png`,
+  })),
+  { id: 'library-code-voice', title: 'Tingting · 费曼学习法旁白', category: '音频', detail: 'M4A 音频 · 27.4s', poster: DEFAULT_POSTER, source: `${CODE_VIDEO_FILES_PATH}/out/reference-style-demo-narration-v14.m4a` },
+  ...coffeeVoiceSegments.map((text, index) => ({
+    id: `library-coffee-voice-${index + 1}`,
+    title: `Tingting · 咖啡旁白 ${String(index + 1).padStart(2, '0')}`,
+    category: '音频' as const,
+    detail: `WAV 音频 · ${coffeeScenes[index].duration}s`,
+    poster: COFFEE_POSTER,
+    source: `${COFFEE_PROJECT_PATH}/audio/segments/vo_${String(index + 1).padStart(2, '0')}.wav`,
+  })),
+  { id: 'library-coffee-music', title: '轻快温暖背景音乐', category: '音频', detail: 'WAV 配乐 · 60s', poster: COFFEE_POSTER, source: `${COFFEE_PROJECT_PATH}/audio/music_main.wav` },
+  { id: 'library-coffee-sfx-transition', title: '段落转场音效', category: '音频', detail: 'WAV 音效 · 1s', poster: COFFEE_POSTER, source: `${COFFEE_PROJECT_PATH}/audio/sfx_transition.wav` },
+  { id: 'library-coffee-sfx-roast', title: '烘焙环境音', category: '音频', detail: 'WAV 音效 · 5s', poster: COFFEE_POSTER, source: `${COFFEE_PROJECT_PATH}/audio/sfx_roast.wav` },
+  { id: 'library-coffee-sfx-water', title: '注水环境音', category: '音频', detail: 'WAV 音效 · 6s', poster: COFFEE_POSTER, source: `${COFFEE_PROJECT_PATH}/audio/sfx_water.wav` },
+  { id: 'library-code-script', title: '费曼学习法 · 分镜脚本', category: '文档', detail: 'JSON 文档 · 6 个段落', poster: DEFAULT_POSTER, source: `${CODE_VIDEO_FILES_PATH}/examples/reference-style-script-v14.json` },
+  { id: 'library-coffee-manifest', title: '咖啡项目 · 视频工程清单', category: '文档', detail: 'JSON 文档 · 8 个场景', poster: COFFEE_POSTER, source: COFFEE_MANIFEST },
+  ...codeVideoScenes.map((scene, index) => ({
+    id: `library-code-${scene.id}-mg`,
+    title: scene.label,
+    category: 'MG动画' as const,
+    detail: `MG 画面 · ${scene.duration}s`,
+    poster: `${CODE_VIDEO_FILES_PATH}/out/preview-reference-style-v9/frame-${String(index).padStart(4, '0')}.png`,
+    source: `${CODE_VIDEO_FILES_PATH}/out/preview-reference-style-v9/frame-${String(index).padStart(4, '0')}.png`,
+  })),
+  ...coffeeScenes.map((scene) => ({
+    id: `library-${scene.id}-mg`,
+    title: `${scene.title} · MG 动画`,
+    category: 'MG动画' as const,
+    detail: `MP4 动画 · ${scene.duration}s`,
+    poster: `${COFFEE_PROJECT_PATH}/mg/${scene.id}.png`,
+    source: `${COFFEE_PROJECT_PATH}/video/scene_${scene.id.slice(-2)}.mp4`,
+  })),
 ];
 
 const transitionOptions: Array<{ id: TimelineTransitionType; label: string; detail: string }> = [
@@ -1551,9 +1610,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
   const selectLibraryAsset = (asset: (typeof libraryAssets)[number]) => {
     const template = videoTemplates.find((item) => item.id === asset.templateId);
-    if (!template) return;
-    applyVideoTemplate(template);
-    notify(`已选择视频：${asset.title}`);
+    if (template) {
+      applyVideoTemplate(template);
+      notify(`已选择视频：${asset.title}`);
+      return;
+    }
+    if (asset.category === '图片' || asset.category === 'MG动画') setPoster(asset.poster);
+    notify(`已选择${asset.category}：${asset.title}`);
   };
 
   const handleVideoMetadata = () => {
@@ -2004,7 +2067,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
           <div className="ai-video-editor-template-grid ai-video-editor-library-grid">
             {visibleLibraryAssets.length > 0 ? visibleLibraryAssets.map((asset) => <button type="button" key={asset.id} className="ai-video-editor-template-card ai-video-editor-library-card" onClick={() => selectLibraryAsset(asset)}>
-              <span className="ai-video-editor-template-card__poster"><img src={asset.poster} alt="" /><span>{asset.detail.replace('视频 · ', '')}</span><b>使用视频</b></span>
+              <span className="ai-video-editor-template-card__poster"><img src={asset.poster} alt="" /><span>{asset.detail.split(' · ').pop()}</span><b>{asset.category === '视频' ? '使用视频' : '使用素材'}</b></span>
               <span className="ai-video-editor-template-card__title">{asset.title}</span>
               <span className="ai-video-editor-template-card__category">{asset.detail}</span>
             </button>) : <div className="ai-video-editor-library-empty"><Film size={22} /><strong>该分类暂无素材</strong><span>当前资源库仅保留这两个真实视频</span></div>}
