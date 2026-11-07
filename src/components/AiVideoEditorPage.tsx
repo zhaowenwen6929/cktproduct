@@ -11,6 +11,7 @@ import {
   ChevronRight,
   CircleHelp,
   Clock3,
+  Copy,
   Download,
   Edit3,
   Eye,
@@ -25,8 +26,10 @@ import {
   LayoutTemplate,
   Lock,
   Maximize2,
+  MapPin,
   MessageCircle,
   Mic2,
+  MoreHorizontal,
   Music2,
   Pause,
   Play,
@@ -90,6 +93,8 @@ type TimelineClip = {
   start: number;
   duration: number;
   poster?: string;
+  speed?: number;
+  volume?: number;
 };
 type TimelineTrackState = {
   id: TimelineTrackId;
@@ -115,6 +120,11 @@ type TimelineTransition = {
 type TimelineEditSnapshot = {
   clips: TimelineClip[];
   transitions: TimelineTransition[];
+};
+type TimelineMarker = {
+  id: string;
+  time: number;
+  label: string;
 };
 
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
@@ -418,6 +428,12 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [timelineTransitions, setTimelineTransitions] = useState<TimelineTransition[]>([]);
   const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
   const [isTransitionMenuOpen, setIsTransitionMenuOpen] = useState(false);
+  const [timelineMarkers, setTimelineMarkers] = useState<TimelineMarker[]>([]);
+  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const [timelineMenu, setTimelineMenu] = useState<'add' | 'speed' | 'volume' | null>(null);
+  const [isSnapEnabled, setIsSnapEnabled] = useState(true);
+  const [isRippleEnabled, setIsRippleEnabled] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const timelineClipsRef = useRef<TimelineClip[]>(initialTimelineClips);
   const [showToast, setShowToast] = useState('');
   const notify = (message: string) => setShowToast(message);
@@ -437,6 +453,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   useEffect(() => {
     timelineClipsRef.current = timelineClips;
   }, [timelineClips]);
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.playbackRate = playbackRate;
+  }, [playbackRate]);
 
   useEffect(() => {
     if (workflowStage !== 'mg') return;
@@ -506,6 +526,16 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     if (trackId === 'video' && key === 'muted') setIsMuted((value) => !value);
   };
 
+  const snapTimelineTime = (rawTime: number, clipId: string) => {
+    if (!isSnapEnabled) return rawTime;
+    const snapPoints = [0, timelineDuration, ...timelineMarkers.map((marker) => marker.time), ...timelineClipsRef.current.flatMap((clip) => clip.id === clipId ? [] : [clip.start, clip.start + clip.duration])];
+    const nearest = snapPoints.reduce<{ time: number; distance: number } | null>((result, point) => {
+      const distance = Math.abs(point - rawTime);
+      return !result || distance < result.distance ? { time: point, distance } : result;
+    }, null);
+    return nearest && nearest.distance <= 0.35 ? nearest.time : rawTime;
+  };
+
   const startTimelineDrag = (event: React.PointerEvent, clip: TimelineClip, mode: TimelineDragMode) => {
     const track = getTimelineTrack(clip.trackId);
     if (track?.locked) {
@@ -528,13 +558,17 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       setTimelineClips((items) => items.map((clip) => {
         if (clip.id !== timelineDrag.clipId) return clip;
         if (timelineDrag.mode === 'move') {
-          return { ...clip, start: Math.max(0, Math.min(timelineDuration - clip.duration, activeClip.start + delta)) };
+          const rawStart = Math.max(0, Math.min(timelineDuration - clip.duration, activeClip.start + delta));
+          return { ...clip, start: Math.max(0, Math.min(timelineDuration - clip.duration, snapTimelineTime(rawStart, clip.id))) };
         }
         if (timelineDrag.mode === 'resize-start') {
-          const nextStart = Math.max(0, Math.min(activeClip.start + activeClip.duration - 0.2, activeClip.start + delta));
+          const rawStart = Math.max(0, Math.min(activeClip.start + activeClip.duration - 0.2, activeClip.start + delta));
+          const nextStart = Math.max(0, Math.min(activeClip.start + activeClip.duration - 0.2, snapTimelineTime(rawStart, clip.id)));
           return { ...clip, start: nextStart, duration: activeClip.start + activeClip.duration - nextStart };
         }
-        return { ...clip, duration: Math.max(0.2, Math.min(timelineDuration - activeClip.start, activeClip.duration + delta)) };
+        const rawDuration = Math.max(0.2, Math.min(timelineDuration - activeClip.start, activeClip.duration + delta));
+        const snappedEnd = snapTimelineTime(activeClip.start + rawDuration, clip.id);
+        return { ...clip, duration: Math.max(0.2, Math.min(timelineDuration - activeClip.start, snappedEnd - activeClip.start)) };
       }));
     };
     const handlePointerUp = () => {
@@ -637,10 +671,117 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       notify('该轨道已锁定');
       return;
     }
-    commitTimelineChange(timelineClips.filter((item) => item.id !== clip.id), '已删除选中片段');
+    const clipEnd = clip.start + clip.duration;
+    const nextClips = timelineClips
+      .filter((item) => item.id !== clip.id)
+      .map((item) => isRippleEnabled && item.start >= clipEnd - 0.1 ? { ...item, start: Math.max(0, item.start - clip.duration) } : item);
+    commitTimelineChange(nextClips, isRippleEnabled ? '已删除片段并向前吸附后续内容' : '已删除选中片段');
     setTimelineTransitions((items) => items.filter((transition) => transition.at < clip.start - 0.2 || transition.at > clip.start + clip.duration + 0.2));
     setSelectedTimelineClipId(null);
     setSelectedTransitionId(null);
+  };
+
+  const updateSelectedTimelineClip = (patch: Partial<TimelineClip>, message: string) => {
+    const clip = timelineClips.find((item) => item.id === selectedTimelineClipId);
+    if (!clip) {
+      notify('请先选择时间线片段');
+      return;
+    }
+    if (getTimelineTrack(clip.trackId)?.locked) {
+      notify('该轨道已锁定');
+      return;
+    }
+    commitTimelineChange(timelineClips.map((item) => item.id === clip.id ? { ...item, ...patch } : item), message);
+  };
+
+  const duplicateSelectedTimelineClip = () => {
+    const clip = timelineClips.find((item) => item.id === selectedTimelineClipId);
+    if (!clip) {
+      notify('请先选择时间线片段');
+      return;
+    }
+    if (getTimelineTrack(clip.trackId)?.locked) {
+      notify('该轨道已锁定');
+      return;
+    }
+    const duplicateStart = Math.min(timelineDuration - clip.duration, clip.start + clip.duration + 0.2);
+    const duplicate = { ...clip, id: `${clip.id}-copy-${Date.now()}`, start: Math.max(0, duplicateStart), label: `${clip.label} · 副本` };
+    commitTimelineChange([...timelineClips, duplicate], '已复制片段');
+    setSelectedTimelineClipId(duplicate.id);
+  };
+
+  const freezeSelectedVideoFrame = () => {
+    const clip = timelineClips.find((item) => item.id === selectedTimelineClipId);
+    if (!clip || clip.trackId !== 'video') {
+      notify('请先选择视频片段');
+      return;
+    }
+    if (getTimelineTrack('video')?.locked) {
+      notify('视频轨道已锁定');
+      return;
+    }
+    const freezeStart = Math.min(timelineDuration - 2, clip.start + clip.duration);
+    const freezeClip: TimelineClip = { id: `freeze-${Date.now()}`, trackId: 'video', kind: 'video', label: '冻结帧 · 2秒', start: Math.max(0, freezeStart), duration: 2, poster: clip.poster };
+    commitTimelineChange([...timelineClips, freezeClip], '已添加冻结帧');
+    setSelectedTimelineClipId(freezeClip.id);
+  };
+
+  const addTimelineAsset = (trackId: TimelineTrackId, kind: TimelineClipKind, label: string, poster?: string) => {
+    const track = getTimelineTrack(trackId);
+    if (track?.locked) {
+      notify('该轨道已锁定');
+      return;
+    }
+    const clipDuration = trackId === 'sfx' ? 2 : trackId === 'text' || trackId === 'mg' ? 5 : 8;
+    const clip: TimelineClip = { id: `${kind}-${Date.now()}`, trackId, kind, label, start: Math.min(Math.max(0, currentTime), Math.max(0, timelineDuration - clipDuration)), duration: clipDuration, poster };
+    commitTimelineChange([...timelineClips, clip], `已添加${label}`);
+    setSelectedTimelineClipId(clip.id);
+    setTimelineMenu(null);
+  };
+
+  const addTimelineMarker = () => {
+    const marker: TimelineMarker = { id: `marker-${Date.now()}`, time: Number(currentTime.toFixed(1)), label: `标记 ${timelineMarkers.length + 1}` };
+    setTimelineMarkers((items) => [...items, marker].sort((left, right) => left.time - right.time));
+    setSelectedMarkerId(marker.id);
+    notify(`已在 ${formatTime(currentTime)} 添加标记`);
+  };
+
+  const removeSelectedTimelineMarker = () => {
+    if (!selectedMarkerId) {
+      notify('请先选择时间线标记');
+      return;
+    }
+    setTimelineMarkers((items) => items.filter((marker) => marker.id !== selectedMarkerId));
+    setSelectedMarkerId(null);
+    notify('已删除时间线标记');
+  };
+
+  const setSelectedClipSpeed = (speed: number) => {
+    updateSelectedTimelineClip({ speed }, `片段速度已调整为 ${speed}x`);
+    setPlaybackRate(speed);
+    setTimelineMenu(null);
+  };
+
+  const setSelectedClipVolume = (volume: number) => {
+    updateSelectedTimelineClip({ volume }, `片段音量已调整为 ${volume}%`);
+    if (videoRef.current) videoRef.current.volume = volume / 100;
+    setTimelineMenu(null);
+  };
+
+  const startTimelineScrub = (event: React.PointerEvent) => {
+    const rulerElement = event.currentTarget as HTMLElement;
+    const rect = rulerElement.getBoundingClientRect();
+    const trackLeft = rect.left;
+    const trackWidth = Math.max(1, rect.width);
+    const updateFromPointer = (clientX: number) => seekTo(((clientX - trackLeft) / trackWidth) * timelineDuration);
+    updateFromPointer(event.clientX);
+    const handleMove = (moveEvent: PointerEvent) => updateFromPointer(moveEvent.clientX);
+    const handleUp = () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp, { once: true });
   };
 
   const timelineClipStyle = (clip: TimelineClip) => ({
@@ -977,7 +1118,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     return <div className="ai-video-editor-chat-content"><div className="ai-video-editor-chat-scroll">{renderMessages()}{card}{isThinking && <div className="ai-video-editor-message ai-video-editor-message--assistant"><div className="ai-video-editor-message-avatar"><Film size={12} /></div><div className="ai-video-editor-message-bubble ai-video-editor-thinking"><i /><i /><i /></div></div>}<div ref={chatEndRef} /></div><div className="ai-video-editor-suggestion-title">{workflowStage === 'script' ? '你也可以告诉我' : workflowStage === 'storyboard' ? '需要调整分镜？' : '继续告诉 AI 你想怎么改'}</div><div className="ai-video-editor-suggestions">{workflowStage === 'script' ? <><button type="button" onClick={() => handleSend('让旁白更口语化一些')}><AlignLeft size={14} /> 让旁白更口语化 <ChevronRight size={13} /></button><button type="button" onClick={() => setIsScriptEditorOpen(true)}><Table2 size={14} /> 打开全屏表格编辑 <ChevronRight size={13} /></button></> : workflowStage === 'storyboard' ? <><button type="button" onClick={() => setIsStoryboardEditorOpen(true)}><Table2 size={14} /> 全屏编辑分镜表格 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('把第 1 镜改成更有冲击力的开场')}><WandSparkles size={14} /> 调整镜头节奏 <ChevronRight size={13} /></button></> : <><button type="button" onClick={() => handleSend('让画面节奏更紧凑一些')}><Scissors size={14} /> 调整节奏 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('配一首更有纪录片质感的音乐')}><Music2 size={14} /> 调整配乐 <ChevronRight size={13} /></button></>}</div><div className="ai-video-editor-composer"><textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder={workflowStage === 'script' ? '输入你对脚本的修改意见…' : '告诉 AI 你想怎么改…'} rows={2} /><div className="ai-video-editor-composer-footer"><button type="button" onClick={() => notify('附件上传面板已打开')}><Plus size={15} /></button><span>Enter 发送</span><button type="button" className="ai-video-editor-send" onClick={() => handleSend()} disabled={!chatInput.trim() || isThinking}><Send size={14} /></button></div></div></div>;
   };
 
-  const isFinalTimelineReady = finalStatus === 'done';
+  const isDetailedTimelineReady = timelineClips.length > 0;
+  const selectedTimelineClip = timelineClips.find((clip) => clip.id === selectedTimelineClipId);
 
   return (
     <div className="ai-video-editor-shell">
@@ -1007,7 +1149,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         </div>
       </header>
 
-      <div className={`ai-video-editor-body${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
+      <div className={`ai-video-editor-body${isDetailedTimelineReady ? ' is-timeline-detailed' : ''}${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
         <aside className="ai-video-editor-left-rail">
           <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')}>
             <Plus size={18} />
@@ -1079,14 +1221,14 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <button type="button" className="ai-video-editor-player-resolution" onClick={() => notify('当前输出分辨率为 1080p')} aria-label="输出分辨率">1080p</button>
                   <button type="button" className="ai-video-editor-player-fullscreen" onClick={togglePreviewFullscreen} aria-label="全屏预览" title="全屏预览"><Maximize2 size={15} /></button>
                   <button type="button" className="ai-video-editor-player-ratio" onClick={() => notify('画布比例保持为 16:9')}><span>16:9</span><ChevronDown size={13} /></button>
-                  <button type="button" onClick={() => notify('播放速度 1x')}><Gauge size={15} /> 1x</button>
+                  <button type="button" onClick={() => { const rates = [0.5, 1, 1.5, 2]; const nextRate = rates[(rates.indexOf(playbackRate) + 1) % rates.length]; setPlaybackRate(nextRate); notify(`播放速度 ${nextRate}x`); }}><Gauge size={15} /> {playbackRate}x</button>
                 </div>
               </div>
             </section>
           </div>
         </main>
 
-        <section className={`ai-video-editor-timeline-panel${isFinalTimelineReady ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
+        <section className={`ai-video-editor-timeline-panel${isDetailedTimelineReady ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
               <div className="ai-video-editor-timeline-head">
                 <div className="ai-video-editor-timeline-actions">
                   <button type="button" onClick={undoTimeline} disabled={!timelineHistory.length} aria-label="撤销" title="撤销"><Undo2 size={15} /></button>
@@ -1094,6 +1236,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <span />
                   <button type="button" onClick={splitSelectedTimelineClip}><Scissors size={15} /> 分割</button>
                   <button type="button" onClick={() => setIsTransitionMenuOpen((value) => !value)}><WandSparkles size={14} /> 转场</button>
+                  <button type="button" onClick={() => setTimelineMenu((value) => value === 'add' ? null : 'add')}><Plus size={14} /> 添加</button>
+                  <button type="button" onClick={duplicateSelectedTimelineClip}><Copy size={14} /> 复制</button>
+                  <button type="button" onClick={freezeSelectedVideoFrame}><Film size={14} /> 冻结帧</button>
+                  <button type="button" onClick={addTimelineMarker}><MapPin size={14} /> 标记</button>
+                  <button type="button" onClick={removeSelectedTimelineMarker} disabled={!selectedMarkerId}><X size={13} /> 删标记</button>
+                  <button type="button" onClick={() => setTimelineMenu((value) => value === 'speed' ? null : 'speed')}><Gauge size={14} /> 速度</button>
+                  <button type="button" onClick={() => setTimelineMenu((value) => value === 'volume' ? null : 'volume')}><Volume2 size={14} /> 音量</button>
                   <button type="button" onClick={deleteSelectedTimelineClip}><X size={15} /> 删除</button>
                 </div>
                 {isTransitionMenuOpen && <div className="ai-video-editor-transition-menu">
@@ -1104,7 +1253,25 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   </div>
                   <button type="button" className="ai-video-editor-transition-remove" onClick={removeSelectedTransition}>移除当前转场</button>
                 </div>}
+                {timelineMenu === 'add' && <div className="ai-video-editor-timeline-menu ai-video-editor-timeline-menu--add">
+                  <strong>添加到时间线</strong>
+                  <button type="button" onClick={() => addTimelineAsset('video', 'video', '视频素材', poster || DEFAULT_POSTER)}><Film size={13} /> 视频片段</button>
+                  <button type="button" onClick={() => addTimelineAsset('mg', 'mg', 'MG 画面', poster || DEFAULT_POSTER)}><Layers3 size={13} /> MG 画面</button>
+                  <button type="button" onClick={() => addTimelineAsset('text', 'text', '文字层')}><TextCursorInput size={13} /> 文字层</button>
+                  <button type="button" onClick={() => addTimelineAsset('music', 'music', '背景音乐')}><Music2 size={13} /> 背景音乐</button>
+                  <button type="button" onClick={() => addTimelineAsset('sfx', 'sfx', '音效')}><AudioLines size={13} /> 音效</button>
+                </div>}
+                {timelineMenu === 'speed' && <div className="ai-video-editor-timeline-menu ai-video-editor-timeline-menu--compact">
+                  <strong>片段速度</strong>
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => <button type="button" key={speed} className={selectedTimelineClip?.speed === speed ? 'is-selected' : ''} onClick={() => setSelectedClipSpeed(speed)}>{speed}x</button>)}
+                </div>}
+                {timelineMenu === 'volume' && <div className="ai-video-editor-timeline-menu ai-video-editor-timeline-menu--compact">
+                  <strong>片段音量</strong>
+                  {[0, 25, 50, 75, 100].map((volume) => <button type="button" key={volume} className={selectedTimelineClip?.volume === volume ? 'is-selected' : ''} onClick={() => setSelectedClipVolume(volume)}>{volume}%</button>)}
+                </div>}
                 <div className="ai-video-editor-timeline-zoom">
+                  <button type="button" className={`ai-video-editor-timeline-mode${isSnapEnabled ? ' is-on' : ''}`} onClick={() => setIsSnapEnabled((value) => !value)} title="吸附到片段边缘和标记">吸附</button>
+                  <button type="button" className={`ai-video-editor-timeline-mode${isRippleEnabled ? ' is-on' : ''}`} onClick={() => setIsRippleEnabled((value) => !value)} title="删除时同步移动后续片段">波纹</button>
                   <button type="button" onClick={() => setZoom((value) => Math.max(48, value - 8))}><ZoomOut size={14} /></button>
                   <div className="ai-video-editor-zoom-track"><span style={{ width: `${zoom}%` }} /></div>
                   <button type="button" onClick={() => setZoom((value) => Math.min(100, value + 8))}><ZoomIn size={14} /></button>
@@ -1113,8 +1280,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
               <div className="ai-video-editor-timeline">
                 <div className="ai-video-editor-timeline-ruler">
                   <div className="ai-video-editor-track-spacer" />
-                  <div className="ai-video-editor-ruler-scale">
+                  <div className="ai-video-editor-ruler-scale" onPointerDown={startTimelineScrub}>
                     {timelineTicks.map((tick) => <span key={tick}>{tick}</span>)}
+                    {timelineMarkers.map((marker) => <button type="button" key={marker.id} className={`ai-video-editor-timeline-marker${selectedMarkerId === marker.id ? ' is-selected' : ''}`} style={{ left: `${(marker.time / timelineDuration) * 100}%` }} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); setSelectedMarkerId(marker.id); seekTo(marker.time); }} title={`${marker.label} · ${formatTime(marker.time)}`}><MapPin size={10} /></button>)}
                   </div>
                 </div>
                 <div className="ai-video-editor-track-row">
@@ -1131,7 +1299,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     {timelineTransitions.map((transition) => <button type="button" key={transition.id} className={`ai-video-editor-timeline-transition ai-video-editor-timeline-transition--${transition.type}${selectedTransitionId === transition.id ? ' is-selected' : ''}`} style={{ left: `${(transition.at / timelineDuration) * 100}%` }} onClick={(event) => { event.stopPropagation(); setSelectedTransitionId(transition.id); setIsTransitionMenuOpen(true); }} aria-label={`${transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}，${transition.at.toFixed(1)}秒`}><span>{transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}</span></button>)}
                   </div>
                 </div>
-                {isFinalTimelineReady ? <>
+                {isDetailedTimelineReady ? <>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
                     {renderTimelineTrackLabel('captions', <Subtitles size={14} />, '字幕')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
@@ -1216,7 +1384,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         {isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle is-collapsed" onClick={() => setIsChatCollapsed(false)} aria-label="展开对话面板" title="展开对话面板"><ChevronLeft size={15} /></button>}
         {!isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle" onClick={() => setIsChatCollapsed(true)} aria-label="收起对话面板" title="收起对话面板"><ChevronRight size={15} /></button>}
       </div>
-      {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className={`ai-video-editor-template-panel ai-video-editor-tool-panel${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isFinalTimelineReady ? ' is-timeline-complete' : ''}`} aria-label={`${activeToolTitle}面板`}>
+      {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className={`ai-video-editor-template-panel ai-video-editor-tool-panel${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isDetailedTimelineReady ? ' is-timeline-complete' : ''}`} aria-label={`${activeToolTitle}面板`}>
         <div className="ai-video-editor-template-panel__head">
           <div>
             <strong>{openToolPanelId === 'import' ? '导入素材' : openToolPanelId === 'library' ? '资源库' : openToolPanelId === 'templates' ? '视频模板' : openToolPanelId === 'media' ? '素材' : '文字'}</strong>
