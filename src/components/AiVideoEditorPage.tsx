@@ -544,6 +544,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [activeRightTab, setActiveRightTab] = useState<'chat' | 'settings'>('chat');
   const [videoSource, setVideoSource] = useState(DEFAULT_VIDEO);
   const [poster, setPoster] = useState(DEFAULT_POSTER);
+  const [videoAspectRatio, setVideoAspectRatio] = useState(16 / 9);
   const [videoName, setVideoName] = useState('费曼学习法 · Demo v1.4');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -1259,6 +1260,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         : timelineClips;
     setVideoSource(nextVideoSource);
     setPoster(template.poster);
+    setVideoAspectRatio(16 / 9);
     setVideoName(template.title);
     if (nextDuration) setDuration(nextDuration);
     setCurrentTime(0);
@@ -1273,6 +1275,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const handleVideoMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
+    if (video.videoWidth > 0 && video.videoHeight > 0) {
+      setVideoAspectRatio(video.videoWidth / video.videoHeight);
+    }
     if (Number.isFinite(video.duration) && video.duration > 0) {
       setDuration(video.duration);
       setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, duration: video.duration } : clip));
@@ -1445,7 +1450,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           <div className="ai-video-editor-workspace">
             <section className="ai-video-editor-preview-panel">
               <div className="ai-video-editor-stage-wrap">
-                <div ref={stageRef} className="ai-video-editor-stage">
+                <div ref={stageRef} className="ai-video-editor-stage" style={{ aspectRatio: videoAspectRatio }}>
                   <video
                     ref={videoRef}
                     src={videoSource}
