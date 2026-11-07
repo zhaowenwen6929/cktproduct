@@ -257,6 +257,38 @@
 .ai-video-editor-settings-row { justify-content: space-between; min-height: 40px; border-bottom: 1px solid #eef0f3; color: #606c7c; font-size: 11px; }
 .ai-video-editor-settings-save { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 34px; margin-top: 24px; border: 0; border-radius: 8px; background: #506cf0; color: #fff; font-size: 11px; font-weight: 700; }
 .ai-video-editor-settings-save:hover { background: #415edf; }
+.ai-video-editor-settings-panel { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #d8dfe6 transparent; }
+.ai-video-editor-settings-output { padding-bottom: 4px; }
+.ai-video-editor-settings-field { position: relative; }
+.ai-video-editor-settings-field > span { color: #667588; font-size: 10px; }
+.ai-video-editor-settings-field input:not([type="color"]):not([type="range"]),
+.ai-video-editor-settings-field select { box-sizing: border-box; width: 100%; height: 34px; padding: 0 10px; border: 1px solid #dfe5ea; border-radius: 7px; outline: 0; background: #fff; color: #405267; font-size: 11px; }
+.ai-video-editor-settings-field input:not([type="color"]):not([type="range"]):focus,
+.ai-video-editor-settings-field select:focus { border-color: #9eb4c8; box-shadow: 0 0 0 3px rgba(92, 132, 164, .1); }
+.ai-video-editor-settings-subheading { display: flex; align-items: baseline; justify-content: space-between; margin: 12px 0 14px; padding-top: 14px; border-top: 1px solid #e7ebee; }
+.ai-video-editor-settings-subheading strong { color: #405267; font-size: 12px; }
+.ai-video-editor-settings-subheading span { color: #9aa5af; font-size: 9px; }
+.ai-video-editor-settings-field--color { gap: 7px; }
+.ai-video-editor-settings-color-control { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 9px; border: 1px solid #dfe5ea; border-radius: 7px; background: #fff; }
+.ai-video-editor-settings-color-control input[type="color"] { width: 25px; height: 25px; padding: 0; border: 0; border-radius: 6px; background: transparent; cursor: pointer; }
+.ai-video-editor-settings-color-control input[type="text"],
+.ai-video-editor-settings-color-control input:not([type]) { min-width: 0; flex: 1; height: 28px; padding: 0; border: 0; outline: 0; background: transparent; color: #405267; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: .02em; }
+.ai-video-editor-settings-range-control { display: flex; align-items: center; gap: 9px; }
+.ai-video-editor-settings-range-control input[type="range"] { min-width: 0; flex: 1; accent-color: #58708b; cursor: pointer; }
+.ai-video-editor-settings-range-control output { display: grid; width: 52px; height: 34px; place-items: center; border-radius: 7px; background: #f2f5f7; color: #51667b; font-size: 11px; font-variant-numeric: tabular-nums; }
+.ai-video-editor-content-settings { margin: 2px 0 14px; border: 1px solid #dfe5ea; border-radius: 10px; background: #fbfcfd; }
+.ai-video-editor-content-settings__head { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 53px; padding: 9px 11px; border: 0; background: transparent; color: #354b61; text-align: left; }
+.ai-video-editor-content-settings__head > span { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.ai-video-editor-content-settings__head strong { font-size: 13px; font-weight: 700; }
+.ai-video-editor-content-settings__head em { overflow: hidden; color: #929da8; font-size: 9px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.ai-video-editor-content-settings__head svg { flex: 0 0 auto; color: #7e8b98; transition: transform .18s ease; }
+.ai-video-editor-content-settings__head svg.is-open { transform: rotate(180deg); }
+.ai-video-editor-content-settings__body { padding: 13px 11px 3px; border-top: 1px solid #e7ebee; }
+.ai-video-editor-content-settings__body .ai-video-editor-settings-field:last-child { margin-bottom: 7px; }
+.ai-video-editor-settings-actions { display: flex; gap: 8px; margin-top: 22px; }
+.ai-video-editor-settings-actions .ai-video-editor-settings-save { flex: 1; width: auto; margin-top: 0; }
+.ai-video-editor-settings-reset { height: 34px; padding: 0 13px; border: 1px solid #d8e0e6; border-radius: 7px; background: #fff; color: #66798b; font-size: 11px; }
+.ai-video-editor-settings-reset:hover { border-color: #b7c8d6; background: #f4f7f9; color: #3a5a75; }
 .ai-video-editor-toast { position: fixed; z-index: 30; bottom: 24px; left: 50%; gap: 7px; padding: 10px 14px; border: 1px solid #d8e6dc; border-radius: 10px; transform: translateX(-50%); background: #fff; color: #4c7058; font-size: 11px; box-shadow: 0 12px 30px rgba(39, 60, 48, .13); }
 .ai-video-editor-toast svg { color: #54ae74; }
 

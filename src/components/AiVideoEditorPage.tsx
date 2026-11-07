@@ -134,6 +134,21 @@ type TimelineMarker = {
   label: string;
 };
 
+type VideoTemplateParameters = {
+  backgroundColor: string;
+  backgroundOpacity: number;
+  primaryColor: string;
+  highlightColor: string;
+  textColor: string;
+  annotationTextColor: string;
+  titleText: string;
+  subtitleText: string;
+  bottomAnnotationText: string;
+  font: string;
+  asset: string;
+  assetFit: 'contain' | 'cover' | 'fill';
+};
+
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
 const DEFAULT_POSTER = '/code-video/reference-style-demo-v14-poster.png';
 const COFFEE_VIDEO = '/video-projects/coffee-seed-to-cup-20261107/preview.mp4';
@@ -249,6 +264,36 @@ const videoTemplates: Array<{ id: string; title: string; category: Exclude<Templ
   { id: 'course', title: '课程分享 · 重点清晰', category: '知识分享', duration: '00:42', poster: '/code-video/reference-style-demo-v7-poster.png' },
   { id: 'tips', title: '经验分享 · 轻量版', category: '知识分享', duration: '00:28', poster: '/code-video/reference-style-demo-v5-poster.png' },
 ];
+
+const CODE_VIDEO_PARAMETERS: VideoTemplateParameters = {
+  backgroundColor: '#F3EBDD',
+  backgroundOpacity: 100,
+  primaryColor: '#2B2A26',
+  highlightColor: '#B23A2E',
+  textColor: '#2B2A26',
+  annotationTextColor: '#6E665A',
+  titleText: '桑',
+  subtitleText: '商',
+  bottomAnnotationText: '殷商甲骨卜辞·象形「桑」',
+  font: 'STKaiti',
+  asset: '片段3元素.webp',
+  assetFit: 'contain',
+};
+
+const COFFEE_VIDEO_PARAMETERS: VideoTemplateParameters = {
+  backgroundColor: '#F3EFE8',
+  backgroundOpacity: 100,
+  primaryColor: '#35251E',
+  highlightColor: '#B66B3C',
+  textColor: '#35251E',
+  annotationTextColor: '#79685E',
+  titleText: '从种子，到一杯咖啡',
+  subtitleText: '种子 · 土地 · 加工 · 烘焙 · 冲泡',
+  bottomAnnotationText: '每一杯咖啡，都是一段完整的旅程。',
+  font: 'PingFang SC',
+  asset: 'scene_08.png',
+  assetFit: 'contain',
+};
 
 const mediaCategories = ['全部', '视频', '图片', '透明素材', '音频', '特效'] as const;
 type MediaCategory = (typeof mediaCategories)[number];
@@ -554,6 +599,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [poster, setPoster] = useState(DEFAULT_POSTER);
   const [videoAspectRatio, setVideoAspectRatio] = useState(16 / 9);
   const [videoName, setVideoName] = useState('费曼学习法 · Demo v1.4');
+  const [canvasRatio, setCanvasRatio] = useState('16:9');
+  const [outputResolution, setOutputResolution] = useState('1080p');
+  const [outputFrameRate, setOutputFrameRate] = useState('30 fps');
+  const [templateParams, setTemplateParams] = useState<VideoTemplateParameters>(CODE_VIDEO_PARAMETERS);
+  const [isContentSettingsOpen, setIsContentSettingsOpen] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(codeVideoDuration);
@@ -608,6 +658,24 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [showToast, setShowToast] = useState('');
   const notify = (message: string) => setShowToast(message);
   const projectTitle = videoName.split(' · ')[0] || videoName;
+  const activeTemplateKind = videoSource === COFFEE_VIDEO ? 'coffee' : 'code-v14';
+  const activeTemplateParameters = activeTemplateKind === 'coffee' ? COFFEE_VIDEO_PARAMETERS : CODE_VIDEO_PARAMETERS;
+
+  const updateTemplateParameter = <Key extends keyof VideoTemplateParameters>(key: Key, value: VideoTemplateParameters[Key]) => {
+    setTemplateParams((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateHexParameter = (key: keyof Pick<VideoTemplateParameters, 'backgroundColor' | 'primaryColor' | 'highlightColor' | 'textColor' | 'annotationTextColor'>, value: string) => {
+    const normalized = value.startsWith('#') ? value : `#${value}`;
+    if (/^#[0-9a-f]{6}$/i.test(normalized)) {
+      updateTemplateParameter(key, normalized.toUpperCase());
+    }
+  };
+
+  const restoreTemplateParameters = () => {
+    setTemplateParams(activeTemplateParameters);
+    notify('已恢复当前模板的默认参数');
+  };
 
   useEffect(() => {
     if (messages.length === initialMessages.length && !isThinking) return;
@@ -941,7 +1009,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
     setTimelineRedo([]);
     setTimelineTracks((items) => [...items, track]);
-    setIsAllTracksExpanded(true);
     setTimelineMenu(null);
     window.requestAnimationFrame(() => timelineScrollRef.current?.scrollTo({ top: timelineScrollRef.current.scrollHeight, behavior: 'smooth' }));
     notify(`已在时间线底部添加${track.label}`);
@@ -1362,7 +1429,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setRenderedVideoSource(null);
     setPoster(template.poster);
     setVideoAspectRatio(16 / 9);
+    setCanvasRatio('16:9');
     setVideoName(template.title);
+    setTemplateParams(template.timeline === 'coffee' ? COFFEE_VIDEO_PARAMETERS : CODE_VIDEO_PARAMETERS);
+    setIsContentSettingsOpen(true);
     if (nextDuration) setDuration(nextDuration);
     setCurrentTime(0);
     setTimelineClips(sourceTimeline.map((clip) => clip.id === 'video-main' ? { ...clip, label: template.title, duration: nextDuration ?? clip.duration, source: nextVideoSource, poster: template.poster } : clip));
@@ -1733,13 +1803,54 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
             </>
           ) : (
             <div className="ai-video-editor-settings-panel">
-              <div className="ai-video-editor-settings-heading"><div><strong>视频参数</strong><span>调整当前项目的画布与输出</span></div><Settings2 size={17} /></div>
-              <label>画布比例<select defaultValue="16:9"><option>16:9 横屏</option><option>9:16 竖屏</option><option>1:1 方形</option></select></label>
-              <label>输出分辨率<select defaultValue="1080p"><option>1080p</option><option>2K</option><option>4K</option></select></label>
-              <label>帧率<select defaultValue="30 fps"><option>30 fps</option><option>60 fps</option></select></label>
+              <div className="ai-video-editor-settings-heading"><div><strong>视频参数</strong><span>{videoName} · {activeTemplateKind === 'coffee' ? '咖啡模板' : '费曼学习法模板'}</span></div><Settings2 size={17} /></div>
+              <div className="ai-video-editor-content-settings">
+                <button type="button" className="ai-video-editor-content-settings__head" onClick={() => setIsContentSettingsOpen((value) => !value)} aria-expanded={isContentSettingsOpen}>
+                  <span><strong>内容设置</strong><em>{activeTemplateKind === 'coffee' ? '可编辑咖啡流程的文字与画面样式' : '所有 AI 生成的文字图层都可以编辑。'}</em></span>
+                  <ChevronDown size={16} className={isContentSettingsOpen ? 'is-open' : ''} />
+                </button>
+                {isContentSettingsOpen && <div className="ai-video-editor-content-settings__body">
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
+                    <span>背景颜色</span>
+                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.backgroundColor} onChange={(event) => updateTemplateParameter('backgroundColor', event.target.value.toUpperCase())} /><input aria-label="背景颜色十六进制值" value={templateParams.backgroundColor.slice(1)} onChange={(event) => updateHexParameter('backgroundColor', event.target.value)} /></div>
+                  </label>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--range">
+                    <span>Background opacity</span>
+                    <div className="ai-video-editor-settings-range-control"><input type="range" min="0" max="100" value={templateParams.backgroundOpacity} onChange={(event) => updateTemplateParameter('backgroundOpacity', Number(event.target.value))} /><output>{templateParams.backgroundOpacity}%</output></div>
+                  </label>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
+                    <span>主色</span>
+                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.primaryColor} onChange={(event) => updateTemplateParameter('primaryColor', event.target.value.toUpperCase())} /><input aria-label="主色十六进制值" value={templateParams.primaryColor.slice(1)} onChange={(event) => updateHexParameter('primaryColor', event.target.value)} /></div>
+                  </label>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
+                    <span>高亮颜色</span>
+                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.highlightColor} onChange={(event) => updateTemplateParameter('highlightColor', event.target.value.toUpperCase())} /><input aria-label="高亮颜色十六进制值" value={templateParams.highlightColor.slice(1)} onChange={(event) => updateHexParameter('highlightColor', event.target.value)} /></div>
+                  </label>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
+                    <span>文本颜色</span>
+                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.textColor} onChange={(event) => updateTemplateParameter('textColor', event.target.value.toUpperCase())} /><input aria-label="文本颜色十六进制值" value={templateParams.textColor.slice(1)} onChange={(event) => updateHexParameter('textColor', event.target.value)} /></div>
+                  </label>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
+                    <span>Annotation text color</span>
+                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.annotationTextColor} onChange={(event) => updateTemplateParameter('annotationTextColor', event.target.value.toUpperCase())} /><input aria-label="注解文字颜色十六进制值" value={templateParams.annotationTextColor.slice(1)} onChange={(event) => updateHexParameter('annotationTextColor', event.target.value)} /></div>
+                  </label>
+                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '片尾主标题' : 'Main calligraphy character'}</span><input value={templateParams.titleText} onChange={(event) => updateTemplateParameter('titleText', event.target.value)} /></label>
+                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '流程副标题' : 'Seal inscription'}</span><input value={templateParams.subtitleText} onChange={(event) => updateTemplateParameter('subtitleText', event.target.value)} /></label>
+                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '底部说明文字' : 'Bottom annotation text'}</span><input value={templateParams.bottomAnnotationText} onChange={(event) => updateTemplateParameter('bottomAnnotationText', event.target.value)} /></label>
+                  <label className="ai-video-editor-settings-field"><span>字体</span><select value={templateParams.font} onChange={(event) => updateTemplateParameter('font', event.target.value)}><option value="STKaiti">华文楷体 / 书法</option><option value="PingFang SC">苹方 / 黑体</option><option value="Noto Sans SC">思源黑体</option><option value="SimSun">宋体</option></select></label>
+                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '场景素材' : 'Oracle bone rubbing asset'}</span><select value={templateParams.asset} onChange={(event) => updateTemplateParameter('asset', event.target.value)}>{activeTemplateKind === 'coffee' ? <><option value="scene_08.png">scene_08.png · 片尾</option><option value="scene_01.png">scene_01.png · 开场</option><option value="scene_05.png">scene_05.png · 烘焙</option></> : <><option value="片段3元素.webp">片段3元素.webp</option><option value="片段3元素.png">片段3元素.png</option><option value="片段0元素.png">片段0元素.png</option></>}</select></label>
+                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '场景适配' : 'Oracle asset fit'}</span><select value={templateParams.assetFit} onChange={(event) => updateTemplateParameter('assetFit', event.target.value as VideoTemplateParameters['assetFit'])}><option value="contain">Contain · 完整显示</option><option value="cover">Cover · 铺满画布</option><option value="fill">Fill · 拉伸填充</option></select></label>
+                </div>}
+              </div>
+              <div className="ai-video-editor-settings-output">
+                <div className="ai-video-editor-settings-subheading"><strong>输出设置</strong><span>画布与导出参数</span></div>
+                <label>画布比例<select value={canvasRatio} onChange={(event) => { const value = event.target.value; setCanvasRatio(value); setVideoAspectRatio(value === '9:16' ? 9 / 16 : value === '1:1' ? 1 : 16 / 9); notify(`画布比例已切换为 ${value}`); }}><option value="16:9">16:9 横屏</option><option value="9:16">9:16 竖屏</option><option value="1:1">1:1 方形</option></select></label>
+                <label>输出分辨率<select value={outputResolution} onChange={(event) => setOutputResolution(event.target.value)}><option value="1080p">1080p</option><option value="2K">2K</option><option value="4K">4K</option></select></label>
+                <label>帧率<select value={outputFrameRate} onChange={(event) => setOutputFrameRate(event.target.value)}><option value="30 fps">30 fps</option><option value="60 fps">60 fps</option></select></label>
+              </div>
               <div className="ai-video-editor-settings-row"><span>自动字幕</span><button type="button" className={`ai-video-editor-toggle${hasCaptions ? ' is-on' : ''}`} onClick={() => setHasCaptions((value) => !value)}><span /></button></div>
               <div className="ai-video-editor-settings-row"><span>智能配乐</span><button type="button" className={`ai-video-editor-toggle${hasMusic ? ' is-on' : ''}`} onClick={() => setHasMusic((value) => !value)}><span /></button></div>
-              <button type="button" className="ai-video-editor-settings-save" onClick={() => { setActiveRightTab('chat'); notify('视频参数已保存'); }}><Check size={15} /> 保存参数</button>
+              <div className="ai-video-editor-settings-actions"><button type="button" className="ai-video-editor-settings-reset" onClick={restoreTemplateParameters}>恢复默认</button><button type="button" className="ai-video-editor-settings-save" onClick={() => { setActiveRightTab('chat'); notify(`参数已保存 · ${outputResolution} · ${outputFrameRate}`); }}><Check size={15} /> 保存参数</button></div>
             </div>
           )}
         </aside>
