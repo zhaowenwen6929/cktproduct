@@ -230,6 +230,7 @@ const templateCategories = ['全部', '科普纪录', '品牌产品', '节日活
 type TemplateCategory = (typeof templateCategories)[number];
 
 const videoTemplates: Array<{ id: string; title: string; category: Exclude<TemplateCategory, '全部'>; duration: string; poster: string }> = [
+  { id: 'code-video-demo-v14', title: '费曼学习法 · Demo v1.4', category: '科普纪录', duration: '00:27', poster: '/code-video/reference-style-demo-v14-poster.png' },
   { id: 'history', title: '历史故事 · 纪录片', category: '科普纪录', duration: '01:12', poster: '/code-video/reference-style-demo-v14-poster.png' },
   { id: 'knowledge', title: '知识讲解 · 手绘', category: '科普纪录', duration: '00:48', poster: '/code-video/reference-style-demo-v11-poster.png' },
   { id: 'product', title: '新品发布 · 画面感', category: '品牌产品', duration: '00:30', poster: '/code-video/reference-style-demo-v9-poster.png' },
@@ -1158,8 +1159,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setVideoSource(DEFAULT_VIDEO);
     setPoster(template.poster);
     setVideoName(template.title);
+    if (template.id === 'code-video-demo-v14') setDuration(codeVideoDuration);
     setCurrentTime(0);
-    setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, label: template.title, poster: template.poster } : clip));
+    setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, label: template.title, duration: template.id === 'code-video-demo-v14' ? codeVideoDuration : clip.duration, poster: template.poster } : clip));
     setTimelineHistory([]);
     setTimelineRedo([]);
     setSelectedTimelineClipId('video-main');
