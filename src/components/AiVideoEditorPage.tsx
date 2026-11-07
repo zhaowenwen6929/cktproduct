@@ -928,10 +928,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const deleteTimelineTrack = (trackId: TimelineTrackId) => {
     const track = getTimelineTrack(trackId);
     if (!track) return;
+    const isCustomTrack = track.id.startsWith('custom-');
+    const action = isCustomTrack ? '删除' : '清空';
+    if (!window.confirm(`确定要${action}“${track.label}”吗？\n${isCustomTrack ? '删除后该轨道及其中片段将从时间线移除。' : '清空后该轨道中的片段将被移除，基础轨道仍会保留。'}`)) return;
     setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
     setTimelineRedo([]);
     setTimelineClips((items) => items.filter((clip) => clip.trackId !== trackId));
-    if (track.id.startsWith('custom-')) {
+    if (isCustomTrack) {
       setTimelineTracks((items) => items.filter((item) => item.id !== trackId));
       notify(`已删除${track.label}`);
     } else {
@@ -1065,6 +1068,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       notify('请先选择时间线上的转场');
       return;
     }
+    if (!window.confirm('确定要移除当前转场吗？\n移除后相邻片段之间将恢复为无转场状态。')) return;
     setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
     setTimelineRedo([]);
     setTimelineTransitions((items) => items.filter((transition) => transition.id !== selectedTransitionId));
@@ -1087,6 +1091,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       notify('该轨道已锁定');
       return;
     }
+    if (!window.confirm(`确定要删除“${clip.label}”吗？\n删除后该片段将从时间线移除${isRippleEnabled ? '，后续片段会向前吸附。' : '。'}`)) return;
     const clipEnd = clip.start + clip.duration;
     const nextClips = timelineClips
       .filter((item) => item.id !== clip.id)
@@ -1200,6 +1205,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       notify('请先选择时间线标记');
       return;
     }
+    const marker = timelineMarkers.find((item) => item.id === selectedMarkerId);
+    if (!window.confirm(`确定要删除“${marker?.label ?? '当前标记'}”吗？\n删除后该时间线标记将无法恢复。`)) return;
     setTimelineMarkers((items) => items.filter((marker) => marker.id !== selectedMarkerId));
     setSelectedMarkerId(null);
     notify('已删除时间线标记');
