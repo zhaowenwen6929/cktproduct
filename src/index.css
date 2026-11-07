@@ -11265,6 +11265,8 @@ button {
 
 /* Compact export popover: keep the controls readable while taking about half the previous footprint. */
 .ai-video-export-dialog { width: min(480px, calc(100vw - 32px)); max-height: min(520px, calc(100vh - 84px)); }
+.ai-video-export-preview-frame { height: 112px; min-height: 112px; }
+.ai-video-export-preview-frame img { height: 112px; min-height: 0; }
 .ai-video-export-header { min-height: 56px; padding-inline: 16px; }
 .ai-video-export-header-icon { width: 30px; height: 30px; border-radius: 8px; }
 .ai-video-export-header-title strong { font-size: 14px; }
@@ -11276,7 +11278,7 @@ button {
 .ai-video-export-main { padding: 16px; }
 .ai-video-export-preview-card { gap: 8px; padding: 8px; border-radius: 10px; }
 .ai-video-export-preview-frame,
-.ai-video-export-preview-frame img { min-height: 150px; }
+.ai-video-export-preview-frame img { min-height: 112px; }
 .ai-video-export-preview-meta { gap: 8px; }
 .ai-video-export-preview-meta strong { font-size: 11px; }
 .ai-video-export-preview-meta span { font-size: 9px; }
