@@ -1240,13 +1240,12 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
   const renderTimelineClip = (clip: TimelineClip, className: string, content: React.ReactNode) => {
     const track = getTimelineTrack(clip.trackId);
-    if (track?.hidden) return null;
     const isSelected = selectedTimelineClipId === clip.id;
     const isPending = !isTimelineTrackReady(clip.trackId);
     return (
       <button
         type="button"
-        className={`${className}${isSelected ? ' is-selected' : ''}${track?.locked ? ' is-locked' : ''}${isPending ? ' is-pending' : ''}`}
+        className={`${className}${isSelected ? ' is-selected' : ''}${track?.locked ? ' is-locked' : ''}${track?.hidden ? ' is-track-hidden' : ''}${isPending ? ' is-pending' : ''}`}
         style={timelineClipStyle(clip)}
         onPointerDown={(event) => startTimelineDrag(event, clip, 'move')}
         onClick={(event) => { event.stopPropagation(); setSelectedTimelineClipId(clip.id); setActiveRightTab('settings'); if (isPending) notify('该轨道内容等待 AI 生成'); }}
@@ -1269,12 +1268,12 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const supportsMute = track.kind === 'video' || isAudioTrack;
     return (
       <div className={`ai-video-editor-track-label${track.hidden ? ' is-hidden' : ''}`}>
-        <span className="ai-video-editor-track-label__name" title={label} aria-label={label}><span className="ai-video-editor-track-icon">{icon}</span><span className="ai-video-editor-track-label__text">{label}</span>{!isTimelineTrackReady(trackId) && <em className="ai-video-editor-track-state" title="等待生成" aria-label="等待生成" />}</span>
+        <span className="ai-video-editor-track-label__name" title={label} aria-label={label}><span className="ai-video-editor-track-icon" data-tooltip={label} title={label}>{icon}</span><span className="ai-video-editor-track-label__text">{label}</span>{!isTimelineTrackReady(trackId) && <em className="ai-video-editor-track-state" title="等待生成" aria-label="等待生成" />}</span>
         <div className="ai-video-editor-track-controls">
-          <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'locked')} aria-label={`${track.locked ? '解锁' : '锁定'}${label}`} title={`${track.locked ? '解锁' : '锁定'}${label}`}>{track.locked ? <Lock size={12} /> : <Unlock size={12} />}</button>
-          {supportsVisibility && <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'hidden')} aria-label={`${track.hidden ? '显示' : '隐藏'}${label}`} title={`${track.hidden ? '显示' : '隐藏'}${label}`}>{track.hidden ? <EyeOff size={12} /> : <Eye size={12} />}</button>}
-          {supportsMute && <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'muted')} aria-label={`${track.muted ? '取消静音' : '静音'}${label}`} title={`${track.muted ? '取消静音' : '静音'}${label}`}>{track.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}</button>}
-          <button type="button" className="ai-video-editor-track-control ai-video-editor-track-control--delete" onClick={() => deleteTimelineTrack(trackId)} aria-label={`${track.id.startsWith('custom-') ? '删除' : '清空'}${label}`} title={`${track.id.startsWith('custom-') ? '删除' : '清空'}${label}`}><Trash2 size={12} /></button>
+          <button type="button" className="ai-video-editor-track-control" data-tooltip={`${track.locked ? '解锁' : '锁定'}${label}`} onClick={() => toggleTimelineTrack(trackId, 'locked')} aria-label={`${track.locked ? '解锁' : '锁定'}${label}`} title={`${track.locked ? '解锁' : '锁定'}${label}`}>{track.locked ? <Lock size={12} /> : <Unlock size={12} />}</button>
+          {supportsVisibility ? <button type="button" className="ai-video-editor-track-control" data-tooltip={`${track.hidden ? '显示' : '隐藏'}${label}`} onClick={() => toggleTimelineTrack(trackId, 'hidden')} aria-label={`${track.hidden ? '显示' : '隐藏'}${label}`} title={`${track.hidden ? '显示' : '隐藏'}${label}`}>{track.hidden ? <EyeOff size={12} /> : <Eye size={12} />}</button> : <span className="ai-video-editor-track-control-placeholder" aria-hidden="true" />}
+          {supportsMute ? <button type="button" className="ai-video-editor-track-control" data-tooltip={`${track.muted ? '取消静音' : '静音'}${label}`} onClick={() => toggleTimelineTrack(trackId, 'muted')} aria-label={`${track.muted ? '取消静音' : '静音'}${label}`} title={`${track.muted ? '取消静音' : '静音'}${label}`}>{track.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}</button> : <span className="ai-video-editor-track-control-placeholder" aria-hidden="true" />}
+          <button type="button" className="ai-video-editor-track-control ai-video-editor-track-control--delete" data-tooltip={`${track.id.startsWith('custom-') ? '删除' : '清空'}${label}`} onClick={() => deleteTimelineTrack(trackId)} aria-label={`${track.id.startsWith('custom-') ? '删除' : '清空'}${label}`} title={`${track.id.startsWith('custom-') ? '删除' : '清空'}${label}`}><Trash2 size={12} /></button>
         </div>
       </div>
     );
