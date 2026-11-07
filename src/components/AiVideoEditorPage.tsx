@@ -999,12 +999,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
         </div>
         <div className="ai-video-editor-topbar__actions">
-          <button type="button" className="ai-video-editor-plain-button" onClick={() => notify('预览窗口已准备好')}>
-            <Play size={14} /> 预览
-          </button>
-          <button type="button" className="ai-video-editor-plain-button" onClick={() => notify('分享链接已复制')}>
-            <ShareIcon /> 分享
-          </button>
           <div className="ai-video-editor-credit"><span /> 204,843 <em>积分</em></div>
           <button type="button" className="ai-video-editor-member"><BadgeCheck size={14} /> 会员</button>
           <button type="button" className="ai-video-editor-export" onClick={() => notify('视频导出任务已创建')}>
@@ -1062,10 +1056,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     <span>VIDEO EDITOR</span>
                     <small>让每一帧，都更接近你的想法</small>
                   </div>
-                  {hasCaptions && <div className="ai-video-editor-caption-preview">让每一帧，都更接近你的想法</div>}
-                  <button type="button" className="ai-video-editor-stage-play" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>
-                    {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
-                  </button>
                 </div>
               </div>
               <div className="ai-video-editor-player-controls">
@@ -1345,10 +1335,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       {showToast && <div className="ai-video-editor-toast"><Check size={14} /> {showToast}</div>}
     </div>
   );
-}
-
-function ShareIcon() {
-  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.59 13.51 6.83 3.98M15.41 6.51 8.59 10.49" /></svg>;
 }
 
 function VolumeOffIcon() {
