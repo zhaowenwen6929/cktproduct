@@ -11045,6 +11045,37 @@ button {
   .ai-video-editor-track-row { grid-template-columns: 144px minmax(0, 1fr); }
 }
 
+/* Contextual inspector: parameters belong to the selected timeline element. */
+.ai-video-editor-element-settings-panel { padding: 18px 16px 16px; }
+.ai-video-editor-settings-empty { display: flex; min-height: 300px; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: #a0a7b8; text-align: center; }
+.ai-video-editor-settings-empty svg { color: #c1c6d5; }
+.ai-video-editor-settings-empty strong { color: #687086; font-size: 12px; font-weight: 600; }
+.ai-video-editor-settings-empty span { max-width: 210px; color: #a5abba; font-size: 10px; line-height: 1.6; }
+.ai-video-editor-selected-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -10px 0 15px; padding: 8px 9px; border: 1px solid #e7e8f1; border-radius: 8px; background: #fafaff; color: #59627b; font-size: 10px; }
+.ai-video-editor-selected-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-video-editor-selected-meta em { flex: 0 0 auto; color: #8fa293; font-size: 9px; font-style: normal; }
+.ai-video-editor-element-section { display: flex; flex-direction: column; gap: 2px; }
+.ai-video-editor-element-section .ai-video-editor-settings-field { margin-bottom: 13px; }
+.ai-video-editor-element-section textarea { box-sizing: border-box; width: 100%; min-height: 66px; resize: vertical; padding: 8px 9px; border: 1px solid #dfe5ea; border-radius: 7px; outline: 0; background: #fff; color: #405267; font-size: 11px; line-height: 1.5; }
+.ai-video-editor-element-section textarea:focus { border-color: #9eb4c8; box-shadow: 0 0 0 3px rgba(92, 132, 164, .1); }
+.ai-video-editor-settings-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.ai-video-editor-settings-field-grid .ai-video-editor-settings-field { min-width: 0; }
+.ai-video-editor-settings-color-control code { overflow: hidden; color: #56677b; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.ai-video-editor-segmented-control { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 7px; background: #f1f3f6; }
+.ai-video-editor-segmented-control button { min-width: 0; height: 27px; padding: 0 4px; border: 0; border-radius: 5px; background: transparent; color: #7a8796; font-size: 10px; }
+.ai-video-editor-segmented-control button:hover { color: #536dd5; }
+.ai-video-editor-segmented-control button.is-selected { background: #fff; color: #3f5f9f; box-shadow: 0 1px 3px rgba(62, 76, 104, .12); font-weight: 600; }
+.ai-video-editor-element-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 37px; margin: 2px 0 9px; padding: 0 9px; border-top: 1px solid #eef0f3; border-bottom: 1px solid #eef0f3; color: #647286; font-size: 10px; }
+.ai-video-editor-element-toggle-row label { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: #536274; font-size: 10px; }
+.ai-video-editor-element-toggle-row input { accent-color: #5674c6; }
+.ai-video-editor-element-toggle-row span { color: #a1aab5; font-size: 9px; }
+.ai-video-editor-element-settings-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e9ebf0; }
+.ai-video-editor-element-settings-foot span { color: #99a3af; font-size: 9px; line-height: 1.5; }
+.ai-video-editor-element-settings-foot button { flex: 0 0 auto; height: 27px; padding: 0 9px; border: 1px solid #d8e0e6; border-radius: 6px; background: #fff; color: #65778b; font-size: 10px; }
+.ai-video-editor-element-settings-foot button:hover { border-color: #b7c8d6; background: #f4f7f9; color: #3a5a75; }
+.ai-video-editor-selected-element-overlay { position: absolute; z-index: 5; display: block; overflow: hidden; box-sizing: border-box; font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; font-weight: 600; line-height: 1.35; pointer-events: none; text-overflow: ellipsis; white-space: pre-wrap; }
+.ai-video-editor-manifest-render-layer { position: absolute; z-index: 2; inset: 0; pointer-events: none; transition: opacity .16s ease; }
+
 @media (max-width: 1120px) {
   .ai-video-editor-body:not(.is-chat-collapsed):not(.is-chat-expanded) { grid-template-columns: 72px minmax(0, 1fr) var(--chat-width, 360px); }
   .ai-video-editor-body.is-chat-expanded:not(.is-chat-collapsed) { grid-template-columns: 72px minmax(0, 1fr) var(--chat-width, min(33.333vw, 680px)); }

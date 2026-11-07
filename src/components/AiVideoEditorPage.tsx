@@ -88,6 +88,29 @@ type StoryboardRow = {
 type TimelineTrackId = 'video' | 'mg' | 'captions' | 'text' | 'voiceover' | 'music' | 'sfx' | `custom-${string}`;
 type TimelineTrackKind = 'video' | 'mg' | 'captions' | 'text' | 'voiceover' | 'music' | 'sfx';
 type TimelineClipKind = 'video' | 'mg' | 'subtitle' | 'text' | 'voice' | 'music' | 'sfx';
+type TimelineTextAlign = 'left' | 'center' | 'right';
+type TimelineTextDirection = 'horizontal' | 'vertical';
+type TimelineClipParameters = {
+  text: string;
+  opacity: number;
+  fontSize: number;
+  letterSpacing: number;
+  align: TimelineTextAlign;
+  direction: TimelineTextDirection;
+  color: string;
+  backgroundEnabled: boolean;
+  backgroundColor: string;
+  backgroundOpacity: number;
+  borderRadius: number;
+  paddingX: number;
+  paddingY: number;
+  distance: number;
+  rotation: number;
+  shadow: boolean;
+  border: boolean;
+  speed: number;
+  volume: number;
+};
 type TimelineClip = {
   id: string;
   trackId: TimelineTrackId;
@@ -99,6 +122,7 @@ type TimelineClip = {
   source?: string;
   speed?: number;
   volume?: number;
+  parameters?: TimelineClipParameters;
 };
 type TimelineTrackState = {
   id: TimelineTrackId;
@@ -240,6 +264,37 @@ const formatLongTime = (seconds: number) => {
   const minutes = Math.floor(safeSeconds / 60).toString().padStart(2, '0');
   const remainder = (safeSeconds % 60).toString().padStart(2, '0');
   return `${minutes}:${remainder}:00`;
+};
+
+const createDefaultClipParameters = (clip: Pick<TimelineClip, 'kind' | 'label' | 'speed' | 'volume'>): TimelineClipParameters => ({
+  text: clip.label,
+  opacity: 100,
+  fontSize: clip.kind === 'subtitle' ? 16 : 28,
+  letterSpacing: 0,
+  align: 'center',
+  direction: 'horizontal',
+  color: clip.kind === 'subtitle' ? '#FFFFFF' : '#2B2A26',
+  backgroundEnabled: clip.kind === 'subtitle',
+  backgroundColor: '#2B2A26',
+  backgroundOpacity: clip.kind === 'subtitle' ? 80 : 0,
+  borderRadius: 4,
+  paddingX: 10,
+  paddingY: 4,
+  distance: 0,
+  rotation: 0,
+  shadow: true,
+  border: false,
+  speed: clip.speed ?? 1,
+  volume: clip.volume ?? 100,
+});
+
+const hexToRgba = (hex: string, alpha: number) => {
+  const normalized = hex.replace('#', '');
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return `rgba(43, 42, 38, ${alpha})`;
+  const red = Number.parseInt(normalized.slice(0, 2), 16);
+  const green = Number.parseInt(normalized.slice(2, 4), 16);
+  const blue = Number.parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 };
 
 const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
@@ -632,7 +687,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [zoom, setZoom] = useState(100);
   const [timelineTracks, setTimelineTracks] = useState<TimelineTrackState[]>(initialTimelineTracks);
   const [timelineClips, setTimelineClips] = useState<TimelineClip[]>(initialTimelineClips);
-  const [selectedTimelineClipId, setSelectedTimelineClipId] = useState<string | null>('video-main');
+  const [selectedTimelineClipId, setSelectedTimelineClipId] = useState<string | null>(null);
   const [timelineHistory, setTimelineHistory] = useState<TimelineEditSnapshot[]>([]);
   const [timelineRedo, setTimelineRedo] = useState<TimelineEditSnapshot[]>([]);
   const [timelineDrag, setTimelineDrag] = useState<TimelineDragState | null>(null);
@@ -693,6 +748,21 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   useEffect(() => {
     timelineClipsRef.current = timelineClips;
   }, [timelineClips]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(`ai-video-editor-project:${videoSource}`, JSON.stringify({
+        schema: 'ckt-video-editor/project-edit/1',
+        videoName,
+        selectedElementId: selectedTimelineClipId,
+        clips: timelineClips,
+        templateParameters: templateParams,
+        updatedAt: new Date().toISOString(),
+      }));
+    } catch {
+      // Local persistence is best-effort in private browsing and embedded previews.
+    }
+  }, [templateParams, timelineClips, selectedTimelineClipId, videoName, videoSource]);
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.playbackRate = playbackRate;
@@ -987,6 +1057,20 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     commitTimelineChange(timelineClips.map((item) => item.id === clip.id ? { ...item, ...patch } : item), message);
   };
 
+  const updateSelectedClipParameter = (key: keyof TimelineClipParameters, value: TimelineClipParameters[keyof TimelineClipParameters]) => {
+    const clip = timelineClips.find((item) => item.id === selectedTimelineClipId);
+    if (!clip) {
+      notify('请先选择时间线片段');
+      return;
+    }
+    const nextParameters = { ...createDefaultClipParameters(clip), ...clip.parameters, [key]: value } as TimelineClipParameters;
+    const patch: Partial<TimelineClip> = { parameters: nextParameters };
+    if (key === 'text') patch.label = String(value);
+    if (key === 'speed') patch.speed = Number(value);
+    if (key === 'volume') patch.volume = Number(value);
+    updateSelectedTimelineClip(patch, '元素参数已同步到当前项目');
+  };
+
   const duplicateSelectedTimelineClip = () => {
     const clip = timelineClips.find((item) => item.id === selectedTimelineClipId);
     if (!clip) {
@@ -1112,7 +1196,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         className={`${className}${isSelected ? ' is-selected' : ''}${track?.locked ? ' is-locked' : ''}${isPending ? ' is-pending' : ''}`}
         style={timelineClipStyle(clip)}
         onPointerDown={(event) => startTimelineDrag(event, clip, 'move')}
-        onClick={(event) => { event.stopPropagation(); setSelectedTimelineClipId(clip.id); if (isPending) notify('该轨道内容等待 AI 生成'); }}
+        onClick={(event) => { event.stopPropagation(); setSelectedTimelineClipId(clip.id); setActiveRightTab('settings'); if (isPending) notify('该轨道内容等待 AI 生成'); }}
         title={isPending ? `${clip.label} · 待生成` : clip.label}
       >
         {content}
@@ -1277,7 +1361,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, label: file.name, poster: '' } : clip));
     setTimelineHistory([]);
     setTimelineRedo([]);
-    setSelectedTimelineClipId('video-main');
+    setSelectedTimelineClipId(null);
     notify('视频已添加到时间线');
   };
 
@@ -1470,7 +1554,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     if (template.timeline) setTimelineTracks(template.timeline === 'coffee' ? coffeeTimelineTracks : initialTimelineTracks);
     setTimelineHistory([]);
     setTimelineRedo([]);
-    setSelectedTimelineClipId('video-main');
+    setSelectedTimelineClipId(null);
     notify(`已选择模板：${template.title}`);
   };
 
@@ -1589,6 +1673,25 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   };
 
   const selectedTimelineClip = timelineClips.find((clip) => clip.id === selectedTimelineClipId);
+  const selectedClipParameters = selectedTimelineClip ? { ...createDefaultClipParameters(selectedTimelineClip), ...selectedTimelineClip.parameters } : null;
+  const selectedClipIsText = selectedTimelineClip?.kind === 'subtitle' || selectedTimelineClip?.kind === 'text';
+  const selectedTextOverlayStyle: React.CSSProperties | undefined = selectedClipIsText && selectedClipParameters ? {
+    left: selectedClipParameters.align === 'left' ? '8%' : selectedClipParameters.align === 'right' ? '92%' : '50%',
+    bottom: `calc(24px + ${selectedClipParameters.distance}px)`,
+    maxWidth: '82%',
+    padding: `${selectedClipParameters.paddingY}px ${selectedClipParameters.paddingX}px`,
+    border: selectedClipParameters.border ? `1px solid ${selectedClipParameters.color}` : '1px solid transparent',
+    borderRadius: `${selectedClipParameters.borderRadius}px`,
+    transform: `translateX(${selectedClipParameters.align === 'left' ? '0' : selectedClipParameters.align === 'right' ? '-100%' : '-50%'}) rotate(${selectedClipParameters.rotation}deg)`,
+    background: selectedClipParameters.backgroundEnabled ? hexToRgba(selectedClipParameters.backgroundColor, selectedClipParameters.backgroundOpacity / 100) : 'transparent',
+    color: selectedClipParameters.color,
+    fontSize: `${selectedClipParameters.fontSize}px`,
+    letterSpacing: `${selectedClipParameters.letterSpacing}px`,
+    opacity: selectedClipParameters.opacity / 100,
+    textAlign: selectedClipParameters.align,
+    writingMode: selectedClipParameters.direction === 'vertical' ? 'vertical-rl' : 'horizontal-tb',
+    boxShadow: selectedClipParameters.shadow ? '0 5px 14px rgba(15, 23, 42, .2)' : 'none',
+  } : undefined;
 
   return (
     <div className={`ai-video-editor-shell${openToolPanelId ? ' has-tool-panel' : ''}`}>
@@ -1654,9 +1757,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => setIsPlaying(false)}
                     muted={isMuted}
+                    style={{ opacity: selectedTimelineClip?.kind === 'video' && selectedClipParameters ? selectedClipParameters.opacity / 100 : 1 }}
                     playsInline
                   />
-                  {videoManifest && !renderedVideoSource && <MgAnimationOverlay manifest={videoManifest} currentTime={currentTime} />}
+                  {videoManifest && !renderedVideoSource && <div className="ai-video-editor-manifest-render-layer" style={{ opacity: selectedTimelineClip?.kind === 'mg' && selectedClipParameters ? selectedClipParameters.opacity / 100 : 1 }}><MgAnimationOverlay manifest={videoManifest} currentTime={currentTime} /></div>}
+                  {selectedTextOverlayStyle && selectedClipParameters && <div className="ai-video-editor-selected-element-overlay" style={selectedTextOverlayStyle} aria-label={`正在编辑：${selectedClipParameters.text}`}>{selectedClipParameters.text}</div>}
                   {manifestError && <div className="ai-video-editor-mg-error">MG 动画层加载失败</div>}
                 </div>
               </div>
@@ -1830,55 +1935,39 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
               {renderWorkflowContent()}
             </>
           ) : (
-            <div className="ai-video-editor-settings-panel">
-              <div className="ai-video-editor-settings-heading"><div><strong>视频参数</strong><span>{videoName} · {activeTemplateKind === 'coffee' ? '咖啡模板' : '费曼学习法模板'}</span></div><Settings2 size={17} /></div>
-              <div className="ai-video-editor-content-settings">
-                <button type="button" className="ai-video-editor-content-settings__head" onClick={() => setIsContentSettingsOpen((value) => !value)} aria-expanded={isContentSettingsOpen}>
-                  <span><strong>内容设置</strong><em>{activeTemplateKind === 'coffee' ? '可编辑咖啡流程的文字与画面样式' : '所有 AI 生成的文字图层都可以编辑。'}</em></span>
-                  <ChevronDown size={16} className={isContentSettingsOpen ? 'is-open' : ''} />
-                </button>
-                {isContentSettingsOpen && <div className="ai-video-editor-content-settings__body">
-                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
-                    <span>背景颜色</span>
-                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.backgroundColor} onChange={(event) => updateTemplateParameter('backgroundColor', event.target.value.toUpperCase())} /><input aria-label="背景颜色十六进制值" value={templateParams.backgroundColor.slice(1)} onChange={(event) => updateHexParameter('backgroundColor', event.target.value)} /></div>
-                  </label>
-                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--range">
-                    <span>Background opacity</span>
-                    <div className="ai-video-editor-settings-range-control"><input type="range" min="0" max="100" value={templateParams.backgroundOpacity} onChange={(event) => updateTemplateParameter('backgroundOpacity', Number(event.target.value))} /><output>{templateParams.backgroundOpacity}%</output></div>
-                  </label>
-                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
-                    <span>主色</span>
-                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.primaryColor} onChange={(event) => updateTemplateParameter('primaryColor', event.target.value.toUpperCase())} /><input aria-label="主色十六进制值" value={templateParams.primaryColor.slice(1)} onChange={(event) => updateHexParameter('primaryColor', event.target.value)} /></div>
-                  </label>
-                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
-                    <span>高亮颜色</span>
-                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.highlightColor} onChange={(event) => updateTemplateParameter('highlightColor', event.target.value.toUpperCase())} /><input aria-label="高亮颜色十六进制值" value={templateParams.highlightColor.slice(1)} onChange={(event) => updateHexParameter('highlightColor', event.target.value)} /></div>
-                  </label>
-                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
-                    <span>文本颜色</span>
-                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.textColor} onChange={(event) => updateTemplateParameter('textColor', event.target.value.toUpperCase())} /><input aria-label="文本颜色十六进制值" value={templateParams.textColor.slice(1)} onChange={(event) => updateHexParameter('textColor', event.target.value)} /></div>
-                  </label>
-                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color">
-                    <span>Annotation text color</span>
-                    <div className="ai-video-editor-settings-color-control"><input type="color" value={templateParams.annotationTextColor} onChange={(event) => updateTemplateParameter('annotationTextColor', event.target.value.toUpperCase())} /><input aria-label="注解文字颜色十六进制值" value={templateParams.annotationTextColor.slice(1)} onChange={(event) => updateHexParameter('annotationTextColor', event.target.value)} /></div>
-                  </label>
-                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '片尾主标题' : 'Main calligraphy character'}</span><input value={templateParams.titleText} onChange={(event) => updateTemplateParameter('titleText', event.target.value)} /></label>
-                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '流程副标题' : 'Seal inscription'}</span><input value={templateParams.subtitleText} onChange={(event) => updateTemplateParameter('subtitleText', event.target.value)} /></label>
-                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '底部说明文字' : 'Bottom annotation text'}</span><input value={templateParams.bottomAnnotationText} onChange={(event) => updateTemplateParameter('bottomAnnotationText', event.target.value)} /></label>
-                  <label className="ai-video-editor-settings-field"><span>字体</span><select value={templateParams.font} onChange={(event) => updateTemplateParameter('font', event.target.value)}><option value="STKaiti">华文楷体 / 书法</option><option value="PingFang SC">苹方 / 黑体</option><option value="Noto Sans SC">思源黑体</option><option value="SimSun">宋体</option></select></label>
-                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '场景素材' : 'Oracle bone rubbing asset'}</span><select value={templateParams.asset} onChange={(event) => updateTemplateParameter('asset', event.target.value)}>{activeTemplateKind === 'coffee' ? <><option value="scene_08.png">scene_08.png · 片尾</option><option value="scene_01.png">scene_01.png · 开场</option><option value="scene_05.png">scene_05.png · 烘焙</option></> : <><option value="片段3元素.webp">片段3元素.webp</option><option value="片段3元素.png">片段3元素.png</option><option value="片段0元素.png">片段0元素.png</option></>}</select></label>
-                  <label className="ai-video-editor-settings-field"><span>{activeTemplateKind === 'coffee' ? '场景适配' : 'Oracle asset fit'}</span><select value={templateParams.assetFit} onChange={(event) => updateTemplateParameter('assetFit', event.target.value as VideoTemplateParameters['assetFit'])}><option value="contain">Contain · 完整显示</option><option value="cover">Cover · 铺满画布</option><option value="fill">Fill · 拉伸填充</option></select></label>
+            <div className="ai-video-editor-settings-panel ai-video-editor-element-settings-panel">
+              {!selectedTimelineClip || !selectedClipParameters ? <div className="ai-video-editor-settings-empty"><SquareMousePointer size={27} /><strong>选择一个元素查看参数</strong><span>点击时间线上的字幕、MG 画面、视频或音频片段</span></div> : <>
+                <div className="ai-video-editor-settings-heading"><div><strong>元素参数</strong><span>{selectedTimelineClip.label}</span></div><Settings2 size={17} /></div>
+                <div className="ai-video-editor-selected-meta"><span>{selectedTimelineClip.kind === 'subtitle' ? '字幕元素' : selectedTimelineClip.kind === 'text' ? '文字元素' : selectedTimelineClip.kind === 'mg' ? 'MG 画面' : selectedTimelineClip.kind === 'video' ? '视频元素' : '音频元素'}</span><em>已同步当前时间线数据</em></div>
+                {selectedClipIsText ? <div className="ai-video-editor-element-section">
+                  <label className="ai-video-editor-settings-field"><span>文字内容</span><textarea value={selectedClipParameters.text} rows={3} onChange={(event) => updateSelectedClipParameter('text', event.target.value)} /></label>
+                  <div className="ai-video-editor-settings-field-grid">
+                    <label className="ai-video-editor-settings-field"><span>字号</span><input type="number" min="8" max="160" value={selectedClipParameters.fontSize} onChange={(event) => updateSelectedClipParameter('fontSize', Number(event.target.value))} /></label>
+                    <label className="ai-video-editor-settings-field"><span>字距</span><input type="number" min="-20" max="80" value={selectedClipParameters.letterSpacing} onChange={(event) => updateSelectedClipParameter('letterSpacing', Number(event.target.value))} /></label>
+                  </div>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--range"><span>不透明度</span><div className="ai-video-editor-settings-range-control"><input type="range" min="0" max="100" value={selectedClipParameters.opacity} onChange={(event) => updateSelectedClipParameter('opacity', Number(event.target.value))} /><output>{selectedClipParameters.opacity}%</output></div></label>
+                  <div className="ai-video-editor-settings-field"><span>对齐</span><div className="ai-video-editor-segmented-control">{(['left', 'center', 'right'] as TimelineTextAlign[]).map((align) => <button type="button" key={align} className={selectedClipParameters.align === align ? 'is-selected' : ''} onClick={() => updateSelectedClipParameter('align', align)}>{align === 'left' ? '左对齐' : align === 'center' ? '居中' : '右对齐'}</button>)}</div></div>
+                  <div className="ai-video-editor-settings-field"><span>方向</span><div className="ai-video-editor-segmented-control"><button type="button" className={selectedClipParameters.direction === 'horizontal' ? 'is-selected' : ''} onClick={() => updateSelectedClipParameter('direction', 'horizontal')}>横排</button><button type="button" className={selectedClipParameters.direction === 'vertical' ? 'is-selected' : ''} onClick={() => updateSelectedClipParameter('direction', 'vertical')}>竖排</button></div></div>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--color"><span>文本颜色</span><div className="ai-video-editor-settings-color-control"><input type="color" value={selectedClipParameters.color} onChange={(event) => updateSelectedClipParameter('color', event.target.value.toUpperCase())} /><code>{selectedClipParameters.color}</code></div></label>
+                  <div className="ai-video-editor-element-toggle-row"><label><input type="checkbox" checked={selectedClipParameters.backgroundEnabled} onChange={(event) => updateSelectedClipParameter('backgroundEnabled', event.target.checked)} /> 背景</label><span>文字底板</span></div>
+                  {selectedClipParameters.backgroundEnabled && <><label className="ai-video-editor-settings-field ai-video-editor-settings-field--color"><span>背景颜色</span><div className="ai-video-editor-settings-color-control"><input type="color" value={selectedClipParameters.backgroundColor} onChange={(event) => updateSelectedClipParameter('backgroundColor', event.target.value.toUpperCase())} /><code>{selectedClipParameters.backgroundColor}</code></div></label><label className="ai-video-editor-settings-field ai-video-editor-settings-field--range"><span>背景不透明度</span><div className="ai-video-editor-settings-range-control"><input type="range" min="0" max="100" value={selectedClipParameters.backgroundOpacity} onChange={(event) => updateSelectedClipParameter('backgroundOpacity', Number(event.target.value))} /><output>{selectedClipParameters.backgroundOpacity}%</output></div></label></>}
+                  <div className="ai-video-editor-settings-field-grid">
+                    <label className="ai-video-editor-settings-field"><span>圆角</span><input type="number" min="0" max="80" value={selectedClipParameters.borderRadius} onChange={(event) => updateSelectedClipParameter('borderRadius', Number(event.target.value))} /></label>
+                    <label className="ai-video-editor-settings-field"><span>距离</span><input type="number" min="0" max="300" value={selectedClipParameters.distance} onChange={(event) => updateSelectedClipParameter('distance', Number(event.target.value))} /></label>
+                  </div>
+                  <div className="ai-video-editor-element-toggle-row"><label><input type="checkbox" checked={selectedClipParameters.shadow} onChange={(event) => updateSelectedClipParameter('shadow', event.target.checked)} /> 阴影</label><label><input type="checkbox" checked={selectedClipParameters.border} onChange={(event) => updateSelectedClipParameter('border', event.target.checked)} /> 描边</label></div>
+                </div> : selectedTimelineClip.kind === 'video' || selectedTimelineClip.kind === 'mg' ? <div className="ai-video-editor-element-section">
+                  <label className="ai-video-editor-settings-field"><span>元素名称</span><input value={selectedTimelineClip.label} onChange={(event) => updateSelectedTimelineClip({ label: event.target.value }, '元素名称已更新')} /></label>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--range"><span>不透明度</span><div className="ai-video-editor-settings-range-control"><input type="range" min="0" max="100" value={selectedClipParameters.opacity} onChange={(event) => updateSelectedClipParameter('opacity', Number(event.target.value))} /><output>{selectedClipParameters.opacity}%</output></div></label>
+                  <label className="ai-video-editor-settings-field"><span>速度</span><select value={selectedClipParameters.speed} onChange={(event) => updateSelectedClipParameter('speed', Number(event.target.value))}><option value="0.5">0.5x</option><option value="0.75">0.75x</option><option value="1">1x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option><option value="2">2x</option></select></label>
+                  {selectedTimelineClip.kind === 'video' && <label className="ai-video-editor-settings-field ai-video-editor-settings-field--range"><span>音量</span><div className="ai-video-editor-settings-range-control"><input type="range" min="0" max="100" value={selectedClipParameters.volume} onChange={(event) => updateSelectedClipParameter('volume', Number(event.target.value))} /><output>{selectedClipParameters.volume}%</output></div></label>}
+                </div> : <div className="ai-video-editor-element-section">
+                  <label className="ai-video-editor-settings-field"><span>音频名称</span><input value={selectedTimelineClip.label} onChange={(event) => updateSelectedTimelineClip({ label: event.target.value }, '音频名称已更新')} /></label>
+                  <label className="ai-video-editor-settings-field ai-video-editor-settings-field--range"><span>音量</span><div className="ai-video-editor-settings-range-control"><input type="range" min="0" max="100" value={selectedClipParameters.volume} onChange={(event) => updateSelectedClipParameter('volume', Number(event.target.value))} /><output>{selectedClipParameters.volume}%</output></div></label>
+                  <label className="ai-video-editor-settings-field"><span>速度</span><select value={selectedClipParameters.speed} onChange={(event) => updateSelectedClipParameter('speed', Number(event.target.value))}><option value="0.5">0.5x</option><option value="0.75">0.75x</option><option value="1">1x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option><option value="2">2x</option></select></label>
                 </div>}
-              </div>
-              <div className="ai-video-editor-settings-output">
-                <div className="ai-video-editor-settings-subheading"><strong>输出设置</strong><span>画布与导出参数</span></div>
-                <label>画布比例<select value={canvasRatio} onChange={(event) => { const value = event.target.value; setCanvasRatio(value); setVideoAspectRatio(value === '9:16' ? 9 / 16 : value === '1:1' ? 1 : 16 / 9); notify(`画布比例已切换为 ${value}`); }}><option value="16:9">16:9 横屏</option><option value="9:16">9:16 竖屏</option><option value="1:1">1:1 方形</option></select></label>
-                <label>输出分辨率<select value={outputResolution} onChange={(event) => setOutputResolution(event.target.value)}><option value="1080p">1080p</option><option value="2K">2K</option><option value="4K">4K</option></select></label>
-                <label>帧率<select value={outputFrameRate} onChange={(event) => setOutputFrameRate(event.target.value)}><option value="30 fps">30 fps</option><option value="60 fps">60 fps</option></select></label>
-              </div>
-              <div className="ai-video-editor-settings-row"><span>自动字幕</span><button type="button" className={`ai-video-editor-toggle${hasCaptions ? ' is-on' : ''}`} onClick={() => setHasCaptions((value) => !value)}><span /></button></div>
-              <div className="ai-video-editor-settings-row"><span>智能配乐</span><button type="button" className={`ai-video-editor-toggle${hasMusic ? ' is-on' : ''}`} onClick={() => setHasMusic((value) => !value)}><span /></button></div>
-              <div className="ai-video-editor-settings-actions"><button type="button" className="ai-video-editor-settings-reset" onClick={restoreTemplateParameters}>恢复默认</button><button type="button" className="ai-video-editor-settings-save" onClick={() => { setActiveRightTab('chat'); notify(`参数已保存 · ${outputResolution} · ${outputFrameRate}`); }}><Check size={15} /> 保存参数</button></div>
+                <div className="ai-video-editor-element-settings-foot"><span>修改会写回当前时间线数据，并支持撤销。</span><button type="button" onClick={() => updateSelectedTimelineClip({ parameters: createDefaultClipParameters(selectedTimelineClip) }, '已恢复元素默认参数')}>恢复默认</button></div>
+              </>}
             </div>
           )}
         </aside>
