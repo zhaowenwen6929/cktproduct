@@ -10968,6 +10968,30 @@ button {
 .ai-video-editor-timeline-panel { grid-column: 1 / 3; grid-row: 2; }
 .ai-video-editor-body.is-chat-collapsed .ai-video-editor-timeline-panel { grid-column: 1 / -1; }
 
+/* One chat control, a draggable left edge, and a small entrance motion when restored. */
+.ai-video-editor-body:not(.is-chat-collapsed):not(.is-chat-expanded) { grid-template-columns: 80px minmax(0, 1fr) var(--chat-width, clamp(360px, 26vw, 540px)); }
+.ai-video-editor-body.is-chat-expanded:not(.is-chat-collapsed) { grid-template-columns: 80px minmax(0, 1fr) var(--chat-width, min(33.333vw, 680px)); }
+.ai-video-editor-chat-panel { position: relative; transition: opacity .2s ease, transform .2s cubic-bezier(.22, 1, .36, 1); will-change: transform; }
+.ai-video-editor-body.is-chat-collapsed .ai-video-editor-chat-panel { transform: translateX(12px); }
+.ai-video-editor-chat-resize-handle { position: absolute; z-index: 14; top: 50%; left: -8px; display: grid; width: 16px; height: 58px; place-items: center; border: 1px solid #deddea; border-radius: 9px; transform: translateY(-50%); background: #fff; color: #8b91a4; cursor: col-resize; box-shadow: 0 4px 12px rgba(76, 78, 130, .1); transition: border-color .16s ease, background-color .16s ease, color .16s ease, transform .16s ease; }
+.ai-video-editor-chat-resize-handle:hover { border-color: #c6c1f6; background: #f7f5ff; color: #5a55e8; transform: translate(-1px, -50%); }
+.ai-video-editor-body.is-chat-resizing,
+.ai-video-editor-body.is-chat-resizing * { cursor: col-resize !important; user-select: none !important; }
+.ai-video-editor-chat-collapsed-toggle { position: absolute; z-index: 15; top: 16px; right: 0; display: grid; width: 34px; height: 40px; place-items: center; padding: 0; border: 1px solid #deddea; border-right: 0; border-radius: 10px 0 0 10px; background: #fff; color: #777e91; box-shadow: 0 5px 16px rgba(76, 78, 130, .12); animation: ai-video-editor-chat-reveal .22s cubic-bezier(.22, 1, .36, 1); }
+.ai-video-editor-chat-collapsed-toggle:hover { border-color: #c6c1f6; background: #f7f5ff; color: #5a55e8; }
+@keyframes ai-video-editor-chat-reveal { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Reveal the timeline handle only while the editing band is being used. */
+.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle { opacity: 0; pointer-events: none; transform: translate(-50%, 5px); }
+.ai-video-editor-timeline-panel:hover > .ai-video-editor-timeline-toggle,
+.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle:focus-visible,
+.ai-video-editor-timeline-panel.is-collapsed > .ai-video-editor-timeline-toggle { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+
+@media (max-width: 1120px) {
+  .ai-video-editor-body:not(.is-chat-collapsed):not(.is-chat-expanded) { grid-template-columns: 72px minmax(0, 1fr) var(--chat-width, 360px); }
+  .ai-video-editor-body.is-chat-expanded:not(.is-chat-collapsed) { grid-template-columns: 72px minmax(0, 1fr) var(--chat-width, min(33.333vw, 680px)); }
+}
+
 /* A compact pill switch: the track keeps a clear on/off shape without becoming a square. */
 .ai-video-editor-player-autoplay .ai-video-editor-toggle { width: 28px !important; height: 14px !important; padding: 0 !important; border: 0 !important; border-radius: 7px !important; }
 .ai-video-editor-player-autoplay .ai-video-editor-toggle span { top: 2px; left: 2px; width: 10px; height: 10px; }

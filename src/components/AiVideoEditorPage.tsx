@@ -7,8 +7,8 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
+  ChevronsLeftRight,
   CircleHelp,
   Clock3,
   Copy,
@@ -542,6 +542,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const timelineScrollRef = useRef<HTMLDivElement>(null);
+  const chatPanelRef = useRef<HTMLElement>(null);
   const [activeTool, setActiveTool] = useState<ToolId>('media');
   const [openToolPanelId, setOpenToolPanelId] = useState<ToolId | null>(null);
   const [activeTemplateCategory, setActiveTemplateCategory] = useState<TemplateCategory>('全部');
@@ -580,6 +581,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [isTimelineMoreOpen, setIsTimelineMoreOpen] = useState(false);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   const [isChatExpanded, setIsChatExpanded] = useState(false);
+  const [chatWidth, setChatWidth] = useState<number | null>(null);
+  const [isChatResizing, setIsChatResizing] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('版本 01');
   const [zoom, setZoom] = useState(100);
@@ -1102,6 +1105,45 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     await fullscreenRequest?.catch(() => undefined);
   };
 
+  const getMaxChatWidth = () => Math.min(Math.max(window.innerWidth / 3, 320), 680);
+
+  const toggleChatPanel = () => {
+    if (isChatCollapsed) {
+      setIsChatCollapsed(false);
+      setIsChatExpanded(false);
+      return;
+    }
+    if (isChatExpanded) {
+      setIsChatExpanded(false);
+      setIsChatCollapsed(true);
+      return;
+    }
+    setChatWidth(getMaxChatWidth());
+    setIsChatExpanded(true);
+  };
+
+  const startChatResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isChatCollapsed || !chatPanelRef.current) return;
+    event.preventDefault();
+    const panelRect = chatPanelRef.current.getBoundingClientRect();
+    const minWidth = 320;
+    const maxWidth = getMaxChatWidth();
+    const handleMove = (moveEvent: PointerEvent) => {
+      const nextWidth = Math.max(minWidth, Math.min(maxWidth, panelRect.right - moveEvent.clientX));
+      setChatWidth(nextWidth);
+    };
+    const handleUp = () => {
+      setIsChatResizing(false);
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+      window.removeEventListener('pointercancel', handleUp);
+    };
+    setIsChatResizing(true);
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp, { once: true });
+    window.addEventListener('pointercancel', handleUp, { once: true });
+  };
+
   useEffect(() => {
     const handleTimelineShortcut = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -1475,7 +1517,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         </div>
       </header>
 
-      <div className={`ai-video-editor-body${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
+      <div className={`ai-video-editor-body${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}${isChatResizing ? ' is-chat-resizing' : ''}`} style={chatWidth ? ({ '--chat-width': `${chatWidth}px` } as React.CSSProperties) : undefined}>
         <aside className="ai-video-editor-left-rail">
           <div className="ai-video-editor-rail-tools">
             <div className="ai-video-editor-rail-group ai-video-editor-rail-group--official" aria-label="官方素材">
@@ -1675,13 +1717,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
               </div>
         </section>
 
-        <aside className="ai-video-editor-chat-panel">
+        <aside ref={chatPanelRef} className="ai-video-editor-chat-panel">
+          <div className="ai-video-editor-chat-resize-handle" onPointerDown={startChatResize} role="separator" aria-orientation="vertical" aria-label="调整对话面板宽度" title="拖动调整对话面板宽度"><ChevronsLeftRight size={14} strokeWidth={1.8} /></div>
           <div className="ai-video-editor-chat-tabs">
             <button type="button" className={activeRightTab === 'chat' ? 'is-active' : ''} onClick={() => setActiveRightTab('chat')}><MessageCircle size={15} /> AI 对话</button>
             <button type="button" className={activeRightTab === 'settings' ? 'is-active' : ''} onClick={() => setActiveRightTab('settings')}><Settings2 size={15} /> 参数</button>
             <div className="ai-video-editor-chat-panel-actions">
-              <button type="button" onClick={() => { setIsChatCollapsed(false); setIsChatExpanded((value) => !value); }} aria-label={isChatExpanded ? '恢复对话宽度' : '展开对话面板'} title={isChatExpanded ? '恢复对话宽度' : '展开对话面板'}>{isChatExpanded ? <ZoomOut size={14} /> : <Maximize2 size={14} />}</button>
-              <button type="button" onClick={() => setIsChatCollapsed(true)} aria-label="收起对话面板" title="收起对话面板"><ChevronRight size={15} /></button>
+              <button type="button" onClick={toggleChatPanel} aria-label={isChatExpanded ? '收起对话面板' : '展开对话面板'} title={isChatExpanded ? '收起对话面板' : '展开对话面板'}>{isChatExpanded ? <ZoomOut size={15} /> : <Maximize2 size={15} />}</button>
             </div>
           </div>
 
@@ -1701,8 +1743,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
             </div>
           )}
         </aside>
-        {isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle is-collapsed" onClick={() => setIsChatCollapsed(false)} aria-label="展开对话面板" title="展开对话面板"><ChevronLeft size={15} /></button>}
-        {!isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle" onClick={() => setIsChatCollapsed(true)} aria-label="收起对话面板" title="收起对话面板"><ChevronRight size={15} /></button>}
+        {isChatCollapsed && <button type="button" className="ai-video-editor-chat-collapsed-toggle" onClick={toggleChatPanel} aria-label="展开对话面板" title="展开对话面板"><Maximize2 size={15} /></button>}
       </div>
       {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className={`ai-video-editor-template-panel ai-video-editor-tool-panel${isTimelineCollapsed ? ' is-timeline-collapsed' : ''} is-timeline-complete`} aria-label={`${activeToolTitle}面板`}>
         <div className="ai-video-editor-template-panel__head">
