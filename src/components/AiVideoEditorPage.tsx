@@ -27,7 +27,6 @@ import {
   Maximize2,
   MessageCircle,
   Mic2,
-  MoreHorizontal,
   Music2,
   Pause,
   Play,
@@ -105,6 +104,17 @@ type TimelineDragState = {
   startX: number;
   trackWidth: number;
   beforeClips: TimelineClip[];
+};
+type TimelineTransitionType = 'dissolve' | 'fade-black' | 'slide' | 'wipe';
+type TimelineTransition = {
+  id: string;
+  at: number;
+  duration: number;
+  type: TimelineTransitionType;
+};
+type TimelineEditSnapshot = {
+  clips: TimelineClip[];
+  transitions: TimelineTransition[];
 };
 
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
@@ -338,6 +348,13 @@ const initialTimelineClips: TimelineClip[] = [
   { id: 'sfx-end', trackId: 'sfx', kind: 'sfx', label: '收束音', start: 69.5, duration: 2.7 },
 ];
 
+const transitionOptions: Array<{ id: TimelineTransitionType; label: string; detail: string }> = [
+  { id: 'dissolve', label: '叠化', detail: '柔和衔接' },
+  { id: 'fade-black', label: '黑场', detail: '适合章节切换' },
+  { id: 'slide', label: '滑动', detail: '横向推进' },
+  { id: 'wipe', label: '擦除', detail: '快速切换' },
+];
+
 const voiceOptions = [
   { id: 'Quentin', name: 'Quentin', detail: '温暖男声，儒雅（推荐）' },
   { id: 'Felix', name: 'Felix', detail: '清晰男声，纯中文' },
@@ -350,6 +367,7 @@ const voiceOptions = [
 
 export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<ToolId>('media');
@@ -394,9 +412,12 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [timelineTracks, setTimelineTracks] = useState<TimelineTrackState[]>(initialTimelineTracks);
   const [timelineClips, setTimelineClips] = useState<TimelineClip[]>(initialTimelineClips);
   const [selectedTimelineClipId, setSelectedTimelineClipId] = useState<string | null>('video-main');
-  const [timelineHistory, setTimelineHistory] = useState<TimelineClip[][]>([]);
-  const [timelineRedo, setTimelineRedo] = useState<TimelineClip[][]>([]);
+  const [timelineHistory, setTimelineHistory] = useState<TimelineEditSnapshot[]>([]);
+  const [timelineRedo, setTimelineRedo] = useState<TimelineEditSnapshot[]>([]);
   const [timelineDrag, setTimelineDrag] = useState<TimelineDragState | null>(null);
+  const [timelineTransitions, setTimelineTransitions] = useState<TimelineTransition[]>([]);
+  const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
+  const [isTransitionMenuOpen, setIsTransitionMenuOpen] = useState(false);
   const timelineClipsRef = useRef<TimelineClip[]>(initialTimelineClips);
   const [showToast, setShowToast] = useState('');
   const notify = (message: string) => setShowToast(message);
@@ -448,7 +469,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const getTimelineTrack = (trackId: TimelineTrackId) => timelineTracks.find((track) => track.id === trackId);
 
   const commitTimelineChange = (nextClips: TimelineClip[], message?: string) => {
-    setTimelineHistory((items) => [...items, timelineClipsRef.current].slice(-30));
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
     setTimelineRedo([]);
     setTimelineClips(nextClips);
     if (message) notify(message);
@@ -461,8 +482,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       return;
     }
     setTimelineHistory((items) => items.slice(0, -1));
-    setTimelineRedo((items) => [...items, timelineClipsRef.current]);
-    setTimelineClips(previous);
+    setTimelineRedo((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }]);
+    setTimelineClips(previous.clips);
+    setTimelineTransitions(previous.transitions);
     notify('已撤销剪辑操作');
   };
 
@@ -473,8 +495,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       return;
     }
     setTimelineRedo((items) => items.slice(0, -1));
-    setTimelineHistory((items) => [...items, timelineClipsRef.current].slice(-30));
-    setTimelineClips(next);
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
+    setTimelineClips(next.clips);
+    setTimelineTransitions(next.transitions);
     notify('已重做剪辑操作');
   };
 
@@ -515,7 +538,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       }));
     };
     const handlePointerUp = () => {
-      setTimelineHistory((items) => [...items, timelineDrag.beforeClips].slice(-30));
+      setTimelineHistory((items) => [...items, { clips: timelineDrag.beforeClips, transitions: timelineTransitions }].slice(-30));
       setTimelineRedo([]);
       setTimelineDrag(null);
     };
@@ -548,6 +571,56 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const rightClip = { ...clip, id: `${clip.id}-b-${stamp}`, start: currentTime, duration: rightDuration, label: `${clip.label} · 片段 2` };
     commitTimelineChange(timelineClips.flatMap((item) => item.id === clip.id ? [leftClip, rightClip] : [item]), '已按播放头分割片段');
     setSelectedTimelineClipId(rightClip.id);
+    if (clip.trackId === 'video') {
+      const transitionId = `transition-${stamp}`;
+      setTimelineTransitions((items) => [...items.filter((item) => Math.abs(item.at - currentTime) > 0.2), { id: transitionId, at: currentTime, duration: 0.8, type: 'dissolve' }]);
+      setSelectedTransitionId(transitionId);
+    }
+  };
+
+  const getSelectedVideoBoundary = () => {
+    const selectedClip = timelineClips.find((clip) => clip.id === selectedTimelineClipId && clip.trackId === 'video');
+    if (!selectedClip) return null;
+    const videoClips = timelineClips.filter((clip) => clip.trackId === 'video').sort((left, right) => left.start - right.start);
+    const selectedIndex = videoClips.findIndex((clip) => clip.id === selectedClip.id);
+    const previous = videoClips[selectedIndex - 1];
+    const next = videoClips[selectedIndex + 1];
+    if (previous && Math.abs(previous.start + previous.duration - selectedClip.start) < 0.25) return selectedClip.start;
+    if (next && Math.abs(selectedClip.start + selectedClip.duration - next.start) < 0.25) return next.start;
+    return null;
+  };
+
+  const applyTransition = (type: TimelineTransitionType) => {
+    const selectedTransition = selectedTransitionId ? timelineTransitions.find((transition) => transition.id === selectedTransitionId) : undefined;
+    const boundaryAt = selectedTransition?.at ?? getSelectedVideoBoundary();
+    if (boundaryAt === null || boundaryAt === undefined) {
+      notify('请先在视频轨道分割片段，再选择转场');
+      setIsTransitionMenuOpen(false);
+      return;
+    }
+    const existing = timelineTransitions.find((transition) => Math.abs(transition.at - boundaryAt) < 0.25);
+    const nextTransition: TimelineTransition = existing
+      ? { ...existing, type }
+      : { id: `transition-${Math.round(boundaryAt * 10)}`, at: boundaryAt, duration: 0.8, type };
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
+    setTimelineRedo([]);
+    setTimelineTransitions((items) => existing ? items.map((item) => item.id === existing.id ? nextTransition : item) : [...items, nextTransition]);
+    setSelectedTransitionId(nextTransition.id);
+    setIsTransitionMenuOpen(false);
+    notify(`已应用${transitionOptions.find((option) => option.id === type)?.label ?? '转场'}`);
+  };
+
+  const removeSelectedTransition = () => {
+    if (!selectedTransitionId) {
+      notify('请先选择时间线上的转场');
+      return;
+    }
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
+    setTimelineRedo([]);
+    setTimelineTransitions((items) => items.filter((transition) => transition.id !== selectedTransitionId));
+    setSelectedTransitionId(null);
+    setIsTransitionMenuOpen(false);
+    notify('已移除转场');
   };
 
   const deleteSelectedTimelineClip = () => {
@@ -565,7 +638,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       return;
     }
     commitTimelineChange(timelineClips.filter((item) => item.id !== clip.id), '已删除选中片段');
+    setTimelineTransitions((items) => items.filter((transition) => transition.at < clip.start - 0.2 || transition.at > clip.start + clip.duration + 0.2));
     setSelectedTimelineClipId(null);
+    setSelectedTransitionId(null);
   };
 
   const timelineClipStyle = (clip: TimelineClip) => ({
@@ -620,6 +695,15 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       video.pause();
       setIsPlaying(false);
     }
+  };
+
+  const togglePreviewFullscreen = async () => {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => undefined);
+      return;
+    }
+    const fullscreenRequest = stageRef.current?.requestFullscreen?.();
+    await fullscreenRequest?.catch(() => undefined);
   };
 
   const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -960,15 +1044,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         <main className="ai-video-editor-main">
           <div className="ai-video-editor-workspace">
             <section className="ai-video-editor-preview-panel">
-              <div className="ai-video-editor-preview-head">
-                <div className="ai-video-editor-preview-head__actions">
-                  <span>1080p</span>
-                  <button type="button" onClick={() => notify('预览画布已放大')}><Maximize2 size={15} /></button>
-                  <button type="button" onClick={() => notify('更多预览选项')}><MoreHorizontal size={17} /></button>
-                </div>
-              </div>
               <div className="ai-video-editor-stage-wrap">
-                <div className="ai-video-editor-stage">
+                <div ref={stageRef} className="ai-video-editor-stage">
                   <video
                     ref={videoRef}
                     src={videoSource}
@@ -1009,6 +1086,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 <div className="ai-video-editor-player-controls__right">
                   <span>自动播放</span>
                   <button type="button" className={`ai-video-editor-toggle${isAutoPlay ? ' is-on' : ''}`} onClick={() => setIsAutoPlay((value) => !value)}><span /></button>
+                  <button type="button" className="ai-video-editor-player-resolution" onClick={() => notify('当前输出分辨率为 1080p')} aria-label="输出分辨率">1080p</button>
+                  <button type="button" className="ai-video-editor-player-fullscreen" onClick={togglePreviewFullscreen} aria-label="全屏预览" title="全屏预览"><Maximize2 size={15} /></button>
                   <button type="button" className="ai-video-editor-player-ratio" onClick={() => notify('画布比例保持为 16:9')}><span>16:9</span><ChevronDown size={13} /></button>
                   <button type="button" onClick={() => notify('播放速度 1x')}><Gauge size={15} /> 1x</button>
                 </div>
@@ -1024,8 +1103,17 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <button type="button" onClick={redoTimeline} disabled={!timelineRedo.length} aria-label="重做" title="重做"><Redo2 size={15} /></button>
                   <span />
                   <button type="button" onClick={splitSelectedTimelineClip}><Scissors size={15} /> 分割</button>
+                  <button type="button" onClick={() => setIsTransitionMenuOpen((value) => !value)}><WandSparkles size={14} /> 转场</button>
                   <button type="button" onClick={deleteSelectedTimelineClip}><X size={15} /> 删除</button>
                 </div>
+                {isTransitionMenuOpen && <div className="ai-video-editor-transition-menu">
+                  <strong>选择转场</strong>
+                  <span>先分割视频片段，再点击转场应用到片段交界处</span>
+                  <div className="ai-video-editor-transition-options">
+                    {transitionOptions.map((option) => <button type="button" key={option.id} onClick={() => applyTransition(option.id)}><b>{option.label}</b><small>{option.detail}</small></button>)}
+                  </div>
+                  <button type="button" className="ai-video-editor-transition-remove" onClick={removeSelectedTransition}>移除当前转场</button>
+                </div>}
                 <div className="ai-video-editor-timeline-zoom">
                   <button type="button" onClick={() => setZoom((value) => Math.max(48, value - 8))}><ZoomOut size={14} /></button>
                   <div className="ai-video-editor-zoom-track"><span style={{ width: `${zoom}%` }} /></div>
@@ -1050,6 +1138,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                       </div>
                       <div className="ai-video-editor-clip-name"><Film size={13} /> {videoName}</div>
                     </>))}
+                    {timelineTransitions.map((transition) => <button type="button" key={transition.id} className={`ai-video-editor-timeline-transition ai-video-editor-timeline-transition--${transition.type}${selectedTransitionId === transition.id ? ' is-selected' : ''}`} style={{ left: `${(transition.at / timelineDuration) * 100}%` }} onClick={(event) => { event.stopPropagation(); setSelectedTransitionId(transition.id); setIsTransitionMenuOpen(true); }} aria-label={`${transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}，${transition.at.toFixed(1)}秒`}><span>{transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}</span></button>)}
                   </div>
                 </div>
                 {isFinalTimelineReady ? <>
