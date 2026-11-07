@@ -10641,6 +10641,8 @@ button {
 .ai-video-editor-timeline-panel { grid-column: 1 / -1; grid-row: 2; min-width: 0; min-height: 0; margin: 0; flex-basis: auto; }
 .ai-video-editor-body.is-timeline-collapsed { grid-template-rows: minmax(0, 1fr) 8px; row-gap: 0; }
 .ai-video-editor-body.is-timeline-collapsed .ai-video-editor-timeline-panel { height: 8px; }
+.ai-video-editor-stage { width: auto; height: min(100%, 484px); max-width: 100%; max-height: 100%; }
+.ai-video-editor-stage video { object-fit: cover; object-position: center; }
 
 @media (max-width: 1120px) {
   .ai-video-editor-body { grid-template-columns: 72px minmax(0, 1fr) 360px; column-gap: 8px; }
