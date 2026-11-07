@@ -17,6 +17,7 @@ import {
   Film,
   FolderOpen,
   Gauge,
+  History,
   Image as ImageIcon,
   Layers3,
   LayoutTemplate,
@@ -78,17 +79,74 @@ type StoryboardRow = {
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
 const DEFAULT_POSTER = '/code-video/reference-style-demo-v14-poster.png';
 
+const initialUserPrompt = `请制作一支中文科普短片《一颗桑葚，半部中国史》MG动画。
+全片结构：整部视频以纯MG演示动画与真实视频共同构成，整体节奏清晰，画面干净，历史感强。插画、素材和文字演示需根据脚本合理放置，所有元素不得超出画布，不得被裁剪
+文字动效：字体需清晰易读。标题可使用简体书法字体，正文使用黑体或圆体。关键词可使用高亮、盖章、扫光、弹跳、逐字出现等轻量动效。重点词包括：“起源于中国”“驯化”“桑”“祥瑞”“贡品”“药引”“本草纲目”“完整形态”“1600年”。红色印章只用于关键结论和片尾。
+旁白与背景音乐：旁白使用科普片常见的清晰、沉稳声音。BGM使用一段完整配乐，从低沉神秘开始，逐渐加入古琴、鼓点、编钟、暖笛；后半段加入轻电子节拍，片尾用弦乐和钢琴升华。
+分镜脚本：
+片段0，视频开头。
+画面：将透明素材放置在画面左侧，渐隐并滑动出现；枝叶保持轻微风动，背景干净简洁。
+文字动效：大标题“一颗桑葚”“半部中国史”采用竖排错位排版，分别逐字出现；副标题“从远古起源到今日见证”淡入；朱红竖排印章“桑葚”落下后转入片段1。
+片段1，约1亿年前。
+画面：参考生成演示实景视频。文字动效：左侧顶部大标题边框“雅鲁藏布江流域”向右淡入；视频出现2秒后，右侧大标题边框“约1亿年前”“起源于中国”依次出现。
+旁白及字幕：约1亿年前，野生桑树诞生在雅鲁藏布江流域，桑葚起源于中国。
+片段2，新石器时期。
+画面：使用透明素材，依次渐隐出现在画面中心。
+文字动效：“桑叶 + 蚕”使用浅绿色图标，“= 驯化”使用红色图标并高亮。
+旁白及字幕：新石器时期，先民们在野生桑林中发现了桑叶与蚕，开始了对二者的驯化之旅。
+片段3，甲骨文与商朝。
+画面：透明素材渐隐出现并向左滑动，与标题居左对齐；“桑”字逐笔写出，随后红色印章“商”随机盖在大字旁边。
+文字动效：“桑”字笔画一笔一笔写出，随后放大突出。
+旁白及字幕：商朝时，甲骨文中已经出现了蚕、桑、丝等象形字，其中“桑”的象形字多达六种。
+片段4，西汉时期。
+画面1：使用场景素材，以涂抹方式出现在米色背景中，持续到字幕“宫廷园林中出现白桑树”结束，随后切换到真实影像场景。
+画面2：使用场景素材生成真实影像视频，从指定开篇画面开始，到指定结束画面收束，生成一个不间断的连续镜头。全程使用 slow push-in，不停顿；以香炉青烟与烛光光影的弥漫作为衔接媒介，使画面像穿过烟雾一样，从宗庙贡品自然过渡到殿堂赏赐。
+文字动效：“西汉宗庙贡品”与英文“IMPERIAL TRIBUTE”分为上下两排，中间用红线分隔并渐隐出现；随后“赏赐功臣”文字依次落下，并用黄线与“IMPERIAL REWARD”进行分割。
+旁白：结出的白桑葚被视为祥瑞，并成为贡品，用于祭祀天地、赏赐功臣。
+片段5，东汉末年到明朝。
+画面1：使用场景素材生成真实影像视频，镜头 slow push-in，逐渐靠近药罐；一只手以正常速度将白桑葚丢进炭炉上的陶制药罐，桑葚落入药汁并溅起水花。
+文字动效1：“药引”竖排大字渐隐出现，用竖线与竖排文字“白桑葚入药”分隔。
+旁白1：东汉末年，白桑葚被用作药引，帮助百姓治疗疾病。
+画面2：使用透明素材，渐隐并位移到画面左侧的米色背景中。
+文字动效2：右侧线框古书展开，“本草纲目”以红色书签边框形式竖排放置在古书上；“桑椹·果部第三十三卷”“单食，止消渴，利五脏关节，通血气。久服不饥，安魂镇神，令人聪慧。”横排出现在古书左下角，对齐后渐隐出现。
+旁白2：到了明代，李时珍又在《本草纲目》中记下了桑葚的养生之法。
+片段6，新石器时期到1950s。
+MG画面1：使用透明素材固定在画面右上角，以相框MG形式展示；随后描边圆形在相框左上角弹出，展示MG绘制的黑色小籽粒。
+文字动效1：“碳化籽粒”大字渐隐出现，小字“将食用史推回新石器时期。”随后出现；下方居中出现时间轴，由“新石器时期”箭头指引至“1950年代”。
+旁白1：二十世纪五十年代，半坡遗址发现的碳化桑葚籽粒，把人们食用桑葚的历史推回到新石器时期。
+MG画面2：放大镜扫过黑色小籽粒，进行演示动画后转场；黑色小籽粒被文字折线图标注“唐代桑葚干”以及对应时间。
+文字动效：“桑葚干”使用文字折线图进行标注。
+旁白2：1959年，阿斯塔那古墓群出土的唐代桑葚干，仍保留着完整形态。
+片段7，如今。
+画面1：使用场景素材生成真实影像视频。以指定画面为首帧，远景 slow push-in 缓缓推进，展现巨树全貌与身后河流、山脉；随后以指定近景画面为首帧，使用 slow tilt up 自下而上仰拍，突出千年古木的纹理与枝叶细节；最后回到远景，slow pull-out 缓缓拉远，使桑树王与尼洋河、远山同框收束。全程无原生音频。
+文字动效1：“约1600年”大字竖排出现，小字“西藏尼洋河畔”依次弹出。
+文字动效2：左侧两列行书大字“一颗桑葚”“演绎半部中国史”错位竖排；注解竖排小字“从远古起源到今日见证”出现；朱红印章“桑”落下。
+旁白：如今，西藏尼洋河畔一棵约1600年树龄的桑树王仍静静矗立。它是世界上最古老的桑树，也像一位时间的见证者，讲述着一颗桑葚与中国历史的漫长关系。
+
+时长:1:12、画面比例:16:9、字幕:有`;
+
 const initialMessages: ChatMessage[] = [
   {
     id: 1,
-    role: 'assistant',
-    text: '我已经根据你的主题生成了一版旁白脚本，共 7 个段落。开场只保留标题与印象，旁白会从片段 1 进入，全文约 72 秒。',
+    role: 'user',
+    text: initialUserPrompt,
     time: '刚刚',
   },
   {
     id: 2,
     role: 'assistant',
-    text: '请先确认脚本。你可以直接在表格中修改旁白，也可以告诉我想调整的内容；确认后我会进入口播声音选择。',
+    text: '收到。我会按“纯 MG 演示动画 + 真实视频”的方式制作这支中文科普短片，保留历史感和干净的画面秩序，确保文字、插画和素材都在 16:9 画布内完整呈现。',
+    time: '刚刚',
+  },
+  {
+    id: 3,
+    role: 'assistant',
+    text: '我已将你的需求整理为 8 个片段：开场、远古起源、新石器驯化、甲骨文与商朝、西汉贡品、东汉至明代药引、考古证据，以及今天的桑树王。片长约 72 秒，画面比例 16:9，并保留字幕。',
+  },
+  {
+    id: 4,
+    role: 'assistant',
+    text: '脚本、旁白重点、文字动效、配乐情绪和镜头运动已整理完成。请先确认脚本，确认后我会生成口播声音，并按照真实时长编排分镜。',
   },
 ];
 
@@ -132,22 +190,25 @@ const videoTemplates: Array<{ id: string; title: string; category: Exclude<Templ
 ];
 
 const scriptRows: ScriptRow[] = [
-  { id: 1, section: '片段 1 · 约化年前', narration: '约化年前，野生桑树诞生在雅鲁藏布江流域，桑基起源于中国。' },
+  { id: 0, section: '片段 0 · 视频开头', narration: '开场无旁白：一颗桑葚，半部中国史。从远古起源到今日见证。' },
+  { id: 1, section: '片段 1 · 约1亿年前', narration: '约1亿年前，野生桑树诞生在雅鲁藏布江流域，桑葚起源于中国。' },
   { id: 2, section: '片段 2 · 新石器时期', narration: '新石器时期，先民们在野生桑林中发现了桑叶与蚕，开始了对二者的驯化之旅。' },
-  { id: 3, section: '片段 3 · 商朝', narration: '商朝时，甲骨文中已经出现了蚕、桑、丝等象形字，其中“桑”的象形字多达六种。' },
-  { id: 4, section: '片段 4 · 西汉', narration: '结出的白桑被视为祥瑞，并成为贡品，用于祭祀天地、赏赐功臣。' },
-  { id: 5, section: '片段 5 · 东汉末年', narration: '东汉末年，白桑被用作药引，帮助百姓治疗疾病。' },
-  { id: 6, section: '片段 6 · 新石器时期', narration: '二十世纪五十年代，半坡遗址发现的碳化桑蔓籽粒，把人们食用桑叶的历史推回到新石器时期。' },
-  { id: 7, section: '片段 7 · 1959 年', narration: '1959年，阿斯塔那古墓群出土的唐代桑基，仍保留着完整形态。' },
+  { id: 3, section: '片段 3 · 甲骨文与商朝', narration: '商朝时，甲骨文中已经出现了蚕、桑、丝等象形字，其中“桑”的象形字多达六种。' },
+  { id: 4, section: '片段 4 · 西汉时期', narration: '结出的白桑葚被视为祥瑞，并成为贡品，用于祭祀天地、赏赐功臣。' },
+  { id: 5, section: '片段 5 · 东汉末年到明朝', narration: '东汉末年，白桑葚被用作药引，帮助百姓治疗疾病。到了明代，李时珍又在《本草纲目》中记下了桑葚的养生之法。' },
+  { id: 6, section: '片段 6 · 新石器时期到1950s', narration: '二十世纪五十年代，半坡遗址发现的碳化桑葚籽粒，把人们食用桑葚的历史推回到新石器时期。1959年，阿斯塔那古墓群出土的唐代桑葚干，仍保留着完整形态。' },
+  { id: 7, section: '片段 7 · 如今', narration: '如今，西藏尼洋河畔一棵约1600年树龄的桑树王仍静静矗立。它是世界上最古老的桑树，也像一位时间的见证者，讲述着一颗桑葚与中国历史的漫长关系。' },
 ];
 
 const storyboardRows: StoryboardRow[] = [
-  { id: 1, time: '00:00', title: '开场 · 一颗桑果', visual: '米色宣纸背景，桑果从远处缓缓推近，保留纸张纹理。', text: '一颗桑果，见证千年文明', duration: '5s' },
-  { id: 2, time: '00:05', title: '片段 1 · 雅鲁藏布', visual: '以河谷远景作开篇，镜头缓慢推进至桑树枝叶。', text: '桑树起源于中国', duration: '6.4s' },
-  { id: 3, time: '00:11', title: '片段 2 · 桑叶驯化', visual: '桑叶与蚕的 MG 插画逐层出现，连接线轻柔入场。', text: '从野生桑林到人工栽培', duration: '7.1s' },
-  { id: 4, time: '00:18', title: '片段 3 · 甲骨文', visual: '甲骨文字形浮现，笔尖沿着文字轮廓完成书写。', text: '“桑”的象形字多达六种', duration: '8.1s' },
-  { id: 5, time: '00:26', title: '片段 4 · 祥瑞贡品', visual: '白桑树与古籍纸页叠化，画面从右向左展开。', text: '结出的白桑被视为祥瑞', duration: '5s' },
-  { id: 6, time: '00:31', title: '片段 5 · 药引', visual: '药材与桑叶的线稿图标依次出现，留出字幕安全区。', text: '桑叶也成为药引', duration: '4.4s' },
+  { id: 0, time: '00:00', title: '片段 0 · 一颗桑葚', visual: '透明枝叶与桑葚从左侧渐隐滑入，保持轻微风动；标题竖排错位出现，朱红印章落下后转场。', text: '一颗桑葚，半部中国史', duration: '5s' },
+  { id: 1, time: '00:05', title: '片段 1 · 雅鲁藏布江流域', visual: '河谷远景与桑树实景结合，镜头 slow push-in；左侧出现雅鲁藏布江流域，右侧依次出现约1亿年前、起源于中国。', text: '桑葚起源于中国', duration: '6.4s' },
+  { id: 2, time: '00:11', title: '片段 2 · 桑叶与蚕', visual: '桑叶和蚕的透明素材依次出现在画面中心，以浅绿色图标连接到红色“驯化”结论。', text: '从野生桑林到驯化', duration: '7.1s' },
+  { id: 3, time: '00:18', title: '片段 3 · 甲骨文与商朝', visual: '甲骨文素材向左滑入并对齐标题，“桑”字逐笔写出放大，红色“商”印章盖在大字旁。', text: '“桑”的象形字多达六种', duration: '8.1s' },
+  { id: 4, time: '00:26', title: '片段 4 · 西汉贡品', visual: '米色背景中的宫廷园林与白桑树涂抹出现，随后穿过香炉青烟和烛光过渡到宗庙贡品与殿堂赏赐。', text: '祥瑞 · 贡品 · 赏赐功臣', duration: '10s' },
+  { id: 5, time: '00:36', title: '片段 5 · 药引与本草纲目', visual: '镜头 slow push-in 靠近药罐，白桑葚落入药汁；随后线框古书展开，红色书签标出“本草纲目”。', text: '药引 · 本草纲目', duration: '10s' },
+  { id: 6, time: '00:46', title: '片段 6 · 碳化籽粒', visual: '相框 MG 展示黑色小籽粒，时间轴从新石器时期指向1950年代；放大镜扫过籽粒并标注唐代桑葚干。', text: '完整形态，留住1600年的时间线', duration: '12s' },
+  { id: 7, time: '00:58', title: '片段 7 · 桑树王', visual: '尼洋河与远山中的桑树王由远景推进至树干细节，再 slow pull-out 回到全景收束。', text: '约1600年 · 一颗桑葚，演绎半部中国史', duration: '14s' },
 ];
 
 const voiceOptions = [
@@ -193,11 +254,14 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [finalStatus, setFinalStatus] = useState<'idle' | 'generating' | 'done'>('idle');
   const [isMuted, setIsMuted] = useState(false);
   const [isAutoPlay, setIsAutoPlay] = useState(false);
+  const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [zoom, setZoom] = useState(72);
   const [showToast, setShowToast] = useState('');
   const notify = (message: string) => setShowToast(message);
 
   useEffect(() => {
+    if (messages.length === initialMessages.length && !isThinking) return;
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isThinking]);
 
@@ -304,7 +368,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setWorkflowStage('final');
     setMessages((items) => [
       ...items,
-      { id: Date.now(), role: 'user', text: '确认生成 · 6 个视频 · 共 33s · 16:9' },
+      { id: Date.now(), role: 'user', text: '确认生成 · 8 个视频 · 共 72s · 16:9' },
       { id: Date.now() + 1, role: 'assistant', text: 'MG 画面、文字层、配乐和音效都已准备完成。最后确认一次，确认后我会开始生成完整视频。' },
     ]);
     notify('MG 画面与文字已确认');
@@ -402,7 +466,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       <div className="ai-video-editor-workflow-agent">
         <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card">
-          <div className="ai-video-editor-workflow-heading"><div><strong>确认脚本</strong><span>共 7 个段落 · 约 72 秒</span></div><span className="ai-video-editor-cost">本方案预计消耗 12 积分</span></div>
+          <div className="ai-video-editor-workflow-heading"><div><strong>确认脚本</strong><span>共 8 个段落 · 约 72 秒</span></div><span className="ai-video-editor-cost">本方案预计消耗 12 积分</span></div>
           <p className="ai-video-editor-workflow-note">旁白已按历史脉络整理完成。确认后我会先生成声音，再依据真实时长重新排布分镜。</p>
           <div className="ai-video-editor-script-table">
             <div className="ai-video-editor-script-table__head"><span>段落</span><span>旁白（字幕）</span></div>
@@ -439,7 +503,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       <div className="ai-video-editor-workflow-agent">
         <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card">
-          <div className="ai-video-editor-workflow-heading"><div><strong>确认分镜方案</strong><span>共 6 个镜头 · 约 33 秒 · 16:9</span></div><span className="ai-video-editor-cost">预计消耗 73–121 积分</span></div>
+          <div className="ai-video-editor-workflow-heading"><div><strong>确认分镜方案</strong><span>共 8 个镜头 · 约 72 秒 · 16:9</span></div><span className="ai-video-editor-cost">预计消耗 73–121 积分</span></div>
           <p className="ai-video-editor-workflow-note">口播真实时长已写入声音线。我按旁白节奏拆出了镜头、画面、文字和时长，你可以展开表格后逐项修改。</p>
           <div className="ai-video-editor-storyboard-table">
             <div className="ai-video-editor-storyboard-table__head"><span>镜头</span><span>时间 / 名称</span><span>画面与文字</span><span>时长</span></div>
@@ -455,8 +519,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       <div className="ai-video-editor-workflow-agent">
         <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card ai-video-editor-mg-card">
-          <div className="ai-video-editor-workflow-heading"><div><strong>{mgStatus === 'generating' ? '正在生成 MG 画面与文字' : 'MG 画面与文字已生成'}</strong><span>6 个镜头 · 配乐与音效同步准备</span></div><span className="ai-video-editor-cost">预计消耗约 330 积分</span></div>
-          {mgStatus === 'generating' ? <div className="ai-video-editor-mg-loading"><div className="ai-video-editor-mg-loading__icon"><Film size={21} /></div><strong>正在生成 6 个 MG 镜头</strong><span>配乐、音效和文字层会同步合成，请稍候…</span><div className="ai-video-editor-progress"><span /></div></div> : <>
+          <div className="ai-video-editor-workflow-heading"><div><strong>{mgStatus === 'generating' ? '正在生成 MG 画面与文字' : 'MG 画面与文字已生成'}</strong><span>8 个镜头 · 配乐与音效同步准备</span></div><span className="ai-video-editor-cost">预计消耗约 330 积分</span></div>
+          {mgStatus === 'generating' ? <div className="ai-video-editor-mg-loading"><div className="ai-video-editor-mg-loading__icon"><Film size={21} /></div><strong>正在生成 8 个 MG 镜头</strong><span>配乐、音效和文字层会同步合成，请稍候…</span><div className="ai-video-editor-progress"><span /></div></div> : <>
             <p className="ai-video-editor-workflow-note">分镜已执行完成。请展开镜头卡片检查画面描述与文字层，确认后开始生成完整视频。</p>
             <div className="ai-video-editor-scene-list">
               {storyboardDraft.slice(0, 5).map((row) => <div className={`ai-video-editor-scene-card${expandedScene === row.id ? ' is-expanded' : ''}`} key={row.id}>
@@ -474,8 +538,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       <div className="ai-video-editor-workflow-agent">
         <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card ai-video-editor-final-card">
-          <div className="ai-video-editor-workflow-heading"><div><strong>{finalStatus === 'done' ? '视频生成完成' : '确认生成视频'}</strong><span>6 个视频 · 共 33 秒 · 16:9</span></div></div>
-          {finalStatus === 'generating' ? <div className="ai-video-editor-final-loading"><div className="ai-video-editor-final-spinner"><span /></div><strong>正在合成最终视频</strong><span>MG 画面、文字层、口播和配乐正在合成…</span></div> : finalStatus === 'done' ? <div className="ai-video-editor-final-done"><CheckCircle2 size={22} /><strong>完整视频已经生成</strong><span>你可以回到时间线预览，也可以直接导出视频。</span><button type="button" className="ai-video-editor-primary-action" onClick={() => notify('预览窗口已准备好')}><Play size={14} /> 预览视频</button></div> : <><p className="ai-video-editor-workflow-note">所有内容都已确认，确认后将开始生成完整视频，预计需要 2–3 分钟。</p><div className="ai-video-editor-final-summary"><span><FileAudio size={14} /> {selectedVoice} 口播</span><span><Layers3 size={14} /> 6 个 MG 镜头</span><span><Clock3 size={14} /> 33 秒</span></div><div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setWorkflowStage('mg')}><Edit3 size={14} /> 返回调整</button><button type="button" className="ai-video-editor-primary-action" onClick={startFinalGeneration}><Play size={14} /> 开始生成</button></div></>}
+          <div className="ai-video-editor-workflow-heading"><div><strong>{finalStatus === 'done' ? '视频生成完成' : '确认生成视频'}</strong><span>8 个视频 · 共 72 秒 · 16:9</span></div></div>
+          {finalStatus === 'generating' ? <div className="ai-video-editor-final-loading"><div className="ai-video-editor-final-spinner"><span /></div><strong>正在合成最终视频</strong><span>MG 画面、文字层、口播和配乐正在合成…</span></div> : finalStatus === 'done' ? <div className="ai-video-editor-final-done"><CheckCircle2 size={22} /><strong>完整视频已经生成</strong><span>你可以回到时间线预览，也可以直接导出视频。</span><button type="button" className="ai-video-editor-primary-action" onClick={() => notify('预览窗口已准备好')}><Play size={14} /> 预览视频</button></div> : <><p className="ai-video-editor-workflow-note">所有内容都已确认，确认后将开始生成完整视频，预计需要 2–3 分钟。</p><div className="ai-video-editor-final-summary"><span><FileAudio size={14} /> {selectedVoice} 口播</span><span><Layers3 size={14} /> 8 个 MG 镜头</span><span><Clock3 size={14} /> 72 秒</span></div><div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setWorkflowStage('mg')}><Edit3 size={14} /> 返回调整</button><button type="button" className="ai-video-editor-primary-action" onClick={startFinalGeneration}><Play size={14} /> 开始生成</button></div></>}
         </div>
       </div>
     );
@@ -498,7 +562,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
           <span className="ai-video-editor-divider" />
           <div className="ai-video-editor-title-wrap">
-            <strong>AI视频编辑器</strong>
+            <div className="ai-video-editor-topbar-project-title">
+              <strong>AI视频编辑器</strong>
+              <span className="ai-video-editor-topbar-project-name">{videoName}</span>
+              <button type="button" className="ai-video-editor-version-button" onClick={() => setIsVersionHistoryOpen(true)} aria-label="打开历史版本" title="历史版本">
+                <History size={14} />
+              </button>
+            </div>
             <span><Cloud size={13} /> 已自动保存</span>
           </div>
         </div>
@@ -550,14 +620,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           <div className="ai-video-editor-mainbar">
             <div className="ai-video-editor-mainbar__crumbs">
               <button type="button" onClick={onBackToDirectory}>我的作品</button>
-              <ChevronRight size={13} />
-              <strong>{videoName}</strong>
             </div>
             <div className="ai-video-editor-mainbar__actions">
               <button type="button" onClick={() => notify('已撤销上一步操作')}><Undo2 size={15} /></button>
               <button type="button" onClick={() => notify('已重做上一步操作')}><Redo2 size={15} /></button>
-              <span className="ai-video-editor-mainbar__divider" />
-              <button type="button" onClick={() => notify('画布比例保持为 16:9')}><span className="ai-video-editor-ratio">16:9</span><ChevronDown size={13} /></button>
             </div>
           </div>
 
@@ -596,6 +662,15 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 </div>
               </div>
               <div className="ai-video-editor-player-controls">
+                <button
+                  type="button"
+                  className={`ai-video-editor-timeline-toggle${isTimelineCollapsed ? ' is-collapsed' : ''}`}
+                  onClick={() => setIsTimelineCollapsed((value) => !value)}
+                  aria-label={isTimelineCollapsed ? '展开剪辑区域' : '收起剪辑区域'}
+                  aria-expanded={!isTimelineCollapsed}
+                >
+                  <ChevronDown size={15} />
+                </button>
                 <div className="ai-video-editor-player-controls__left">
                   <button type="button" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>{isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}</button>
                   <span>{formatTime(currentTime)} <i>/</i> {formatTime(duration)}</span>
@@ -604,12 +679,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 <div className="ai-video-editor-player-controls__right">
                   <span>自动播放</span>
                   <button type="button" className={`ai-video-editor-toggle${isAutoPlay ? ' is-on' : ''}`} onClick={() => setIsAutoPlay((value) => !value)}><span /></button>
+                  <button type="button" className="ai-video-editor-player-ratio" onClick={() => notify('画布比例保持为 16:9')}><span>16:9</span><ChevronDown size={13} /></button>
                   <button type="button" onClick={() => notify('播放速度 1x')}><Gauge size={15} /> 1x</button>
                 </div>
               </div>
             </section>
 
-            <section className={`ai-video-editor-timeline-panel${isFinalTimelineReady ? ' is-complete' : ''}`}>
+            <section className={`ai-video-editor-timeline-panel${isFinalTimelineReady ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
               <div className="ai-video-editor-timeline-head">
                 <div className="ai-video-editor-timeline-actions">
                   <button type="button" onClick={() => notify('已撤销剪辑操作')}><Undo2 size={15} /></button>
@@ -681,7 +757,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <div className="ai-video-editor-track-row">
                     <div className="ai-video-editor-track-label"><Layers3 size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
                     <div className="ai-video-editor-track-content">
-                      {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Layers3 size={13} /> 6 个 MG 镜头与文字层 <span>33s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
+                      {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Layers3 size={13} /> 8 个 MG 镜头与文字层 <span>72s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row">
@@ -751,6 +827,27 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </button>)}
         </div>
       </aside>}
+      {isVersionHistoryOpen && <div className="ai-video-editor-version-backdrop" role="presentation" onClick={() => setIsVersionHistoryOpen(false)}>
+        <div className="ai-video-editor-version-modal" role="dialog" aria-modal="true" aria-label="历史版本" onClick={(event) => event.stopPropagation()}>
+          <div className="ai-video-editor-version-modal__head">
+            <div><strong>历史版本</strong><span>{videoName}</span></div>
+            <button type="button" onClick={() => setIsVersionHistoryOpen(false)} aria-label="关闭历史版本"><X size={17} /></button>
+          </div>
+          <div className="ai-video-editor-version-list">
+            <button type="button" className="ai-video-editor-version-item is-current" onClick={() => notify('当前版本已保持不变')}>
+              <span className="ai-video-editor-version-item__dot" />
+              <span className="ai-video-editor-version-item__copy"><strong>版本 01</strong><em>刚刚 · 当前版本</em><small>已更新脚本、分镜和预览画面</small></span>
+              <Check size={14} />
+            </button>
+            <button type="button" className="ai-video-editor-version-item" onClick={() => notify('已选择版本 00，可继续预览')}>
+              <span className="ai-video-editor-version-item__dot" />
+              <span className="ai-video-editor-version-item__copy"><strong>版本 00</strong><em>今天 10:12</em><small>创建项目并上传原始视频</small></span>
+              <History size={14} />
+            </button>
+          </div>
+          <div className="ai-video-editor-version-modal__foot">历史版本会自动保存，选择后可继续预览和编辑</div>
+        </div>
+      </div>}
       {isScriptEditorOpen && <div className="ai-video-editor-modal-backdrop" role="dialog" aria-modal="true" aria-label="编辑脚本">
         <div className="ai-video-editor-fullscreen-modal ai-video-editor-fullscreen-modal--script">
           <div className="ai-video-editor-fullscreen-modal__head"><div><strong>编辑脚本</strong><span>修改旁白后，保存并回到确认脚本卡片</span></div><button type="button" onClick={() => setIsScriptEditorOpen(false)}><X size={18} /></button></div>

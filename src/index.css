@@ -226,7 +226,7 @@
 .ai-video-editor-message--user { justify-content: flex-end; }
 .ai-video-editor-message-avatar { width: 23px; height: 23px; border-radius: 8px; }
 .ai-video-editor-message-bubble { max-width: 82%; padding: 9px 11px; border: 1px solid #e7eaf0; border-radius: 4px 12px 12px 12px; background: #fff; color: #5d6878; box-shadow: 0 3px 10px rgba(48, 61, 80, .035); }
-.ai-video-editor-message-bubble p { margin: 0; font-size: 11px; line-height: 1.7; }
+.ai-video-editor-message-bubble p { margin: 0; font-size: 11px; line-height: 1.7; white-space: pre-line; }
 .ai-video-editor-message-bubble span { display: block; margin-top: 4px; color: #b6bec9; font-size: 9px; }
 .ai-video-editor-message--user .ai-video-editor-message-bubble { border-color: #dbe3ff; border-radius: 12px 4px 12px 12px; background: #edf1ff; color: #4d5d9c; }
 .ai-video-editor-thinking { display: flex; align-items: center; gap: 4px; height: 31px; }
@@ -10259,4 +10259,149 @@ button {
 
 @media (max-width: 720px) {
   .ai-video-editor-template-panel { width: calc(100vw - 68px); }
+}
+
+.ai-video-editor-stage video {
+  object-fit: contain;
+  background: #101820;
+}
+
+.ai-video-editor-player-controls { position: relative; }
+.ai-video-editor-player-controls .ai-video-editor-timeline-toggle {
+  position: absolute;
+  z-index: 5;
+  bottom: -1px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 22px;
+  border: 1px solid #c7d0d9;
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  transform: translateX(-50%);
+  background: #f1f3f5;
+  color: #657586;
+  transition: color 150ms cubic-bezier(.22, 1, .36, 1), background 150ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.ai-video-editor-player-controls .ai-video-editor-timeline-toggle:hover { background: #e8edf1; color: #294a6c; }
+.ai-video-editor-timeline-toggle svg { transition: transform 180ms cubic-bezier(.22, 1, .36, 1); }
+.ai-video-editor-timeline-toggle.is-collapsed svg { transform: rotate(180deg); }
+.ai-video-editor-timeline-panel.is-collapsed { flex-basis: 8px; min-height: 8px; }
+.ai-video-editor-timeline-panel.is-collapsed .ai-video-editor-timeline-head,
+.ai-video-editor-timeline-panel.is-collapsed .ai-video-editor-timeline,
+.ai-video-editor-timeline-panel.is-collapsed .ai-video-editor-timeline-footer { display: none; }
+
+.ai-video-editor-topbar-project-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+}
+
+.ai-video-editor-topbar-project-title strong { flex: 0 0 auto; }
+.ai-video-editor-title-wrap .ai-video-editor-topbar-project-name {
+  display: block;
+  overflow: hidden;
+  max-width: 220px;
+  color: #506274;
+  font-size: 11px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-video-editor-version-button {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #dfe5ea;
+  border-radius: 6px;
+  background: #f7f9fa;
+  color: #728191;
+  transition: color 150ms cubic-bezier(.22, 1, .36, 1), background 150ms cubic-bezier(.22, 1, .36, 1), border-color 150ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.ai-video-editor-version-button:hover { border-color: #bdcbd7; background: #edf2f5; color: #294a6c; }
+
+.ai-video-editor-player-ratio {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  height: 25px;
+  padding: 0 6px;
+  border: 1px solid #dfe5ea !important;
+  border-radius: 6px;
+  background: #fff !important;
+  color: #5b6d7e !important;
+  font-size: 10px;
+}
+
+.ai-video-editor-player-ratio:hover { background: #eef3f7 !important; color: #294a6c !important; }
+
+.ai-video-editor-version-backdrop {
+  position: fixed;
+  z-index: 24;
+  inset: 0;
+  background: transparent;
+}
+
+.ai-video-editor-version-modal {
+  position: absolute;
+  top: 64px;
+  left: 160px;
+  width: 360px;
+  overflow: hidden;
+  border: 1px solid #dfe5ea;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 16px 38px rgba(24, 40, 56, .16);
+}
+
+.ai-video-editor-version-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e7ebee;
+}
+
+.ai-video-editor-version-modal__head > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ai-video-editor-version-modal__head strong { color: #2b4054; font-size: 14px; font-weight: 600; }
+.ai-video-editor-version-modal__head span { overflow: hidden; color: #84919d; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.ai-video-editor-version-modal__head button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 7px; background: transparent; color: #7d8b99; }
+.ai-video-editor-version-modal__head button:hover { background: #eef2f5; color: #294a6c; }
+
+.ai-video-editor-version-list { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; }
+
+.ai-video-editor-version-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #5a6d7f;
+  text-align: left;
+}
+
+.ai-video-editor-version-item:hover,
+.ai-video-editor-version-item.is-current { border-color: #dbe5ec; background: #f4f7f9; }
+.ai-video-editor-version-item__dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: #aab7c2; }
+.ai-video-editor-version-item.is-current .ai-video-editor-version-item__dot { background: #2f67b9; }
+.ai-video-editor-version-item__copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.ai-video-editor-version-item__copy strong { color: #40566b; font-size: 11px; font-weight: 600; }
+.ai-video-editor-version-item__copy em { color: #8896a3; font-size: 9px; font-style: normal; }
+.ai-video-editor-version-item__copy small { color: #657789; font-size: 10px; }
+.ai-video-editor-version-item > svg { color: #7590a5; }
+.ai-video-editor-version-modal__foot { padding: 10px 18px 14px; border-top: 1px solid #edf0f2; color: #91a0ab; font-size: 9px; }
+
+@media (max-width: 720px) {
+  .ai-video-editor-title-wrap .ai-video-editor-topbar-project-name { max-width: 110px; }
+  .ai-video-editor-version-modal { left: 80px; width: calc(100vw - 96px); }
 }
