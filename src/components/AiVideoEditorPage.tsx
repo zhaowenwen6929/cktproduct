@@ -3,6 +3,7 @@ import {
   AlignLeft,
   ArrowLeft,
   AudioLines,
+  BadgeCheck,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -18,6 +19,7 @@ import {
   Gauge,
   Image as ImageIcon,
   Layers3,
+  LayoutTemplate,
   Maximize2,
   MessageCircle,
   Mic2,
@@ -31,7 +33,6 @@ import {
   Scissors,
   Send,
   Settings2,
-  Sparkles,
   SquareMousePointer,
   Subtitles,
   Table2,
@@ -56,7 +57,7 @@ type ChatMessage = {
   time?: string;
 };
 
-type ToolId = 'media' | 'edit' | 'text' | 'audio' | 'effects';
+type ToolId = 'templates' | 'media' | 'edit' | 'text' | 'audio' | 'effects';
 type WorkflowStage = 'script' | 'voice' | 'storyboard' | 'mg' | 'final';
 
 type ScriptRow = {
@@ -108,11 +109,26 @@ const formatLongTime = (seconds: number) => {
 const timelineTicks = ['00:00', '00:08', '00:16', '00:24', '00:32', '00:40', '00:48', '00:56', '01:04', '01:12'];
 
 const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
+  { id: 'templates', label: '模板', icon: LayoutTemplate },
   { id: 'media', label: '素材', icon: Film },
   { id: 'edit', label: '剪辑', icon: Scissors },
   { id: 'text', label: '文字', icon: TextCursorInput },
   { id: 'audio', label: '音频', icon: Music2 },
   { id: 'effects', label: '特效', icon: WandSparkles },
+];
+
+const templateCategories = ['全部', '科普纪录', '品牌产品', '节日活动', '知识分享'] as const;
+type TemplateCategory = (typeof templateCategories)[number];
+
+const videoTemplates: Array<{ id: string; title: string; category: Exclude<TemplateCategory, '全部'>; duration: string; poster: string }> = [
+  { id: 'history', title: '历史故事 · 纪录片', category: '科普纪录', duration: '01:12', poster: '/code-video/reference-style-demo-v14-poster.png' },
+  { id: 'knowledge', title: '知识讲解 · 手绘', category: '科普纪录', duration: '00:48', poster: '/code-video/reference-style-demo-v11-poster.png' },
+  { id: 'product', title: '新品发布 · 画面感', category: '品牌产品', duration: '00:30', poster: '/code-video/reference-style-demo-v9-poster.png' },
+  { id: 'brand', title: '品牌介绍 · 节奏版', category: '品牌产品', duration: '00:36', poster: '/code-video/reference-style-demo-v8-poster.png' },
+  { id: 'festival', title: '节日活动 · 氛围感', category: '节日活动', duration: '00:20', poster: '/code-video/reference-style-demo-v13-poster.png' },
+  { id: 'campaign', title: '活动预告 · 快剪', category: '节日活动', duration: '00:15', poster: '/code-video/reference-style-demo-v12-poster.png' },
+  { id: 'course', title: '课程分享 · 重点清晰', category: '知识分享', duration: '00:42', poster: '/code-video/reference-style-demo-v7-poster.png' },
+  { id: 'tips', title: '经验分享 · 轻量版', category: '知识分享', duration: '00:28', poster: '/code-video/reference-style-demo-v5-poster.png' },
 ];
 
 const scriptRows: ScriptRow[] = [
@@ -149,6 +165,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<ToolId>('media');
+  const [activeTemplateCategory, setActiveTemplateCategory] = useState<TemplateCategory>('全部');
   const [activeRightTab, setActiveRightTab] = useState<'chat' | 'settings'>('chat');
   const [videoSource, setVideoSource] = useState(DEFAULT_VIDEO);
   const [poster, setPoster] = useState(DEFAULT_POSTER);
@@ -344,6 +361,21 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     [activeTool]
   );
 
+  const visibleTemplates = useMemo(
+    () => activeTemplateCategory === '全部'
+      ? videoTemplates
+      : videoTemplates.filter((template) => template.category === activeTemplateCategory),
+    [activeTemplateCategory]
+  );
+
+  const applyVideoTemplate = (template: (typeof videoTemplates)[number]) => {
+    setVideoSource(DEFAULT_VIDEO);
+    setPoster(template.poster);
+    setVideoName(template.title);
+    setCurrentTime(0);
+    notify(`已选择模板：${template.title}`);
+  };
+
   const handleVideoMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -356,7 +388,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         <div className="ai-video-editor-chat-date">今天 10:28</div>
         {messages.map((message) => (
           <div key={message.id} className={`ai-video-editor-message ai-video-editor-message--${message.role}`}>
-            {message.role === 'assistant' && <div className="ai-video-editor-message-avatar"><Sparkles size={12} /></div>}
+            {message.role === 'assistant' && <div className="ai-video-editor-message-avatar"><Film size={12} /></div>}
             <div className="ai-video-editor-message-bubble">
               <p>{message.text}</p>
               {message.time && <span>{message.time}</span>}
@@ -368,7 +400,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
     const renderScriptCard = () => (
       <div className="ai-video-editor-workflow-agent">
-        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card">
           <div className="ai-video-editor-workflow-heading"><div><strong>确认脚本</strong><span>共 7 个段落 · 约 72 秒</span></div><span className="ai-video-editor-cost">本方案预计消耗 12 积分</span></div>
           <p className="ai-video-editor-workflow-note">旁白已按历史脉络整理完成。确认后我会先生成声音，再依据真实时长重新排布分镜。</p>
@@ -384,7 +416,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
     const renderVoiceCard = () => (
       <div className="ai-video-editor-workflow-agent">
-        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card ai-video-editor-voice-card">
           <div className="ai-video-editor-workflow-heading"><div><strong>选择口播声音</strong><span>脚本已确认 · 约 72 秒</span></div></div>
           <p className="ai-video-editor-workflow-note">推荐使用 Quentin 温暖男声。你可以点击右侧播放按钮试听，确认后开始生成声音。</p>
@@ -405,7 +437,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
     const renderStoryboardCard = () => (
       <div className="ai-video-editor-workflow-agent">
-        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card">
           <div className="ai-video-editor-workflow-heading"><div><strong>确认分镜方案</strong><span>共 6 个镜头 · 约 33 秒 · 16:9</span></div><span className="ai-video-editor-cost">预计消耗 73–121 积分</span></div>
           <p className="ai-video-editor-workflow-note">口播真实时长已写入声音线。我按旁白节奏拆出了镜头、画面、文字和时长，你可以展开表格后逐项修改。</p>
@@ -421,10 +453,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
     const renderMgCard = () => (
       <div className="ai-video-editor-workflow-agent">
-        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card ai-video-editor-mg-card">
           <div className="ai-video-editor-workflow-heading"><div><strong>{mgStatus === 'generating' ? '正在生成 MG 画面与文字' : 'MG 画面与文字已生成'}</strong><span>6 个镜头 · 配乐与音效同步准备</span></div><span className="ai-video-editor-cost">预计消耗约 330 积分</span></div>
-          {mgStatus === 'generating' ? <div className="ai-video-editor-mg-loading"><div className="ai-video-editor-mg-loading__icon"><Sparkles size={21} /></div><strong>正在生成 6 个 MG 镜头</strong><span>配乐、音效和文字层会同步合成，请稍候…</span><div className="ai-video-editor-progress"><span /></div></div> : <>
+          {mgStatus === 'generating' ? <div className="ai-video-editor-mg-loading"><div className="ai-video-editor-mg-loading__icon"><Film size={21} /></div><strong>正在生成 6 个 MG 镜头</strong><span>配乐、音效和文字层会同步合成，请稍候…</span><div className="ai-video-editor-progress"><span /></div></div> : <>
             <p className="ai-video-editor-workflow-note">分镜已执行完成。请展开镜头卡片检查画面描述与文字层，确认后开始生成完整视频。</p>
             <div className="ai-video-editor-scene-list">
               {storyboardDraft.slice(0, 5).map((row) => <div className={`ai-video-editor-scene-card${expandedScene === row.id ? ' is-expanded' : ''}`} key={row.id}>
@@ -440,16 +472,16 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
     const renderFinalCard = () => (
       <div className="ai-video-editor-workflow-agent">
-        <div className="ai-video-editor-workflow-agent__label"><Sparkles size={14} /> 创客贴 AI</div>
+        <div className="ai-video-editor-workflow-agent__label"><Film size={14} /> 创客贴 AI</div>
         <div className="ai-video-editor-workflow-card ai-video-editor-final-card">
           <div className="ai-video-editor-workflow-heading"><div><strong>{finalStatus === 'done' ? '视频生成完成' : '确认生成视频'}</strong><span>6 个视频 · 共 33 秒 · 16:9</span></div></div>
-          {finalStatus === 'generating' ? <div className="ai-video-editor-final-loading"><div className="ai-video-editor-final-spinner"><span /></div><strong>正在合成最终视频</strong><span>MG 画面、文字层、口播和配乐正在合成…</span></div> : finalStatus === 'done' ? <div className="ai-video-editor-final-done"><CheckCircle2 size={22} /><strong>完整视频已经生成</strong><span>你可以回到时间线预览，也可以直接导出视频。</span><button type="button" className="ai-video-editor-primary-action" onClick={() => notify('预览窗口已准备好')}><Play size={14} /> 预览视频</button></div> : <><p className="ai-video-editor-workflow-note">所有内容都已确认，确认后将开始生成完整视频，预计需要 2–3 分钟。</p><div className="ai-video-editor-final-summary"><span><FileAudio size={14} /> {selectedVoice} 口播</span><span><Sparkles size={14} /> 6 个 MG 镜头</span><span><Clock3 size={14} /> 33 秒</span></div><div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setWorkflowStage('mg')}><Edit3 size={14} /> 返回调整</button><button type="button" className="ai-video-editor-primary-action" onClick={startFinalGeneration}><Play size={14} /> 开始生成</button></div></>}
+          {finalStatus === 'generating' ? <div className="ai-video-editor-final-loading"><div className="ai-video-editor-final-spinner"><span /></div><strong>正在合成最终视频</strong><span>MG 画面、文字层、口播和配乐正在合成…</span></div> : finalStatus === 'done' ? <div className="ai-video-editor-final-done"><CheckCircle2 size={22} /><strong>完整视频已经生成</strong><span>你可以回到时间线预览，也可以直接导出视频。</span><button type="button" className="ai-video-editor-primary-action" onClick={() => notify('预览窗口已准备好')}><Play size={14} /> 预览视频</button></div> : <><p className="ai-video-editor-workflow-note">所有内容都已确认，确认后将开始生成完整视频，预计需要 2–3 分钟。</p><div className="ai-video-editor-final-summary"><span><FileAudio size={14} /> {selectedVoice} 口播</span><span><Layers3 size={14} /> 6 个 MG 镜头</span><span><Clock3 size={14} /> 33 秒</span></div><div className="ai-video-editor-workflow-actions"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setWorkflowStage('mg')}><Edit3 size={14} /> 返回调整</button><button type="button" className="ai-video-editor-primary-action" onClick={startFinalGeneration}><Play size={14} /> 开始生成</button></div></>}
         </div>
       </div>
     );
 
     const card = workflowStage === 'script' ? renderScriptCard() : workflowStage === 'voice' ? renderVoiceCard() : workflowStage === 'storyboard' ? renderStoryboardCard() : workflowStage === 'mg' ? renderMgCard() : renderFinalCard();
-    return <div className="ai-video-editor-chat-content"><div className="ai-video-editor-chat-scroll">{renderMessages()}{card}{isThinking && <div className="ai-video-editor-message ai-video-editor-message--assistant"><div className="ai-video-editor-message-avatar"><Sparkles size={12} /></div><div className="ai-video-editor-message-bubble ai-video-editor-thinking"><i /><i /><i /></div></div>}<div ref={chatEndRef} /></div><div className="ai-video-editor-suggestion-title">{workflowStage === 'script' ? '你也可以告诉我' : workflowStage === 'storyboard' ? '需要调整分镜？' : '继续告诉 AI 你想怎么改'}</div><div className="ai-video-editor-suggestions">{workflowStage === 'script' ? <><button type="button" onClick={() => handleSend('让旁白更口语化一些')}><AlignLeft size={14} /> 让旁白更口语化 <ChevronRight size={13} /></button><button type="button" onClick={() => setIsScriptEditorOpen(true)}><Table2 size={14} /> 打开全屏表格编辑 <ChevronRight size={13} /></button></> : workflowStage === 'storyboard' ? <><button type="button" onClick={() => setIsStoryboardEditorOpen(true)}><Table2 size={14} /> 全屏编辑分镜表格 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('把第 1 镜改成更有冲击力的开场')}><WandSparkles size={14} /> 调整镜头节奏 <ChevronRight size={13} /></button></> : <><button type="button" onClick={() => handleSend('让画面节奏更紧凑一些')}><Scissors size={14} /> 调整节奏 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('配一首更有纪录片质感的音乐')}><Music2 size={14} /> 调整配乐 <ChevronRight size={13} /></button></>}</div><div className="ai-video-editor-composer"><textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder={workflowStage === 'script' ? '输入你对脚本的修改意见…' : '告诉 AI 你想怎么改…'} rows={2} /><div className="ai-video-editor-composer-footer"><button type="button" onClick={() => notify('附件上传面板已打开')}><Plus size={15} /></button><span>Enter 发送</span><button type="button" className="ai-video-editor-send" onClick={() => handleSend()} disabled={!chatInput.trim() || isThinking}><Send size={14} /></button></div></div></div>;
+    return <div className="ai-video-editor-chat-content"><div className="ai-video-editor-chat-scroll">{renderMessages()}{card}{isThinking && <div className="ai-video-editor-message ai-video-editor-message--assistant"><div className="ai-video-editor-message-avatar"><Film size={12} /></div><div className="ai-video-editor-message-bubble ai-video-editor-thinking"><i /><i /><i /></div></div>}<div ref={chatEndRef} /></div><div className="ai-video-editor-suggestion-title">{workflowStage === 'script' ? '你也可以告诉我' : workflowStage === 'storyboard' ? '需要调整分镜？' : '继续告诉 AI 你想怎么改'}</div><div className="ai-video-editor-suggestions">{workflowStage === 'script' ? <><button type="button" onClick={() => handleSend('让旁白更口语化一些')}><AlignLeft size={14} /> 让旁白更口语化 <ChevronRight size={13} /></button><button type="button" onClick={() => setIsScriptEditorOpen(true)}><Table2 size={14} /> 打开全屏表格编辑 <ChevronRight size={13} /></button></> : workflowStage === 'storyboard' ? <><button type="button" onClick={() => setIsStoryboardEditorOpen(true)}><Table2 size={14} /> 全屏编辑分镜表格 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('把第 1 镜改成更有冲击力的开场')}><WandSparkles size={14} /> 调整镜头节奏 <ChevronRight size={13} /></button></> : <><button type="button" onClick={() => handleSend('让画面节奏更紧凑一些')}><Scissors size={14} /> 调整节奏 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('配一首更有纪录片质感的音乐')}><Music2 size={14} /> 调整配乐 <ChevronRight size={13} /></button></>}</div><div className="ai-video-editor-composer"><textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder={workflowStage === 'script' ? '输入你对脚本的修改意见…' : '告诉 AI 你想怎么改…'} rows={2} /><div className="ai-video-editor-composer-footer"><button type="button" onClick={() => notify('附件上传面板已打开')}><Plus size={15} /></button><span>Enter 发送</span><button type="button" className="ai-video-editor-send" onClick={() => handleSend()} disabled={!chatInput.trim() || isThinking}><Send size={14} /></button></div></div></div>;
   };
 
   const isFinalTimelineReady = finalStatus === 'done';
@@ -478,7 +510,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
             <ShareIcon /> 分享
           </button>
           <div className="ai-video-editor-credit"><span /> 204,843 <em>积分</em></div>
-          <button type="button" className="ai-video-editor-member"><Sparkles size={14} /> 会员</button>
+          <button type="button" className="ai-video-editor-member"><BadgeCheck size={14} /> 会员</button>
           <button type="button" className="ai-video-editor-export" onClick={() => notify('视频导出任务已创建')}>
             <Download size={14} /> 导出视频
           </button>
@@ -554,7 +586,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     playsInline
                   />
                   <div className="ai-video-editor-stage-overlay">
-                    <span>AI VIDEO EDITOR</span>
+                    <span>VIDEO EDITOR</span>
                     <small>让每一帧，都更接近你的想法</small>
                   </div>
                   {hasCaptions && <div className="ai-video-editor-caption-preview">让每一帧，都更接近你的想法</div>}
@@ -620,7 +652,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    <div className="ai-video-editor-track-label"><Sparkles size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-label"><Layers3 size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
                       {storyboardDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--mg" key={row.id} onClick={() => notify(`已定位到第 ${row.id} 镜`)} style={{ width: `${13 + (row.id % 2) * 3}%` }}><img src={poster || DEFAULT_POSTER} alt="" /><span>{row.title.replace(/片段 \d+ · /, '')}</span></button>)}
                     </div>
@@ -647,9 +679,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   </div>
                 </> : <>
                   <div className="ai-video-editor-track-row">
-                    <div className="ai-video-editor-track-label"><Sparkles size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
+                    <div className="ai-video-editor-track-label"><Layers3 size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
                     <div className="ai-video-editor-track-content">
-                      {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Sparkles size={13} /> 6 个 MG 镜头与文字层 <span>33s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
+                      {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Layers3 size={13} /> 6 个 MG 镜头与文字层 <span>33s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row">
@@ -677,14 +709,14 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
         <aside className="ai-video-editor-chat-panel">
           <div className="ai-video-editor-chat-tabs">
-            <button type="button" className={activeRightTab === 'chat' ? 'is-active' : ''} onClick={() => setActiveRightTab('chat')}><Sparkles size={15} /> AI 对话</button>
+            <button type="button" className={activeRightTab === 'chat' ? 'is-active' : ''} onClick={() => setActiveRightTab('chat')}><MessageCircle size={15} /> AI 对话</button>
             <button type="button" className={activeRightTab === 'settings' ? 'is-active' : ''} onClick={() => setActiveRightTab('settings')}><Settings2 size={15} /> 参数</button>
           </div>
 
           {activeRightTab === 'chat' ? (
             <>
               <div className="ai-video-editor-chat-intro">
-                <div className="ai-video-editor-agent-icon"><Sparkles size={15} /></div>
+                <div className="ai-video-editor-agent-icon"><Film size={15} /></div>
                 <div><strong>创客贴 AI</strong><span>视频剪辑 Agent · 阶段 {workflowStage === 'script' ? '1/5' : workflowStage === 'voice' ? '2/5' : workflowStage === 'storyboard' ? '3/5' : workflowStage === 'mg' ? '4/5' : '5/5'}</span></div>
                 <button type="button" onClick={() => notify('已新建一轮对话')}><MessageCircle size={15} /></button>
               </div>
@@ -703,6 +735,22 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           )}
         </aside>
       </div>
+      {activeTool === 'templates' && <aside className="ai-video-editor-template-panel" aria-label="视频模板面板">
+        <div className="ai-video-editor-template-panel__head">
+          <div><strong>视频模板</strong><span>按分类选择一个视频结构</span></div>
+          <button type="button" onClick={() => setActiveTool('media')} aria-label="关闭模板面板"><X size={17} /></button>
+        </div>
+        <div className="ai-video-editor-template-categories" role="tablist" aria-label="模板分类">
+          {templateCategories.map((category) => <button key={category} type="button" role="tab" aria-selected={activeTemplateCategory === category} className={activeTemplateCategory === category ? 'is-active' : ''} onClick={() => setActiveTemplateCategory(category)}>{category}</button>)}
+        </div>
+        <div className="ai-video-editor-template-grid">
+          {visibleTemplates.map((template) => <button type="button" key={template.id} className="ai-video-editor-template-card" onClick={() => applyVideoTemplate(template)}>
+            <span className="ai-video-editor-template-card__poster"><img src={template.poster} alt="" /><span>{template.duration}</span><b>使用模板</b></span>
+            <span className="ai-video-editor-template-card__title">{template.title}</span>
+            <span className="ai-video-editor-template-card__category">{template.category}</span>
+          </button>)}
+        </div>
+      </aside>}
       {isScriptEditorOpen && <div className="ai-video-editor-modal-backdrop" role="dialog" aria-modal="true" aria-label="编辑脚本">
         <div className="ai-video-editor-fullscreen-modal ai-video-editor-fullscreen-modal--script">
           <div className="ai-video-editor-fullscreen-modal__head"><div><strong>编辑脚本</strong><span>修改旁白后，保存并回到确认脚本卡片</span></div><button type="button" onClick={() => setIsScriptEditorOpen(false)}><X size={18} /></button></div>

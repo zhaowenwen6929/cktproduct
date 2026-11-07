@@ -9924,3 +9924,339 @@ button {
     min-height: auto;
   }
 }
+
+/* AI video editor — unslop pass ---------------------------------------- */
+.ai-video-editor-shell {
+  --editor-bg: #f3f5f7;
+  --editor-border: #dfe4e9;
+  --editor-ink: #17212d;
+  --editor-muted: #778393;
+  --editor-blue: #2f67b9;
+  --editor-blue-soft: #eaf1fb;
+  --editor-amber: #c47a24;
+  background: var(--editor-bg);
+  color: var(--editor-ink);
+}
+
+.ai-video-editor-topbar {
+  height: 56px;
+  padding: 0 20px;
+  border-bottom-color: var(--editor-border);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(23, 33, 45, .04);
+  backdrop-filter: none;
+}
+
+.ai-video-editor-topbar__left { gap: 12px; }
+.ai-video-editor-back,
+.ai-video-editor-mainbar__actions button,
+.ai-video-editor-preview-head__actions button,
+.ai-video-editor-player-controls button,
+.ai-video-editor-timeline-actions button,
+.ai-video-editor-timeline-zoom button,
+.ai-video-editor-timeline-footer button {
+  color: #687687;
+  transition: color 150ms cubic-bezier(.22, 1, .36, 1), background 150ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.ai-video-editor-back:hover,
+.ai-video-editor-mainbar__actions button:hover,
+.ai-video-editor-preview-head__actions button:hover,
+.ai-video-editor-player-controls button:hover,
+.ai-video-editor-timeline-actions button:hover,
+.ai-video-editor-timeline-zoom button:hover {
+  background: #eef2f5;
+  color: #26384b;
+}
+
+.ai-video-editor-brand {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #243b55;
+  box-shadow: none;
+}
+
+.ai-video-editor-brand__mark {
+  color: #f7f9fb;
+  font-size: 12px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: -.04em;
+}
+
+.ai-video-editor-title-wrap strong { color: #1b2733; font-weight: 600; }
+.ai-video-editor-title-wrap span { color: #7f8b99; }
+.ai-video-editor-divider { background: #e0e5ea; }
+.ai-video-editor-topbar__actions { gap: 8px; }
+.ai-video-editor-plain-button { color: #687687; transition: color 150ms cubic-bezier(.22, 1, .36, 1), background 150ms cubic-bezier(.22, 1, .36, 1); }
+.ai-video-editor-plain-button:hover { background: #f1f3f5; color: #26384b; }
+
+.ai-video-editor-credit {
+  margin-left: 4px;
+  padding: 6px 9px;
+  border-color: #e3e7eb;
+  border-radius: 8px;
+  background: #f8f9fa;
+  color: #47576a;
+  font-weight: 500;
+}
+
+.ai-video-editor-credit span { background: var(--editor-blue); box-shadow: none; }
+.ai-video-editor-credit em { color: #8a95a1; }
+.ai-video-editor-member { border-color: #e1e6eb; border-radius: 8px; background: #fff; color: #536476; font-weight: 500; }
+.ai-video-editor-member:hover { background: #f3f5f7; }
+.ai-video-editor-export { background: #223448; box-shadow: none; }
+.ai-video-editor-export:hover { background: #2c445e; }
+
+.ai-video-editor-body { padding-top: 56px; }
+.ai-video-editor-left-rail { flex-basis: 76px; border-right-color: var(--editor-border); background: #f8fafb; }
+.ai-video-editor-rail-add {
+  width: 52px;
+  height: 56px;
+  margin: 12px 0 12px;
+  border-radius: 10px;
+  background: #edf2f6;
+  color: var(--editor-blue);
+  transition: color 150ms cubic-bezier(.22, 1, .36, 1), background 150ms cubic-bezier(.22, 1, .36, 1);
+}
+.ai-video-editor-rail-add:hover { background: #e4ebf2; transform: none; }
+.ai-video-editor-rail-tools { gap: 2px; padding: 0 10px; }
+.ai-video-editor-rail-tool {
+  width: 56px;
+  height: 48px;
+  gap: 4px;
+  border-radius: 8px;
+  color: #7e8b99;
+  transition: color 150ms cubic-bezier(.22, 1, .36, 1), background 150ms cubic-bezier(.22, 1, .36, 1);
+}
+.ai-video-editor-rail-tool:hover { background: #eef2f5; color: #405368; }
+.ai-video-editor-rail-tool.is-active { background: var(--editor-blue-soft); color: var(--editor-blue); }
+.ai-video-editor-rail-tool.is-active::before { left: -10px; width: 2px; height: 24px; border-radius: 0 2px 2px 0; background: var(--editor-blue); }
+.ai-video-editor-rail-bottom { gap: 2px; padding: 10px 10px 14px; border-top-color: #e7ebef; }
+
+.ai-video-editor-main { background: #f1f3f5; }
+.ai-video-editor-mainbar { height: 48px; padding: 0 20px; border-bottom-color: var(--editor-border); }
+.ai-video-editor-mainbar__crumbs { color: #8793a1; }
+.ai-video-editor-mainbar__crumbs button { color: #8793a1; }
+.ai-video-editor-mainbar__crumbs button:hover { color: var(--editor-blue); }
+.ai-video-editor-mainbar__crumbs strong { color: #344458; font-weight: 500; }
+.ai-video-editor-ratio { border-color: #dfe4e9; border-radius: 4px; color: #536476; background: #f8f9fa; }
+.ai-video-editor-preview-panel { padding: 16px 20px 0; }
+.ai-video-editor-preview-head { height: 32px; }
+.ai-video-editor-section-label { color: #435569; font-weight: 600; }
+.ai-video-editor-status-dot { width: 6px; height: 6px; background: #579b80; box-shadow: none; }
+.ai-video-editor-preview-head__actions { color: #82909e; }
+.ai-video-editor-stage { border-radius: 12px; background: #111820; box-shadow: 0 1px 2px rgba(22, 32, 43, .08), 0 12px 28px rgba(22, 32, 43, .08); }
+.ai-video-editor-stage video { opacity: 1; }
+.ai-video-editor-stage::after { background: rgba(10, 14, 20, .08); }
+.ai-video-editor-stage-overlay { top: 20px; left: 22px; gap: 4px; text-shadow: none; }
+.ai-video-editor-stage-overlay span { color: rgba(255,255,255,.78); font-size: 9px; font-weight: 600; letter-spacing: .12em; }
+.ai-video-editor-stage-overlay small { color: rgba(255,255,255,.66); }
+.ai-video-editor-caption-preview { border-radius: 6px; background: rgba(17, 24, 32, .76); }
+.ai-video-editor-stage-play { width: 48px; height: 48px; border-color: rgba(255,255,255,.48); background: rgba(20, 31, 43, .76); backdrop-filter: none; }
+.ai-video-editor-stage-play:hover { background: rgba(47, 103, 185, .92); border-color: transparent; }
+.ai-video-editor-player-controls { height: 44px; color: #7d8a98; }
+.ai-video-editor-toggle { background: #d8dfe6 !important; }
+.ai-video-editor-toggle.is-on { background: var(--editor-blue) !important; }
+
+.ai-video-editor-timeline-panel { flex-basis: 292px; border-top-color: #d9dfe5; }
+.ai-video-editor-timeline-head { height: 40px; padding: 0 20px; border-bottom-color: #e7ebee; }
+.ai-video-editor-timeline-actions { gap: 3px; }
+.ai-video-editor-timeline-actions button { color: #6f7d8c; }
+.ai-video-editor-timeline-zoom { gap: 6px; }
+.ai-video-editor-zoom-track { background: #dfe5ea; }
+.ai-video-editor-zoom-track span { background: var(--editor-blue); }
+.ai-video-editor-timeline { padding: 0 20px; }
+.ai-video-editor-ruler-scale { color: #8f9ba8; }
+.ai-video-editor-track-row { border-top-color: #e7ebee; }
+.ai-video-editor-track-label { color: #718090; border-right-color: #e7ebee; }
+.ai-video-editor-track-label svg:last-child { color: #a8b2bd; }
+.ai-video-editor-video-clip { border-color: #a9bbcf; border-radius: 6px; background: #dfe8f1; box-shadow: none; }
+.ai-video-editor-clip-thumbs { opacity: .9; }
+.ai-video-editor-clip-name { background: rgba(31, 50, 72, .78); text-shadow: none; }
+.ai-video-editor-playhead { background: var(--editor-amber); }
+.ai-video-editor-playhead span { background: var(--editor-amber); }
+.ai-video-editor-empty-track { border-color: #d6dee6; border-radius: 6px; background: #f8fafb; color: #8794a2; }
+.ai-video-editor-empty-track:hover { border-color: #a9bfd8; background: #f0f5fa; color: #356aa8; }
+.ai-video-editor-caption-clip,
+.ai-video-editor-audio-clip,
+.ai-video-editor-mg-clip { border-color: #cfd9e2; border-radius: 6px; background: #edf1f4; color: #526477; }
+.ai-video-editor-caption-clip span,
+.ai-video-editor-mg-clip span { color: #8492a0; }
+.ai-video-editor-audio-clip > span { color: #526477; }
+.ai-video-editor-waveform i { background: #688ba4; }
+.ai-video-editor-detail-clip { border-color: #d4dce4; border-radius: 5px; background: #eef2f5; color: #506274; }
+.ai-video-editor-detail-clip:hover { filter: none; transform: none; background: #e7edf2; }
+.ai-video-editor-detail-clip--subtitle { border-color: #bfd0e2; background: #e8f0f8; color: #3d6690; }
+.ai-video-editor-detail-clip--mg { border-color: #c2d1df; background: #e9eff4; color: #48657e; }
+.ai-video-editor-detail-clip--text { border-color: #d9d3c7; background: #f2eee7; color: #796749; }
+.ai-video-editor-detail-clip--voice { border-color: #c7d9d3; background: #eaf1ef; color: #4c7169; }
+.ai-video-editor-detail-clip--music { border-color: #c7d2dd; background: #e9eef2; color: #4e667c; }
+.ai-video-editor-detail-clip--sfx { border-color: #d4dce4; background: #f0f3f5; color: #657586; }
+.ai-video-editor-timeline-footer { color: #8794a2; }
+
+.ai-video-editor-chat-panel { flex-basis: 360px; border-left-color: #d9dfe5; background: #f7f8fa; }
+.ai-video-editor-chat-tabs { flex-basis: 48px; gap: 22px; padding: 0 20px; border-bottom-color: #e4e8ec; }
+.ai-video-editor-chat-tabs button { height: 48px; color: #82909e; }
+.ai-video-editor-chat-tabs button.is-active { color: #273b50; }
+.ai-video-editor-chat-tabs button.is-active::after { background: var(--editor-blue); }
+.ai-video-editor-chat-intro { min-height: 60px; padding: 0 20px; border-bottom-color: #e4e8ec; }
+.ai-video-editor-agent-icon,
+.ai-video-editor-message-avatar { border-radius: 8px; background: #243b55; box-shadow: none; }
+.ai-video-editor-agent-icon { width: 28px; height: 28px; }
+.ai-video-editor-chat-intro strong { color: #27394d; font-weight: 600; }
+.ai-video-editor-chat-intro span { color: #8794a2; }
+.ai-video-editor-chat-intro > button:hover { background: #eef2f5; color: var(--editor-blue); }
+.ai-video-editor-chat-scroll { padding: 16px 16px 10px; scrollbar-color: #d8dfe6 transparent; }
+.ai-video-editor-chat-date { margin-bottom: 14px; color: #9ba6b2; }
+.ai-video-editor-message { margin-bottom: 12px; }
+.ai-video-editor-message-bubble { border-color: #e0e5e9; border-radius: 6px 12px 12px 12px; background: #fff; color: #526274; box-shadow: none; }
+.ai-video-editor-message--user .ai-video-editor-message-bubble { border-color: #d1deed; border-radius: 12px 6px 12px 12px; background: #eaf1f8; color: #405e7d; }
+.ai-video-editor-thinking i { background: var(--editor-blue); }
+.ai-video-editor-suggestion-title { padding: 0 16px 8px; color: #8b97a4; }
+.ai-video-editor-suggestions { gap: 6px; padding: 0 16px 12px; }
+.ai-video-editor-suggestions button { border-color: #dfe5ea; border-radius: 7px; background: #fff; color: #596b7c; }
+.ai-video-editor-suggestions button:hover { border-color: #b9cde1; background: #f0f5fa; color: #356aa8; }
+.ai-video-editor-composer { margin: 0 16px 16px; padding: 8px 9px 7px; border-color: #d6dfe6; border-radius: 10px; box-shadow: none; }
+.ai-video-editor-composer:focus-within { border-color: #8daecc; box-shadow: 0 0 0 3px rgba(47, 103, 185, .08); }
+.ai-video-editor-composer textarea { color: #42566c; }
+.ai-video-editor-composer-footer > button:first-child { background: #eef2f5; color: #788796; }
+.ai-video-editor-send { background: var(--editor-blue); }
+.ai-video-editor-send:disabled { background: #dce3e9; color: #9ba7b3; }
+
+.ai-video-editor-workflow-agent { margin-top: 16px; }
+.ai-video-editor-workflow-agent__label { color: #637385; font-weight: 600; }
+.ai-video-editor-workflow-agent__label svg { color: #405e7d; }
+.ai-video-editor-workflow-card { padding: 12px; border-color: #dfe5ea; border-radius: 12px; background: #fff; box-shadow: none; }
+.ai-video-editor-workflow-heading strong { color: #2e4155; font-weight: 600; }
+.ai-video-editor-workflow-heading span { color: #8895a2; }
+.ai-video-editor-workflow-note { color: #637385; }
+.ai-video-editor-workflow-hint { border-radius: 6px; background: #f2f5f7; color: #8794a1; }
+.ai-video-editor-primary-action { border-radius: 7px; background: #294a6c; }
+.ai-video-editor-primary-action:hover { background: #35628d; }
+.ai-video-editor-secondary-action { border-color: #d6dfe6; border-radius: 7px; color: #607284; }
+.ai-video-editor-secondary-action:hover { border-color: #b8cadb; background: #f1f5f8; color: #35628d; }
+.ai-video-editor-script-table,
+.ai-video-editor-storyboard-table { border-color: #dbe2e8; background: #fafbfc; }
+.ai-video-editor-script-table__head,
+.ai-video-editor-storyboard-table__head { color: #8895a2; }
+.ai-video-editor-script-table__head span,
+.ai-video-editor-script-table__row span,
+.ai-video-editor-storyboard-table__head span,
+.ai-video-editor-storyboard-table__row > span { border-right-color: #dbe2e8; }
+.ai-video-editor-script-table__row,
+.ai-video-editor-storyboard-table__row { border-top-color: #e5eaee; color: #647587; }
+.ai-video-editor-script-table__row span:last-child { color: #54687b; }
+.ai-video-editor-voice-option.is-selected { border-color: #b9cde1; background: #edf3f8; color: #3f6284; }
+.ai-video-editor-voice-index { background: #eef2f5; }
+.ai-video-editor-voice-option.is-selected .ai-video-editor-voice-index { background: #294a6c; }
+.ai-video-editor-voice-play:hover { color: var(--editor-blue); }
+.ai-video-editor-upload-voice:hover { color: var(--editor-blue); }
+.ai-video-editor-scene-card { border-color: #dfe5ea; background: #fafbfc; }
+.ai-video-editor-scene-card.is-expanded { border-color: #b9cde1; background: #f4f7fa; }
+.ai-video-editor-scene-summary:hover { background: #f0f5f8; }
+.ai-video-editor-scene-number { background: #e8eef4; color: #466885; }
+.ai-video-editor-mg-loading__icon { background: #e9eff4; color: #41627f; animation: none; }
+.ai-video-editor-progress { background: #e1e7ec; }
+.ai-video-editor-progress span { background: var(--editor-blue); }
+
+.ai-video-editor-settings-panel select { border-color: #d8e0e6; border-radius: 7px; }
+.ai-video-editor-settings-save { border-radius: 7px; background: #294a6c; }
+.ai-video-editor-settings-save:hover { background: #35628d; }
+.ai-video-editor-toast { border-color: #d3e2d9; border-radius: 8px; box-shadow: 0 8px 24px rgba(32, 54, 43, .1); }
+
+@media (max-width: 1120px) {
+  .ai-video-editor-left-rail { flex-basis: 68px; }
+  .ai-video-editor-rail-tool { width: 48px; }
+  .ai-video-editor-chat-panel { flex-basis: 336px; }
+  .ai-video-editor-preview-panel { padding-inline: 16px; }
+}
+
+.ai-video-editor-template-panel {
+  position: fixed;
+  z-index: 9;
+  top: 56px;
+  bottom: 0;
+  left: 76px;
+  display: flex;
+  width: 380px;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid #dfe4e9;
+  background: #fff;
+  box-shadow: 12px 0 28px rgba(24, 40, 56, .08);
+}
+
+.ai-video-editor-template-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid #e8ecef;
+}
+
+.ai-video-editor-template-panel__head > div { display: flex; flex-direction: column; gap: 4px; }
+.ai-video-editor-template-panel__head strong { color: #24384c; font-size: 15px; font-weight: 600; }
+.ai-video-editor-template-panel__head span { color: #8794a1; font-size: 10px; }
+.ai-video-editor-template-panel__head button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 7px; background: transparent; color: #7d8b99; }
+.ai-video-editor-template-panel__head button:hover { background: #eef2f5; color: #30485f; }
+
+.ai-video-editor-template-categories {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 14px 20px 0;
+  scrollbar-width: none;
+}
+
+.ai-video-editor-template-categories::-webkit-scrollbar { display: none; }
+.ai-video-editor-template-categories button { position: relative; flex: 0 0 auto; padding: 0 0 11px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #7c8997; font-size: 11px; }
+.ai-video-editor-template-categories button.is-active { border-bottom-color: #2f67b9; color: #294d72; font-weight: 600; }
+
+.ai-video-editor-template-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+  overflow-y: auto;
+  padding: 18px 20px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: #d9e0e6 transparent;
+}
+
+.ai-video-editor-template-card {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #33485d;
+  text-align: left;
+}
+
+.ai-video-editor-template-card__poster {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid #dfe5ea;
+  border-radius: 9px;
+  background: #e8edf1;
+}
+
+.ai-video-editor-template-card__poster img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 180ms cubic-bezier(.22, 1, .36, 1), filter 180ms cubic-bezier(.22, 1, .36, 1); }
+.ai-video-editor-template-card__poster::after { position: absolute; inset: 0; background: rgba(24, 37, 50, 0); content: ''; transition: background 180ms cubic-bezier(.22, 1, .36, 1); }
+.ai-video-editor-template-card__poster > span { position: absolute; z-index: 1; top: 7px; right: 7px; padding: 3px 5px; border-radius: 4px; background: rgba(17, 28, 39, .7); color: #fff; font-size: 9px; font-variant-numeric: tabular-nums; }
+.ai-video-editor-template-card__poster b { position: absolute; z-index: 2; right: 8px; bottom: 8px; padding: 5px 7px; border-radius: 5px; background: #294a6c; color: #fff; font-size: 9px; font-weight: 500; opacity: 0; transform: translateY(4px); transition: opacity 150ms cubic-bezier(.22, 1, .36, 1), transform 150ms cubic-bezier(.22, 1, .36, 1); }
+.ai-video-editor-template-card:hover .ai-video-editor-template-card__poster img { filter: brightness(.82); transform: scale(1.03); }
+.ai-video-editor-template-card:hover .ai-video-editor-template-card__poster::after { background: rgba(24, 37, 50, .12); }
+.ai-video-editor-template-card:hover .ai-video-editor-template-card__poster b { opacity: 1; transform: translateY(0); }
+.ai-video-editor-template-card__title { display: block; overflow: hidden; margin-top: 8px; color: #354b61; font-size: 11px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.ai-video-editor-template-card__category { display: block; margin-top: 3px; color: #8a97a4; font-size: 9px; }
+
+@media (max-width: 1120px) {
+  .ai-video-editor-template-panel { left: 68px; width: 360px; }
+}
+
+@media (max-width: 720px) {
+  .ai-video-editor-template-panel { width: calc(100vw - 68px); }
+}
