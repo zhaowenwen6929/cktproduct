@@ -10584,3 +10584,38 @@ button {
 @media (max-width: 720px) {
   .ai-video-editor-version-modal { right: 16px; left: 80px; width: auto; }
 }
+
+/* Left rail panels ------------------------------------------------------ */
+.ai-video-editor-rail-add.is-active { background: #efedff; color: #5a55e8; box-shadow: 0 5px 18px rgba(97, 92, 241, .14); }
+.ai-video-editor-tool-panel__content { display: flex; min-height: 0; flex: 1; flex-direction: column; overflow-y: auto; padding: 18px 20px 24px; scrollbar-width: thin; scrollbar-color: #deddeb transparent; }
+.ai-video-editor-import-dropzone { display: flex; min-height: 184px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px; border: 1px dashed #c9c5f3; border-radius: 12px; background: #faf9ff; color: #73788e; text-align: center; }
+.ai-video-editor-import-dropzone:hover { border-color: #9e98ef; background: #f4f2ff; }
+.ai-video-editor-import-dropzone__icon { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: 2px; border-radius: 12px; background: #efedff; color: #615cf1; }
+.ai-video-editor-import-dropzone strong { color: #3d4054; font-size: 13px; font-weight: 600; }
+.ai-video-editor-import-dropzone > span:not(.ai-video-editor-import-dropzone__icon) { color: #969bad; font-size: 10px; }
+.ai-video-editor-import-dropzone b { margin-top: 4px; padding: 7px 12px; border-radius: 7px; background: #615cf1; color: #fff; font-size: 10px; font-weight: 500; }
+.ai-video-editor-tool-panel__section { margin-top: 24px; }
+.ai-video-editor-tool-panel__section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.ai-video-editor-tool-panel__section-head strong { color: #4b5065; font-size: 12px; font-weight: 600; }
+.ai-video-editor-tool-panel__section-head span { color: #9a9eaf; font-size: 10px; }
+.ai-video-editor-import-options { display: flex; flex-direction: column; gap: 6px; }
+.ai-video-editor-import-options button { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 40px; padding: 0 11px; border: 1px solid #e7e5f0; border-radius: 8px; background: #fff; color: #70758a; text-align: left; }
+.ai-video-editor-import-options button:hover { border-color: #cfcaff; background: #f5f3ff; color: #5a55e8; }
+.ai-video-editor-import-options button span { flex: 1; font-size: 11px; }
+.ai-video-editor-import-options button svg:first-child { color: #817be8; }
+.ai-video-editor-tool-panel__hint { margin: auto 0 0; padding-top: 24px; color: #a0a4b2; font-size: 10px; line-height: 1.6; }
+
+.ai-video-editor-text-preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; overflow-y: auto; padding: 18px 20px 24px; scrollbar-width: thin; scrollbar-color: #deddeb transparent; }
+.ai-video-editor-text-preset { display: flex; min-height: 124px; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 14px 12px 11px; border: 1px solid #e5e3ef; border-radius: 10px; background: #fff; color: #5d6277; text-align: left; }
+.ai-video-editor-text-preset:hover { border-color: #c7c2f7; background: #faf9ff; }
+.ai-video-editor-text-preset__sample { display: block; width: 100%; overflow: hidden; color: #32364a; font-size: 19px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.ai-video-editor-text-preset--标题 .ai-video-editor-text-preset__sample { font-family: STKaiti, KaiTi, serif; font-size: 23px; }
+.ai-video-editor-text-preset--正文 .ai-video-editor-text-preset__sample { font-size: 14px; font-weight: 500; line-height: 1.45; }
+.ai-video-editor-text-preset--字幕 .ai-video-editor-text-preset__sample { padding: 6px 8px; border-radius: 4px; background: #2d3447; color: #fff; font-size: 12px; }
+.ai-video-editor-text-preset--标签 .ai-video-editor-text-preset__sample { display: inline-block; width: auto; padding: 5px 8px; border: 1px solid #cf8e8d; color: #a64949; font-size: 14px; }
+.ai-video-editor-text-preset__title { margin-top: 12px; color: #555a70; font-size: 11px; font-weight: 600; }
+.ai-video-editor-text-preset__detail { color: #999dae; font-size: 9px; }
+
+@media (max-width: 720px) {
+  .ai-video-editor-text-preset-grid { grid-template-columns: 1fr; }
+}

@@ -57,7 +57,7 @@ type ChatMessage = {
   time?: string;
 };
 
-type ToolId = 'templates' | 'media' | 'edit' | 'text' | 'audio' | 'effects';
+type ToolId = 'import' | 'library' | 'templates' | 'media' | 'edit' | 'text' | 'audio' | 'effects';
 type WorkflowStage = 'script' | 'voice' | 'storyboard' | 'mg' | 'final';
 
 type ScriptRow = {
@@ -166,6 +166,7 @@ const formatLongTime = (seconds: number) => {
 const timelineTicks = ['00:00', '00:08', '00:16', '00:24', '00:32', '00:40', '00:48', '00:56', '01:04', '01:12'];
 
 const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
+  { id: 'library', label: '资源库', icon: FolderOpen },
   { id: 'templates', label: '模板', icon: LayoutTemplate },
   { id: 'media', label: '素材', icon: Film },
   { id: 'edit', label: '剪辑', icon: Scissors },
@@ -186,6 +187,46 @@ const videoTemplates: Array<{ id: string; title: string; category: Exclude<Templ
   { id: 'campaign', title: '活动预告 · 快剪', category: '节日活动', duration: '00:15', poster: '/code-video/reference-style-demo-v12-poster.png' },
   { id: 'course', title: '课程分享 · 重点清晰', category: '知识分享', duration: '00:42', poster: '/code-video/reference-style-demo-v7-poster.png' },
   { id: 'tips', title: '经验分享 · 轻量版', category: '知识分享', duration: '00:28', poster: '/code-video/reference-style-demo-v5-poster.png' },
+];
+
+const mediaCategories = ['全部', '视频', '图片', '透明素材'] as const;
+type MediaCategory = (typeof mediaCategories)[number];
+
+const mediaAssets: Array<{ id: string; title: string; category: Exclude<MediaCategory, '全部'>; meta: string; poster: string }> = [
+  { id: 'valley', title: '雅鲁藏布江河谷', category: '视频', meta: '00:08', poster: '/code-video/reference-style-demo-v11-poster.png' },
+  { id: 'mulberry-king', title: '桑树王 · 尼洋河畔', category: '视频', meta: '00:12', poster: '/code-video/reference-style-demo-v13-poster.png' },
+  { id: 'oracle', title: '甲骨文 · 桑字', category: '图片', meta: 'PNG', poster: '/code-video/reference-style-demo-v9-poster.png' },
+  { id: 'medicine', title: '古籍与药罐', category: '图片', meta: 'JPG', poster: '/code-video/reference-style-demo-v8-poster.png' },
+  { id: 'mulberry-branch', title: '桑葚枝叶', category: '透明素材', meta: '透明 PNG', poster: '/code-video/reference-style-demo-v7-poster.png' },
+  { id: 'mulberry-seed', title: '碳化籽粒', category: '透明素材', meta: '透明 PNG', poster: '/code-video/reference-style-demo-v5-poster.png' },
+];
+
+const libraryCategories = ['我的素材', '收藏', 'AI生成', '最近使用'] as const;
+type LibraryCategory = (typeof libraryCategories)[number];
+
+const libraryAssets: Array<{ id: string; title: string; category: LibraryCategory; detail: string; poster: string }> = [
+  { id: 'library-history', title: '桑葚中国史素材包', category: '我的素材', detail: '8 个素材', poster: '/code-video/reference-style-demo-v14-poster.png' },
+  { id: 'library-branch', title: '枝叶透明素材', category: '我的素材', detail: '透明 PNG', poster: '/code-video/reference-style-demo-v7-poster.png' },
+  { id: 'library-tribute', title: '西汉贡品场景', category: '收藏', detail: '视频片段', poster: '/code-video/reference-style-demo-v8-poster.png' },
+  { id: 'library-book', title: '本草纲目古籍', category: '收藏', detail: '图片素材', poster: '/code-video/reference-style-demo-v9-poster.png' },
+  { id: 'library-river', title: '远古河谷演示', category: 'AI生成', detail: '视频片段', poster: '/code-video/reference-style-demo-v11-poster.png' },
+  { id: 'library-tree', title: '千年桑树王', category: 'AI生成', detail: '视频片段', poster: '/code-video/reference-style-demo-v13-poster.png' },
+  { id: 'library-seed', title: '碳化籽粒标注', category: '最近使用', detail: 'MG 素材', poster: '/code-video/reference-style-demo-v5-poster.png' },
+  { id: 'library-oracle', title: '甲骨文字形', category: '最近使用', detail: '图片素材', poster: '/code-video/reference-style-demo-v9-poster.png' },
+];
+
+const textCategories = ['标题', '正文', '字幕', '标签'] as const;
+type TextCategory = (typeof textCategories)[number];
+
+const textPresets: Array<{ id: string; title: string; category: TextCategory; sample: string; detail: string }> = [
+  { id: 'title-ink', title: '书法大标题', category: '标题', sample: '一颗桑葚', detail: '简体书法 · 竖排' },
+  { id: 'title-documentary', title: '纪录片标题', category: '标题', sample: '半部中国史', detail: '沉稳黑体 · 横排' },
+  { id: 'body-clean', title: '清晰正文', category: '正文', sample: '从远古起源到今日见证', detail: '黑体 · 适合说明' },
+  { id: 'body-note', title: '注解文字', category: '正文', sample: '野生桑树诞生在雅鲁藏布江流域', detail: '圆体 · 适合注释' },
+  { id: 'caption-bottom', title: '底部字幕', category: '字幕', sample: '桑葚起源于中国', detail: '高对比 · 适合旁白' },
+  { id: 'caption-highlight', title: '重点字幕', category: '字幕', sample: '起源于中国', detail: '关键词高亮' },
+  { id: 'tag-stamp', title: '朱红印章', category: '标签', sample: '祥瑞', detail: '关键结论使用' },
+  { id: 'tag-time', title: '时间标签', category: '标签', sample: '约1亿年前', detail: '边框标签' },
 ];
 
 const scriptRows: ScriptRow[] = [
@@ -225,7 +266,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<ToolId>('media');
+  const [openToolPanelId, setOpenToolPanelId] = useState<ToolId | null>(null);
   const [activeTemplateCategory, setActiveTemplateCategory] = useState<TemplateCategory>('全部');
+  const [activeMediaCategory, setActiveMediaCategory] = useState<MediaCategory>('全部');
+  const [activeLibraryCategory, setActiveLibraryCategory] = useState<LibraryCategory>('我的素材');
+  const [activeTextCategory, setActiveTextCategory] = useState<TextCategory>('标题');
   const [activeRightTab, setActiveRightTab] = useState<'chat' | 'settings'>('chat');
   const [videoSource, setVideoSource] = useState(DEFAULT_VIDEO);
   const [poster, setPoster] = useState(DEFAULT_POSTER);
@@ -422,15 +467,37 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   };
 
   const activeToolTitle = useMemo(
-    () => toolItems.find((item) => item.id === activeTool)?.label ?? '素材',
+    () => activeTool === 'import' ? '导入' : toolItems.find((item) => item.id === activeTool)?.label ?? '素材',
     [activeTool]
   );
+
+  const openToolPanel = (tool: ToolId) => {
+    setActiveTool(tool);
+    setOpenToolPanelId(tool);
+  };
 
   const visibleTemplates = useMemo(
     () => activeTemplateCategory === '全部'
       ? videoTemplates
       : videoTemplates.filter((template) => template.category === activeTemplateCategory),
     [activeTemplateCategory]
+  );
+
+  const visibleMediaAssets = useMemo(
+    () => activeMediaCategory === '全部'
+      ? mediaAssets
+      : mediaAssets.filter((asset) => asset.category === activeMediaCategory),
+    [activeMediaCategory]
+  );
+
+  const visibleLibraryAssets = useMemo(
+    () => libraryAssets.filter((asset) => asset.category === activeLibraryCategory),
+    [activeLibraryCategory]
+  );
+
+  const visibleTextPresets = useMemo(
+    () => textPresets.filter((preset) => preset.category === activeTextCategory),
+    [activeTextCategory]
   );
 
   const applyVideoTemplate = (template: (typeof videoTemplates)[number]) => {
@@ -587,7 +654,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
       <div className="ai-video-editor-body">
         <aside className="ai-video-editor-left-rail">
-          <button type="button" className="ai-video-editor-rail-add" onClick={() => fileInputRef.current?.click()}>
+          <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')}>
             <Plus size={18} />
             <span>导入</span>
           </button>
@@ -599,7 +666,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   key={item.id}
                   type="button"
                   className={`ai-video-editor-rail-tool${activeTool === item.id ? ' is-active' : ''}`}
-                  onClick={() => setActiveTool(item.id)}
+                  onClick={() => openToolPanel(item.id)}
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
@@ -793,21 +860,84 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           )}
         </aside>
       </div>
-      {activeTool === 'templates' && <aside className="ai-video-editor-template-panel" aria-label="视频模板面板">
+      {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className="ai-video-editor-template-panel ai-video-editor-tool-panel" aria-label={`${activeToolTitle}面板`}>
         <div className="ai-video-editor-template-panel__head">
-          <div><strong>视频模板</strong><span>按分类选择一个视频结构</span></div>
-          <button type="button" onClick={() => setActiveTool('media')} aria-label="关闭模板面板"><X size={17} /></button>
+          <div>
+            <strong>{openToolPanelId === 'import' ? '导入素材' : openToolPanelId === 'library' ? '资源库' : openToolPanelId === 'templates' ? '视频模板' : openToolPanelId === 'media' ? '素材' : '文字'}</strong>
+            <span>{openToolPanelId === 'import' ? '添加视频并整理到当前项目' : openToolPanelId === 'library' ? '浏览项目中可复用的内容' : openToolPanelId === 'templates' ? '按分类选择一个视频结构' : openToolPanelId === 'media' ? '选择视频、图片和透明素材' : '选择一套文字层样式'}</span>
+          </div>
+          <button type="button" onClick={() => setOpenToolPanelId(null)} aria-label={`关闭${activeToolTitle}面板`}><X size={17} /></button>
         </div>
-        <div className="ai-video-editor-template-categories" role="tablist" aria-label="模板分类">
-          {templateCategories.map((category) => <button key={category} type="button" role="tab" aria-selected={activeTemplateCategory === category} className={activeTemplateCategory === category ? 'is-active' : ''} onClick={() => setActiveTemplateCategory(category)}>{category}</button>)}
-        </div>
-        <div className="ai-video-editor-template-grid">
-          {visibleTemplates.map((template) => <button type="button" key={template.id} className="ai-video-editor-template-card" onClick={() => applyVideoTemplate(template)}>
-            <span className="ai-video-editor-template-card__poster"><img src={template.poster} alt="" /><span>{template.duration}</span><b>使用模板</b></span>
-            <span className="ai-video-editor-template-card__title">{template.title}</span>
-            <span className="ai-video-editor-template-card__category">{template.category}</span>
-          </button>)}
-        </div>
+
+        {openToolPanelId === 'import' && <div className="ai-video-editor-tool-panel__content">
+          <button type="button" className="ai-video-editor-import-dropzone" onClick={() => fileInputRef.current?.click()}>
+            <span className="ai-video-editor-import-dropzone__icon"><Upload size={20} /></span>
+            <strong>导入视频素材</strong>
+            <span>支持 MP4、MOV、WebM，点击选择本地视频</span>
+            <b>选择文件</b>
+          </button>
+          <div className="ai-video-editor-tool-panel__section">
+            <div className="ai-video-editor-tool-panel__section-head"><strong>快速添加</strong><span>常用来源</span></div>
+            <div className="ai-video-editor-import-options">
+              <button type="button" onClick={() => fileInputRef.current?.click()}><Film size={17} /><span>本地视频</span><ChevronRight size={14} /></button>
+              <button type="button" onClick={() => notify('素材库已准备好')}><FolderOpen size={17} /><span>素材库</span><ChevronRight size={14} /></button>
+              <button type="button" onClick={() => notify('最近使用的素材已展开')}><History size={17} /><span>最近使用</span><ChevronRight size={14} /></button>
+            </div>
+          </div>
+          <p className="ai-video-editor-tool-panel__hint">导入后的视频会自动出现在时间线的视频轨道中</p>
+        </div>}
+
+        {openToolPanelId === 'library' && <>
+          <div className="ai-video-editor-template-categories" role="tablist" aria-label="资源库分类">
+            {libraryCategories.map((category) => <button key={category} type="button" role="tab" aria-selected={activeLibraryCategory === category} className={activeLibraryCategory === category ? 'is-active' : ''} onClick={() => setActiveLibraryCategory(category)}>{category}</button>)}
+          </div>
+          <div className="ai-video-editor-template-grid ai-video-editor-library-grid">
+            {visibleLibraryAssets.map((asset) => <button type="button" key={asset.id} className="ai-video-editor-template-card ai-video-editor-library-card" onClick={() => { setPoster(asset.poster); notify(`已选择素材：${asset.title}`); }}>
+              <span className="ai-video-editor-template-card__poster"><img src={asset.poster} alt="" /><b>使用素材</b></span>
+              <span className="ai-video-editor-template-card__title">{asset.title}</span>
+              <span className="ai-video-editor-template-card__category">{asset.detail}</span>
+            </button>)}
+          </div>
+        </>}
+
+        {openToolPanelId === 'templates' && <>
+          <div className="ai-video-editor-template-categories" role="tablist" aria-label="模板分类">
+            {templateCategories.map((category) => <button key={category} type="button" role="tab" aria-selected={activeTemplateCategory === category} className={activeTemplateCategory === category ? 'is-active' : ''} onClick={() => setActiveTemplateCategory(category)}>{category}</button>)}
+          </div>
+          <div className="ai-video-editor-template-grid">
+            {visibleTemplates.map((template) => <button type="button" key={template.id} className="ai-video-editor-template-card" onClick={() => applyVideoTemplate(template)}>
+              <span className="ai-video-editor-template-card__poster"><img src={template.poster} alt="" /><span>{template.duration}</span><b>使用模板</b></span>
+              <span className="ai-video-editor-template-card__title">{template.title}</span>
+              <span className="ai-video-editor-template-card__category">{template.category}</span>
+            </button>)}
+          </div>
+        </>}
+
+        {openToolPanelId === 'media' && <>
+          <div className="ai-video-editor-template-categories" role="tablist" aria-label="素材分类">
+            {mediaCategories.map((category) => <button key={category} type="button" role="tab" aria-selected={activeMediaCategory === category} className={activeMediaCategory === category ? 'is-active' : ''} onClick={() => setActiveMediaCategory(category)}>{category}</button>)}
+          </div>
+          <div className="ai-video-editor-template-grid ai-video-editor-media-grid">
+            {visibleMediaAssets.map((asset) => <button type="button" key={asset.id} className="ai-video-editor-template-card" onClick={() => { setPoster(asset.poster); notify(`已添加素材：${asset.title}`); }}>
+              <span className="ai-video-editor-template-card__poster"><img src={asset.poster} alt="" /><span>{asset.meta}</span><b>添加素材</b></span>
+              <span className="ai-video-editor-template-card__title">{asset.title}</span>
+              <span className="ai-video-editor-template-card__category">{asset.category}</span>
+            </button>)}
+          </div>
+        </>}
+
+        {openToolPanelId === 'text' && <>
+          <div className="ai-video-editor-template-categories" role="tablist" aria-label="文字分类">
+            {textCategories.map((category) => <button key={category} type="button" role="tab" aria-selected={activeTextCategory === category} className={activeTextCategory === category ? 'is-active' : ''} onClick={() => setActiveTextCategory(category)}>{category}</button>)}
+          </div>
+          <div className="ai-video-editor-text-preset-grid">
+            {visibleTextPresets.map((preset) => <button type="button" key={preset.id} className={`ai-video-editor-text-preset ai-video-editor-text-preset--${preset.category}`} onClick={() => notify(`已添加文字样式：${preset.title}`)}>
+              <span className="ai-video-editor-text-preset__sample">{preset.sample}</span>
+              <span className="ai-video-editor-text-preset__title">{preset.title}</span>
+              <span className="ai-video-editor-text-preset__detail">{preset.detail}</span>
+            </button>)}
+          </div>
+        </>}
       </aside>}
       {isVersionHistoryOpen && <div className="ai-video-editor-version-backdrop" role="presentation" onClick={() => setIsVersionHistoryOpen(false)}>
         <div className="ai-video-editor-version-modal" role="dialog" aria-modal="true" aria-label="历史版本" onClick={(event) => event.stopPropagation()}>
