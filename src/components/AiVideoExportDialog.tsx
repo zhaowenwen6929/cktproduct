@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, type ChangeEvent, type CSSProperties, typ
 import {
   AudioLines,
   Check,
-  ChevronRight,
   Clock3,
   Download,
   FileAudio,
@@ -299,7 +298,6 @@ export function AiVideoExportDialog({
                 <div className="ai-video-export-section-heading"><div><strong>输出分辨率</strong><span>分辨率越高，画面细节越丰富，导出时间也会增加</span></div><span className="ai-video-export-section-meta">MP4</span></div>
                 <SegmentedControl options={['720P', '1080P', '4K']} value={resolution} onChange={setResolution} ariaLabel="视频输出分辨率" />
               </section>
-              <div className="ai-video-export-summary"><Film size={15} /><div><strong>导出完整视频</strong><span>{duration ? formatDuration(duration) : '完整时长'} · {canvasRatio} · MP4</span></div><ChevronRight size={15} /></div>
             </>}
 
             {activeTab === 'audio' && <div className="ai-video-export-simple-panel">
