@@ -10619,3 +10619,9 @@ button {
 @media (max-width: 720px) {
   .ai-video-editor-text-preset-grid { grid-template-columns: 1fr; }
 }
+
+/* Keep the editing area tight when only the base tracks are present ------ */
+.ai-video-editor-timeline-panel { flex-basis: 252px; }
+.ai-video-editor-timeline-panel.is-complete { flex-basis: 340px; }
+.ai-video-editor-timeline { padding-bottom: 0; }
+.ai-video-editor-rail-bottom { padding-bottom: 14px; }

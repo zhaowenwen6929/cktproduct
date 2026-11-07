@@ -57,7 +57,7 @@ type ChatMessage = {
   time?: string;
 };
 
-type ToolId = 'import' | 'library' | 'templates' | 'media' | 'edit' | 'text' | 'audio' | 'effects';
+type ToolId = 'import' | 'library' | 'templates' | 'media' | 'text';
 type WorkflowStage = 'script' | 'voice' | 'storyboard' | 'mg' | 'final';
 
 type ScriptRow = {
@@ -169,10 +169,7 @@ const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
   { id: 'library', label: '资源库', icon: FolderOpen },
   { id: 'templates', label: '模板', icon: LayoutTemplate },
   { id: 'media', label: '素材', icon: Film },
-  { id: 'edit', label: '剪辑', icon: Scissors },
   { id: 'text', label: '文字', icon: TextCursorInput },
-  { id: 'audio', label: '音频', icon: Music2 },
-  { id: 'effects', label: '特效', icon: WandSparkles },
 ];
 
 const templateCategories = ['全部', '科普纪录', '品牌产品', '节日活动', '知识分享'] as const;
@@ -189,7 +186,7 @@ const videoTemplates: Array<{ id: string; title: string; category: Exclude<Templ
   { id: 'tips', title: '经验分享 · 轻量版', category: '知识分享', duration: '00:28', poster: '/code-video/reference-style-demo-v5-poster.png' },
 ];
 
-const mediaCategories = ['全部', '视频', '图片', '透明素材'] as const;
+const mediaCategories = ['全部', '视频', '图片', '透明素材', '音频', '特效'] as const;
 type MediaCategory = (typeof mediaCategories)[number];
 
 const mediaAssets: Array<{ id: string; title: string; category: Exclude<MediaCategory, '全部'>; meta: string; poster: string }> = [
@@ -199,6 +196,10 @@ const mediaAssets: Array<{ id: string; title: string; category: Exclude<MediaCat
   { id: 'medicine', title: '古籍与药罐', category: '图片', meta: 'JPG', poster: '/code-video/reference-style-demo-v8-poster.png' },
   { id: 'mulberry-branch', title: '桑葚枝叶', category: '透明素材', meta: '透明 PNG', poster: '/code-video/reference-style-demo-v7-poster.png' },
   { id: 'mulberry-seed', title: '碳化籽粒', category: '透明素材', meta: '透明 PNG', poster: '/code-video/reference-style-demo-v5-poster.png' },
+  { id: 'narration-pearl', title: 'Pearl · 中文旁白', category: '音频', meta: '72.2s', poster: '/code-video/reference-style-demo-v14-poster.png' },
+  { id: 'documentary-music', title: '纪录片配乐 · 低沉神秘', category: '音频', meta: '72 BPM', poster: '/code-video/reference-style-demo-v8-poster.png' },
+  { id: 'ink-reveal', title: '墨迹涂抹转场', category: '特效', meta: '转场', poster: '/code-video/reference-style-demo-v9-poster.png' },
+  { id: 'stamp-pop', title: '朱红印章盖章', category: '特效', meta: '文字动效', poster: '/code-video/reference-style-demo-v7-poster.png' },
 ];
 
 const libraryCategories = ['我的素材', '收藏', 'AI生成', '最近使用'] as const;
@@ -676,7 +677,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
           <div className="ai-video-editor-rail-bottom">
             <button type="button" className="ai-video-editor-rail-tool" onClick={() => notify('快捷键面板即将打开')}><CircleHelp size={18} /><span>帮助</span></button>
-            <button type="button" className="ai-video-editor-rail-tool" onClick={() => setActiveRightTab('settings')}><Settings2 size={18} /><span>设置</span></button>
           </div>
           <input ref={fileInputRef} type="file" accept="video/*" onChange={handleVideoUpload} hidden />
         </aside>
@@ -840,11 +840,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
           {activeRightTab === 'chat' ? (
             <>
-              <div className="ai-video-editor-chat-intro">
-                <div className="ai-video-editor-agent-icon"><Film size={15} /></div>
-                <div><strong>创客贴 AI</strong><span>视频剪辑 Agent · 阶段 {workflowStage === 'script' ? '1/5' : workflowStage === 'voice' ? '2/5' : workflowStage === 'storyboard' ? '3/5' : workflowStage === 'mg' ? '4/5' : '5/5'}</span></div>
-                <button type="button" onClick={() => notify('已新建一轮对话')}><MessageCircle size={15} /></button>
-              </div>
               {renderWorkflowContent()}
             </>
           ) : (
