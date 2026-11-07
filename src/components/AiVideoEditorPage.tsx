@@ -12,6 +12,8 @@ import {
   Clock3,
   Download,
   Edit3,
+  Eye,
+  EyeOff,
   FileAudio,
   Film,
   FolderOpen,
@@ -20,6 +22,7 @@ import {
   Image as ImageIcon,
   Layers3,
   LayoutTemplate,
+  Lock,
   Maximize2,
   MessageCircle,
   Mic2,
@@ -38,8 +41,10 @@ import {
   Table2,
   TextCursorInput,
   Undo2,
+  Unlock,
   Upload,
   Volume2,
+  VolumeX,
   WandSparkles,
   X,
   ZoomIn,
@@ -73,6 +78,32 @@ type StoryboardRow = {
   visual: string;
   text: string;
   duration: string;
+};
+
+type TimelineTrackId = 'video' | 'mg' | 'captions' | 'text' | 'voiceover' | 'music' | 'sfx';
+type TimelineClipKind = 'video' | 'mg' | 'subtitle' | 'text' | 'voice' | 'music' | 'sfx';
+type TimelineClip = {
+  id: string;
+  trackId: TimelineTrackId;
+  kind: TimelineClipKind;
+  label: string;
+  start: number;
+  duration: number;
+  poster?: string;
+};
+type TimelineTrackState = {
+  id: TimelineTrackId;
+  hidden: boolean;
+  locked: boolean;
+  muted: boolean;
+};
+type TimelineDragMode = 'move' | 'resize-start' | 'resize-end';
+type TimelineDragState = {
+  clipId: string;
+  mode: TimelineDragMode;
+  startX: number;
+  trackWidth: number;
+  beforeClips: TimelineClip[];
 };
 
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
@@ -252,6 +283,60 @@ const storyboardRows: StoryboardRow[] = [
   { id: 7, time: '00:58', title: '片段 7 · 桑树王', visual: '尼洋河与远山中的桑树王由远景推进至树干细节，再 slow pull-out 回到全景收束。', text: '约1600年 · 一颗桑葚，演绎半部中国史', duration: '14s' },
 ];
 
+const timelineSegmentStarts = [0, 5, 11.4, 18.5, 26.6, 36.6, 46.6, 58.6];
+const timelineSegmentDurations = [5, 6.4, 7.1, 8.1, 10, 10, 12, 13.6];
+
+const initialTimelineTracks: TimelineTrackState[] = [
+  { id: 'video', hidden: false, locked: false, muted: false },
+  { id: 'mg', hidden: false, locked: false, muted: false },
+  { id: 'captions', hidden: false, locked: false, muted: false },
+  { id: 'text', hidden: false, locked: false, muted: false },
+  { id: 'voiceover', hidden: false, locked: false, muted: false },
+  { id: 'music', hidden: false, locked: false, muted: false },
+  { id: 'sfx', hidden: false, locked: false, muted: false },
+];
+
+const initialTimelineClips: TimelineClip[] = [
+  { id: 'video-main', trackId: 'video', kind: 'video', label: '灵感短片 · 版本 01', start: 0, duration: 72.2, poster: DEFAULT_POSTER },
+  ...scriptRows.map((row, index) => ({
+    id: `caption-${row.id}`,
+    trackId: 'captions' as const,
+    kind: 'subtitle' as const,
+    label: row.narration,
+    start: timelineSegmentStarts[index],
+    duration: timelineSegmentDurations[index],
+  })),
+  ...storyboardRows.map((row, index) => ({
+    id: `mg-${row.id}`,
+    trackId: 'mg' as const,
+    kind: 'mg' as const,
+    label: row.title.replace(/片段 \d+ · /, ''),
+    start: timelineSegmentStarts[index],
+    duration: timelineSegmentDurations[index],
+    poster: DEFAULT_POSTER,
+  })),
+  ...storyboardRows.map((row, index) => ({
+    id: `text-${row.id}`,
+    trackId: 'text' as const,
+    kind: 'text' as const,
+    label: row.text,
+    start: timelineSegmentStarts[index],
+    duration: timelineSegmentDurations[index],
+  })),
+  ...scriptRows.map((row, index) => ({
+    id: `voice-${row.id}`,
+    trackId: 'voiceover' as const,
+    kind: 'voice' as const,
+    label: `Pearl · ${row.id.toString().padStart(2, '0')}`,
+    start: timelineSegmentStarts[index],
+    duration: timelineSegmentDurations[index],
+  })),
+  { id: 'music-main', trackId: 'music', kind: 'music', label: '低沉神秘的纪录片配乐 · 72 BPM', start: 0, duration: 72.2 },
+  { id: 'sfx-paper', trackId: 'sfx', kind: 'sfx', label: '纸张翻页', start: 26, duration: 2 },
+  { id: 'sfx-wind', trackId: 'sfx', kind: 'sfx', label: '轻微沙沙声', start: 58, duration: 3 },
+  { id: 'sfx-end', trackId: 'sfx', kind: 'sfx', label: '收束音', start: 69.5, duration: 2.7 },
+];
+
 const voiceOptions = [
   { id: 'Quentin', name: 'Quentin', detail: '温暖男声，儒雅（推荐）' },
   { id: 'Felix', name: 'Felix', detail: '清晰男声，纯中文' },
@@ -303,6 +388,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('版本 01');
   const [zoom, setZoom] = useState(72);
+  const [timelineTracks, setTimelineTracks] = useState<TimelineTrackState[]>(initialTimelineTracks);
+  const [timelineClips, setTimelineClips] = useState<TimelineClip[]>(initialTimelineClips);
+  const [selectedTimelineClipId, setSelectedTimelineClipId] = useState<string | null>('video-main');
+  const [timelineHistory, setTimelineHistory] = useState<TimelineClip[][]>([]);
+  const [timelineRedo, setTimelineRedo] = useState<TimelineClip[][]>([]);
+  const [timelineDrag, setTimelineDrag] = useState<TimelineDragState | null>(null);
+  const timelineClipsRef = useRef<TimelineClip[]>(initialTimelineClips);
   const [showToast, setShowToast] = useState('');
   const notify = (message: string) => setShowToast(message);
   const projectTitle = videoName.split(' · ')[0] || videoName;
@@ -317,6 +409,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const timer = window.setTimeout(() => setShowToast(''), 2200);
     return () => window.clearTimeout(timer);
   }, [showToast]);
+
+  useEffect(() => {
+    timelineClipsRef.current = timelineClips;
+  }, [timelineClips]);
 
   useEffect(() => {
     if (workflowStage !== 'mg') return;
@@ -338,11 +434,177 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   }, [workflowStage, finalStatus]);
 
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const timelineDuration = Math.max(duration, 1);
 
   const seekTo = (nextTime: number) => {
     const safeTime = Math.max(0, Math.min(duration, nextTime));
     setCurrentTime(safeTime);
     if (videoRef.current) videoRef.current.currentTime = safeTime;
+  };
+
+  const getTimelineTrack = (trackId: TimelineTrackId) => timelineTracks.find((track) => track.id === trackId);
+
+  const commitTimelineChange = (nextClips: TimelineClip[], message?: string) => {
+    setTimelineHistory((items) => [...items, timelineClipsRef.current].slice(-30));
+    setTimelineRedo([]);
+    setTimelineClips(nextClips);
+    if (message) notify(message);
+  };
+
+  const undoTimeline = () => {
+    const previous = timelineHistory[timelineHistory.length - 1];
+    if (!previous) {
+      notify('没有可撤销的剪辑操作');
+      return;
+    }
+    setTimelineHistory((items) => items.slice(0, -1));
+    setTimelineRedo((items) => [...items, timelineClipsRef.current]);
+    setTimelineClips(previous);
+    notify('已撤销剪辑操作');
+  };
+
+  const redoTimeline = () => {
+    const next = timelineRedo[timelineRedo.length - 1];
+    if (!next) {
+      notify('没有可重做的剪辑操作');
+      return;
+    }
+    setTimelineRedo((items) => items.slice(0, -1));
+    setTimelineHistory((items) => [...items, timelineClipsRef.current].slice(-30));
+    setTimelineClips(next);
+    notify('已重做剪辑操作');
+  };
+
+  const toggleTimelineTrack = (trackId: TimelineTrackId, key: 'hidden' | 'locked' | 'muted') => {
+    setTimelineTracks((items) => items.map((track) => track.id === trackId ? { ...track, [key]: !track[key] } : track));
+    if (trackId === 'video' && key === 'muted') setIsMuted((value) => !value);
+  };
+
+  const startTimelineDrag = (event: React.PointerEvent, clip: TimelineClip, mode: TimelineDragMode) => {
+    const track = getTimelineTrack(clip.trackId);
+    if (track?.locked) {
+      notify('该轨道已锁定');
+      return;
+    }
+    const trackContent = (event.currentTarget as HTMLElement).closest('.ai-video-editor-track-content');
+    const trackWidth = trackContent?.getBoundingClientRect().width || 1;
+    event.stopPropagation();
+    setSelectedTimelineClipId(clip.id);
+    setTimelineDrag({ clipId: clip.id, mode, startX: event.clientX, trackWidth, beforeClips: timelineClipsRef.current });
+  };
+
+  useEffect(() => {
+    if (!timelineDrag) return;
+    const handlePointerMove = (event: PointerEvent) => {
+      const activeClip = timelineClipsRef.current.find((clip) => clip.id === timelineDrag.clipId);
+      if (!activeClip) return;
+      const delta = ((event.clientX - timelineDrag.startX) / timelineDrag.trackWidth) * timelineDuration;
+      setTimelineClips((items) => items.map((clip) => {
+        if (clip.id !== timelineDrag.clipId) return clip;
+        if (timelineDrag.mode === 'move') {
+          return { ...clip, start: Math.max(0, Math.min(timelineDuration - clip.duration, activeClip.start + delta)) };
+        }
+        if (timelineDrag.mode === 'resize-start') {
+          const nextStart = Math.max(0, Math.min(activeClip.start + activeClip.duration - 0.2, activeClip.start + delta));
+          return { ...clip, start: nextStart, duration: activeClip.start + activeClip.duration - nextStart };
+        }
+        return { ...clip, duration: Math.max(0.2, Math.min(timelineDuration - activeClip.start, activeClip.duration + delta)) };
+      }));
+    };
+    const handlePointerUp = () => {
+      setTimelineHistory((items) => [...items, timelineDrag.beforeClips].slice(-30));
+      setTimelineRedo([]);
+      setTimelineDrag(null);
+    };
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp, { once: true });
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [timelineDrag, timelineDuration]);
+
+  const splitSelectedTimelineClip = () => {
+    const clip = timelineClips.find((item) => item.id === selectedTimelineClipId);
+    if (!clip) {
+      notify('请先选择时间线片段');
+      return;
+    }
+    if (getTimelineTrack(clip.trackId)?.locked) {
+      notify('该轨道已锁定');
+      return;
+    }
+    if (currentTime <= clip.start + 0.2 || currentTime >= clip.start + clip.duration - 0.2) {
+      notify('请将播放头放在片段内部再分割');
+      return;
+    }
+    const leftDuration = currentTime - clip.start;
+    const rightDuration = clip.duration - leftDuration;
+    const stamp = Date.now();
+    const leftClip = { ...clip, id: `${clip.id}-a-${stamp}`, duration: leftDuration, label: `${clip.label} · 片段 1` };
+    const rightClip = { ...clip, id: `${clip.id}-b-${stamp}`, start: currentTime, duration: rightDuration, label: `${clip.label} · 片段 2` };
+    commitTimelineChange(timelineClips.flatMap((item) => item.id === clip.id ? [leftClip, rightClip] : [item]), '已按播放头分割片段');
+    setSelectedTimelineClipId(rightClip.id);
+  };
+
+  const deleteSelectedTimelineClip = () => {
+    const clip = timelineClips.find((item) => item.id === selectedTimelineClipId);
+    if (!clip) {
+      notify('请先选择时间线片段');
+      return;
+    }
+    if (clip.id === 'video-main') {
+      notify('主视频轨道不能删除');
+      return;
+    }
+    if (getTimelineTrack(clip.trackId)?.locked) {
+      notify('该轨道已锁定');
+      return;
+    }
+    commitTimelineChange(timelineClips.filter((item) => item.id !== clip.id), '已删除选中片段');
+    setSelectedTimelineClipId(null);
+  };
+
+  const timelineClipStyle = (clip: TimelineClip) => ({
+    left: `${(clip.start / timelineDuration) * 100}%`,
+    width: `${(clip.duration / timelineDuration) * 100}%`,
+  });
+
+  const renderTimelineClip = (clip: TimelineClip, className: string, content: React.ReactNode) => {
+    const track = getTimelineTrack(clip.trackId);
+    if (track?.hidden) return null;
+    const isSelected = selectedTimelineClipId === clip.id;
+    return (
+      <button
+        type="button"
+        className={`${className}${isSelected ? ' is-selected' : ''}${track?.locked ? ' is-locked' : ''}`}
+        style={timelineClipStyle(clip)}
+        onPointerDown={(event) => startTimelineDrag(event, clip, 'move')}
+        onClick={(event) => { event.stopPropagation(); setSelectedTimelineClipId(clip.id); }}
+      >
+        {content}
+        {isSelected && !track?.locked && <>
+          <span className="ai-video-editor-timeline-clip-handle ai-video-editor-timeline-clip-handle--start" onPointerDown={(event) => startTimelineDrag(event, clip, 'resize-start')} />
+          <span className="ai-video-editor-timeline-clip-handle ai-video-editor-timeline-clip-handle--end" onPointerDown={(event) => startTimelineDrag(event, clip, 'resize-end')} />
+        </>}
+      </button>
+    );
+  };
+
+  const renderTimelineTrackLabel = (trackId: TimelineTrackId, icon: React.ReactNode, label: string) => {
+    const track = getTimelineTrack(trackId);
+    if (!track) return null;
+    const isAudioTrack = trackId === 'voiceover' || trackId === 'music' || trackId === 'sfx';
+    return (
+      <div className={`ai-video-editor-track-label${track.hidden ? ' is-hidden' : ''}`}>
+        <span className="ai-video-editor-track-label__name"><span className="ai-video-editor-track-icon">{icon}</span><span>{label}</span></span>
+        <div className="ai-video-editor-track-controls">
+          <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'hidden')} aria-label={`${track.hidden ? '显示' : '隐藏'}${label}`} title={`${track.hidden ? '显示' : '隐藏'}${label}`}>{track.hidden ? <EyeOff size={12} /> : <Eye size={12} />}</button>
+          <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'locked')} aria-label={`${track.locked ? '解锁' : '锁定'}${label}`} title={`${track.locked ? '解锁' : '锁定'}${label}`}>{track.locked ? <Lock size={12} /> : <Unlock size={12} />}</button>
+          {isAudioTrack && <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'muted')} aria-label={`${track.muted ? '取消静音' : '静音'}${label}`} title={`${track.muted ? '取消静音' : '静音'}${label}`}><VolumeX size={12} /></button>}
+        </div>
+      </div>
+    );
   };
 
   const togglePlay = async () => {
@@ -365,6 +627,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setPoster('');
     setVideoName(file.name.replace(/\.[^/.]+$/, '') || '新视频');
     setCurrentTime(0);
+    setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, label: file.name, poster: '' } : clip));
+    setTimelineHistory([]);
+    setTimelineRedo([]);
+    setSelectedTimelineClipId('video-main');
     notify('视频已添加到时间线');
   };
 
@@ -506,13 +772,20 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setPoster(template.poster);
     setVideoName(template.title);
     setCurrentTime(0);
+    setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, label: template.title, poster: template.poster } : clip));
+    setTimelineHistory([]);
+    setTimelineRedo([]);
+    setSelectedTimelineClipId('video-main');
     notify(`已选择模板：${template.title}`);
   };
 
   const handleVideoMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
-    if (videoSource !== DEFAULT_VIDEO && Number.isFinite(video.duration) && video.duration > 0) setDuration(video.duration);
+    if (videoSource !== DEFAULT_VIDEO && Number.isFinite(video.duration) && video.duration > 0) {
+      setDuration(video.duration);
+      setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, duration: video.duration } : clip));
+    }
   };
 
   const renderWorkflowContent = () => {
@@ -744,11 +1017,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         <section className={`ai-video-editor-timeline-panel${isFinalTimelineReady ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
               <div className="ai-video-editor-timeline-head">
                 <div className="ai-video-editor-timeline-actions">
-                  <button type="button" onClick={() => notify('已撤销剪辑操作')}><Undo2 size={15} /></button>
-                  <button type="button" onClick={() => notify('已重做剪辑操作')}><Redo2 size={15} /></button>
+                  <button type="button" onClick={undoTimeline} disabled={!timelineHistory.length} aria-label="撤销" title="撤销"><Undo2 size={15} /></button>
+                  <button type="button" onClick={redoTimeline} disabled={!timelineRedo.length} aria-label="重做" title="重做"><Redo2 size={15} /></button>
                   <span />
-                  <button type="button" onClick={() => notify('已剪切当前片段')}><Scissors size={15} /> 分割</button>
-                  <button type="button" onClick={() => notify('已删除选中片段')}><X size={15} /> 删除</button>
+                  <button type="button" onClick={splitSelectedTimelineClip}><Scissors size={15} /> 分割</button>
+                  <button type="button" onClick={deleteSelectedTimelineClip}><X size={15} /> 删除</button>
                 </div>
                 <div className="ai-video-editor-timeline-zoom">
                   <button type="button" onClick={() => setZoom((value) => Math.max(48, value - 8))}><ZoomOut size={14} /></button>
@@ -764,66 +1037,66 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   </div>
                 </div>
                 <div className="ai-video-editor-track-row">
-                  <div className="ai-video-editor-track-label"><Film size={14} /><span>视频</span><MoreHorizontal size={14} /></div>
+                  {renderTimelineTrackLabel('video', <Film size={14} />, '视频')}
                   <div className="ai-video-editor-track-content">
                     <div className="ai-video-editor-playhead" style={{ left: `${progress}%` }}><span /></div>
                     <input aria-label="视频时间线" type="range" min="0" max={duration} step="0.1" value={currentTime} onChange={(event) => seekTo(Number(event.target.value))} />
-                    <div className="ai-video-editor-video-clip">
+                    {timelineClips.filter((clip) => clip.trackId === 'video').map((clip) => renderTimelineClip(clip, 'ai-video-editor-video-clip', <>
                       <div className="ai-video-editor-clip-thumbs">
-                        {Array.from({ length: 8 }, (_, index) => <img key={index} src={poster || DEFAULT_POSTER} alt="" />)}
+                        {Array.from({ length: 8 }, (_, index) => <img key={index} src={clip.poster || poster || DEFAULT_POSTER} alt="" />)}
                       </div>
                       <div className="ai-video-editor-clip-name"><Film size={13} /> {videoName}</div>
-                    </div>
+                    </>))}
                   </div>
                 </div>
                 {isFinalTimelineReady ? <>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    <div className="ai-video-editor-track-label"><Subtitles size={14} /><span>字幕</span><MoreHorizontal size={14} /></div>
+                    {renderTimelineTrackLabel('captions', <Subtitles size={14} />, '字幕')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
-                      {scriptDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--subtitle" key={row.id} onClick={() => notify(`已定位到旁白片段 ${row.id}`)} style={{ width: `${11 + (row.id % 3) * 2}%` }}><span>{row.narration.slice(0, 9)}…</span></button>)}
+                      {timelineClips.filter((clip) => clip.trackId === 'captions').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--subtitle', <span>{clip.label.slice(0, 14)}{clip.label.length > 14 ? '…' : ''}</span>))}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    <div className="ai-video-editor-track-label"><Layers3 size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
+                    {renderTimelineTrackLabel('mg', <Layers3 size={14} />, 'MG 画面')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
-                      {storyboardDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--mg" key={row.id} onClick={() => notify(`已定位到第 ${row.id} 镜`)} style={{ width: `${13 + (row.id % 2) * 3}%` }}><img src={poster || DEFAULT_POSTER} alt="" /><span>{row.title.replace(/片段 \d+ · /, '')}</span></button>)}
+                      {timelineClips.filter((clip) => clip.trackId === 'mg').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--mg', <><img src={clip.poster || poster || DEFAULT_POSTER} alt="" /><span>{clip.label}</span></>))}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    <div className="ai-video-editor-track-label"><TextCursorInput size={14} /><span>文字层</span><MoreHorizontal size={14} /></div>
+                    {renderTimelineTrackLabel('text', <TextCursorInput size={14} />, '文字层')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
-                      {storyboardDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--text" key={row.id} onClick={() => notify(`已定位到文字层：${row.text}`)} style={{ width: `${13 + (row.id % 2) * 3}%` }}><span>{row.text}</span></button>)}
+                      {timelineClips.filter((clip) => clip.trackId === 'text').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--text', <span>{clip.label}</span>))}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>口播声音</span><MoreHorizontal size={14} /></div>
+                    {renderTimelineTrackLabel('voiceover', <AudioLines size={14} />, '口播声音')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
-                      {scriptDraft.map((row) => <button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--voice" key={row.id} onClick={() => notify(`已定位到口播片段 ${row.id}`)} style={{ width: `${11 + (row.id % 3) * 2}%` }}><div className="ai-video-editor-mini-wave">{Array.from({ length: 12 }, (_, index) => <i key={index} style={{ height: `${22 + ((index * row.id * 13) % 62)}%` }} />)}</div><span>{selectedVoice} · {row.id.toString().padStart(2, '0')}</span></button>)}
+                      {timelineClips.filter((clip) => clip.trackId === 'voiceover').map((clip, clipIndex) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--voice', <><div className="ai-video-editor-mini-wave">{Array.from({ length: 12 }, (_, index) => <i key={index} style={{ height: `${22 + ((index * (clipIndex + 2) * 13) % 62)}%` }} />)}</div><span>{clip.label}</span></>))}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    <div className="ai-video-editor-track-label"><Music2 size={14} /><span>配乐</span><MoreHorizontal size={14} /></div>
-                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content"><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--music" onClick={() => notify('已定位到配乐轨道')}><div className="ai-video-editor-wide-wave">{Array.from({ length: 88 }, (_, index) => <i key={index} style={{ height: `${18 + ((index * 19) % 47)}%` }} />)}</div><span>低沉神秘的纪录片配乐 · 72 BPM</span></button></div>
+                    {renderTimelineTrackLabel('music', <Music2 size={14} />, '配乐')}
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">{timelineClips.filter((clip) => clip.trackId === 'music').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--music', <><div className="ai-video-editor-wide-wave">{Array.from({ length: 88 }, (_, index) => <i key={index} style={{ height: `${18 + ((index * 19) % 47)}%` }} />)}</div><span>{clip.label}</span></>))}</div>
                   </div>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>音效</span><MoreHorizontal size={14} /></div>
-                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content"><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx" onClick={() => notify('已定位到音效轨道')}><span>纸张翻页</span></button><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx" onClick={() => notify('已定位到音效轨道')}><span>轻微沙沙声</span></button><button type="button" className="ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx" onClick={() => notify('已定位到音效轨道')}><span>收束音</span></button></div>
+                    {renderTimelineTrackLabel('sfx', <AudioLines size={14} />, '音效')}
+                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">{timelineClips.filter((clip) => clip.trackId === 'sfx').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx', <span>{clip.label}</span>))}</div>
                   </div>
                 </> : <>
                   <div className="ai-video-editor-track-row">
-                    <div className="ai-video-editor-track-label"><Layers3 size={14} /><span>MG 画面</span><MoreHorizontal size={14} /></div>
+                    {renderTimelineTrackLabel('mg', <Layers3 size={14} />, 'MG 画面')}
                     <div className="ai-video-editor-track-content">
                       {hasMgLayers ? <div className="ai-video-editor-mg-clip"><Layers3 size={13} /> 8 个 MG 镜头与文字层 <span>72s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => notify('请先确认分镜方案')}><Plus size={13} /> 确认分镜后生成画面</button>}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row">
-                    <div className="ai-video-editor-track-label"><Subtitles size={14} /><span>字幕</span><MoreHorizontal size={14} /></div>
+                    {renderTimelineTrackLabel('captions', <Subtitles size={14} />, '字幕')}
                     <div className="ai-video-editor-track-content">
                       {hasCaptions || hasMgLayers ? <div className="ai-video-editor-caption-clip"><Subtitles size={13} /> {hasMgLayers ? '文字层 / 字幕' : '自动字幕'} <span>72.2s</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频加上自动字幕')}><Plus size={13} /> 点击让 AI 生成字幕</button>}
                     </div>
                   </div>
                   <div className="ai-video-editor-track-row">
-                    <div className="ai-video-editor-track-label"><AudioLines size={14} /><span>{hasVoiceover ? '声音' : '音频'}</span><MoreHorizontal size={14} /></div>
+                    {renderTimelineTrackLabel('voiceover', <AudioLines size={14} />, hasVoiceover ? '声音' : '音频')}
                     <div className="ai-video-editor-track-content">
                       {hasVoiceover || hasMusic ? <div className="ai-video-editor-audio-clip"><div className="ai-video-editor-waveform">{Array.from({ length: 54 }, (_, index) => <i key={index} style={{ height: `${14 + ((index * 17) % 28)}%` }} />)}</div><span><FileAudio size={12} /> {hasVoiceover ? `${selectedVoice} · 旁白音频` : 'Morning Lights · AI 推荐'}</span></div> : <button type="button" className="ai-video-editor-empty-track" onClick={() => handleSend('给视频配一首轻快的音乐')}><Plus size={13} /> 添加背景音乐</button>}
                     </div>
