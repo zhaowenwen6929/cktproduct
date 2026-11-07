@@ -262,18 +262,21 @@ const mediaAssets: Array<{ id: string; title: string; category: Exclude<MediaCat
   { id: 'stamp-pop', title: '朱红印章盖章', category: '特效', meta: '文字动效', poster: '/code-video/reference-style-demo-v7-poster.png' },
 ];
 
-const libraryCategories = ['我的素材', '收藏', 'AI生成', '最近使用'] as const;
+const libraryCategories = ['全部', '视频', '图片', '音频', '文档', 'MG动画'] as const;
 type LibraryCategory = (typeof libraryCategories)[number];
 
 const libraryAssets: Array<{ id: string; title: string; category: LibraryCategory; detail: string; poster: string }> = [
-  { id: 'library-history', title: '桑葚中国史素材包', category: '我的素材', detail: '8 个素材', poster: '/code-video/reference-style-demo-v14-poster.png' },
-  { id: 'library-branch', title: '枝叶透明素材', category: '我的素材', detail: '透明 PNG', poster: '/code-video/reference-style-demo-v7-poster.png' },
-  { id: 'library-tribute', title: '西汉贡品场景', category: '收藏', detail: '视频片段', poster: '/code-video/reference-style-demo-v8-poster.png' },
-  { id: 'library-book', title: '本草纲目古籍', category: '收藏', detail: '图片素材', poster: '/code-video/reference-style-demo-v9-poster.png' },
-  { id: 'library-river', title: '远古河谷演示', category: 'AI生成', detail: '视频片段', poster: '/code-video/reference-style-demo-v11-poster.png' },
-  { id: 'library-tree', title: '千年桑树王', category: 'AI生成', detail: '视频片段', poster: '/code-video/reference-style-demo-v13-poster.png' },
-  { id: 'library-seed', title: '碳化籽粒标注', category: '最近使用', detail: 'MG 素材', poster: '/code-video/reference-style-demo-v5-poster.png' },
-  { id: 'library-oracle', title: '甲骨文字形', category: '最近使用', detail: '图片素材', poster: '/code-video/reference-style-demo-v9-poster.png' },
+  { id: 'library-tribute', title: '西汉贡品场景', category: '视频', detail: '视频片段', poster: '/code-video/reference-style-demo-v8-poster.png' },
+  { id: 'library-river', title: '远古河谷演示', category: '视频', detail: '视频片段', poster: '/code-video/reference-style-demo-v11-poster.png' },
+  { id: 'library-tree', title: '千年桑树王', category: '视频', detail: '视频片段', poster: '/code-video/reference-style-demo-v13-poster.png' },
+  { id: 'library-branch', title: '枝叶透明素材', category: '图片', detail: '透明 PNG', poster: '/code-video/reference-style-demo-v7-poster.png' },
+  { id: 'library-book', title: '本草纲目古籍', category: '图片', detail: 'JPG 图片', poster: '/code-video/reference-style-demo-v9-poster.png' },
+  { id: 'library-oracle', title: '甲骨文字形', category: '图片', detail: 'PNG 图片', poster: '/code-video/reference-style-demo-v9-poster.png' },
+  { id: 'library-narration', title: 'Pearl · 中文旁白', category: '音频', detail: '72.2s 音频', poster: '/code-video/reference-style-demo-v14-poster.png' },
+  { id: 'library-music', title: '纪录片配乐', category: '音频', detail: '72 BPM', poster: '/code-video/reference-style-demo-v8-poster.png' },
+  { id: 'library-script', title: '桑葚中国史脚本', category: '文档', detail: 'TXT 文档', poster: '/code-video/reference-style-demo-v14-poster.png' },
+  { id: 'library-history', title: '桑葚中国史素材包', category: 'MG动画', detail: '8 个 MG 镜头', poster: '/code-video/reference-style-demo-v14-poster.png' },
+  { id: 'library-seed', title: '碳化籽粒标注', category: 'MG动画', detail: 'MG 素材', poster: '/code-video/reference-style-demo-v5-poster.png' },
 ];
 
 const textCategories = ['标题', '正文', '字幕', '标签'] as const;
@@ -539,7 +542,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [openToolPanelId, setOpenToolPanelId] = useState<ToolId | null>(null);
   const [activeTemplateCategory, setActiveTemplateCategory] = useState<TemplateCategory>('全部');
   const [activeMediaCategory, setActiveMediaCategory] = useState<MediaCategory>('全部');
-  const [activeLibraryCategory, setActiveLibraryCategory] = useState<LibraryCategory>('我的素材');
+  const [activeLibraryCategory, setActiveLibraryCategory] = useState<LibraryCategory>('全部');
   const [activeTextCategory, setActiveTextCategory] = useState<TextCategory>('标题');
   const [activeRightTab, setActiveRightTab] = useState<'chat' | 'settings'>('chat');
   const [videoSource, setVideoSource] = useState(DEFAULT_VIDEO);
@@ -1241,7 +1244,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   );
 
   const visibleLibraryAssets = useMemo(
-    () => libraryAssets.filter((asset) => asset.category === activeLibraryCategory),
+    () => activeLibraryCategory === '全部' ? libraryAssets : libraryAssets.filter((asset) => asset.category === activeLibraryCategory),
     [activeLibraryCategory]
   );
 
