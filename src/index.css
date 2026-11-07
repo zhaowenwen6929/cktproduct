@@ -10715,6 +10715,7 @@ button {
 .ai-video-editor-timeline-clip-handle--end { right: 0; border-radius: 0 4px 4px 0; }
 .ai-video-editor-track-label { min-width: 0; gap: 5px; }
 .ai-video-editor-track-label__name { display: flex; min-width: 0; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; }
+.ai-video-editor-track-label__text { display: none; }
 .ai-video-editor-track-label__name > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ai-video-editor-track-icon { display: inline-flex; flex: 0 0 auto; color: #858b9e; }
 .ai-video-editor-track-label.is-hidden { opacity: .55; }
