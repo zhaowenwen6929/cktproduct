@@ -302,8 +302,8 @@ export function AiVideoExportDialog({
             </div>}
 
             {activeTab === 'motion' && <div className="ai-video-export-simple-panel">
-              <div className="ai-video-export-large-icon"><Layers3 size={25} /></div>
-              <div><h2>导出所有动态图形</h2><p>每个 MG 元素会单独导出，保留透明背景，方便在其他软件中继续合成。</p></div>
+              <div className="ai-video-export-simple-title"><Layers3 size={16} /><h2>导出所有动态图形</h2></div>
+              <p>每个 MG 元素会单独导出，保留透明背景，方便在其他软件中继续合成。</p>
               <div className="ai-video-export-section ai-video-export-section--compact"><div className="ai-video-export-section-heading"><div><strong>导出格式</strong><span>{motionClipCount || 1} 个动态图形片段</span></div></div><SegmentedControl options={['MOV', 'MP4']} value={motionFormat} onChange={setMotionFormat} ariaLabel="动态图形导出格式" /></div>
               <div className="ai-video-export-summary ai-video-export-summary--stack"><Layers3 size={15} /><div><strong>{motionClipCount || 1} 个独立文件</strong><span>透明背景 · 保留时间长度和动画节奏</span></div></div>
             </div>}
@@ -321,8 +321,7 @@ export function AiVideoExportDialog({
               <div className="ai-video-export-project-items"><span>包含素材</span><span>封面</span><span>字幕</span><span>时间线</span></div>
             </div>}
             <div className="ai-video-export-watermark ai-video-export-watermark--main">
-              <div><strong>去除AI水印</strong><span>{removeWatermark ? '导出物料不含 AI 水印' : '导出物料含 AI 水印'}</span></div>
-              <span className="ai-video-export-free">免费</span>
+              <div><strong>去除AI水印</strong></div>
               <button type="button" className={`ai-video-export-switch${removeWatermark ? ' is-on' : ''}`} role="switch" aria-checked={removeWatermark} aria-label="去除AI水印" onClick={() => setRemoveWatermark((value) => !value)}><span /></button>
             </div>
           </div>
