@@ -1,0 +1,79 @@
+{
+  "schema": "ckt-video-project/1",
+  "project": {
+    "title": "咖啡从种子到一杯咖啡",
+    "duration_seconds": 60,
+    "aspect_ratio": "16:9",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+  },
+  "scenes": [
+    {
+      "id": "scene_01",
+      "start": 0,
+      "end": 6,
+      "layers": [
+        { "id": "scene_01_seed", "type": "shape", "role": "coffee_seed", "content": "coffee_seed", "animation": { "enter": "scale_in", "active": "pulse" } },
+        { "id": "scene_01_steam", "type": "path", "role": "coffee_steam", "content": "coffee_steam", "animation": { "enter": "path_draw", "active": "float" } }
+      ]
+    },
+    {
+      "id": "scene_02",
+      "start": 6,
+      "end": 13,
+      "layers": [
+        { "id": "scene_02_tree", "type": "shape", "role": "coffee_tree", "content": "coffee_tree", "animation": { "enter": "scale_in", "active": "sway" } }
+      ]
+    },
+    {
+      "id": "scene_03",
+      "start": 13,
+      "end": 20,
+      "layers": [
+        { "id": "scene_03_cherry", "type": "shape", "role": "coffee_cherry", "content": "coffee_cherry", "animation": { "enter": "slide_up", "active": "bounce" } }
+      ]
+    },
+    {
+      "id": "scene_04",
+      "start": 20,
+      "end": 28,
+      "layers": [
+        { "id": "scene_04_processing", "type": "diagram", "role": "coffee_processing", "content": "coffee_processing", "animation": { "enter": "slide_right", "active": "sweep" } }
+      ]
+    },
+    {
+      "id": "scene_05",
+      "start": 28,
+      "end": 36,
+      "layers": [
+        { "id": "scene_05_roast", "type": "shape", "role": "coffee_roast", "content": "coffee_roast", "animation": { "enter": "scale_in", "active": "glow" } }
+      ]
+    },
+    {
+      "id": "scene_06",
+      "start": 36,
+      "end": 44,
+      "layers": [
+        { "id": "scene_06_grind", "type": "diagram", "role": "coffee_grind", "content": "coffee_grind", "animation": { "enter": "scale_in", "active": "rotate" } }
+      ]
+    },
+    {
+      "id": "scene_07",
+      "start": 44,
+      "end": 53,
+      "layers": [
+        { "id": "scene_07_pour", "type": "path", "role": "coffee_pour", "content": "coffee_pour", "animation": { "enter": "slide_up", "active": "path_draw" } }
+      ]
+    },
+    {
+      "id": "scene_08",
+      "start": 53,
+      "end": 60,
+      "layers": [
+        { "id": "scene_08_cup", "type": "shape", "role": "coffee_cup", "content": "coffee_cup", "animation": { "enter": "scale_in", "active": "pulse" } },
+        { "id": "scene_08_steam", "type": "path", "role": "coffee_steam", "content": "coffee_steam", "animation": { "enter": "path_draw", "active": "float" } }
+      ]
+    }
+  ]
+}
