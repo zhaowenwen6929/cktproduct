@@ -328,23 +328,12 @@ export function AiVideoExportDialog({
               <div className="ai-video-export-section ai-video-export-section--compact"><div className="ai-video-export-section-heading"><div><strong>选择剪辑软件</strong><span>下载前请保持本页面打开</span></div></div><SegmentedControl options={projectCompilers} value={compiler} onChange={(value) => setCompiler(value as ProjectCompiler)} ariaLabel="工程剪辑软件" /></div>
               <div className="ai-video-export-project-items"><span>包含素材</span><span>封面</span><span>字幕</span><span>时间线</span></div>
             </div>}
-          </div>
-
-          <aside className="ai-video-export-aside">
-            <div className="ai-video-export-aside-heading"><span>导出设置</span><small>当前选择</small></div>
-            <div className="ai-video-export-aside-row"><span>项目</span><strong>{projectTitle}</strong></div>
-            <div className="ai-video-export-aside-row"><span>画布比例</span><strong>{canvasRatio}</strong></div>
-            <div className="ai-video-export-aside-row"><span>总时长</span><strong>{formatDuration(duration)}</strong></div>
-            {activeTab === 'video' && <div className="ai-video-export-aside-row"><span>分辨率</span><strong>{resolution}</strong></div>}
-            {activeTab === 'motion' && <div className="ai-video-export-aside-row"><span>动态图形</span><strong>{motionClipCount || 1} 个</strong></div>}
-            {activeTab === 'project' && <div className="ai-video-export-aside-row"><span>工程格式</span><strong>{compiler}</strong></div>}
-            <div className="ai-video-export-watermark">
+            <div className="ai-video-export-watermark ai-video-export-watermark--main">
               <button type="button" className={`ai-video-export-switch${removeWatermark ? ' is-on' : ''}`} role="switch" aria-checked={removeWatermark} aria-label="去除水印" onClick={() => setRemoveWatermark((value) => !value)}><span /></button>
               <div><strong>去除水印</strong><span>{removeWatermark ? '导出内容不含水印' : '免费版导出会保留水印'}</span></div>
               <span className="ai-video-export-free">免费</span>
             </div>
-            <div className="ai-video-export-aside-tip"><Sparkles size={14} /><span>导出前可以切换类型确认文件内容和编辑能力</span></div>
-          </aside>
+          </div>
         </div>
 
         <footer className="ai-video-export-footer">
