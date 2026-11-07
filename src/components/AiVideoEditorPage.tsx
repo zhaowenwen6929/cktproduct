@@ -1414,9 +1414,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
       <div className={`ai-video-editor-body${isAllTracksExpanded ? ' is-timeline-detailed' : ''}${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
         <aside className="ai-video-editor-left-rail">
-          <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')}>
-            <Plus size={18} />
-            <span>导入</span>
+          <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')} aria-label="导入" title="导入" data-tooltip="导入">
+            <Upload size={19} strokeWidth={1.8} />
           </button>
           <div className="ai-video-editor-rail-tools">
             {toolItems.map((item) => {
@@ -1427,15 +1426,17 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   type="button"
                   className={`ai-video-editor-rail-tool${activeTool === item.id ? ' is-active' : ''}`}
                   onClick={() => openToolPanel(item.id)}
+                  aria-label={item.label}
+                  title={item.label}
+                  data-tooltip={item.label}
                 >
-                  <Icon size={18} />
-                  <span>{item.label}</span>
+                  <Icon size={19} strokeWidth={1.8} />
                 </button>
               );
             })}
           </div>
           <div className="ai-video-editor-rail-bottom">
-            <button type="button" className="ai-video-editor-rail-tool" onClick={() => notify('快捷键面板即将打开')}><CircleHelp size={18} /><span>帮助</span></button>
+            <button type="button" className="ai-video-editor-rail-tool" onClick={() => notify('快捷键面板即将打开')} aria-label="帮助" title="帮助" data-tooltip="帮助"><CircleHelp size={19} strokeWidth={1.8} /></button>
           </div>
           <input ref={fileInputRef} type="file" accept="video/*" onChange={handleVideoUpload} hidden />
         </aside>
