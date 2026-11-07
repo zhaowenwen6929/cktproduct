@@ -2038,7 +2038,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         <div className="ai-video-editor-template-panel__head">
           <div>
             <strong>{openToolPanelId === 'import' ? '导入素材' : openToolPanelId === 'library' ? '资源库' : openToolPanelId === 'templates' ? '视频模板' : openToolPanelId === 'media' ? '素材' : '文字'}</strong>
-            <span>{openToolPanelId === 'import' ? '添加视频并整理到当前项目' : openToolPanelId === 'library' ? '浏览项目中可复用的内容' : openToolPanelId === 'templates' ? '按分类选择一个视频结构' : openToolPanelId === 'media' ? '选择视频、图片和透明素材' : '选择一套文字层样式'}</span>
           </div>
           <button type="button" onClick={() => setOpenToolPanelId(null)} aria-label={`关闭${activeToolTitle}面板`}><X size={17} /></button>
         </div>

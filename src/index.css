@@ -10580,7 +10580,7 @@ button {
 .ai-video-editor-send { width: 30px; height: 30px; border-radius: 50%; background: #dfddff; color: #615cf1; }
 .ai-video-editor-send:disabled { background: #dfddff; color: #aaa6e9; }
 
-.ai-video-editor-template-panel { top: 84px; bottom: 12px; left: 104px; border: 1px solid #e3e2ee; border-radius: 18px; box-shadow: 0 8px 26px rgba(76, 78, 130, .1); }
+.ai-video-editor-template-panel { top: 72px; bottom: 12px; left: 104px; border: 1px solid #e3e2ee; border-radius: 18px; box-shadow: 0 8px 26px rgba(76, 78, 130, .1); }
 
 @media (max-width: 1120px) {
   .ai-video-editor-body { gap: 8px; padding-inline: 8px; }
@@ -10688,6 +10688,11 @@ button {
 .ai-video-editor-template-panel { bottom: 264px; }
 .ai-video-editor-template-panel.is-timeline-complete { bottom: 352px; }
 .ai-video-editor-template-panel.is-timeline-collapsed { bottom: 20px; }
+
+/* Keep tool panels compact at the top and tall enough to browse without touching the timeline. */
+.ai-video-editor-template-panel__head { padding: 12px 16px 10px; }
+.ai-video-editor-template-panel__head > div { gap: 0; }
+.ai-video-editor-template-panel__head strong { font-size: 14px; }
 
 /* Functional timeline controls ----------------------------------------- */
 .ai-video-editor-timeline-ruler,
