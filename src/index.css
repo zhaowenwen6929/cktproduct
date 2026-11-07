@@ -10651,3 +10651,7 @@ button {
 @media (max-width: 820px) {
   .ai-video-editor-body { grid-template-columns: 72px minmax(0, 1fr) 320px; }
 }
+
+.ai-video-editor-template-panel { bottom: 264px; }
+.ai-video-editor-template-panel.is-timeline-complete { bottom: 352px; }
+.ai-video-editor-template-panel.is-timeline-collapsed { bottom: 20px; }

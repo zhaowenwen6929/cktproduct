@@ -855,7 +855,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           )}
         </aside>
       </div>
-      {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className="ai-video-editor-template-panel ai-video-editor-tool-panel" aria-label={`${activeToolTitle}面板`}>
+      {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className={`ai-video-editor-template-panel ai-video-editor-tool-panel${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isFinalTimelineReady ? ' is-timeline-complete' : ''}`} aria-label={`${activeToolTitle}面板`}>
         <div className="ai-video-editor-template-panel__head">
           <div>
             <strong>{openToolPanelId === 'import' ? '导入素材' : openToolPanelId === 'library' ? '资源库' : openToolPanelId === 'templates' ? '视频模板' : openToolPanelId === 'media' ? '素材' : '文字'}</strong>
