@@ -11015,6 +11015,7 @@ button {
 @keyframes ai-video-editor-chat-reveal { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
 
 /* Keep the timeline handle discoverable at the boundary of the editing band. */
+.ai-video-editor-timeline-panel { overflow: visible; }
 .ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
 .ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle:hover,
 .ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle:focus-visible { box-shadow: 0 -4px 12px rgba(76, 78, 130, .1); }
