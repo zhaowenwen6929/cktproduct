@@ -255,9 +255,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState('版本 01');
   const [zoom, setZoom] = useState(72);
   const [showToast, setShowToast] = useState('');
   const notify = (message: string) => setShowToast(message);
+  const projectTitle = videoName.split(' · ')[0] || videoName;
 
   useEffect(() => {
     if (messages.length === initialMessages.length && !isThinking) return;
@@ -561,7 +563,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
           <span className="ai-video-editor-divider" />
           <div className="ai-video-editor-title-wrap">
-            <strong className="ai-video-editor-work-title">{videoName}</strong>
+            <strong className="ai-video-editor-work-title">{projectTitle}</strong>
+            <button type="button" className="ai-video-editor-version-tag" onClick={() => setIsVersionHistoryOpen(true)} aria-label="切换版本" title="切换版本">
+              <span>{selectedVersion}</span>
+              <ChevronDown size={12} />
+            </button>
           </div>
         </div>
         <div className="ai-video-editor-topbar__actions">
@@ -614,9 +620,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
               <div className="ai-video-editor-preview-head">
                 <div className="ai-video-editor-preview-head__actions">
                   <span>1080p</span>
-                  <button type="button" className="ai-video-editor-version-button" onClick={() => setIsVersionHistoryOpen(true)} aria-label="打开历史版本" title="历史版本">
-                    <History size={14} />
-                  </button>
                   <button type="button" onClick={() => notify('预览画布已放大')}><Maximize2 size={15} /></button>
                   <button type="button" onClick={() => notify('更多预览选项')}><MoreHorizontal size={17} /></button>
                 </div>
@@ -758,11 +761,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   </div>
                 </>}
               </div>
-              <div className="ai-video-editor-timeline-footer">
-                <span><Layers3 size={13} /> {isFinalTimelineReady ? '7 个轨道 · 全部生成完成' : '4 个轨道'}</span>
-                <span><Clock3 size={13} /> 总时长 {formatLongTime(duration)}</span>
-                <button type="button" onClick={() => notify('时间线帮助已打开')}><CircleHelp size={14} /></button>
-              </div>
             </section>
           </div>
         </main>
@@ -814,19 +812,19 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       {isVersionHistoryOpen && <div className="ai-video-editor-version-backdrop" role="presentation" onClick={() => setIsVersionHistoryOpen(false)}>
         <div className="ai-video-editor-version-modal" role="dialog" aria-modal="true" aria-label="历史版本" onClick={(event) => event.stopPropagation()}>
           <div className="ai-video-editor-version-modal__head">
-            <div><strong>历史版本</strong><span>{videoName}</span></div>
+            <div><strong>历史版本</strong><span>{projectTitle}</span></div>
             <button type="button" onClick={() => setIsVersionHistoryOpen(false)} aria-label="关闭历史版本"><X size={17} /></button>
           </div>
           <div className="ai-video-editor-version-list">
-            <button type="button" className="ai-video-editor-version-item is-current" onClick={() => notify('当前版本已保持不变')}>
+            <button type="button" className={`ai-video-editor-version-item${selectedVersion === '版本 01' ? ' is-current' : ''}`} onClick={() => { setSelectedVersion('版本 01'); setIsVersionHistoryOpen(false); notify('已切换到版本 01'); }}>
               <span className="ai-video-editor-version-item__dot" />
               <span className="ai-video-editor-version-item__copy"><strong>版本 01</strong><em>刚刚 · 当前版本</em><small>已更新脚本、分镜和预览画面</small></span>
-              <Check size={14} />
+              {selectedVersion === '版本 01' ? <Check size={14} /> : <History size={14} />}
             </button>
-            <button type="button" className="ai-video-editor-version-item" onClick={() => notify('已选择版本 00，可继续预览')}>
+            <button type="button" className={`ai-video-editor-version-item${selectedVersion === '版本 00' ? ' is-current' : ''}`} onClick={() => { setSelectedVersion('版本 00'); setIsVersionHistoryOpen(false); notify('已切换到版本 00'); }}>
               <span className="ai-video-editor-version-item__dot" />
               <span className="ai-video-editor-version-item__copy"><strong>版本 00</strong><em>今天 10:12</em><small>创建项目并上传原始视频</small></span>
-              <History size={14} />
+              {selectedVersion === '版本 00' ? <Check size={14} /> : <History size={14} />}
             </button>
           </div>
           <div className="ai-video-editor-version-modal__foot">历史版本会自动保存，选择后可继续预览和编辑</div>
