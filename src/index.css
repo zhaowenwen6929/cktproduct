@@ -10778,6 +10778,34 @@ button {
 .ai-video-editor-player-fullscreen { width: 32px !important; height: 32px !important; margin-left: 2px; padding: 0 !important; border: 1px solid #e0e2ea !important; border-radius: 9px !important; background: #fff !important; color: #737b8c !important; }
 .ai-video-editor-player-fullscreen:hover { border-color: #cbc8f4 !important; background: #f4f3ff !important; color: #5a55e8 !important; }
 
+/* The timeline collapse handle belongs to the timeline frame, not the player controls. */
+.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle {
+  position: absolute;
+  z-index: 8;
+  top: -24px;
+  left: 50%;
+  display: grid;
+  width: 60px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #dfe2ea;
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #747d8d;
+  box-shadow: 0 -3px 8px rgba(48, 56, 72, .04);
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease;
+}
+.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle:hover { border-color: #cbc8f4; background: #faf9ff; color: #5a55e8; }
+.ai-video-editor-timeline-toggle svg { transition: transform 180ms cubic-bezier(.22, 1, .36, 1); }
+.ai-video-editor-timeline-toggle.is-collapsed svg { transform: rotate(180deg); }
+.ai-video-editor-timeline-footer { justify-content: center; height: 36px; padding: 4px 18px 8px; border-top: 1px solid #f0f1f5; }
+.ai-video-editor-timeline-footer .ai-video-editor-timeline-expand { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border: 1px solid #e1e2ec; border-radius: 7px; background: #fff; color: #70778a; font-size: 10px; }
+.ai-video-editor-timeline-footer .ai-video-editor-timeline-expand:hover,
+.ai-video-editor-timeline-footer .ai-video-editor-timeline-expand.is-active { border-color: #c9c5fb; background: #f4f2ff; color: #5a55e8; }
+
 /* The stage follows the actual video canvas, so contain never creates side rails. */
 .ai-video-editor-stage-wrap { overflow: hidden; }
 .ai-video-editor-stage {

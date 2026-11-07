@@ -1464,15 +1464,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 </div>
               </div>
               <div className="ai-video-editor-player-controls">
-                <button
-                  type="button"
-                  className={`ai-video-editor-timeline-toggle${isTimelineCollapsed ? ' is-collapsed' : ''}`}
-                  onClick={() => setIsTimelineCollapsed((value) => !value)}
-                  aria-label={isTimelineCollapsed ? '展开剪辑区域' : '收起剪辑区域'}
-                  aria-expanded={!isTimelineCollapsed}
-                >
-                  <ChevronDown size={15} />
-                </button>
                 <div className="ai-video-editor-player-controls__left">
                   <button type="button" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>{isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}</button>
                   <span>{formatTime(currentTime)} <i>/</i> {formatTime(duration)}</span>
@@ -1496,6 +1487,16 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         </main>
 
         <section className={`ai-video-editor-timeline-panel${isAllTracksExpanded ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
+              <button
+                type="button"
+                className={`ai-video-editor-timeline-toggle${isTimelineCollapsed ? ' is-collapsed' : ''}`}
+                onClick={() => setIsTimelineCollapsed((value) => !value)}
+                aria-label={isTimelineCollapsed ? '展开剪辑区域' : '收起剪辑区域'}
+                aria-expanded={!isTimelineCollapsed}
+                title={isTimelineCollapsed ? '展开剪辑区域' : '收起剪辑区域'}
+              >
+                <ChevronDown size={15} />
+              </button>
               <div className="ai-video-editor-timeline-head">
                 <div className="ai-video-editor-timeline-actions">
                   <button type="button" onClick={undoTimeline} disabled={!timelineHistory.length} aria-label="撤销" title="撤销"><Undo2 size={15} /></button>
@@ -1506,7 +1507,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <button type="button" onClick={() => setTimelineMenu((value) => value === 'add' ? null : 'add')}><Plus size={14} /> 添加</button>
                   <button type="button" onClick={addTimelineMarker}><MapPin size={14} /> 标记</button>
                   <button type="button" onClick={deleteSelectedTimelineClip}><X size={15} /> 删除</button>
-                  <button type="button" className={`ai-video-editor-timeline-expand${isAllTracksExpanded ? ' is-active' : ''}`} onClick={() => setIsAllTracksExpanded((value) => !value)} title={isAllTracksExpanded ? '收起次要轨道' : '展开全部轨道'}><Layers3 size={14} /> {isAllTracksExpanded ? '收起轨道' : '全部轨道'}</button>
                   <button type="button" className={`ai-video-editor-timeline-more${isTimelineMoreOpen ? ' is-active' : ''}`} onClick={() => setIsTimelineMoreOpen((value) => !value)} title="更多剪辑操作"><MoreHorizontal size={15} /> 更多</button>
                   {isTimelineMoreOpen && <>
                     <button type="button" onClick={duplicateSelectedTimelineClip}><Copy size={14} /> 复制</button>
@@ -1632,6 +1632,9 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   </div>
                 </>}
                 {timelineTracks.filter((track) => track.id.startsWith('custom-')).map(renderCustomTimelineTrack)}
+                </div>
+                <div className="ai-video-editor-timeline-footer">
+                  <button type="button" className={`ai-video-editor-timeline-expand${isAllTracksExpanded ? ' is-active' : ''}`} onClick={() => setIsAllTracksExpanded((value) => !value)} title={isAllTracksExpanded ? '收起次要轨道' : '展开全部轨道'}><Layers3 size={14} /> {isAllTracksExpanded ? '收起轨道' : '全部轨道'}</button>
                 </div>
               </div>
         </section>
