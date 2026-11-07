@@ -10961,3 +10961,9 @@ button {
 .ai-video-editor-rail-tools { align-items: center; gap: 0; margin-top: 12px; }
 .ai-video-editor-rail-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .ai-video-editor-rail-divider { width: 24px; height: 1px; margin: 4px 0; background: #ececf2; }
+
+/* Full-height conversation rail: the editor and timeline resize beside it instead of being covered. */
+.ai-video-editor-body { padding-bottom: 0; }
+.ai-video-editor-chat-panel { grid-column: 3; grid-row: 1 / -1; align-self: stretch; margin-top: 0; margin-bottom: 0; }
+.ai-video-editor-timeline-panel { grid-column: 1 / 3; grid-row: 2; }
+.ai-video-editor-body.is-chat-collapsed .ai-video-editor-timeline-panel { grid-column: 1 / -1; }
