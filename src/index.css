@@ -11014,11 +11014,10 @@ button {
 .ai-video-editor-chat-collapsed-toggle:hover { border-color: #c6c1f6; background: #f7f5ff; color: #5a55e8; }
 @keyframes ai-video-editor-chat-reveal { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
 
-/* Reveal the timeline handle only while the editing band is being used. */
-.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle { opacity: 0; pointer-events: none; transform: translate(-50%, 5px); }
-.ai-video-editor-timeline-panel:hover > .ai-video-editor-timeline-toggle,
-.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle:focus-visible,
-.ai-video-editor-timeline-panel.is-collapsed > .ai-video-editor-timeline-toggle { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+/* Keep the timeline handle discoverable at the boundary of the editing band. */
+.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle:hover,
+.ai-video-editor-timeline-panel > .ai-video-editor-timeline-toggle:focus-visible { box-shadow: 0 -4px 12px rgba(76, 78, 130, .1); }
 
 /* Compact project chrome and unobstructed resource panels. */
 .ai-video-editor-brand { padding: 0; border: 0; cursor: pointer; }
