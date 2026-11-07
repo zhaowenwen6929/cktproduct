@@ -10807,3 +10807,17 @@ button {
 .ai-video-editor-timeline-menu--add strong { grid-column: 1 / -1; }
 .ai-video-editor-timeline-menu--compact { min-width: 115px; }
 .ai-video-editor-timeline-actions button:disabled { cursor: not-allowed; opacity: .35; }
+
+/* Custom tracks append below the system tracks and scroll inside the timeline band. */
+.ai-video-editor-timeline-panel { display: flex; flex-direction: column; }
+.ai-video-editor-timeline-head { flex: 0 0 44px; }
+.ai-video-editor-timeline { min-height: 0; flex: 1 1 auto; overflow-x: auto; overflow-y: auto !important; scrollbar-width: thin; scrollbar-color: #d7d8e8 transparent; }
+.ai-video-editor-timeline-menu__label { grid-column: 1 / -1; margin-top: 2px; padding-top: 4px; border-top: 1px solid #eef0f5; color: #9b9fb0; font-size: 9px; }
+.ai-video-editor-timeline-track-options { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; }
+.ai-video-editor-timeline-track-options button { min-height: 27px; padding-inline: 6px; color: #5a55e8; }
+.ai-video-editor-timeline-track-options button:hover { background: #f1efff; }
+.ai-video-editor-detail-clip--custom,
+.ai-video-editor-detail-clip--video { border-color: #c8d1e2; background: #eef2f7; color: #53627a; }
+.ai-video-editor-detail-clip--custom .ai-video-editor-mini-wave,
+.ai-video-editor-detail-clip--custom .ai-video-editor-wide-wave { color: #6c83bd; }
+.ai-video-editor-track-row:has(.ai-video-editor-detail-clip--custom) .ai-video-editor-track-label { background: #fbfcfe; }

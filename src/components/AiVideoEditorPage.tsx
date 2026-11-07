@@ -83,7 +83,8 @@ type StoryboardRow = {
   duration: string;
 };
 
-type TimelineTrackId = 'video' | 'mg' | 'captions' | 'text' | 'voiceover' | 'music' | 'sfx';
+type TimelineTrackId = 'video' | 'mg' | 'captions' | 'text' | 'voiceover' | 'music' | 'sfx' | `custom-${string}`;
+type TimelineTrackKind = 'video' | 'mg' | 'captions' | 'text' | 'voiceover' | 'music' | 'sfx';
 type TimelineClipKind = 'video' | 'mg' | 'subtitle' | 'text' | 'voice' | 'music' | 'sfx';
 type TimelineClip = {
   id: string;
@@ -98,6 +99,8 @@ type TimelineClip = {
 };
 type TimelineTrackState = {
   id: TimelineTrackId;
+  kind: TimelineTrackKind;
+  label: string;
   hidden: boolean;
   locked: boolean;
   muted: boolean;
@@ -120,6 +123,7 @@ type TimelineTransition = {
 type TimelineEditSnapshot = {
   clips: TimelineClip[];
   transitions: TimelineTransition[];
+  tracks: TimelineTrackState[];
 };
 type TimelineMarker = {
   id: string;
@@ -306,13 +310,22 @@ const timelineSegmentStarts = [0, 5, 11.4, 18.5, 26.6, 36.6, 46.6, 58.6];
 const timelineSegmentDurations = [5, 6.4, 7.1, 8.1, 10, 10, 12, 13.6];
 
 const initialTimelineTracks: TimelineTrackState[] = [
-  { id: 'video', hidden: false, locked: false, muted: false },
-  { id: 'mg', hidden: false, locked: false, muted: false },
-  { id: 'captions', hidden: false, locked: false, muted: false },
-  { id: 'text', hidden: false, locked: false, muted: false },
-  { id: 'voiceover', hidden: false, locked: false, muted: false },
-  { id: 'music', hidden: false, locked: false, muted: false },
-  { id: 'sfx', hidden: false, locked: false, muted: false },
+  { id: 'video', kind: 'video', label: '视频', hidden: false, locked: false, muted: false },
+  { id: 'mg', kind: 'mg', label: 'MG 画面', hidden: false, locked: false, muted: false },
+  { id: 'captions', kind: 'captions', label: '字幕', hidden: false, locked: false, muted: false },
+  { id: 'text', kind: 'text', label: '文字层', hidden: false, locked: false, muted: false },
+  { id: 'voiceover', kind: 'voiceover', label: '口播', hidden: false, locked: false, muted: false },
+  { id: 'music', kind: 'music', label: '配乐', hidden: false, locked: false, muted: false },
+  { id: 'sfx', kind: 'sfx', label: '音效', hidden: false, locked: false, muted: false },
+];
+
+const customTimelineTrackOptions: Array<{ kind: TimelineTrackKind; label: string }> = [
+  { kind: 'video', label: '视频轨道' },
+  { kind: 'mg', label: '图片 / MG 轨道' },
+  { kind: 'text', label: '文字轨道' },
+  { kind: 'voiceover', label: '旁白轨道' },
+  { kind: 'music', label: '音乐轨道' },
+  { kind: 'sfx', label: '音效轨道' },
 ];
 
 const initialTimelineClips: TimelineClip[] = [
@@ -378,6 +391,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const stageRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const timelineScrollRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<ToolId>('media');
   const [openToolPanelId, setOpenToolPanelId] = useState<ToolId | null>(null);
   const [activeTemplateCategory, setActiveTemplateCategory] = useState<TemplateCategory>('全部');
@@ -495,13 +509,14 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
   const isTimelineTrackReady = (trackId: TimelineTrackId) => {
     if (trackId === 'video') return true;
+    if (trackId.startsWith('custom-')) return true;
     if (trackId === 'mg' || trackId === 'text' || trackId === 'music' || trackId === 'sfx') return hasMgLayers;
     if (trackId === 'captions') return hasCaptions || hasMgLayers;
     return hasVoiceover;
   };
 
   const commitTimelineChange = (nextClips: TimelineClip[], message?: string) => {
-    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
     setTimelineRedo([]);
     setTimelineClips(nextClips);
     if (message) notify(message);
@@ -514,9 +529,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       return;
     }
     setTimelineHistory((items) => items.slice(0, -1));
-    setTimelineRedo((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }]);
+    setTimelineRedo((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }]);
     setTimelineClips(previous.clips);
     setTimelineTransitions(previous.transitions);
+    setTimelineTracks(previous.tracks);
     notify('已撤销剪辑操作');
   };
 
@@ -527,9 +543,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       return;
     }
     setTimelineRedo((items) => items.slice(0, -1));
-    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
     setTimelineClips(next.clips);
     setTimelineTransitions(next.transitions);
+    setTimelineTracks(next.tracks);
     notify('已重做剪辑操作');
   };
 
@@ -584,7 +601,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       }));
     };
     const handlePointerUp = () => {
-      setTimelineHistory((items) => [...items, { clips: timelineDrag.beforeClips, transitions: timelineTransitions }].slice(-30));
+      setTimelineHistory((items) => [...items, { clips: timelineDrag.beforeClips, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
       setTimelineRedo([]);
       setTimelineDrag(null);
     };
@@ -648,7 +665,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const nextTransition: TimelineTransition = existing
       ? { ...existing, type }
       : { id: `transition-${Math.round(boundaryAt * 10)}`, at: boundaryAt, duration: 0.8, type };
-    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
     setTimelineRedo([]);
     setTimelineTransitions((items) => existing ? items.map((item) => item.id === existing.id ? nextTransition : item) : [...items, nextTransition]);
     setSelectedTransitionId(nextTransition.id);
@@ -661,7 +678,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
       notify('请先选择时间线上的转场');
       return;
     }
-    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
     setTimelineRedo([]);
     setTimelineTransitions((items) => items.filter((transition) => transition.id !== selectedTransitionId));
     setSelectedTransitionId(null);
@@ -738,13 +755,33 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setSelectedTimelineClipId(freezeClip.id);
   };
 
+  const addCustomTimelineTrack = (kind: TimelineTrackKind, baseLabel: string) => {
+    const customCount = timelineTracks.filter((track) => track.id.startsWith('custom-')).length + 1;
+    const track: TimelineTrackState = {
+      id: `custom-${Date.now()}`,
+      kind,
+      label: `${baseLabel} ${String(customCount).padStart(2, '0')}`,
+      hidden: false,
+      locked: false,
+      muted: false,
+    };
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
+    setTimelineRedo([]);
+    setTimelineTracks((items) => [...items, track]);
+    setIsAllTracksExpanded(true);
+    setTimelineMenu(null);
+    window.requestAnimationFrame(() => timelineScrollRef.current?.scrollTo({ top: timelineScrollRef.current.scrollHeight, behavior: 'smooth' }));
+    notify(`已在时间线底部添加${track.label}`);
+  };
+
   const addTimelineAsset = (trackId: TimelineTrackId, kind: TimelineClipKind, label: string, poster?: string) => {
     const track = getTimelineTrack(trackId);
     if (track?.locked) {
       notify('该轨道已锁定');
       return;
     }
-    const clipDuration = trackId === 'sfx' ? 2 : trackId === 'text' || trackId === 'mg' ? 5 : 8;
+    const trackKind = track?.kind ?? 'video';
+    const clipDuration = trackKind === 'sfx' ? 2 : trackKind === 'text' || trackKind === 'mg' ? 5 : 8;
     const clip: TimelineClip = { id: `${kind}-${Date.now()}`, trackId, kind, label, start: Math.min(Math.max(0, currentTime), Math.max(0, timelineDuration - clipDuration)), duration: clipDuration, poster };
     commitTimelineChange([...timelineClips, clip], `已添加${label}`);
     setSelectedTimelineClipId(clip.id);
@@ -827,7 +864,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const renderTimelineTrackLabel = (trackId: TimelineTrackId, icon: React.ReactNode, label: string) => {
     const track = getTimelineTrack(trackId);
     if (!track) return null;
-    const isAudioTrack = trackId === 'voiceover' || trackId === 'music' || trackId === 'sfx';
+    const isAudioTrack = track.kind === 'voiceover' || track.kind === 'music' || track.kind === 'sfx';
     return (
       <div className={`ai-video-editor-track-label${track.hidden ? ' is-hidden' : ''}`}>
         <span className="ai-video-editor-track-label__name"><span className="ai-video-editor-track-icon">{icon}</span><span>{label}</span>{!isTimelineTrackReady(trackId) && <em className="ai-video-editor-track-state" title="等待生成" aria-label="等待生成" />}</span>
@@ -835,6 +872,39 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'hidden')} aria-label={`${track.hidden ? '显示' : '隐藏'}${label}`} title={`${track.hidden ? '显示' : '隐藏'}${label}`}>{track.hidden ? <EyeOff size={12} /> : <Eye size={12} />}</button>
           <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'locked')} aria-label={`${track.locked ? '解锁' : '锁定'}${label}`} title={`${track.locked ? '解锁' : '锁定'}${label}`}>{track.locked ? <Lock size={12} /> : <Unlock size={12} />}</button>
           {isAudioTrack && <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'muted')} aria-label={`${track.muted ? '取消静音' : '静音'}${label}`} title={`${track.muted ? '取消静音' : '静音'}${label}`}><VolumeX size={12} /></button>}
+        </div>
+      </div>
+    );
+  };
+
+  const getTimelineTrackIcon = (kind: TimelineTrackKind) => {
+    if (kind === 'video') return <Film size={14} />;
+    if (kind === 'mg') return <Layers3 size={14} />;
+    if (kind === 'captions') return <Subtitles size={14} />;
+    if (kind === 'text') return <TextCursorInput size={14} />;
+    if (kind === 'voiceover') return <AudioLines size={14} />;
+    if (kind === 'music') return <Music2 size={14} />;
+    return <AudioLines size={14} />;
+  };
+
+  const getTimelineClipKind = (kind: TimelineTrackKind): TimelineClipKind => {
+    if (kind === 'captions') return 'subtitle';
+    if (kind === 'voiceover') return 'voice';
+    return kind;
+  };
+
+  const renderCustomTimelineTrack = (track: TimelineTrackState) => {
+    const clips = timelineClips.filter((clip) => clip.trackId === track.id);
+    const clipKind = getTimelineClipKind(track.kind);
+    const clipClass = `ai-video-editor-detail-clip ai-video-editor-detail-clip--${track.kind === 'voiceover' ? 'voice' : track.kind}`;
+    return (
+      <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row" key={track.id}>
+        {renderTimelineTrackLabel(track.id, getTimelineTrackIcon(track.kind), track.label)}
+        <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
+          {clips.length > 0 ? clips.map((clip, clipIndex) => renderTimelineClip(clip, clipClass, <>
+            {track.kind === 'voiceover' || track.kind === 'music' ? <div className={track.kind === 'music' ? 'ai-video-editor-wide-wave' : 'ai-video-editor-mini-wave'}>{Array.from({ length: track.kind === 'music' ? 48 : 12 }, (_, index) => <i key={index} style={{ height: `${22 + ((index * (clipIndex + 2) * 13) % 62)}%` }} />)}</div> : null}
+            <span>{clip.label}</span>
+          </>)) : <button type="button" className="ai-video-editor-empty-track" onClick={() => addTimelineAsset(track.id, clipKind, `${track.label}片段`, poster || DEFAULT_POSTER)}><Plus size={13} /> 添加片段</button>}
         </div>
       </div>
     );
@@ -1294,6 +1364,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 </div>}
                 {timelineMenu === 'add' && <div className="ai-video-editor-timeline-menu ai-video-editor-timeline-menu--add">
                   <strong>添加到时间线</strong>
+                  <span className="ai-video-editor-timeline-menu__label">新建轨道（追加到最底部）</span>
+                  <div className="ai-video-editor-timeline-track-options">
+                    {customTimelineTrackOptions.map((option) => <button type="button" key={option.kind} onClick={() => addCustomTimelineTrack(option.kind, option.label)}><Plus size={13} /> {option.label}</button>)}
+                  </div>
+                  <span className="ai-video-editor-timeline-menu__label">添加片段到已有轨道</span>
                   <button type="button" onClick={() => addTimelineAsset('video', 'video', '视频素材', poster || DEFAULT_POSTER)}><Film size={13} /> 视频片段</button>
                   <button type="button" onClick={() => addTimelineAsset('mg', 'mg', 'MG 画面', poster || DEFAULT_POSTER)}><Layers3 size={13} /> MG 画面</button>
                   <button type="button" onClick={() => addTimelineAsset('text', 'text', '文字层')}><TextCursorInput size={13} /> 文字层</button>
@@ -1316,7 +1391,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <button type="button" onClick={() => setZoom((value) => Math.min(200, value + 10))} aria-label="放大时间线" title="放大时间线"><ZoomIn size={14} /></button>
                 </div>
               </div>
-              <div className="ai-video-editor-timeline">
+              <div ref={timelineScrollRef} className="ai-video-editor-timeline" aria-label="时间线轨道区域">
                 <div className="ai-video-editor-timeline-canvas" style={{ width: `${Math.max(100, zoom)}%` }}>
                 <div className="ai-video-editor-timeline-ruler">
                   <div className="ai-video-editor-track-spacer" />
@@ -1394,6 +1469,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     </div>
                   </div>
                 </>}
+                {timelineTracks.filter((track) => track.id.startsWith('custom-')).map(renderCustomTimelineTrack)}
                 </div>
               </div>
         </section>
