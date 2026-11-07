@@ -11031,6 +11031,20 @@ button {
 .ai-video-editor-template-categories { gap: 8px; overflow: visible; padding-inline: 16px; }
 .ai-video-editor-template-categories button { min-width: 0; flex: 1 1 0; overflow: visible; padding-inline: 0; text-align: center; white-space: nowrap; }
 
+/* Track controls: each row exposes only the actions that make sense for its media type. */
+.ai-video-editor-timeline-ruler,
+.ai-video-editor-track-row { grid-template-columns: 156px minmax(0, 1fr); }
+.ai-video-editor-track-label { gap: 6px; padding-inline: 8px; }
+.ai-video-editor-track-controls { gap: 2px; padding: 3px; border: 1px solid #eceef3; border-radius: 9px; background: #f5f6f8; box-shadow: 0 1px 2px rgba(45, 56, 72, .04); }
+.ai-video-editor-track-control { width: 20px; height: 21px; flex-basis: 20px; border-radius: 5px; color: #818b99; }
+.ai-video-editor-track-control:hover { background: #fff; color: #4e69d6; box-shadow: 0 1px 3px rgba(67, 86, 119, .12); }
+.ai-video-editor-track-control--delete:hover { color: #c65c66; }
+.ai-video-editor-track-control:active { transform: scale(.94); }
+@media (max-width: 1120px) {
+  .ai-video-editor-timeline-ruler,
+  .ai-video-editor-track-row { grid-template-columns: 144px minmax(0, 1fr); }
+}
+
 @media (max-width: 1120px) {
   .ai-video-editor-body:not(.is-chat-collapsed):not(.is-chat-expanded) { grid-template-columns: 72px minmax(0, 1fr) var(--chat-width, 360px); }
   .ai-video-editor-body.is-chat-expanded:not(.is-chat-collapsed) { grid-template-columns: 72px minmax(0, 1fr) var(--chat-width, min(33.333vw, 680px)); }

@@ -42,6 +42,7 @@ import {
   Subtitles,
   Table2,
   TextCursorInput,
+  Trash2,
   Undo2,
   Unlock,
   Upload,
@@ -793,8 +794,29 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   };
 
   const toggleTimelineTrack = (trackId: TimelineTrackId, key: 'hidden' | 'locked' | 'muted') => {
+    const track = getTimelineTrack(trackId);
+    if (!track) return;
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
+    setTimelineRedo([]);
     setTimelineTracks((items) => items.map((track) => track.id === trackId ? { ...track, [key]: !track[key] } : track));
     if (trackId === 'video' && key === 'muted') setIsMuted((value) => !value);
+  };
+
+  const deleteTimelineTrack = (trackId: TimelineTrackId) => {
+    const track = getTimelineTrack(trackId);
+    if (!track) return;
+    setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions, tracks: timelineTracks }].slice(-30));
+    setTimelineRedo([]);
+    setTimelineClips((items) => items.filter((clip) => clip.trackId !== trackId));
+    if (track.id.startsWith('custom-')) {
+      setTimelineTracks((items) => items.filter((item) => item.id !== trackId));
+      notify(`已删除${track.label}`);
+    } else {
+      notify(`已清空${track.label}内容，基础轨道仍保留`);
+    }
+    if (timelineClipsRef.current.some((clip) => clip.id === selectedTimelineClipId && clip.trackId === trackId)) {
+      setSelectedTimelineClipId(null);
+    }
   };
 
   const snapTimelineTime = (rawTime: number, clipId: string) => {
@@ -1106,13 +1128,16 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const track = getTimelineTrack(trackId);
     if (!track) return null;
     const isAudioTrack = track.kind === 'voiceover' || track.kind === 'music' || track.kind === 'sfx';
+    const supportsVisibility = !isAudioTrack;
+    const supportsMute = track.kind === 'video' || isAudioTrack;
     return (
       <div className={`ai-video-editor-track-label${track.hidden ? ' is-hidden' : ''}`}>
         <span className="ai-video-editor-track-label__name"><span className="ai-video-editor-track-icon">{icon}</span><span>{label}</span>{!isTimelineTrackReady(trackId) && <em className="ai-video-editor-track-state" title="等待生成" aria-label="等待生成" />}</span>
         <div className="ai-video-editor-track-controls">
-          <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'hidden')} aria-label={`${track.hidden ? '显示' : '隐藏'}${label}`} title={`${track.hidden ? '显示' : '隐藏'}${label}`}>{track.hidden ? <EyeOff size={12} /> : <Eye size={12} />}</button>
           <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'locked')} aria-label={`${track.locked ? '解锁' : '锁定'}${label}`} title={`${track.locked ? '解锁' : '锁定'}${label}`}>{track.locked ? <Lock size={12} /> : <Unlock size={12} />}</button>
-          {isAudioTrack && <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'muted')} aria-label={`${track.muted ? '取消静音' : '静音'}${label}`} title={`${track.muted ? '取消静音' : '静音'}${label}`}><VolumeX size={12} /></button>}
+          {supportsVisibility && <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'hidden')} aria-label={`${track.hidden ? '显示' : '隐藏'}${label}`} title={`${track.hidden ? '显示' : '隐藏'}${label}`}>{track.hidden ? <EyeOff size={12} /> : <Eye size={12} />}</button>}
+          {supportsMute && <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'muted')} aria-label={`${track.muted ? '取消静音' : '静音'}${label}`} title={`${track.muted ? '取消静音' : '静音'}${label}`}>{track.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}</button>}
+          <button type="button" className="ai-video-editor-track-control ai-video-editor-track-control--delete" onClick={() => deleteTimelineTrack(trackId)} aria-label={`${track.id.startsWith('custom-') ? '删除' : '清空'}${label}`} title={`${track.id.startsWith('custom-') ? '删除' : '清空'}${label}`}><Trash2 size={12} /></button>
         </div>
       </div>
     );
