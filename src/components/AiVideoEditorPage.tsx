@@ -55,6 +55,7 @@ import {
 } from 'lucide-react';
 import { MgAnimationOverlay } from './ai-video/MgAnimationOverlay';
 import { loadVideoProjectManifest, type VideoProjectManifest } from './ai-video/videoProjectManifest';
+import { MembershipCenterModal, MembershipPointsPurchaseModal } from './MembershipCenterModal';
 
 type AiVideoEditorPageProps = {
   onBackToDirectory: () => void;
@@ -753,6 +754,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [videoManifest, setVideoManifest] = useState<VideoProjectManifest | null>(null);
   const [manifestError, setManifestError] = useState('');
   const [renderedVideoSource, setRenderedVideoSource] = useState<string | null>(null);
+  const [isMembershipOpen, setIsMembershipOpen] = useState(false);
+  const [isPointsPurchaseOpen, setIsPointsPurchaseOpen] = useState(false);
   const timelineClipsRef = useRef<TimelineClip[]>(initialTimelineClips);
   const [showToast, setShowToast] = useState('');
   const notify = (message: string) => setShowToast(message);
@@ -1771,8 +1774,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
         </div>
         <div className="ai-video-editor-topbar__actions">
-          <div className="ai-video-editor-credit"><span /> 204,843 <em>积分</em></div>
-          <button type="button" className="ai-video-editor-member"><BadgeCheck size={14} /> 会员</button>
+          <button type="button" className="ai-video-editor-credit" onClick={() => setIsPointsPurchaseOpen(true)} aria-label="购买积分" title="购买积分"><span /> 204,843 <em>积分</em></button>
+          <button type="button" className="ai-video-editor-member" onClick={() => setIsMembershipOpen(true)} aria-label="打开会员中心" title="打开会员中心"><BadgeCheck size={14} /> 会员</button>
           <button type="button" className="ai-video-editor-export" onClick={() => notify('视频导出任务已创建')}>
             <Download size={14} /> 导出视频
           </button>
@@ -2149,6 +2152,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           <div className="ai-video-editor-fullscreen-modal__foot"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setIsStoryboardEditorOpen(false)}>收回卡片</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsStoryboardEditorOpen(false); notify('分镜修改已保存'); }}>保存修改</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsStoryboardEditorOpen(false); confirmStoryboard(); }}>确认分镜方案</button></div>
         </div>
       </div>}
+      {isMembershipOpen ? <MembershipCenterModal open={isMembershipOpen} onOpenChange={setIsMembershipOpen} onClose={() => setIsMembershipOpen(false)} currentMember={{ memberName: '免费版', remainingPoints: 204843, teamMemberCount: 1, membershipType: 'personal' }} /> : null}
+      {isPointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setIsPointsPurchaseOpen(false)} onOpenMembership={() => { setIsPointsPurchaseOpen(false); setIsMembershipOpen(true); }} /> : null}
       {showToast && <div className="ai-video-editor-toast"><Check size={14} /> {showToast}</div>}
     </div>
   );
