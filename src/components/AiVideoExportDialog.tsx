@@ -288,10 +288,10 @@ export function AiVideoExportDialog({
                 <div className="ai-video-export-preview-frame">
                   {previewSource ? <img src={previewSource} alt={`${projectTitle} 封面预览`} /> : <div className="ai-video-export-preview-empty"><Film size={24} /><span>暂无预览</span></div>}
                   <div className="ai-video-export-preview-badge">封面</div>
+                  <button type="button" className="ai-video-export-cover-edit" onClick={openCoverEditor}><ImageIcon size={12} /> 编辑封面</button>
                 </div>
                 <div className="ai-video-export-preview-meta">
                   <div><strong>{projectTitle}</strong><span><Clock3 size={12} /> {formatDuration(duration)} · {canvasRatio} · {videoClipCount || 1} 个视频片段</span></div>
-                  <button type="button" className="ai-video-export-secondary-button" onClick={openCoverEditor}><ImageIcon size={14} /> 编辑封面</button>
                 </div>
               </div>
               <section className="ai-video-export-section">
