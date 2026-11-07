@@ -10,7 +10,6 @@ import {
   ChevronRight,
   CircleHelp,
   Clock3,
-  Cloud,
   Download,
   Edit3,
   FileAudio,
@@ -562,14 +561,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
           <span className="ai-video-editor-divider" />
           <div className="ai-video-editor-title-wrap">
-            <div className="ai-video-editor-topbar-project-title">
-              <strong>AI视频编辑器</strong>
-              <span className="ai-video-editor-topbar-project-name">{videoName}</span>
-              <button type="button" className="ai-video-editor-version-button" onClick={() => setIsVersionHistoryOpen(true)} aria-label="打开历史版本" title="历史版本">
-                <History size={14} />
-              </button>
-            </div>
-            <span><Cloud size={13} /> 已自动保存</span>
+            <strong className="ai-video-editor-work-title">{videoName}</strong>
           </div>
         </div>
         <div className="ai-video-editor-topbar__actions">
@@ -617,22 +609,14 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         </aside>
 
         <main className="ai-video-editor-main">
-          <div className="ai-video-editor-mainbar">
-            <div className="ai-video-editor-mainbar__crumbs">
-              <button type="button" onClick={onBackToDirectory}>我的作品</button>
-            </div>
-            <div className="ai-video-editor-mainbar__actions">
-              <button type="button" onClick={() => notify('已撤销上一步操作')}><Undo2 size={15} /></button>
-              <button type="button" onClick={() => notify('已重做上一步操作')}><Redo2 size={15} /></button>
-            </div>
-          </div>
-
           <div className="ai-video-editor-workspace">
             <section className="ai-video-editor-preview-panel">
               <div className="ai-video-editor-preview-head">
-                <div className="ai-video-editor-section-label"><span className="ai-video-editor-status-dot" /> 视频预览</div>
                 <div className="ai-video-editor-preview-head__actions">
                   <span>1080p</span>
+                  <button type="button" className="ai-video-editor-version-button" onClick={() => setIsVersionHistoryOpen(true)} aria-label="打开历史版本" title="历史版本">
+                    <History size={14} />
+                  </button>
                   <button type="button" onClick={() => notify('预览画布已放大')}><Maximize2 size={15} /></button>
                   <button type="button" onClick={() => notify('更多预览选项')}><MoreHorizontal size={17} /></button>
                 </div>

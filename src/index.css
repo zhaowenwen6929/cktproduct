@@ -10564,3 +10564,20 @@ button {
   .ai-video-editor-credit,
   .ai-video-editor-member { display: none; }
 }
+
+/* Compact chrome: keep the canvas focused on the work ------------------ */
+.ai-video-editor-title-wrap { min-width: 0; }
+.ai-video-editor-title-wrap .ai-video-editor-work-title { display: block; max-width: 300px; overflow: hidden; color: #30364a; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.ai-video-editor-preview-head { justify-content: flex-end; }
+.ai-video-editor-preview-head__actions .ai-video-editor-version-button { width: 28px; height: 28px; border-radius: 9px; }
+.ai-video-editor-stage { background: #f0ece3; }
+.ai-video-editor-stage video { background: transparent; }
+.ai-video-editor-version-modal { top: 126px; right: calc(clamp(360px, 26vw, 540px) + 28px); left: auto; }
+
+@media (max-width: 1120px) {
+  .ai-video-editor-version-modal { right: 388px; }
+}
+
+@media (max-width: 720px) {
+  .ai-video-editor-version-modal { right: 16px; left: 80px; width: auto; }
+}
