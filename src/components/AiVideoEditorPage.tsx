@@ -1879,7 +1879,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <button type="button" onClick={() => setTimelineMenu((value) => value === 'add' ? null : 'add')}><Plus size={14} /> 添加</button>
                   <button type="button" onClick={addTimelineMarker}><MapPin size={14} /> 标记</button>
                   <button type="button" onClick={deleteSelectedTimelineClip}><X size={15} /> 删除</button>
-                  <button type="button" className={`ai-video-editor-timeline-more${isTimelineMoreOpen ? ' is-active' : ''}`} onClick={() => setIsTimelineMoreOpen((value) => !value)} title="更多剪辑操作"><MoreHorizontal size={15} /> 更多</button>
                   {isTimelineMoreOpen && <>
                     <button type="button" onClick={duplicateSelectedTimelineClip}><Copy size={14} /> 复制</button>
                     <button type="button" onClick={freezeSelectedVideoFrame}><Film size={14} /> 冻结帧</button>
@@ -1887,6 +1886,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     <button type="button" onClick={() => setTimelineMenu((value) => value === 'speed' ? null : 'speed')}><Gauge size={14} /> 速度</button>
                     <button type="button" onClick={() => setTimelineMenu((value) => value === 'volume' ? null : 'volume')}><Volume2 size={14} /> 音量</button>
                   </>}
+                  <button type="button" className={`ai-video-editor-timeline-more${isTimelineMoreOpen ? ' is-active' : ''}`} onClick={() => setIsTimelineMoreOpen((value) => !value)} title="更多剪辑操作"><MoreHorizontal size={15} /> 更多</button>
                 </div>
                 {isTransitionMenuOpen && <div className="ai-video-editor-transition-menu">
                   <strong>选择转场</strong>
