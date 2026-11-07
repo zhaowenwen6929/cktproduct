@@ -306,8 +306,60 @@ const storyboardRows: StoryboardRow[] = [
   { id: 7, time: '00:58', title: '片段 7 · 桑树王', visual: '尼洋河与远山中的桑树王由远景推进至树干细节，再 slow pull-out 回到全景收束。', text: '约1600年 · 一颗桑葚，演绎半部中国史', duration: '14s' },
 ];
 
-const timelineSegmentStarts = [0, 5, 11.4, 18.5, 26.6, 36.6, 46.6, 58.6];
-const timelineSegmentDurations = [5, 6.4, 7.1, 8.1, 10, 10, 12, 13.6];
+const codeVideoDuration = 27.4;
+
+const codeVideoScenes = [
+  { id: 'intro', label: '标题入场 · 费曼学习法', start: 0, duration: 4.2 },
+  { id: 'step-1', label: '步骤 1 · 选一个概念', start: 4.2, duration: 4.6 },
+  { id: 'step-2', label: '步骤 2 · 讲给外行听', start: 8.8, duration: 5 },
+  { id: 'step-3', label: '步骤 3 · 卡住就重学', start: 13.8, duration: 5.2 },
+  { id: 'step-4', label: '步骤 4 · 简化＋打比方', start: 19, duration: 5.4 },
+  { id: 'conclusion', label: '结论收束 · 讲得清楚，才是真的懂了', start: 24.4, duration: 3 },
+];
+
+const codeVideoCaptions = [
+  { id: 'intro-caption', text: '费曼学习法，只有四步。', start: 0, duration: 4.2 },
+  { id: 'step-1-caption', text: '第一步，选一个你想弄懂的概念。', start: 4.2, duration: 4.6 },
+  { id: 'step-2-caption', text: '第二步，把它讲给一个完全不懂的人听。', start: 8.8, duration: 5 },
+  { id: 'step-3-caption', text: '第三步，哪里讲不下去，就回去重学。', start: 13.8, duration: 5.2 },
+  { id: 'step-4-caption', text: '第四步，简化语言，多打比方，再讲一遍。', start: 19, duration: 5.4 },
+  { id: 'conclusion-caption', text: '讲得清楚，才是真的懂了。', start: 24.4, duration: 3 },
+];
+
+const codeVideoVoiceSegments = [
+  { id: 'voice-01', text: '费曼学习法，只有四步。', start: 0, duration: 4.2 },
+  { id: 'voice-02', text: '第一步，选一个你想弄懂的概念。', start: 4.2, duration: 4.6 },
+  { id: 'voice-03', text: '第二步，把它讲给一个完全不懂的人听。', start: 8.8, duration: 5 },
+  { id: 'voice-04', text: '第三步，哪里讲不下去，就回去重学。', start: 13.8, duration: 5.2 },
+  { id: 'voice-05', text: '第四步，简化语言，多打比方，再讲一遍。', start: 19, duration: 5.4 },
+  { id: 'voice-06', text: '讲得清楚，才是真的懂了。', start: 24.4, duration: 3 },
+];
+
+const codeVideoTextClips = [
+  { id: 'title-handwrite', label: '手写标题 · 费曼学习法', start: 0.12, duration: 1.58 },
+  { id: 'title-underline', label: '标题下划线', start: 1.62, duration: 0.92 },
+  { id: 'subtitle-handwrite', label: '手写副标题 · 用“讲给别人听”来学', start: 1.68, duration: 0.75 },
+  { id: 'step-1-number', label: '编号 1', start: 4.95, duration: 0.52 },
+  { id: 'step-1-label', label: '手写文字 · 选一个概念', start: 5.56, duration: 0.91 },
+  { id: 'step-1-note', label: '便签 · 比如：什么是复利？', start: 7.75, duration: 0.76 },
+  { id: 'step-2-number', label: '编号 2', start: 9.55, duration: 0.52 },
+  { id: 'step-2-label', label: '手写文字 · 讲给外行听', start: 10.16, duration: 0.91 },
+  { id: 'step-2-note', label: '便签 · 不用术语，像讲给孩子', start: 12.35, duration: 0.815 },
+  { id: 'step-3-number', label: '编号 3', start: 14.55, duration: 0.52 },
+  { id: 'step-3-label', label: '手写文字 · 卡住就重学', start: 15.16, duration: 0.91 },
+  { id: 'step-3-note', label: '便签 · 讲不下去的地方，就是你的盲区', start: 17.35, duration: 1.035 },
+  { id: 'step-4-number', label: '编号 4', start: 19.75, duration: 0.52 },
+  { id: 'step-4-label', label: '手写文字 · 简化＋打比方', start: 20.36, duration: 1.03 },
+  { id: 'step-4-note', label: '便签 · 用比方代替术语', start: 22.67, duration: 0.65 },
+  { id: 'conclusion-note', label: '结论便签 · 讲得清楚，才是真的懂了。', start: 25.6, duration: 0.925 },
+];
+
+const codeVideoSfx = [3.836, 8.768, 13.7, 18.906, 24.386].map((start, index) => ({
+  id: `sfx-${index + 1}`,
+  start,
+  duration: 0.18,
+  label: `笔尖动作音效 ${String(index + 1).padStart(2, '0')}`,
+}));
 
 const initialTimelineTracks: TimelineTrackState[] = [
   { id: 'video', kind: 'video', label: '视频', hidden: false, locked: false, muted: false },
@@ -329,44 +381,41 @@ const customTimelineTrackOptions: Array<{ kind: TimelineTrackKind; label: string
 ];
 
 const initialTimelineClips: TimelineClip[] = [
-  { id: 'video-main', trackId: 'video', kind: 'video', label: '灵感短片 · 版本 01', start: 0, duration: 72.2, poster: DEFAULT_POSTER },
-  ...scriptRows.map((row, index) => ({
-    id: `caption-${row.id}`,
+  { id: 'video-main', trackId: 'video', kind: 'video', label: '参考风格 Demo v1.4 · 费曼学习法', start: 0, duration: codeVideoDuration, poster: DEFAULT_POSTER },
+  ...codeVideoCaptions.map((clip) => ({
+    id: clip.id,
     trackId: 'captions' as const,
     kind: 'subtitle' as const,
-    label: row.narration,
-    start: timelineSegmentStarts[index],
-    duration: timelineSegmentDurations[index],
+    label: clip.text,
+    start: clip.start,
+    duration: clip.duration,
   })),
-  ...storyboardRows.map((row, index) => ({
-    id: `mg-${row.id}`,
+  ...codeVideoScenes.map((scene) => ({
+    id: `mg-${scene.id}`,
     trackId: 'mg' as const,
     kind: 'mg' as const,
-    label: row.title.replace(/片段 \d+ · /, ''),
-    start: timelineSegmentStarts[index],
-    duration: timelineSegmentDurations[index],
+    label: scene.label,
+    start: scene.start,
+    duration: scene.duration,
     poster: DEFAULT_POSTER,
   })),
-  ...storyboardRows.map((row, index) => ({
-    id: `text-${row.id}`,
+  ...codeVideoTextClips.map((clip) => ({
+    id: clip.id,
     trackId: 'text' as const,
     kind: 'text' as const,
-    label: row.text,
-    start: timelineSegmentStarts[index],
-    duration: timelineSegmentDurations[index],
+    label: clip.label,
+    start: clip.start,
+    duration: clip.duration,
   })),
-  ...scriptRows.map((row, index) => ({
-    id: `voice-${row.id}`,
+  ...codeVideoVoiceSegments.map((clip) => ({
+    id: clip.id,
     trackId: 'voiceover' as const,
     kind: 'voice' as const,
-    label: `Pearl · ${row.id.toString().padStart(2, '0')}`,
-    start: timelineSegmentStarts[index],
-    duration: timelineSegmentDurations[index],
+    label: `Tingting · ${clip.text}`,
+    start: clip.start,
+    duration: clip.duration,
   })),
-  { id: 'music-main', trackId: 'music', kind: 'music', label: '低沉神秘的纪录片配乐 · 72 BPM', start: 0, duration: 72.2 },
-  { id: 'sfx-paper', trackId: 'sfx', kind: 'sfx', label: '纸张翻页', start: 26, duration: 2 },
-  { id: 'sfx-wind', trackId: 'sfx', kind: 'sfx', label: '轻微沙沙声', start: 58, duration: 3 },
-  { id: 'sfx-end', trackId: 'sfx', kind: 'sfx', label: '收束音', start: 69.5, duration: 2.7 },
+  ...codeVideoSfx.map((clip) => ({ ...clip, trackId: 'sfx' as const, kind: 'sfx' as const })),
 ];
 
 const transitionOptions: Array<{ id: TimelineTransitionType; label: string; detail: string }> = [
@@ -401,10 +450,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [activeRightTab, setActiveRightTab] = useState<'chat' | 'settings'>('chat');
   const [videoSource, setVideoSource] = useState(DEFAULT_VIDEO);
   const [poster, setPoster] = useState(DEFAULT_POSTER);
-  const [videoName, setVideoName] = useState('灵感短片 · 版本 01');
+  const [videoName, setVideoName] = useState('费曼学习法 · Demo v1.4');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(72.2);
+  const [duration, setDuration] = useState(codeVideoDuration);
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isThinking, setIsThinking] = useState(false);
@@ -510,6 +559,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const isTimelineTrackReady = (trackId: TimelineTrackId) => {
     if (trackId === 'video') return true;
     if (trackId.startsWith('custom-')) return true;
+    if (videoSource === DEFAULT_VIDEO) return true;
     if (trackId === 'mg' || trackId === 'text' || trackId === 'music' || trackId === 'sfx') return hasMgLayers;
     if (trackId === 'captions') return hasCaptions || hasMgLayers;
     return hasVoiceover;
@@ -1119,7 +1169,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const handleVideoMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
-    if (videoSource !== DEFAULT_VIDEO && Number.isFinite(video.duration) && video.duration > 0) {
+    if (Number.isFinite(video.duration) && video.duration > 0) {
       setDuration(video.duration);
       setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, duration: video.duration } : clip));
     }
