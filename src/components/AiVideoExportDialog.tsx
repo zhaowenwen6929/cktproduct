@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, type ChangeEvent, type CSSProperties, typ
 import {
   AudioLines,
   Check,
-  Clock3,
   Download,
   FileAudio,
   FileCode2,
@@ -196,7 +195,6 @@ export function AiVideoExportDialog({
 
   const audioClipCount = clips.filter((clip) => ['voice', 'music', 'sfx'].includes(clip.kind)).length;
   const motionClipCount = clips.filter((clip) => clip.kind === 'mg').length;
-  const videoClipCount = clips.filter((clip) => clip.kind === 'video').length;
   const previewSource = coverDraftPoster || poster;
 
   if (!open) return null;
@@ -289,12 +287,9 @@ export function AiVideoExportDialog({
                   <div className="ai-video-export-preview-badge">封面</div>
                   <button type="button" className="ai-video-export-cover-edit" onClick={openCoverEditor}><ImageIcon size={12} /> 编辑封面</button>
                 </div>
-                <div className="ai-video-export-preview-meta">
-                  <div><strong>{projectTitle}</strong><span><Clock3 size={12} /> {formatDuration(duration)} · {canvasRatio} · {videoClipCount || 1} 个视频片段</span></div>
-                </div>
               </div>
               <section className="ai-video-export-section">
-                <div className="ai-video-export-section-heading"><div><strong>输出分辨率</strong></div><span className="ai-video-export-section-meta">MP4</span></div>
+                <div className="ai-video-export-section-heading"><div><strong>输出分辨率</strong></div><span className="ai-video-export-section-meta">{formatDuration(duration)} · {canvasRatio} · MP4</span></div>
                 <SegmentedControl options={['720P', '1080P', '4K']} value={resolution} onChange={setResolution} ariaLabel="视频输出分辨率" />
               </section>
             </>}

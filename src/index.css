@@ -11346,6 +11346,8 @@ button {
 .ai-video-export-tab { gap: 2px; font-size: 8px; }
 .ai-video-export-tab svg { width: 10px; height: 10px; }
 .ai-video-export-preview-meta { justify-content: flex-start; }
+.ai-video-export-preview-frame { height: 120px; min-height: 120px; }
+.ai-video-export-preview-frame img { height: 120px; min-height: 0; }
 .ai-video-export-cover-edit { position: absolute; right: 6px; bottom: 6px; display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 0 7px; border: 1px solid rgba(255, 255, 255, .8); border-radius: 5px; background: rgba(255, 255, 255, .92); color: #625cf1; font-size: 8px; box-shadow: 0 2px 6px rgba(42, 48, 72, .12); }
 .ai-video-export-cover-edit:hover { border-color: #c7c3fa; background: #fff; color: #504ae2; }
 @media (max-width: 760px) {
