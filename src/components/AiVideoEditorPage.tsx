@@ -1476,12 +1476,16 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <button type="button" onClick={() => setIsMuted((value) => !value)} aria-label={isMuted ? '取消静音' : '静音'}>{isMuted ? <VolumeOffIcon /> : <Volume2 size={16} />}</button>
                 </div>
                 <div className="ai-video-editor-player-controls__right">
-                  <span>自动播放</span>
-                  <button type="button" className={`ai-video-editor-toggle${isAutoPlay ? ' is-on' : ''}`} onClick={() => setIsAutoPlay((value) => !value)}><span /></button>
-                  <button type="button" className="ai-video-editor-player-resolution" onClick={() => notify('当前输出分辨率为 1080p')} aria-label="输出分辨率">1080p</button>
+                  <div className="ai-video-editor-player-autoplay">
+                    <span>自动播放</span>
+                    <button type="button" className={`ai-video-editor-toggle${isAutoPlay ? ' is-on' : ''}`} onClick={() => setIsAutoPlay((value) => !value)} aria-label={isAutoPlay ? '关闭自动播放' : '开启自动播放'}><span /></button>
+                  </div>
+                  <div className="ai-video-editor-player-params" aria-label="播放参数">
+                    <button type="button" className="ai-video-editor-player-resolution" onClick={() => notify('当前输出分辨率为 1080p')} aria-label="输出分辨率">1080p</button>
+                    <button type="button" className="ai-video-editor-player-ratio" onClick={() => notify('画布比例保持为 16:9')} aria-label="画布比例"><span>16:9</span><ChevronDown size={13} /></button>
+                    <button type="button" className="ai-video-editor-player-speed" onClick={() => { const rates = [0.5, 1, 1.5, 2]; const nextRate = rates[(rates.indexOf(playbackRate) + 1) % rates.length]; setPlaybackRate(nextRate); notify(`播放速度 ${nextRate}x`); }} aria-label="播放速度"><Gauge size={14} /> {playbackRate}x</button>
+                  </div>
                   <button type="button" className="ai-video-editor-player-fullscreen" onClick={togglePreviewFullscreen} aria-label="全屏预览" title="全屏预览"><Maximize2 size={15} /></button>
-                  <button type="button" className="ai-video-editor-player-ratio" onClick={() => notify('画布比例保持为 16:9')}><span>16:9</span><ChevronDown size={13} /></button>
-                  <button type="button" onClick={() => { const rates = [0.5, 1, 1.5, 2]; const nextRate = rates[(rates.indexOf(playbackRate) + 1) % rates.length]; setPlaybackRate(nextRate); notify(`播放速度 ${nextRate}x`); }}><Gauge size={15} /> {playbackRate}x</button>
                 </div>
               </div>
             </section>
