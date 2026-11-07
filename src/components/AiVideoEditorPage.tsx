@@ -1419,26 +1419,21 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
       <div className={`ai-video-editor-body${isAllTracksExpanded ? ' is-timeline-detailed' : ''}${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
         <aside className="ai-video-editor-left-rail">
-          <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')} aria-label="导入" title="导入" data-tooltip="导入">
-            <Upload size={19} strokeWidth={1.8} />
-          </button>
           <div className="ai-video-editor-rail-tools">
-            {toolItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`ai-video-editor-rail-tool${activeTool === item.id ? ' is-active' : ''}`}
-                  onClick={() => openToolPanel(item.id)}
-                  aria-label={item.label}
-                  title={item.label}
-                  data-tooltip={item.label}
-                >
-                  <Icon size={19} strokeWidth={1.8} />
-                </button>
-              );
-            })}
+            <div className="ai-video-editor-rail-group ai-video-editor-rail-group--official" aria-label="官方素材">
+              {toolItems.filter((item) => item.id !== 'library').map((item) => {
+                const Icon = item.icon;
+                return <button key={item.id} type="button" className={`ai-video-editor-rail-tool${activeTool === item.id ? ' is-active' : ''}`} onClick={() => openToolPanel(item.id)} aria-label={item.label} title={item.label} data-tooltip={item.label}><Icon size={19} strokeWidth={1.8} /></button>;
+              })}
+            </div>
+            <span className="ai-video-editor-rail-divider" aria-hidden="true" />
+            <div className="ai-video-editor-rail-group ai-video-editor-rail-group--personal" aria-label="我的素材">
+              <button type="button" className={`ai-video-editor-rail-tool${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')} aria-label="导入" title="导入" data-tooltip="导入"><Upload size={19} strokeWidth={1.8} /></button>
+              {toolItems.filter((item) => item.id === 'library').map((item) => {
+                const Icon = item.icon;
+                return <button key={item.id} type="button" className={`ai-video-editor-rail-tool${activeTool === item.id ? ' is-active' : ''}`} onClick={() => openToolPanel(item.id)} aria-label={item.label} title={item.label} data-tooltip={item.label}><Icon size={19} strokeWidth={1.8} /></button>;
+              })}
+            </div>
           </div>
           <div className="ai-video-editor-rail-bottom">
             <button type="button" className="ai-video-editor-rail-tool" onClick={() => notify('快捷键面板即将打开')} aria-label="帮助" title="帮助" data-tooltip="帮助"><CircleHelp size={19} strokeWidth={1.8} /></button>
