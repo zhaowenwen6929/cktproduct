@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlignLeft,
-  ArrowLeft,
   AudioLines,
   BadgeCheck,
   Check,
@@ -255,14 +254,6 @@ type TemplateCategory = (typeof templateCategories)[number];
 const videoTemplates: Array<{ id: string; title: string; category: Exclude<TemplateCategory, '全部'>; duration: string; poster: string; source?: string; timeline?: 'code-v14' | 'coffee' }> = [
   { id: 'code-video-demo-v14', title: '费曼学习法 · Demo v1.4', category: '科普纪录', duration: '00:27', poster: DEFAULT_POSTER, source: DEFAULT_VIDEO, timeline: 'code-v14' },
   { id: 'coffee-seed-to-cup', title: '咖啡从种子到一杯咖啡', category: '科普纪录', duration: '01:00', poster: COFFEE_POSTER, source: COFFEE_VIDEO, timeline: 'coffee' },
-  { id: 'history', title: '历史故事 · 纪录片', category: '科普纪录', duration: '01:12', poster: '/code-video/reference-style-demo-v14-poster.png' },
-  { id: 'knowledge', title: '知识讲解 · 手绘', category: '科普纪录', duration: '00:48', poster: '/code-video/reference-style-demo-v11-poster.png' },
-  { id: 'product', title: '新品发布 · 画面感', category: '品牌产品', duration: '00:30', poster: '/code-video/reference-style-demo-v9-poster.png' },
-  { id: 'brand', title: '品牌介绍 · 节奏版', category: '品牌产品', duration: '00:36', poster: '/code-video/reference-style-demo-v8-poster.png' },
-  { id: 'festival', title: '节日活动 · 氛围感', category: '节日活动', duration: '00:20', poster: '/code-video/reference-style-demo-v13-poster.png' },
-  { id: 'campaign', title: '活动预告 · 快剪', category: '节日活动', duration: '00:15', poster: '/code-video/reference-style-demo-v12-poster.png' },
-  { id: 'course', title: '课程分享 · 重点清晰', category: '知识分享', duration: '00:42', poster: '/code-video/reference-style-demo-v7-poster.png' },
-  { id: 'tips', title: '经验分享 · 轻量版', category: '知识分享', duration: '00:28', poster: '/code-video/reference-style-demo-v5-poster.png' },
 ];
 
 const CODE_VIDEO_PARAMETERS: VideoTemplateParameters = {
@@ -599,6 +590,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [poster, setPoster] = useState(DEFAULT_POSTER);
   const [videoAspectRatio, setVideoAspectRatio] = useState(16 / 9);
   const [videoName, setVideoName] = useState('费曼学习法 · Demo v1.4');
+  const [isProjectTitleEditing, setIsProjectTitleEditing] = useState(false);
+  const [projectTitleDraft, setProjectTitleDraft] = useState('费曼学习法');
   const [canvasRatio, setCanvasRatio] = useState('16:9');
   const [outputResolution, setOutputResolution] = useState('1080p');
   const [outputFrameRate, setOutputFrameRate] = useState('30 fps');
@@ -675,6 +668,14 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const restoreTemplateParameters = () => {
     setTemplateParams(activeTemplateParameters);
     notify('已恢复当前模板的默认参数');
+  };
+
+  const commitProjectTitle = () => {
+    const nextTitle = projectTitleDraft.trim() || projectTitle;
+    const titleSuffix = videoName.includes(' · ') ? ` · ${videoName.slice(videoName.indexOf(' · ') + 3)}` : '';
+    setVideoName(`${nextTitle}${titleSuffix}`);
+    setProjectTitleDraft(nextTitle);
+    setIsProjectTitleEditing(false);
   };
 
   useEffect(() => {
@@ -1243,7 +1244,10 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setVideoSource(url);
     setRenderedVideoSource(null);
     setPoster('');
-    setVideoName(file.name.replace(/\.[^/.]+$/, '') || '新视频');
+    const importedName = file.name.replace(/\.[^/.]+$/, '') || '新视频';
+    setVideoName(importedName);
+    setProjectTitleDraft(importedName);
+    setIsProjectTitleEditing(false);
     setCurrentTime(0);
     setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, label: file.name, poster: '' } : clip));
     setTimelineHistory([]);
@@ -1431,6 +1435,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     setVideoAspectRatio(16 / 9);
     setCanvasRatio('16:9');
     setVideoName(template.title);
+    setProjectTitleDraft(template.title.split(' · ')[0] || template.title);
+    setIsProjectTitleEditing(false);
     setTemplateParams(template.timeline === 'coffee' ? COFFEE_VIDEO_PARAMETERS : CODE_VIDEO_PARAMETERS);
     setIsContentSettingsOpen(true);
     if (nextDuration) setDuration(nextDuration);
@@ -1560,18 +1566,15 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const selectedTimelineClip = timelineClips.find((clip) => clip.id === selectedTimelineClipId);
 
   return (
-    <div className="ai-video-editor-shell">
+    <div className={`ai-video-editor-shell${openToolPanelId ? ' has-tool-panel' : ''}`}>
       <header className="ai-video-editor-topbar">
         <div className="ai-video-editor-topbar__left">
-          <button type="button" className="ai-video-editor-back" onClick={onBackToDirectory} aria-label="返回目录">
-            <ArrowLeft size={16} />
-          </button>
-          <div className="ai-video-editor-brand" aria-label="创客贴">
+          <button type="button" className="ai-video-editor-brand" onClick={onBackToDirectory} aria-label="返回项目列表" title="返回项目列表">
             <span className="ai-video-editor-brand__mark">Ai</span>
-          </div>
+          </button>
           <span className="ai-video-editor-divider" />
           <div className="ai-video-editor-title-wrap">
-            <strong className="ai-video-editor-work-title">{projectTitle}</strong>
+            {isProjectTitleEditing ? <input className="ai-video-editor-work-title ai-video-editor-work-title--input" value={projectTitleDraft} autoFocus aria-label="编辑视频文件名" onChange={(event) => setProjectTitleDraft(event.target.value)} onBlur={commitProjectTitle} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); commitProjectTitle(); } if (event.key === 'Escape') { setProjectTitleDraft(projectTitle); setIsProjectTitleEditing(false); } }} /> : <button type="button" className="ai-video-editor-work-title ai-video-editor-work-title--button" onClick={() => { setProjectTitleDraft(projectTitle); setIsProjectTitleEditing(true); }} title="点击编辑视频文件名">{projectTitle}</button>}
             <button type="button" className="ai-video-editor-version-tag" onClick={() => setIsVersionHistoryOpen(true)} aria-label="切换版本" title="切换版本">
               <span>{selectedVersion}</span>
               <ChevronDown size={12} />
