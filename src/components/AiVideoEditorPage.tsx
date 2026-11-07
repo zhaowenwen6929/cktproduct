@@ -1786,7 +1786,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           <button type="button" className="ai-video-editor-credit" onClick={() => setIsPointsPurchaseOpen(true)} aria-label="购买积分" title="购买积分"><span /> 204,843 <em>积分</em></button>
           <button type="button" className="ai-video-editor-member" onClick={() => setIsMembershipOpen(true)} aria-label="打开会员中心" title="打开会员中心"><BadgeCheck size={14} /> 会员</button>
           <button ref={exportButtonRef} type="button" className="ai-video-editor-export" onClick={() => setIsExportOpen(true)}>
-            <Download size={14} /> 导出视频
+            <Download size={14} /> 导出
           </button>
         </div>
       </header>

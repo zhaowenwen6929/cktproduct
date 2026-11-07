@@ -252,7 +252,7 @@ export function AiVideoExportDialog({
   };
 
   const exportButtonLabel = activeTab === 'video'
-    ? '导出视频'
+    ? '导出'
     : activeTab === 'audio'
       ? '导出 MP3'
       : activeTab === 'motion'
@@ -264,14 +264,13 @@ export function AiVideoExportDialog({
   const popoverStyle = popoverPosition ? ({ '--ai-video-export-top': `${popoverPosition.top}px`, '--ai-video-export-right': `${popoverPosition.right}px` } as CSSProperties) : undefined;
 
   return (
-    <div className="ai-video-export-backdrop" style={popoverStyle} role="dialog" aria-modal="true" aria-label="导出视频" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="ai-video-export-backdrop" style={popoverStyle} role="dialog" aria-modal="true" aria-label="导出" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="ai-video-export-dialog" onMouseDown={(event) => event.stopPropagation()}>
         <header className="ai-video-export-header">
           <div className="ai-video-export-header-title">
             <div className="ai-video-export-header-icon"><Download size={17} /></div>
             <div>
               <strong>导出</strong>
-              <span>{projectTitle} · 选择输出方式</span>
             </div>
           </div>
           <button type="button" className="ai-video-export-close" onClick={onClose} aria-label="关闭导出面板" title="关闭"><X size={18} /></button>
@@ -295,7 +294,7 @@ export function AiVideoExportDialog({
                 </div>
               </div>
               <section className="ai-video-export-section">
-                <div className="ai-video-export-section-heading"><div><strong>输出分辨率</strong><span>分辨率越高，画面细节越丰富，导出时间也会增加</span></div><span className="ai-video-export-section-meta">MP4</span></div>
+                <div className="ai-video-export-section-heading"><div><strong>输出分辨率</strong></div><span className="ai-video-export-section-meta">MP4</span></div>
                 <SegmentedControl options={['720P', '1080P', '4K']} value={resolution} onChange={setResolution} ariaLabel="视频输出分辨率" />
               </section>
             </>}
@@ -327,15 +326,15 @@ export function AiVideoExportDialog({
               <div className="ai-video-export-project-items"><span>包含素材</span><span>封面</span><span>字幕</span><span>时间线</span></div>
             </div>}
             <div className="ai-video-export-watermark ai-video-export-watermark--main">
-              <button type="button" className={`ai-video-export-switch${removeWatermark ? ' is-on' : ''}`} role="switch" aria-checked={removeWatermark} aria-label="去除水印" onClick={() => setRemoveWatermark((value) => !value)}><span /></button>
-              <div><strong>去除水印</strong><span>{removeWatermark ? '导出内容不含水印' : '免费版导出会保留水印'}</span></div>
+              <div><strong>去除AI水印</strong><span>{removeWatermark ? '导出物料不含 AI 水印' : '导出物料含 AI 水印'}</span></div>
               <span className="ai-video-export-free">免费</span>
+              <button type="button" className={`ai-video-export-switch${removeWatermark ? ' is-on' : ''}`} role="switch" aria-checked={removeWatermark} aria-label="去除AI水印" onClick={() => setRemoveWatermark((value) => !value)}><span /></button>
             </div>
           </div>
         </div>
 
         <footer className="ai-video-export-footer">
-          <div><span>导出后仍可回到编辑器继续修改</span>{removeWatermark && <small><Check size={12} /> 已选择去除水印</small>}</div>
+          <div><span>导出后仍可回到编辑器继续修改</span>{removeWatermark && <small><Check size={12} /> 已去除 AI 水印</small>}</div>
           <button type="button" className="ai-video-export-primary-button" onClick={handleExport}><Download size={15} /> {exportButtonLabel}</button>
         </footer>
       </div>
