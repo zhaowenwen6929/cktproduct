@@ -11254,3 +11254,14 @@ button {
   .ai-video-cover-preview { max-height: 260px; }
   .ai-video-cover-footer { min-height: 60px; padding-inline: 16px; }
 }
+
+/* The export workflow opens from the top-right action instead of taking over the editor. */
+.ai-video-export-backdrop { align-items: flex-start; justify-content: flex-end; padding: 0; background: transparent; backdrop-filter: none; }
+.ai-video-export-dialog { position: absolute; top: var(--ai-video-export-top, 72px); right: var(--ai-video-export-right, 24px); width: min(680px, calc(100vw - 32px)); max-height: min(720px, calc(100vh - 84px)); border-radius: 14px; animation: ai-video-export-popover-in .18s cubic-bezier(.22, 1, .36, 1); }
+.ai-video-export-dialog::before { position: absolute; top: -7px; right: 18px; width: 12px; height: 12px; border-top: 1px solid #e0e2ef; border-left: 1px solid #e0e2ef; transform: rotate(45deg); background: #fff; content: ''; }
+@keyframes ai-video-export-popover-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 760px) {
+  .ai-video-export-backdrop { padding: 0; }
+  .ai-video-export-dialog { top: var(--ai-video-export-top, 64px); right: 12px; left: 12px; width: auto; max-height: calc(100vh - 80px); }
+  .ai-video-export-dialog::before { right: 14px; }
+}

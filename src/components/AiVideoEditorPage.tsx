@@ -687,6 +687,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const chatEndRef = useRef<HTMLDivElement>(null);
   const timelineScrollRef = useRef<HTMLDivElement>(null);
   const chatPanelRef = useRef<HTMLElement>(null);
+  const exportButtonRef = useRef<HTMLButtonElement>(null);
   const [activeTool, setActiveTool] = useState<ToolId>('media');
   const [openToolPanelId, setOpenToolPanelId] = useState<ToolId | null>(null);
   const [activeTemplateCategory, setActiveTemplateCategory] = useState<TemplateCategory>('全部');
@@ -1784,7 +1785,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         <div className="ai-video-editor-topbar__actions">
           <button type="button" className="ai-video-editor-credit" onClick={() => setIsPointsPurchaseOpen(true)} aria-label="购买积分" title="购买积分"><span /> 204,843 <em>积分</em></button>
           <button type="button" className="ai-video-editor-member" onClick={() => setIsMembershipOpen(true)} aria-label="打开会员中心" title="打开会员中心"><BadgeCheck size={14} /> 会员</button>
-          <button type="button" className="ai-video-editor-export" onClick={() => setIsExportOpen(true)}>
+          <button ref={exportButtonRef} type="button" className="ai-video-editor-export" onClick={() => setIsExportOpen(true)}>
             <Download size={14} /> 导出视频
           </button>
         </div>
@@ -2160,7 +2161,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           <div className="ai-video-editor-fullscreen-modal__foot"><button type="button" className="ai-video-editor-secondary-action" onClick={() => setIsStoryboardEditorOpen(false)}>收回卡片</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsStoryboardEditorOpen(false); notify('分镜修改已保存'); }}>保存修改</button><button type="button" className="ai-video-editor-primary-action" onClick={() => { setIsStoryboardEditorOpen(false); confirmStoryboard(); }}>确认分镜方案</button></div>
         </div>
       </div>}
-      {isExportOpen ? <AiVideoExportDialog open={isExportOpen} projectTitle={projectTitle} poster={poster || DEFAULT_POSTER} canvasRatio={canvasRatio} duration={timelineDuration} currentTime={currentTime} clips={timelineClips} onClose={() => setIsExportOpen(false)} onSetPoster={(nextPoster) => { setPoster(nextPoster); notify('封面已更新'); }} onExport={(message) => { setIsExportOpen(false); notify(message); }} /> : null}
+      {isExportOpen ? <AiVideoExportDialog open={isExportOpen} projectTitle={projectTitle} poster={poster || DEFAULT_POSTER} canvasRatio={canvasRatio} duration={timelineDuration} currentTime={currentTime} clips={timelineClips} anchorRef={exportButtonRef} onClose={() => setIsExportOpen(false)} onSetPoster={(nextPoster) => { setPoster(nextPoster); notify('封面已更新'); }} onExport={(message) => { setIsExportOpen(false); notify(message); }} /> : null}
       {isMembershipOpen ? <MembershipCenterModal open={isMembershipOpen} onOpenChange={setIsMembershipOpen} onClose={() => setIsMembershipOpen(false)} currentMember={{ memberName: '免费版', remainingPoints: 204843, teamMemberCount: 1, membershipType: 'personal' }} /> : null}
       {isPointsPurchaseOpen ? <MembershipPointsPurchaseModal onClose={() => setIsPointsPurchaseOpen(false)} onOpenMembership={() => { setIsPointsPurchaseOpen(false); setIsMembershipOpen(true); }} /> : null}
       {showToast && <div className="ai-video-editor-toast"><Check size={14} /> {showToast}</div>}

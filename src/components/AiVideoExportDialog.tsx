@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent, type CSSProperties, type RefObject } from 'react';
 import {
   AudioLines,
   Check,
@@ -38,6 +38,7 @@ type AiVideoExportDialogProps = {
   duration: number;
   currentTime: number;
   clips: AiVideoExportClip[];
+  anchorRef?: RefObject<HTMLElement | null>;
   onClose: () => void;
   onSetPoster: (poster: string) => void;
   onExport: (message: string) => void;
@@ -112,6 +113,7 @@ export function AiVideoExportDialog({
   duration,
   currentTime,
   clips,
+  anchorRef,
   onClose,
   onSetPoster,
   onExport,
@@ -129,6 +131,7 @@ export function AiVideoExportDialog({
   const [coverDescription, setCoverDescription] = useState('');
   const [isGeneratingCover, setIsGeneratingCover] = useState(false);
   const [aiCoverGenerated, setAiCoverGenerated] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState<{ top: number; right: number } | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -162,6 +165,29 @@ export function AiVideoExportDialog({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const updatePopoverPosition = () => {
+      const anchor = anchorRef?.current;
+      if (!anchor) {
+        setPopoverPosition(null);
+        return;
+      }
+      const rect = anchor.getBoundingClientRect();
+      setPopoverPosition({
+        top: Math.round(rect.bottom + 10),
+        right: Math.max(16, Math.round(window.innerWidth - rect.right)),
+      });
+    };
+    updatePopoverPosition();
+    window.addEventListener('resize', updatePopoverPosition);
+    window.addEventListener('scroll', updatePopoverPosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePopoverPosition);
+      window.removeEventListener('scroll', updatePopoverPosition, true);
+    };
+  }, [anchorRef, open]);
 
   const coverFrames = useMemo(() => {
     const frames = clips.filter((clip) => clip.poster).slice(0, 8).map((clip) => ({ src: clip.poster!, clip }));
@@ -236,8 +262,10 @@ export function AiVideoExportDialog({
           ? '导出当前帧'
           : `导出 ${compiler} 工程`;
 
+  const popoverStyle = popoverPosition ? ({ '--ai-video-export-top': `${popoverPosition.top}px`, '--ai-video-export-right': `${popoverPosition.right}px` } as CSSProperties) : undefined;
+
   return (
-    <div className="ai-video-export-backdrop" role="dialog" aria-modal="true" aria-label="导出视频" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="ai-video-export-backdrop" style={popoverStyle} role="dialog" aria-modal="true" aria-label="导出视频" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="ai-video-export-dialog" onMouseDown={(event) => event.stopPropagation()}>
         <header className="ai-video-export-header">
           <div className="ai-video-export-header-title">
