@@ -412,6 +412,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const [isMuted, setIsMuted] = useState(false);
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
+  const [isAllTracksExpanded, setIsAllTracksExpanded] = useState(false);
+  const [isTimelineMoreOpen, setIsTimelineMoreOpen] = useState(false);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
@@ -490,6 +492,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   };
 
   const getTimelineTrack = (trackId: TimelineTrackId) => timelineTracks.find((track) => track.id === trackId);
+
+  const isTimelineTrackReady = (trackId: TimelineTrackId) => {
+    if (trackId === 'video') return true;
+    if (trackId === 'mg' || trackId === 'text' || trackId === 'music' || trackId === 'sfx') return hasMgLayers;
+    if (trackId === 'captions') return hasCaptions || hasMgLayers;
+    return hasVoiceover;
+  };
 
   const commitTimelineChange = (nextClips: TimelineClip[], message?: string) => {
     setTimelineHistory((items) => [...items, { clips: timelineClipsRef.current, transitions: timelineTransitions }].slice(-30));
@@ -796,13 +805,15 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const track = getTimelineTrack(clip.trackId);
     if (track?.hidden) return null;
     const isSelected = selectedTimelineClipId === clip.id;
+    const isPending = !isTimelineTrackReady(clip.trackId);
     return (
       <button
         type="button"
-        className={`${className}${isSelected ? ' is-selected' : ''}${track?.locked ? ' is-locked' : ''}`}
+        className={`${className}${isSelected ? ' is-selected' : ''}${track?.locked ? ' is-locked' : ''}${isPending ? ' is-pending' : ''}`}
         style={timelineClipStyle(clip)}
         onPointerDown={(event) => startTimelineDrag(event, clip, 'move')}
-        onClick={(event) => { event.stopPropagation(); setSelectedTimelineClipId(clip.id); }}
+        onClick={(event) => { event.stopPropagation(); setSelectedTimelineClipId(clip.id); if (isPending) notify('该轨道内容等待 AI 生成'); }}
+        title={isPending ? `${clip.label} · 待生成` : clip.label}
       >
         {content}
         {isSelected && !track?.locked && <>
@@ -819,7 +830,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const isAudioTrack = trackId === 'voiceover' || trackId === 'music' || trackId === 'sfx';
     return (
       <div className={`ai-video-editor-track-label${track.hidden ? ' is-hidden' : ''}`}>
-        <span className="ai-video-editor-track-label__name"><span className="ai-video-editor-track-icon">{icon}</span><span>{label}</span></span>
+        <span className="ai-video-editor-track-label__name"><span className="ai-video-editor-track-icon">{icon}</span><span>{label}</span>{!isTimelineTrackReady(trackId) && <em className="ai-video-editor-track-state" title="等待生成" aria-label="等待生成" />}</span>
         <div className="ai-video-editor-track-controls">
           <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'hidden')} aria-label={`${track.hidden ? '显示' : '隐藏'}${label}`} title={`${track.hidden ? '显示' : '隐藏'}${label}`}>{track.hidden ? <EyeOff size={12} /> : <Eye size={12} />}</button>
           <button type="button" className="ai-video-editor-track-control" onClick={() => toggleTimelineTrack(trackId, 'locked')} aria-label={`${track.locked ? '解锁' : '锁定'}${label}`} title={`${track.locked ? '解锁' : '锁定'}${label}`}>{track.locked ? <Lock size={12} /> : <Unlock size={12} />}</button>
@@ -849,6 +860,31 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const fullscreenRequest = stageRef.current?.requestFullscreen?.();
     await fullscreenRequest?.catch(() => undefined);
   };
+
+  useEffect(() => {
+    const handleTimelineShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, button, [contenteditable="true"]')) return;
+      const withModifier = event.metaKey || event.ctrlKey;
+      if (withModifier && event.key.toLowerCase() === 'z') {
+        event.preventDefault();
+        if (event.shiftKey) redoTimeline(); else undoTimeline();
+        return;
+      }
+      if (event.key === ' ') {
+        event.preventDefault();
+        void togglePlay();
+      } else if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault();
+        deleteSelectedTimelineClip();
+      } else if (event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        splitSelectedTimelineClip();
+      }
+    };
+    window.addEventListener('keydown', handleTimelineShortcut);
+    return () => window.removeEventListener('keydown', handleTimelineShortcut);
+  }, [currentTime, selectedTimelineClipId, timelineClips, timelineHistory, timelineRedo, isPlaying]);
 
   const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1121,7 +1157,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     return <div className="ai-video-editor-chat-content"><div className="ai-video-editor-chat-scroll">{renderMessages()}{card}{isThinking && <div className="ai-video-editor-message ai-video-editor-message--assistant"><div className="ai-video-editor-message-avatar"><Film size={12} /></div><div className="ai-video-editor-message-bubble ai-video-editor-thinking"><i /><i /><i /></div></div>}<div ref={chatEndRef} /></div><div className="ai-video-editor-suggestion-title">{workflowStage === 'script' ? '你也可以告诉我' : workflowStage === 'storyboard' ? '需要调整分镜？' : '继续告诉 AI 你想怎么改'}</div><div className="ai-video-editor-suggestions">{workflowStage === 'script' ? <><button type="button" onClick={() => handleSend('让旁白更口语化一些')}><AlignLeft size={14} /> 让旁白更口语化 <ChevronRight size={13} /></button><button type="button" onClick={() => setIsScriptEditorOpen(true)}><Table2 size={14} /> 打开全屏表格编辑 <ChevronRight size={13} /></button></> : workflowStage === 'storyboard' ? <><button type="button" onClick={() => setIsStoryboardEditorOpen(true)}><Table2 size={14} /> 全屏编辑分镜表格 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('把第 1 镜改成更有冲击力的开场')}><WandSparkles size={14} /> 调整镜头节奏 <ChevronRight size={13} /></button></> : <><button type="button" onClick={() => handleSend('让画面节奏更紧凑一些')}><Scissors size={14} /> 调整节奏 <ChevronRight size={13} /></button><button type="button" onClick={() => handleSend('配一首更有纪录片质感的音乐')}><Music2 size={14} /> 调整配乐 <ChevronRight size={13} /></button></>}</div><div className="ai-video-editor-composer"><textarea value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder={workflowStage === 'script' ? '输入你对脚本的修改意见…' : '告诉 AI 你想怎么改…'} rows={2} /><div className="ai-video-editor-composer-footer"><button type="button" onClick={() => notify('附件上传面板已打开')}><Plus size={15} /></button><span>Enter 发送</span><button type="button" className="ai-video-editor-send" onClick={() => handleSend()} disabled={!chatInput.trim() || isThinking}><Send size={14} /></button></div></div></div>;
   };
 
-  const isDetailedTimelineReady = timelineClips.length > 0;
+  const isTimelineContentReady = timelineClips.length > 0;
   const selectedTimelineClip = timelineClips.find((clip) => clip.id === selectedTimelineClipId);
 
   return (
@@ -1152,7 +1188,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         </div>
       </header>
 
-      <div className={`ai-video-editor-body${isDetailedTimelineReady ? ' is-timeline-detailed' : ''}${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
+      <div className={`ai-video-editor-body${isAllTracksExpanded ? ' is-timeline-detailed' : ''}${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isChatCollapsed ? ' is-chat-collapsed' : ''}${isChatExpanded ? ' is-chat-expanded' : ''}`}>
         <aside className="ai-video-editor-left-rail">
           <button type="button" className={`ai-video-editor-rail-add${activeTool === 'import' && openToolPanelId === 'import' ? ' is-active' : ''}`} onClick={() => openToolPanel('import')}>
             <Plus size={18} />
@@ -1197,10 +1233,6 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     muted={isMuted}
                     playsInline
                   />
-                  <div className="ai-video-editor-stage-overlay">
-                    <span>VIDEO EDITOR</span>
-                    <small>让每一帧，都更接近你的想法</small>
-                  </div>
                 </div>
               </div>
               <div className="ai-video-editor-player-controls">
@@ -1231,7 +1263,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
           </div>
         </main>
 
-        <section className={`ai-video-editor-timeline-panel${isDetailedTimelineReady ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
+        <section className={`ai-video-editor-timeline-panel${isAllTracksExpanded ? ' is-complete' : ''}${isTimelineCollapsed ? ' is-collapsed' : ''}`}>
               <div className="ai-video-editor-timeline-head">
                 <div className="ai-video-editor-timeline-actions">
                   <button type="button" onClick={undoTimeline} disabled={!timelineHistory.length} aria-label="撤销" title="撤销"><Undo2 size={15} /></button>
@@ -1240,13 +1272,17 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                   <button type="button" onClick={splitSelectedTimelineClip}><Scissors size={15} /> 分割</button>
                   <button type="button" onClick={() => setIsTransitionMenuOpen((value) => !value)}><WandSparkles size={14} /> 转场</button>
                   <button type="button" onClick={() => setTimelineMenu((value) => value === 'add' ? null : 'add')}><Plus size={14} /> 添加</button>
-                  <button type="button" onClick={duplicateSelectedTimelineClip}><Copy size={14} /> 复制</button>
-                  <button type="button" onClick={freezeSelectedVideoFrame}><Film size={14} /> 冻结帧</button>
                   <button type="button" onClick={addTimelineMarker}><MapPin size={14} /> 标记</button>
-                  <button type="button" onClick={removeSelectedTimelineMarker} disabled={!selectedMarkerId}><X size={13} /> 删标记</button>
-                  <button type="button" onClick={() => setTimelineMenu((value) => value === 'speed' ? null : 'speed')}><Gauge size={14} /> 速度</button>
-                  <button type="button" onClick={() => setTimelineMenu((value) => value === 'volume' ? null : 'volume')}><Volume2 size={14} /> 音量</button>
                   <button type="button" onClick={deleteSelectedTimelineClip}><X size={15} /> 删除</button>
+                  <button type="button" className={`ai-video-editor-timeline-expand${isAllTracksExpanded ? ' is-active' : ''}`} onClick={() => setIsAllTracksExpanded((value) => !value)} title={isAllTracksExpanded ? '收起次要轨道' : '展开全部轨道'}><Layers3 size={14} /> {isAllTracksExpanded ? '收起轨道' : '全部轨道'}</button>
+                  <button type="button" className={`ai-video-editor-timeline-more${isTimelineMoreOpen ? ' is-active' : ''}`} onClick={() => setIsTimelineMoreOpen((value) => !value)} title="更多剪辑操作"><MoreHorizontal size={15} /> 更多</button>
+                  {isTimelineMoreOpen && <>
+                    <button type="button" onClick={duplicateSelectedTimelineClip}><Copy size={14} /> 复制</button>
+                    <button type="button" onClick={freezeSelectedVideoFrame}><Film size={14} /> 冻结帧</button>
+                    <button type="button" onClick={removeSelectedTimelineMarker} disabled={!selectedMarkerId}><X size={13} /> 删标记</button>
+                    <button type="button" onClick={() => setTimelineMenu((value) => value === 'speed' ? null : 'speed')}><Gauge size={14} /> 速度</button>
+                    <button type="button" onClick={() => setTimelineMenu((value) => value === 'volume' ? null : 'volume')}><Volume2 size={14} /> 音量</button>
+                  </>}
                 </div>
                 {isTransitionMenuOpen && <div className="ai-video-editor-transition-menu">
                   <strong>选择转场</strong>
@@ -1303,7 +1339,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     {timelineTransitions.map((transition) => <button type="button" key={transition.id} className={`ai-video-editor-timeline-transition ai-video-editor-timeline-transition--${transition.type}${selectedTransitionId === transition.id ? ' is-selected' : ''}`} style={{ left: `${(transition.at / timelineDuration) * timelineClipScale * 100}%` }} onClick={(event) => { event.stopPropagation(); setSelectedTransitionId(transition.id); setIsTransitionMenuOpen(true); }} aria-label={`${transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}，${transition.at.toFixed(1)}秒`}><span>{transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}</span></button>)}
                   </div>
                 </div>
-                {isDetailedTimelineReady ? <>
+                {isTimelineContentReady ? <>
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
                     {renderTimelineTrackLabel('captions', <Subtitles size={14} />, '字幕')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
@@ -1316,26 +1352,28 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                       {timelineClips.filter((clip) => clip.trackId === 'mg').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--mg', <><img src={clip.poster || poster || DEFAULT_POSTER} alt="" /><span>{clip.label}</span></>))}
                     </div>
                   </div>
-                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                  {isAllTracksExpanded && <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
                     {renderTimelineTrackLabel('text', <TextCursorInput size={14} />, '文字层')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
                       {timelineClips.filter((clip) => clip.trackId === 'text').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--text', <span>{clip.label}</span>))}
                     </div>
-                  </div>
+                  </div>}
                   <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    {renderTimelineTrackLabel('voiceover', <AudioLines size={14} />, '口播声音')}
+                    {renderTimelineTrackLabel('voiceover', <AudioLines size={14} />, '口播')}
                     <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
                       {timelineClips.filter((clip) => clip.trackId === 'voiceover').map((clip, clipIndex) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--voice', <><div className="ai-video-editor-mini-wave">{Array.from({ length: 12 }, (_, index) => <i key={index} style={{ height: `${22 + ((index * (clipIndex + 2) * 13) % 62)}%` }} />)}</div><span>{clip.label}</span></>))}
                     </div>
                   </div>
-                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    {renderTimelineTrackLabel('music', <Music2 size={14} />, '配乐')}
-                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">{timelineClips.filter((clip) => clip.trackId === 'music').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--music', <><div className="ai-video-editor-wide-wave">{Array.from({ length: 88 }, (_, index) => <i key={index} style={{ height: `${18 + ((index * 19) % 47)}%` }} />)}</div><span>{clip.label}</span></>))}</div>
-                  </div>
-                  <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
-                    {renderTimelineTrackLabel('sfx', <AudioLines size={14} />, '音效')}
-                    <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">{timelineClips.filter((clip) => clip.trackId === 'sfx').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx', <span>{clip.label}</span>))}</div>
-                  </div>
+                  {isAllTracksExpanded && <>
+                    <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                      {renderTimelineTrackLabel('music', <Music2 size={14} />, '配乐')}
+                      <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">{timelineClips.filter((clip) => clip.trackId === 'music').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--music', <><div className="ai-video-editor-wide-wave">{Array.from({ length: 88 }, (_, index) => <i key={index} style={{ height: `${18 + ((index * 19) % 47)}%` }} />)}</div><span>{clip.label}</span></>))}</div>
+                    </div>
+                    <div className="ai-video-editor-track-row ai-video-editor-detailed-track-row">
+                      {renderTimelineTrackLabel('sfx', <AudioLines size={14} />, '音效')}
+                      <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">{timelineClips.filter((clip) => clip.trackId === 'sfx').map((clip) => renderTimelineClip(clip, 'ai-video-editor-detail-clip ai-video-editor-detail-clip--sfx', <span>{clip.label}</span>))}</div>
+                    </div>
+                  </>}
                 </> : <>
                   <div className="ai-video-editor-track-row">
                     {renderTimelineTrackLabel('mg', <Layers3 size={14} />, 'MG 画面')}
@@ -1389,7 +1427,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         {isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle is-collapsed" onClick={() => setIsChatCollapsed(false)} aria-label="展开对话面板" title="展开对话面板"><ChevronLeft size={15} /></button>}
         {!isChatCollapsed && <button type="button" className="ai-video-editor-chat-edge-toggle" onClick={() => setIsChatCollapsed(true)} aria-label="收起对话面板" title="收起对话面板"><ChevronRight size={15} /></button>}
       </div>
-      {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className={`ai-video-editor-template-panel ai-video-editor-tool-panel${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isDetailedTimelineReady ? ' is-timeline-complete' : ''}`} aria-label={`${activeToolTitle}面板`}>
+      {openToolPanelId && ['import', 'library', 'templates', 'media', 'text'].includes(openToolPanelId) && <aside className={`ai-video-editor-template-panel ai-video-editor-tool-panel${isTimelineCollapsed ? ' is-timeline-collapsed' : ''}${isAllTracksExpanded ? ' is-timeline-complete' : ''}`} aria-label={`${activeToolTitle}面板`}>
         <div className="ai-video-editor-template-panel__head">
           <div>
             <strong>{openToolPanelId === 'import' ? '导入素材' : openToolPanelId === 'library' ? '资源库' : openToolPanelId === 'templates' ? '视频模板' : openToolPanelId === 'media' ? '素材' : '文字'}</strong>
