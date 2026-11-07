@@ -10820,4 +10820,5 @@ button {
 .ai-video-editor-detail-clip--video { border-color: #c8d1e2; background: #eef2f7; color: #53627a; }
 .ai-video-editor-detail-clip--custom .ai-video-editor-mini-wave,
 .ai-video-editor-detail-clip--custom .ai-video-editor-wide-wave { color: #6c83bd; }
+.ai-video-editor-detail-clip--video img { width: 28px; height: 20px; margin-right: 6px; flex: 0 0 auto; border-radius: 3px; object-fit: cover; }
 .ai-video-editor-track-row:has(.ai-video-editor-detail-clip--custom) .ai-video-editor-track-label { background: #fbfcfe; }

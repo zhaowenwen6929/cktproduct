@@ -94,6 +94,7 @@ type TimelineClip = {
   start: number;
   duration: number;
   poster?: string;
+  source?: string;
   speed?: number;
   volume?: number;
 };
@@ -133,6 +134,9 @@ type TimelineMarker = {
 
 const DEFAULT_VIDEO = '/code-video/reference-style-demo-v14-voice.mp4';
 const DEFAULT_POSTER = '/code-video/reference-style-demo-v14-poster.png';
+const COFFEE_VIDEO = '/video-projects/coffee-seed-to-cup-20261107/preview.mp4';
+const COFFEE_POSTER = '/video-projects/coffee-seed-to-cup-20261107/cover.jpg';
+const COFFEE_PROJECT_PATH = '/video-projects/coffee-seed-to-cup-20261107';
 
 const initialUserPrompt = `请制作一支中文科普短片《一颗桑葚，半部中国史》MG动画。
 全片结构：整部视频以纯MG演示动画与真实视频共同构成，整体节奏清晰，画面干净，历史感强。插画、素材和文字演示需根据脚本合理放置，所有元素不得超出画布，不得被裁剪
@@ -229,8 +233,9 @@ const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
 const templateCategories = ['全部', '科普纪录', '品牌产品', '节日活动', '知识分享'] as const;
 type TemplateCategory = (typeof templateCategories)[number];
 
-const videoTemplates: Array<{ id: string; title: string; category: Exclude<TemplateCategory, '全部'>; duration: string; poster: string }> = [
-  { id: 'code-video-demo-v14', title: '费曼学习法 · Demo v1.4', category: '科普纪录', duration: '00:27', poster: '/code-video/reference-style-demo-v14-poster.png' },
+const videoTemplates: Array<{ id: string; title: string; category: Exclude<TemplateCategory, '全部'>; duration: string; poster: string; source?: string; timeline?: 'code-v14' | 'coffee' }> = [
+  { id: 'code-video-demo-v14', title: '费曼学习法 · Demo v1.4', category: '科普纪录', duration: '00:27', poster: DEFAULT_POSTER, source: DEFAULT_VIDEO, timeline: 'code-v14' },
+  { id: 'coffee-seed-to-cup', title: '咖啡从种子到一杯咖啡', category: '科普纪录', duration: '01:00', poster: COFFEE_POSTER, source: COFFEE_VIDEO, timeline: 'coffee' },
   { id: 'history', title: '历史故事 · 纪录片', category: '科普纪录', duration: '01:12', poster: '/code-video/reference-style-demo-v14-poster.png' },
   { id: 'knowledge', title: '知识讲解 · 手绘', category: '科普纪录', duration: '00:48', poster: '/code-video/reference-style-demo-v11-poster.png' },
   { id: 'product', title: '新品发布 · 画面感', category: '品牌产品', duration: '00:30', poster: '/code-video/reference-style-demo-v9-poster.png' },
@@ -419,6 +424,94 @@ const initialTimelineClips: TimelineClip[] = [
   ...codeVideoSfx.map((clip) => ({ ...clip, trackId: 'sfx' as const, kind: 'sfx' as const })),
 ];
 
+const coffeeScenes = [
+  { id: 'scene_01', title: '一杯咖啡，从哪里来？', text: '咖啡从种子到一杯咖啡', start: 0, duration: 6 },
+  { id: 'scene_02', title: '种子 → 咖啡树', text: '阳光 · 雨水 · 土壤', start: 6, duration: 7 },
+  { id: 'scene_03', title: '咖啡果实 = 咖啡樱桃', text: '开花 · 结果 · 成熟', start: 13, duration: 7 },
+  { id: 'scene_04', title: '咖啡樱桃 → 咖啡生豆', text: '去掉果肉和果皮，留下咖啡生豆', start: 20, duration: 8 },
+  { id: 'scene_05', title: '烘焙：颜色与香气的变化', text: '浅烘焙 → 中烘焙 → 深烘焙', start: 28, duration: 8 },
+  { id: 'scene_06', title: '研磨粗细，影响萃取速度', text: '粗研磨 · 中研磨 · 细研磨', start: 36, duration: 8 },
+  { id: 'scene_07', title: '热水 + 咖啡粉 = 一杯咖啡', text: '水流穿过咖啡粉，带走香气和风味', start: 44, duration: 9 },
+  { id: 'scene_08', title: '从种子，到一杯咖啡', text: '种子 · 土地 · 加工 · 烘焙 · 冲泡', start: 53, duration: 7 },
+];
+
+const coffeeVoiceSegments = [
+  '你喝下的一杯咖啡，其实经历了一段很长的旅程。',
+  '咖啡豆最初来自咖啡树的种子。咖啡树生长在温暖的地区，阳光、雨水和土壤共同影响它的风味。',
+  '咖啡树开花结果，成熟的果实看起来像红色的小樱桃，所以常被称为咖啡樱桃。',
+  '采摘后的果实要经过加工，去掉果肉和果皮，留下我们熟悉的咖啡生豆。',
+  '烘焙会让生豆逐渐变色，也释放出香气。烘焙程度不同，最终呈现的味道也会不同。',
+  '烘焙后的咖啡豆还要研磨。研磨粗细会影响水和咖啡粉接触的速度。',
+  '最后，热水带走咖啡粉中的香气和风味，形成我们杯中的咖啡。',
+  '所以，一杯咖啡的味道，来自种子、土地、加工、烘焙和冲泡的共同作用。',
+];
+
+const coffeeRealVideoTrackId: TimelineTrackId = 'custom-coffee-real-video';
+const coffeeRealVideoClips: TimelineClip[] = [
+  { id: 'real-clip-01', trackId: coffeeRealVideoTrackId, kind: 'video', label: '咖啡樱桃开花、成熟与采摘', start: 13, duration: 7, source: `${COFFEE_PROJECT_PATH}/video/real_clip_01.mp4`, poster: `${COFFEE_PROJECT_PATH}/video/frames/real_clip_01_first.png` },
+  { id: 'real-clip-02', trackId: coffeeRealVideoTrackId, kind: 'video', label: '咖啡樱桃加工与生豆', start: 20, duration: 8, source: `${COFFEE_PROJECT_PATH}/video/real_clip_02.mp4`, poster: `${COFFEE_PROJECT_PATH}/video/frames/real_clip_02_first.png` },
+  { id: 'real-clip-03', trackId: coffeeRealVideoTrackId, kind: 'video', label: '生豆烘焙与颜色变化', start: 28, duration: 8, source: `${COFFEE_PROJECT_PATH}/video/real_clip_03.mp4`, poster: `${COFFEE_PROJECT_PATH}/video/frames/real_clip_03_first.png` },
+  { id: 'real-clip-04', trackId: coffeeRealVideoTrackId, kind: 'video', label: '手冲注水与萃取', start: 44, duration: 9, source: `${COFFEE_PROJECT_PATH}/video/real_clip_04.mp4`, poster: `${COFFEE_PROJECT_PATH}/video/frames/real_clip_04_first.png` },
+];
+
+const coffeeTimelineClips: TimelineClip[] = [
+  { id: 'video-main', trackId: 'video', kind: 'video', label: '咖啡从种子到一杯咖啡 · 完整预览', start: 0, duration: 60, source: COFFEE_VIDEO, poster: COFFEE_POSTER },
+  ...coffeeScenes.map((scene, index) => ({
+    id: scene.id,
+    trackId: 'captions' as const,
+    kind: 'subtitle' as const,
+    label: [
+      '一杯咖啡，从哪里来？',
+      '种子 → 咖啡树',
+      '咖啡果实 = 咖啡樱桃',
+      '咖啡樱桃 → 咖啡生豆',
+      '烘焙：颜色与香气的变化',
+      '研磨粗细，影响萃取速度',
+      '热水 + 咖啡粉 = 一杯咖啡',
+      '从种子，到一杯咖啡',
+    ][index],
+    start: scene.start,
+    duration: scene.duration,
+  })),
+  ...coffeeScenes.map((scene) => ({
+    id: `mg-${scene.id}`,
+    trackId: 'mg' as const,
+    kind: 'mg' as const,
+    label: scene.title,
+    start: scene.start,
+    duration: scene.duration,
+    source: `${COFFEE_PROJECT_PATH}/video/scene_${scene.id.slice(-2)}.mp4`,
+    poster: `${COFFEE_PROJECT_PATH}/mg/${scene.id}.png`,
+  })),
+  ...coffeeRealVideoClips,
+  ...coffeeScenes.map((scene) => ({
+    id: `text-${scene.id}`,
+    trackId: 'text' as const,
+    kind: 'text' as const,
+    label: scene.text,
+    start: scene.start,
+    duration: scene.duration,
+  })),
+  ...coffeeVoiceSegments.map((text, index) => ({
+    id: `voice-${String(index + 1).padStart(2, '0')}`,
+    trackId: 'voiceover' as const,
+    kind: 'voice' as const,
+    label: `Tingting · ${text}`,
+    start: coffeeScenes[index].start,
+    duration: coffeeScenes[index].duration,
+    source: `${COFFEE_PROJECT_PATH}/audio/segments/vo_${String(index + 1).padStart(2, '0')}.wav`,
+  })),
+  { id: 'music-main', trackId: 'music', kind: 'music', label: '轻快温暖背景音乐 · 连续 60 秒', start: 0, duration: 60, source: `${COFFEE_PROJECT_PATH}/audio/music_main.wav` },
+  { id: 'sfx-transition', trackId: 'sfx', kind: 'sfx', label: '段落转场音效', start: 13, duration: 1, source: `${COFFEE_PROJECT_PATH}/audio/sfx_transition.wav` },
+  { id: 'sfx-roast', trackId: 'sfx', kind: 'sfx', label: '烘焙环境音', start: 30, duration: 5, source: `${COFFEE_PROJECT_PATH}/audio/sfx_roast.wav` },
+  { id: 'sfx-water', trackId: 'sfx', kind: 'sfx', label: '注水环境音', start: 46, duration: 6, source: `${COFFEE_PROJECT_PATH}/audio/sfx_water.wav` },
+];
+
+const coffeeTimelineTracks: TimelineTrackState[] = [
+  ...initialTimelineTracks,
+  { id: coffeeRealVideoTrackId, kind: 'video', label: '实拍过程', hidden: false, locked: false, muted: false },
+];
+
 const transitionOptions: Array<{ id: TimelineTransitionType; label: string; detail: string }> = [
   { id: 'dissolve', label: '叠化', detail: '柔和衔接' },
   { id: 'fade-black', label: '黑场', detail: '适合章节切换' },
@@ -560,7 +653,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   const isTimelineTrackReady = (trackId: TimelineTrackId) => {
     if (trackId === 'video') return true;
     if (trackId.startsWith('custom-')) return true;
-    if (videoSource === DEFAULT_VIDEO) return true;
+    if (videoSource === DEFAULT_VIDEO || videoSource === COFFEE_VIDEO) return true;
     if (trackId === 'mg' || trackId === 'text' || trackId === 'music' || trackId === 'sfx') return hasMgLayers;
     if (trackId === 'captions') return hasCaptions || hasMgLayers;
     return hasVoiceover;
@@ -953,6 +1046,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
         {renderTimelineTrackLabel(track.id, getTimelineTrackIcon(track.kind), track.label)}
         <div className="ai-video-editor-track-content ai-video-editor-detailed-track-content">
           {clips.length > 0 ? clips.map((clip, clipIndex) => renderTimelineClip(clip, clipClass, <>
+            {track.kind === 'video' ? <img src={clip.poster || poster || DEFAULT_POSTER} alt="" /> : null}
             {track.kind === 'voiceover' || track.kind === 'music' ? <div className={track.kind === 'music' ? 'ai-video-editor-wide-wave' : 'ai-video-editor-mini-wave'}>{Array.from({ length: track.kind === 'music' ? 48 : 12 }, (_, index) => <i key={index} style={{ height: `${22 + ((index * (clipIndex + 2) * 13) % 62)}%` }} />)}</div> : null}
             <span>{clip.label}</span>
           </>)) : <button type="button" className="ai-video-editor-empty-track" onClick={() => addTimelineAsset(track.id, clipKind, `${track.label}片段`, poster || DEFAULT_POSTER)}><Plus size={13} /> 添加片段</button>}
@@ -1156,12 +1250,20 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   );
 
   const applyVideoTemplate = (template: (typeof videoTemplates)[number]) => {
-    setVideoSource(DEFAULT_VIDEO);
+    const nextVideoSource = template.source ?? DEFAULT_VIDEO;
+    const nextDuration = template.timeline === 'coffee' ? 60 : template.timeline === 'code-v14' ? codeVideoDuration : undefined;
+    const sourceTimeline = template.timeline === 'coffee'
+      ? coffeeTimelineClips
+      : template.timeline === 'code-v14'
+        ? initialTimelineClips
+        : timelineClips;
+    setVideoSource(nextVideoSource);
     setPoster(template.poster);
     setVideoName(template.title);
-    if (template.id === 'code-video-demo-v14') setDuration(codeVideoDuration);
+    if (nextDuration) setDuration(nextDuration);
     setCurrentTime(0);
-    setTimelineClips((items) => items.map((clip) => clip.id === 'video-main' ? { ...clip, label: template.title, duration: template.id === 'code-video-demo-v14' ? codeVideoDuration : clip.duration, poster: template.poster } : clip));
+    setTimelineClips(sourceTimeline.map((clip) => clip.id === 'video-main' ? { ...clip, label: template.title, duration: nextDuration ?? clip.duration, source: nextVideoSource, poster: template.poster } : clip));
+    if (template.timeline) setTimelineTracks(template.timeline === 'coffee' ? coffeeTimelineTracks : initialTimelineTracks);
     setTimelineHistory([]);
     setTimelineRedo([]);
     setSelectedTimelineClipId('video-main');
