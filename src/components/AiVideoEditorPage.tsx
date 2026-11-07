@@ -1761,7 +1761,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                     playsInline
                   />
                   {videoManifest && !renderedVideoSource && <div className="ai-video-editor-manifest-render-layer" style={{ opacity: selectedTimelineClip?.kind === 'mg' && selectedClipParameters ? selectedClipParameters.opacity / 100 : 1 }}><MgAnimationOverlay manifest={videoManifest} currentTime={currentTime} /></div>}
-                  {selectedTextOverlayStyle && selectedClipParameters && <div className="ai-video-editor-selected-element-overlay" style={selectedTextOverlayStyle} aria-label={`正在编辑：${selectedClipParameters.text}`}>{selectedClipParameters.text}</div>}
+                  {selectedTextOverlayStyle && selectedClipParameters && !isPlaying && <div className="ai-video-editor-selected-element-overlay" style={selectedTextOverlayStyle} aria-label={`正在编辑：${selectedClipParameters.text}`}>{selectedClipParameters.text}</div>}
                   {manifestError && <div className="ai-video-editor-mg-error">MG 动画层加载失败</div>}
                 </div>
               </div>

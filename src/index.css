@@ -190,7 +190,8 @@
 .ai-video-editor-video-clip { position: relative; height: 34px; overflow: hidden; border: 1px solid #8299f7; border-radius: 6px; background: #dce3ff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
 .ai-video-editor-clip-thumbs { display: flex; height: 100%; opacity: .78; }
 .ai-video-editor-clip-thumbs img { width: 12.5%; height: 100%; min-width: 0; object-fit: cover; }
-.ai-video-editor-clip-name { position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 5px; height: 100%; padding: 0 9px; background: linear-gradient(90deg, rgba(48, 74, 168, .75), transparent); color: #fff; font-size: 10px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.ai-video-editor-clip-name { position: absolute; z-index: 1; top: 4px; left: 5px; display: flex; align-items: center; gap: 5px; width: fit-content; max-width: calc(100% - 10px); height: 22px; box-sizing: border-box; overflow: hidden; padding: 0 8px; border-radius: 5px; background: rgba(31, 50, 72, .82); color: #fff; font-size: 10px; font-weight: 600; text-overflow: ellipsis; text-shadow: none; white-space: nowrap; }
+.ai-video-editor-clip-name svg { flex: 0 0 auto; }
 .ai-video-editor-track-content > input { position: absolute; z-index: 3; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; }
 .ai-video-editor-playhead { position: absolute; z-index: 4; top: -5px; bottom: -80px; width: 1px; background: #ff5e67; pointer-events: none; }
 .ai-video-editor-playhead span { position: absolute; top: 0; left: -4px; width: 9px; height: 9px; border-radius: 2px 2px 4px 4px; background: #ff5e67; transform: rotate(45deg); }
@@ -10102,7 +10103,7 @@ button {
 .ai-video-editor-track-label svg:last-child { color: #a8b2bd; }
 .ai-video-editor-video-clip { border-color: #a9bbcf; border-radius: 6px; background: #dfe8f1; box-shadow: none; }
 .ai-video-editor-clip-thumbs { opacity: .9; }
-.ai-video-editor-clip-name { background: rgba(31, 50, 72, .78); text-shadow: none; }
+.ai-video-editor-clip-name { background: rgba(31, 50, 72, .82); }
 .ai-video-editor-playhead { background: var(--editor-amber); }
 .ai-video-editor-playhead span { background: var(--editor-amber); }
 .ai-video-editor-empty-track { border-color: #d6dee6; border-radius: 6px; background: #f8fafb; color: #8794a2; }
