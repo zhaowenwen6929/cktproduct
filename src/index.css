@@ -11262,6 +11262,41 @@ button {
 .ai-video-export-body { grid-template-columns: 1fr; }
 .ai-video-export-watermark--main { margin-top: 20px; padding-top: 15px; }
 @keyframes ai-video-export-popover-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Compact export popover: keep the controls readable while taking about half the previous footprint. */
+.ai-video-export-dialog { width: min(480px, calc(100vw - 32px)); max-height: min(520px, calc(100vh - 84px)); }
+.ai-video-export-header { min-height: 56px; padding-inline: 16px; }
+.ai-video-export-header-icon { width: 30px; height: 30px; border-radius: 8px; }
+.ai-video-export-header-title strong { font-size: 14px; }
+.ai-video-export-header-title span { font-size: 10px; }
+.ai-video-export-tabs { min-height: 46px; padding-inline: 12px; }
+.ai-video-export-tab { gap: 4px; padding-inline: 3px; font-size: 10px; }
+.ai-video-export-tab svg { width: 13px; height: 13px; }
+.ai-video-export-tab.is-active::after { right: 8px; left: 8px; }
+.ai-video-export-main { padding: 16px; }
+.ai-video-export-preview-card { gap: 8px; padding: 8px; border-radius: 10px; }
+.ai-video-export-preview-frame,
+.ai-video-export-preview-frame img { min-height: 150px; }
+.ai-video-export-preview-meta { gap: 8px; }
+.ai-video-export-preview-meta strong { font-size: 11px; }
+.ai-video-export-preview-meta span { font-size: 9px; }
+.ai-video-export-secondary-button { min-height: 28px; padding-inline: 8px; font-size: 9px; }
+.ai-video-export-section { gap: 8px; margin-top: 12px; }
+.ai-video-export-section-heading strong { font-size: 11px; }
+.ai-video-export-section-heading span,
+.ai-video-export-section-meta { font-size: 9px; }
+.ai-video-export-segmented { padding: 3px; border-radius: 8px; }
+.ai-video-export-segmented button { min-height: 30px; padding-inline: 6px; font-size: 10px; }
+.ai-video-export-summary { gap: 8px; margin-top: 12px; padding: 9px; }
+.ai-video-export-summary strong { font-size: 10px; }
+.ai-video-export-summary span { font-size: 9px; }
+.ai-video-export-watermark--main { margin-top: 12px; padding-top: 12px; }
+.ai-video-export-watermark { gap: 7px; padding-bottom: 4px; }
+.ai-video-export-watermark strong { font-size: 10px; }
+.ai-video-export-watermark div span { font-size: 8px; }
+.ai-video-export-footer { min-height: 56px; padding-inline: 16px; }
+.ai-video-export-footer > div { font-size: 9px; }
+.ai-video-export-primary-button { min-width: 120px; height: 34px; padding-inline: 12px; border-radius: 8px; font-size: 11px; }
 @media (max-width: 760px) {
   .ai-video-export-backdrop { padding: 0; }
   .ai-video-export-dialog { top: var(--ai-video-export-top, 64px); right: 12px; left: 12px; width: auto; max-height: calc(100vh - 80px); }
