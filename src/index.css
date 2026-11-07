@@ -10281,6 +10281,10 @@ button {
 .ai-video-editor-template-card:hover .ai-video-editor-template-card__poster b { opacity: 1; transform: translateY(0); }
 .ai-video-editor-template-card__title { display: block; overflow: hidden; margin-top: 8px; color: #354b61; font-size: 11px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
 .ai-video-editor-template-card__category { display: block; margin-top: 3px; color: #8a97a4; font-size: 9px; }
+.ai-video-editor-library-empty { display: flex; min-height: 180px; grid-column: 1 / -1; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #b2bbc4; text-align: center; }
+.ai-video-editor-library-empty svg { color: #c7d0d8; }
+.ai-video-editor-library-empty strong { color: #718091; font-size: 12px; font-weight: 500; }
+.ai-video-editor-library-empty span { color: #a2acb6; font-size: 10px; }
 
 @media (max-width: 1120px) {
   .ai-video-editor-template-panel { left: 68px; width: 360px; }

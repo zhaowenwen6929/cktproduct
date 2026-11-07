@@ -361,18 +361,9 @@ const mediaAssets: Array<{ id: string; title: string; category: Exclude<MediaCat
 const libraryCategories = ['全部', '视频', '图片', '音频', '文档', 'MG动画'] as const;
 type LibraryCategory = (typeof libraryCategories)[number];
 
-const libraryAssets: Array<{ id: string; title: string; category: LibraryCategory; detail: string; poster: string }> = [
-  { id: 'library-tribute', title: '西汉贡品场景', category: '视频', detail: '视频片段', poster: '/code-video/reference-style-demo-v8-poster.png' },
-  { id: 'library-river', title: '远古河谷演示', category: '视频', detail: '视频片段', poster: '/code-video/reference-style-demo-v11-poster.png' },
-  { id: 'library-tree', title: '千年桑树王', category: '视频', detail: '视频片段', poster: '/code-video/reference-style-demo-v13-poster.png' },
-  { id: 'library-branch', title: '枝叶透明素材', category: '图片', detail: '透明 PNG', poster: '/code-video/reference-style-demo-v7-poster.png' },
-  { id: 'library-book', title: '本草纲目古籍', category: '图片', detail: 'JPG 图片', poster: '/code-video/reference-style-demo-v9-poster.png' },
-  { id: 'library-oracle', title: '甲骨文字形', category: '图片', detail: 'PNG 图片', poster: '/code-video/reference-style-demo-v9-poster.png' },
-  { id: 'library-narration', title: 'Pearl · 中文旁白', category: '音频', detail: '72.2s 音频', poster: '/code-video/reference-style-demo-v14-poster.png' },
-  { id: 'library-music', title: '纪录片配乐', category: '音频', detail: '72 BPM', poster: '/code-video/reference-style-demo-v8-poster.png' },
-  { id: 'library-script', title: '桑葚中国史脚本', category: '文档', detail: 'TXT 文档', poster: '/code-video/reference-style-demo-v14-poster.png' },
-  { id: 'library-history', title: '桑葚中国史素材包', category: 'MG动画', detail: '8 个 MG 镜头', poster: '/code-video/reference-style-demo-v14-poster.png' },
-  { id: 'library-seed', title: '碳化籽粒标注', category: 'MG动画', detail: 'MG 素材', poster: '/code-video/reference-style-demo-v5-poster.png' },
+const libraryAssets: Array<{ id: string; title: string; category: Exclude<LibraryCategory, '全部'>; detail: string; poster: string; templateId: string }> = [
+  { id: 'library-code-video', title: '费曼学习法 · Demo v1.4', category: '视频', detail: '视频 · 00:27', poster: DEFAULT_POSTER, templateId: 'code-video-demo-v14' },
+  { id: 'library-coffee-video', title: '咖啡从种子到一杯咖啡', category: '视频', detail: '视频 · 01:00', poster: COFFEE_POSTER, templateId: 'coffee-seed-to-cup' },
 ];
 
 const textCategories = ['标题', '正文', '字幕', '标签'] as const;
@@ -1558,6 +1549,13 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     notify(`已选择模板：${template.title}`);
   };
 
+  const selectLibraryAsset = (asset: (typeof libraryAssets)[number]) => {
+    const template = videoTemplates.find((item) => item.id === asset.templateId);
+    if (!template) return;
+    applyVideoTemplate(template);
+    notify(`已选择视频：${asset.title}`);
+  };
+
   const handleVideoMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -2005,11 +2003,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
             {libraryCategories.map((category) => <button key={category} type="button" role="tab" aria-selected={activeLibraryCategory === category} className={activeLibraryCategory === category ? 'is-active' : ''} onClick={() => setActiveLibraryCategory(category)}>{category}</button>)}
           </div>
           <div className="ai-video-editor-template-grid ai-video-editor-library-grid">
-            {visibleLibraryAssets.map((asset) => <button type="button" key={asset.id} className="ai-video-editor-template-card ai-video-editor-library-card" onClick={() => { setPoster(asset.poster); notify(`已选择素材：${asset.title}`); }}>
-              <span className="ai-video-editor-template-card__poster"><img src={asset.poster} alt="" /><b>使用素材</b></span>
+            {visibleLibraryAssets.length > 0 ? visibleLibraryAssets.map((asset) => <button type="button" key={asset.id} className="ai-video-editor-template-card ai-video-editor-library-card" onClick={() => selectLibraryAsset(asset)}>
+              <span className="ai-video-editor-template-card__poster"><img src={asset.poster} alt="" /><span>{asset.detail.replace('视频 · ', '')}</span><b>使用视频</b></span>
               <span className="ai-video-editor-template-card__title">{asset.title}</span>
               <span className="ai-video-editor-template-card__category">{asset.detail}</span>
-            </button>)}
+            </button>) : <div className="ai-video-editor-library-empty"><Film size={22} /><strong>该分类暂无素材</strong><span>当前资源库仅保留这两个真实视频</span></div>}
           </div>
         </>}
 
