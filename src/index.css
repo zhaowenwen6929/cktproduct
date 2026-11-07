@@ -134,7 +134,9 @@
 .ai-video-editor-preview-head__actions button { width: 25px; height: 25px; border-radius: 7px; }
 .ai-video-editor-stage-wrap { display: flex; align-items: center; justify-content: center; height: calc(100% - 73px); min-height: 205px; }
 .ai-video-editor-stage { position: relative; width: min(100%, 860px); max-height: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 10px; background: #11141a; box-shadow: 0 15px 40px rgba(32, 43, 61, .15); }
-.ai-video-editor-stage video { display: block; width: 100%; height: 100%; object-fit: contain; opacity: .93; }
+.ai-video-editor-stage video { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; opacity: .93; }
+.ai-video-editor-mg-overlay { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.ai-video-editor-mg-error { position: absolute; z-index: 5; top: 12px; right: 12px; padding: 5px 8px; border: 1px solid rgba(255, 203, 160, .42); border-radius: 6px; background: rgba(76, 39, 24, .78); color: #ffe5d0; font-size: 10px; }
 .ai-video-editor-stage::after { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 13, 19, .02), rgba(10, 13, 19, .16)); content: ''; pointer-events: none; }
 .ai-video-editor-caption-preview { position: absolute; z-index: 2; bottom: 28px; left: 50%; padding: 4px 10px; border-radius: 4px; transform: translateX(-50%); background: rgba(12, 16, 23, .58); color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .ai-video-editor-stage-play { position: absolute; z-index: 3; top: 50%; left: 50%; display: grid; place-items: center; width: 50px; height: 50px; border: 1px solid rgba(255,255,255,.4); border-radius: 50%; transform: translate(-50%, -50%); background: rgba(23, 29, 40, .58); color: #fff; backdrop-filter: blur(5px); }
@@ -10943,6 +10945,17 @@ button {
 .ai-video-editor-rail-add:hover::after,
 .ai-video-editor-rail-add:focus-visible::after { opacity: 1; transform: translate(0, -50%); }
 .ai-video-editor-rail-bottom { gap: 4px; padding: 0 6px 14px; }
+
+/* Compact player controls: keep the row aligned with the small autoplay label. */
+.ai-video-editor-player-autoplay { height: 24px; gap: 6px; }
+.ai-video-editor-player-params { min-height: 24px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.ai-video-editor-player-params > button { height: 22px !important; padding: 0 6px !important; border-radius: 4px; font-size: 10px !important; }
+.ai-video-editor-player-params > button + button { border-left-color: #e9eaf0 !important; border-radius: 0 4px 4px 0; }
+.ai-video-editor-player-fullscreen { width: 24px !important; height: 24px !important; margin-left: 1px; border: 0 !important; border-radius: 5px !important; background: transparent !important; box-shadow: none !important; }
+.ai-video-editor-player-fullscreen:hover { border-color: transparent !important; background: #f1f0ff !important; color: #5a55e8 !important; }
+
+/* Align the help icon with the 44px player control row on the left. */
+.ai-video-editor-rail-bottom { height: 44px; align-items: center; justify-content: center; padding: 0 6px; }
 
 /* Keep official and personal tools inside one quiet rail, separated by a hairline. */
 .ai-video-editor-rail-tools { align-items: center; gap: 0; margin-top: 12px; }
