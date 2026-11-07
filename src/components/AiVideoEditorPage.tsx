@@ -215,8 +215,6 @@ const formatLongTime = (seconds: number) => {
   return `${minutes}:${remainder}:00`;
 };
 
-const timelineTicks = ['00:00', '00:08', '00:16', '00:24', '00:32', '00:40', '00:48', '00:56', '01:04', '01:12'];
-
 const toolItems: Array<{ id: ToolId; label: string; icon: typeof Film }> = [
   { id: 'library', label: '资源库', icon: FolderOpen },
   { id: 'templates', label: '模板', icon: LayoutTemplate },
@@ -479,6 +477,11 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
 
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
   const timelineDuration = Math.max(duration, 1);
+  const timelineZoomFactor = zoom / 100;
+  const timelineClipScale = Math.min(1, timelineZoomFactor);
+  const timelineRulerDuration = timelineZoomFactor < 1 ? timelineDuration / timelineZoomFactor : timelineDuration;
+  const timelineTicks = Array.from({ length: 10 }, (_, index) => formatTime((timelineRulerDuration * index) / 9));
+  const timelinePlayheadPosition = progress * timelineClipScale;
 
   const seekTo = (nextTime: number) => {
     const safeTime = Math.max(0, Math.min(duration, nextTime));
@@ -773,7 +776,7 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
     const rect = rulerElement.getBoundingClientRect();
     const trackLeft = rect.left;
     const trackWidth = Math.max(1, rect.width);
-    const updateFromPointer = (clientX: number) => seekTo(((clientX - trackLeft) / trackWidth) * timelineDuration);
+    const updateFromPointer = (clientX: number) => seekTo(((clientX - trackLeft) / trackWidth) * timelineRulerDuration);
     updateFromPointer(event.clientX);
     const handleMove = (moveEvent: PointerEvent) => updateFromPointer(moveEvent.clientX);
     const handleUp = () => {
@@ -785,8 +788,8 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
   };
 
   const timelineClipStyle = (clip: TimelineClip) => ({
-    left: `${(clip.start / timelineDuration) * 100}%`,
-    width: `${(clip.duration / timelineDuration) * 100}%`,
+    left: `${(clip.start / timelineDuration) * timelineClipScale * 100}%`,
+    width: `${(clip.duration / timelineDuration) * timelineClipScale * 100}%`,
   });
 
   const renderTimelineClip = (clip: TimelineClip, className: string, content: React.ReactNode) => {
@@ -1278,26 +1281,26 @@ export function AiVideoEditorPage({ onBackToDirectory }: AiVideoEditorPageProps)
                 </div>
               </div>
               <div className="ai-video-editor-timeline">
-                <div className="ai-video-editor-timeline-canvas" style={{ width: `${zoom}%` }}>
+                <div className="ai-video-editor-timeline-canvas" style={{ width: `${Math.max(100, zoom)}%` }}>
                 <div className="ai-video-editor-timeline-ruler">
                   <div className="ai-video-editor-track-spacer" />
                   <div className="ai-video-editor-ruler-scale" onPointerDown={startTimelineScrub}>
                     {timelineTicks.map((tick) => <span key={tick}>{tick}</span>)}
-                    {timelineMarkers.map((marker) => <button type="button" key={marker.id} className={`ai-video-editor-timeline-marker${selectedMarkerId === marker.id ? ' is-selected' : ''}`} style={{ left: `${(marker.time / timelineDuration) * 100}%` }} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); setSelectedMarkerId(marker.id); seekTo(marker.time); }} title={`${marker.label} · ${formatTime(marker.time)}`}><MapPin size={10} /></button>)}
+                    {timelineMarkers.map((marker) => <button type="button" key={marker.id} className={`ai-video-editor-timeline-marker${selectedMarkerId === marker.id ? ' is-selected' : ''}`} style={{ left: `${(marker.time / timelineDuration) * timelineClipScale * 100}%` }} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); setSelectedMarkerId(marker.id); seekTo(marker.time); }} title={`${marker.label} · ${formatTime(marker.time)}`}><MapPin size={10} /></button>)}
                   </div>
                 </div>
                 <div className="ai-video-editor-track-row">
                   {renderTimelineTrackLabel('video', <Film size={14} />, '视频')}
                   <div className="ai-video-editor-track-content">
-                    <div className="ai-video-editor-playhead" style={{ left: `${progress}%` }}><span /></div>
-                    <input aria-label="视频时间线" type="range" min="0" max={duration} step="0.1" value={currentTime} onChange={(event) => seekTo(Number(event.target.value))} />
+                    <div className="ai-video-editor-playhead" style={{ left: `${timelinePlayheadPosition}%` }}><span /></div>
+                    <input aria-label="视频时间线" type="range" min="0" max={timelineRulerDuration} step="0.1" value={currentTime} onChange={(event) => seekTo(Number(event.target.value))} />
                     {timelineClips.filter((clip) => clip.trackId === 'video').map((clip) => renderTimelineClip(clip, 'ai-video-editor-video-clip', <>
                       <div className="ai-video-editor-clip-thumbs">
                         {Array.from({ length: 8 }, (_, index) => <img key={index} src={clip.poster || poster || DEFAULT_POSTER} alt="" />)}
                       </div>
                       <div className="ai-video-editor-clip-name"><Film size={13} /> {videoName}</div>
                     </>))}
-                    {timelineTransitions.map((transition) => <button type="button" key={transition.id} className={`ai-video-editor-timeline-transition ai-video-editor-timeline-transition--${transition.type}${selectedTransitionId === transition.id ? ' is-selected' : ''}`} style={{ left: `${(transition.at / timelineDuration) * 100}%` }} onClick={(event) => { event.stopPropagation(); setSelectedTransitionId(transition.id); setIsTransitionMenuOpen(true); }} aria-label={`${transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}，${transition.at.toFixed(1)}秒`}><span>{transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}</span></button>)}
+                    {timelineTransitions.map((transition) => <button type="button" key={transition.id} className={`ai-video-editor-timeline-transition ai-video-editor-timeline-transition--${transition.type}${selectedTransitionId === transition.id ? ' is-selected' : ''}`} style={{ left: `${(transition.at / timelineDuration) * timelineClipScale * 100}%` }} onClick={(event) => { event.stopPropagation(); setSelectedTransitionId(transition.id); setIsTransitionMenuOpen(true); }} aria-label={`${transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}，${transition.at.toFixed(1)}秒`}><span>{transitionOptions.find((option) => option.id === transition.type)?.label ?? '转场'}</span></button>)}
                   </div>
                 </div>
                 {isDetailedTimelineReady ? <>
